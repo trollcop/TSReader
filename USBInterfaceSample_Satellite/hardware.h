@@ -1,0 +1,31 @@
+//EP1 out commands
+#define outDNHardware 1
+#define outI2CWRITE 2
+#define outI2CWRITEEEPROM 3
+#define outI2CREAD 4
+#define outReadBroadcomRAM 5
+#define outWriteBroadcomRAM 6
+#define outDMAControl 7
+#define outGetConfiguration 8
+#define outWriteSTLNBP21 9
+#define outReadSTLNBP21 10
+#define out22KHzOnOff 11
+#define outPOLARITY 12
+#define outToneBurst 13
+#define outDiSEqC 14
+#define outPollingControl 15
+#define outTune 16
+#define outLockStatus 17
+#define outI2CREAD2 18
+#define outEEPROMWriteEnable 27
+
+//STLNBP21 register definitions
+#define PCL		0x80
+#define ISEL1	0x00
+#define TEN		0x20
+#define LLC		0x10
+#define VSEL1	0x08
+#define EN1		0x04
+#define OTF		0x02
+#define OLF		0x01
+

@@ -1,0 +1,64 @@
+; Board1077.def : Declares the module parameters for the DLL.
+
+LIBRARY      "Board1077"
+
+EXPORTS
+    ; Explicit exports can go here
+    B1077Initialize                       @1       PRIVATE
+    B1077RegisterRecordStatusHandle       @2       PRIVATE
+    B1077RegisterCommunicationErrorHandle @3       PRIVATE
+    B1077RegisterRecordProgressHandle     @4       PRIVATE
+    B1077GetLockStatus                    @5       PRIVATE
+    B1077SetTunerFrequencyHz              @6       PRIVATE
+    B1077GetTunerFrequencyHz              @7       PRIVATE
+    B1077GetChannelBandwidth              @8       PRIVATE
+    B1077SetChannelBandwidth              @9       PRIVATE
+    B1077GetFftMode			               @10      PRIVATE
+    B1077SetFftMode                       @11      PRIVATE
+    B1077GetChannelGuard                  @12      PRIVATE
+    B1077SetChannelGuard                  @13      PRIVATE
+    B1077GetChannelConstellation          @14      PRIVATE
+    B1077SetChannelConstellation          @15      PRIVATE
+    B1077GetChannelCoderate               @16      PRIVATE
+    B1077SetChannelCoderate               @17      PRIVATE
+    B1077GetChannelHierarchy              @18      PRIVATE
+    B1077SetChannelHierarchy              @19      PRIVATE
+    B1077GetChannelMirror                 @20      PRIVATE
+    B1077SetChannelMirror                 @21      PRIVATE
+    B1077GetChannelPriority               @22      PRIVATE
+    B1077SetChannelPriority               @23      PRIVATE
+    B1077GetChannelClassification         @24      PRIVATE
+    B1077SetChannelClassification         @25      PRIVATE
+    B1077GetChannelParameters		         @26      PRIVATE
+    B1077SetChannelParameters		         @27      PRIVATE
+    B1077GetSignalQuality		            @28      PRIVATE
+    B1077GetMER				               @29      PRIVATE
+    B1077GetPreVitberBiBER		            @30      PRIVATE
+    B1077GetPostVitberBiBER		         @31      PRIVATE
+    B1077GetPacketError			            @32      PRIVATE
+    B1077GetNbLevel			               @33      PRIVATE
+    B1077GetSymbols			               @34      PRIVATE
+    B1077DoesExist			               @35      PRIVATE
+    B1077GetSerialNumber		            @36      PRIVATE
+    B1077IsDongled			               @37      PRIVATE
+    B1077DongleBoard			               @38      PRIVATE
+    B1077GetCalTime			               @39      PRIVATE
+    B1077GetAdcFineAGC			            @40      PRIVATE
+    B1077GetAdcNbRssi			            @41      PRIVATE
+    B1077GetAdcTemperature		            @42      PRIVATE
+    B1077GetAdcTunerAGC			            @43      PRIVATE
+    B1077GetAdcWbRssi			            @44      PRIVATE
+    B1077DacSetAGC			               @45      PRIVATE
+    B1077GetIoExtAGC			               @46      PRIVATE
+    B1077SetIoExtAGC			               @47      PRIVATE
+    B1077SetCalData			               @48      PRIVATE
+    B1077SaveCalData			               @49      PRIVATE
+    B1077GetAdcVoltage			            @50      PRIVATE
+    B1077GetIoRfAttenuation		         @51	   PRIVATE
+    B1077SetIoRfAttenuation		         @52	   PRIVATE
+    B1077Uninitialize                     @53      PRIVATE
+    B1077GetChannelLevel		            @54      PRIVATE
+    B1077Versions			                  @55      PRIVATE
+    B1077ExecuteRecord			            @56      PRIVATE
+    B1077ExecuteStop			               @57      PRIVATE
+    B1077GetBoardRevision	               @58      PRIVATE

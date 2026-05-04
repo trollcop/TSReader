@@ -1,0 +1,32 @@
+CPU: AthlonXP 2600+
+----------------------------------------------------------------
+FFDecsa_64_MMX.dll 	: Speed=164.46 Mbit/s , 111727.68 pkts/s
+FFDecsa_32_INT.dll 	: Speed=123.96 Mbit/s ,  84210.44 pkts/s
+FFDecsa_64_LONG.dll 	: Speed=102.05 Mbit/s ,  69326.87 pkts/s
+FFDecsa_128_4INT.dll 	: Speed= 82.61 Mbit/s ,  56121.08 pkts/s
+FFDecsa_64_2INT.dll 	: Speed= 48.73 Mbit/s ,  33104.50 pkts/s
+FFDecsa_128_2LONG.dll 	: Speed= 39.38 Mbit/s ,  26755.75 pkts/s
+FFDecsa_64_2INT.dll 	: Speed= 48.73 Mbit/s ,  33104.50 pkts/s
+
+Clasic CSA.dll 		: Speed= 22.10 Mbit/s ,  15015.02 pkts/s
+----------------------------------------------------------------
+
+
+
+
+CPU: Pentium4 1800
+----------------------------------------------------------------
+FFDecsa_64_MMX.dll 	: Speed=115.49 Mbit/s ,  78454.55 pkts/s
+FFDecsa_32_INT.dll 	: Speed= 80.12 Mbit/s ,  54429.82 pkts/s
+FFDecsa_64_LONG.dll 	: Speed= 73.68 Mbit/s ,  50054.00 pkts/s
+FFDecsa_128_4INT.dll 	: Speed= 38.72 Mbit/s ,  26305.83 pkts/s
+FFDecsa_128_2LONG.dll 	: Speed= 22.41 Mbit/s ,  15225.06 pkts/s
+FFDecsa_64_2INT.dll 	: Speed= 25.69 Mbit/s ,  17452.58 pkts/s
+
+Clasic CSA.dll 		: Speed= 18.08 Mbit/s , 12285.01 pkts/s
+----------------------------------------------------------------
+
+
+[Altx]
+
+

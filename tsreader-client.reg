@@ -1,0 +1,84 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CURRENT_USER\Software\COOL.STF\TSReader]
+"RecordPIDFolder"="C:\\PROGRA~1\\COOL.STF\\TSReader"
+"RecordFile"="C:\\Documents and Settings\\Administrator\\Desktop\\123.mpg"
+"TransportStreamInitialDir"="C:\\Documents and Settings\\Administrator\\Desktop\\"
+"HTMInitialDir"="C:\\PROGRA~1\\COOL.STF\\TSReader"
+"XMLInitialDir"="C:\\PROGRA~1\\COOL.STF\\TSReader"
+"ManualChannelsInitialDir"=""
+"RecordTitle"=" "
+"CurrentlySelectedSatellite"="Telstar 5" "SourceName"="C:\\Program Files\\COOL.STF\\TSReader\\Sources\\TSReader_Twinhan1020.dll"
+"VLCExeLocation"=""
+"ThumbnailBaseFilename"=""
+"ThumbnailInitialDir"=""
+"SplitFormatString"="%f_%3n.%e"
+"RokuIP"=""
+"RokuUsername"=""
+"RokuPassword"=""
+"RokuMpegPSPlayLocation"=""
+"VLCConfigDescription0"="Play"
+"VLCConfigCommand0"="<IP>"
+"VLCConfigDescription1"=""
+"VLCConfigCommand1"=""
+"VLCConfigDescription2"=""
+"VLCConfigCommand2"=""
+"VLCConfigDescription3"=""
+"VLCConfigCommand3"=""
+"VLCConfigDescription4"=""
+"VLCConfigCommand4"=""
+"VLCConfigDescription5"=""
+"VLCConfigCommand5"=""
+"VLCConfigDescription6"=""
+"VLCConfigCommand6"=""
+"VLCConfigDescription7"=""
+"VLCConfigCommand7"=""
+"VLCConfigDescription8"=""
+"VLCConfigCommand8"=""
+"VLCConfigDescription9"=""
+"VLCConfigCommand9"=""
+"VLCConfigDescription10"=""
+"VLCConfigCommand10"=""
+"VLCConfigDescription11"=""
+"VLCConfigCommand11"=""
+"VLCConfigDescription12"=""
+"VLCConfigCommand12"=""
+"VLCConfigDescription13"=""
+"VLCConfigCommand13"=""
+"VLCConfigDescription14"=""
+"VLCConfigCommand14"=""
+"VLCConfigDescription15"=""
+"VLCConfigCommand15"=""
+"RecordPIDNoTSHeader"=dword:00000000
+"ExportSITables"=dword:00000000 "DiscardNULLPIDs"=dword:00000000 "SplitRecord"=dword:00000000 "SplitFileSize"=dword:00001000 "SplitSeconds"=dword:00000000 "SortChartByPID"=dword:00000000 "SortChartDecending"=dword:00000000
+"LastFileTS"=dword:00000000
+"RecordPIDsOneFile"=dword:00000000
+"RecordPIDsAppend"=dword:00000000 "InputThreadPriority"=dword:00000000
+"StreamProcessingThreadPriority"=dword:00000000
+"KeepPastEITData"=dword:00000000 "TrackMemoryUsage"=dword:00000000 "DisableResolutionWarning"=dword:00000000
+"DisableThumbnailWarning"=dword:00000001
+"RecordProgramStream"=dword:00000000
+"ControlDVHSDeck"=dword:00000000 "PowerCycleDVHSDeck"=dword:00000000
+"IgnoreEIT"=dword:00000000
+"LastFrequency"=dword:00002e5b
+"LastPolarity"=dword:00000000
+"LastSymbolRate"=dword:000055f0 "LastLNBFrequency"=dword:000029fe "Last22KHz"=dword:00000000 "LastDiSEqCInput"=dword:00000000 "LastBandwidth"=dword:00000000 "LastSpectrumInversion"=dword:00000000
+"LastADVModulationMode"=dword:00000000
+"LastCodeRate"=dword:00000000
+"LastQAM"=dword:00000000
+"AutoExpandPMTs"=dword:00000000 "IgnoreTableCRCErrors"=dword:00000000
+"ThumbnailThreadAnimated"=dword:00000000
+"SaveAllThumbnailsSameName"=dword:00000000
+"SavedThumbnailsFullSize"=dword:00000000
+"DisablePSWarning"=dword:00000000 "PIDChartDisabled"=dword:00000000 "ForceStradisPAL"=dword:00000000 "XNSServerPort"=dword:00000000 "VLCPort"=dword:000004d2 "VLCControl"=dword:00000000 "VLCNoWarn"=dword:00000000 "ATSCRecordMode"=dword:00000000 "AgreedToLicense"=dword:00000001 "StreamingPipeSize"=dword:00000014
+"ThumbnailPipeSize"=dword:0000000a
+"IgnoreRecordAllPIDLimitationWarning"=dword:00000000
+"IgnorePMT65500"=dword:00000000 "DisableLNBFrequencyWarning"=dword:00000000
+"DVHSForceATSC"=dword:00000000 "CountContinuityErrors"=dword:00000000
+"HideWhenMinimized"=dword:00000000
+"SendBogusHTTPSize"=dword:00000000
+"DontShowVLCConnectionDialog"=dword:00000000
+"RokuTraceDisabled"=dword:00000000
+"ReloadManualChannels"=dword:00000000
+"ThumbnailProcessingThreadPriority"=dword:00000003
+"ESParsingCounterReload"=dword:00000000

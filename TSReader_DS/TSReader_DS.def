@@ -1,0 +1,5 @@
+LIBRARY TSReader_DS
+
+EXPORTS
+	SetupStradis			@1
+	ShutdownStradis			@2

@@ -1,0 +1,2 @@
+LRESULT FAR PASCAL EPGridWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+

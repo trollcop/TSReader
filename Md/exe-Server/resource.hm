@@ -1,0 +1,4 @@
+// Microsoft Developer Studio generated Help ID include file.
+// Used by DVBs Subtitler.rc
+//
+#define HIDC_STATIC                     0x8066ffff    // IDD_DVBSSUBTITLER_DIALOG [English (U.S.)]

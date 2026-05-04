@@ -1,0 +1,267 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+#if defined(APSTUDIO_INVOKED) || defined(EIGHTPSK)
+#if defined(APSTUDIO_INVOKED)
+IDD_LOAD_BCM4500$(EIGHTPSK) DIALOGEX 0, 0, 186, 44
+#else
+IDD_LOAD_BCM4500 DIALOGEX 0, 0, 186, 44
+#endif
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Initializing"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CTEXT           "IDC_STATUS",IDC_STATUS,0,7,185,8
+    CONTROL         "Progress1",IDC_BCM4500_PROGRESS,"msctls_progress32",
+                    WS_BORDER,10,25,169,10
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(SPI)
+#if defined(APSTUDIO_INVOKED)
+IDD_SPI_MODE$(SPI) DIALOG DISCARDABLE  0, 0, 171, 93
+#else
+IDD_SPI_MODE DIALOG DISCARDABLE  0, 0, 171, 93
+#endif
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Select Data Rate"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Up to 60 Mbps",IDC_SPI_ASYNC,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,11,24,62,9
+    CONTROL         "Above 50 Mbps",IDC_SPI_SYNC,"Button",BS_AUTORADIOBUTTON,
+                    90,24,74,9
+    CONTROL         "Invert Clock Signal",IDC_SPI_INVERT_CLOCK,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,46,37,75,8
+    CONTROL         "Don't ask me this again",IDC_SPI_DONT_ASK,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,36,58,96,8
+    DEFPUSHBUTTON   "OK",IDOK,62,75,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,115,75,50,14
+    LTEXT           "Select the data rate you plan on using with the SPI interface:",
+                    IDC_STATIC,4,3,163,16
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(CIELPLUS_SKY)
+#if defined(APSTUDIO_INVOKED)
+IDD_CIELPLUS$(CIELPLUS_SKY) DIALOG DISCARDABLE  0, 0, 246, 207
+#else
+IDD_CIELPLUS DIALOG DISCARDABLE  0, 0, 246, 207
+#endif
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Ciel Plus Sky Interface Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Normal",IDC_CIEL_PLUS_PACE,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,61,17,50,9
+    CONTROL         "Inverted",IDC_CIEL_PLUS_AMSTRAD,"Button",
+                    BS_AUTORADIOBUTTON,137,17,50,9
+    PUSHBUTTON      "1",IDC_SKY_1,159,63,21,16
+    PUSHBUTTON      "2",IDC_SKY_2,185,63,21,16
+    PUSHBUTTON      "3",IDC_SKY_3,211,63,21,16
+    PUSHBUTTON      "4",IDC_SKY_4,159,84,21,16
+    PUSHBUTTON      "5",IDC_SKY_5,185,84,21,16
+    PUSHBUTTON      "6",IDC_SKY_6,211,84,21,16
+    PUSHBUTTON      "7",IDC_SKY_7,159,105,21,16
+    PUSHBUTTON      "8",IDC_SKY_8,185,105,21,16
+    PUSHBUTTON      "9",IDC_SKY_9,211,105,21,16
+    PUSHBUTTON      "0",IDC_SKY_0,185,124,21,16
+    PUSHBUTTON      "+Ch",IDC_SKY_CHUP,159,144,21,16
+    PUSHBUTTON      "-Ch",IDC_SKY_CHDN,211,144,21,16
+    PUSHBUTTON      "Pwr",IDC_SKY_PWR,9,63,21,16
+    PUSHBUTTON      "Guide",IDC_SKY_GUIDE,35,63,21,16
+    PUSHBUTTON      "Box",IDC_SKY_BOX,61,63,21,16
+    PUSHBUTTON      "Svcs",IDC_SKY_SVCS,88,63,21,16
+    PUSHBUTTON      "Int",IDC_SKY_INT,115,63,21,16
+    PUSHBUTTON      "Help",IDC_SKY_HELP,9,84,21,16
+    PUSHBUTTON      "BU",IDC_SKY_BU,35,84,21,16
+    PUSHBUTTON      "i",IDC_SKY_i,61,84,21,16
+    PUSHBUTTON      "Red",IDC_SKY_RED,9,105,21,16
+    PUSHBUTTON      "Grn",IDC_SKY_GRN,35,105,21,16
+    PUSHBUTTON      "Yel",IDC_SKY_YEL,61,105,21,16
+    PUSHBUTTON      "Blu",IDC_SKY_BLU,87,105,21,16
+    PUSHBUTTON      "Up",IDC_SKY_UP,35,125,21,16
+    PUSHBUTTON      "<",IDC_SKY_LEFT,9,144,21,16
+    PUSHBUTTON      "Sel",IDC_SKY_SEL,35,144,21,16
+    PUSHBUTTON      ">",IDC_SKY_RIGHT,61,144,21,16
+    PUSHBUTTON      "Dn",IDC_SKY_DN,35,163,21,16
+    CONTROL         "Don't show this again",IDC_CIEL_PLUS_DONT_ASK,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,9,190,110,10
+    DEFPUSHBUTTON   "OK",IDOK,137,189,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,192,189,50,14
+    GROUPBOX        "Data Timing",IDC_STATIC,3,3,240,46
+    GROUPBOX        "Remote Control Test",IDC_STATIC,3,52,239,132
+    CTEXT           "If TSReader shows continuous sync losses, try the other setting.",
+                    IDC_STATIC,3,32,240,9
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(_DEBUG)
+#if defined(APSTUDIO_INVOKED)
+IDD_DEBUG$(_DEBUG) DIALOG DISCARDABLE  0, 0, 186, 50
+#else
+IDD_DEBUG DIALOG DISCARDABLE  0, 0, 186, 50
+#endif
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Power/22K/DiSEqC Debug"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Send",IDOK,129,7,50,14
+    PUSHBUTTON      "Close",IDCANCEL,129,26,50,14
+    CONTROL         "22 KHz",IDC_22K,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,
+                    31,36,9
+    CONTROL         "18v",IDC_18V,"Button",BS_AUTORADIOBUTTON | WS_GROUP,54,
+                    31,32,9
+    CONTROL         "14v",IDC_14V,"Button",BS_AUTORADIOBUTTON,90,31,25,9
+    EDITTEXT        IDC_DISEQC_COMMAND,12,8,96,12,ES_AUTOHSCROLL
+END
+#endif
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    "IDD_SPI_MODE$(SPI)", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 164
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 86
+    END
+
+    "IDD_CIELPLUS$(CIELPLUS_SKY)", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 239
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 200
+    END
+
+    "IDD_DEBUG$(_DEBUG)", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 43
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 2,7,0,45
+ PRODUCTVERSION 2,7,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments", "\0"
+            VALUE "CompanyName", "COOLSTF.com\0"
+            VALUE "FileDescription", "DTVWorks Source\0"
+            VALUE "FileVersion", "2, 7, 0, 45\0"
+            VALUE "InternalName", "USB Source\0"
+            VALUE "LegalCopyright", "Copyright © 2003-2007 COOLSTF.com Inc.\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "TSReader_FX2.dll\0"
+            VALUE "PrivateBuild", "\0"
+            VALUE "ProductName", "COOLSTF.com TSReader\0"
+            VALUE "ProductVersion", "2, 7, 0, 0\0"
+            VALUE "SpecialBuild", "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // !_MAC
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

@@ -1,0 +1,7 @@
+LIBRARY TSReader_UDPSender
+
+EXPORTS
+	UDPSender_GetDevices	@1
+	UDPSender_OpenDevice	@2
+	UDPSender_CloseDevice	@3
+	UDPSender_SendPacket	@4

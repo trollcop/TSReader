@@ -1,0 +1,55 @@
+0000148d	2005/05/19 00:00	01:00	3	WFDC-DT	Telefutura	Guerra de los Sexos			
+0000148e	2005/05/19 01:00	02:00	3	WFDC-DT	Telefutura	Exterminator 2			
+0000148f	2005/05/19 03:00	00:30	3	WFDC-DT	Telefutura	Contacto Deportivo			
+00001490	2005/05/19 03:30	02:00	3	WFDC-DT	Telefutura	Psicosis 3			
+00001491	2005/05/19 05:30	02:00	3	WFDC-DT	Telefutura	Escándalo T.V.			
+0000148e	2005/05/19 01:00	02:00	3	WFDC-DT	Telefutura	Exterminator 2	Secuela sobre el vigilante veterano de Vietnam  que quiere acabar con los criminales en Nueva York.		
+0000148d	2005/05/19 00:00	01:00	3	WFDC-DT	Telefutura	Guerra de los Sexos	Celebridades del espectáculo compiten para demostrar cuál es el sexo más fuerte.		
+00001492	2005/05/19 07:30	00:30	3	WFDC-DT	Telefutura	Contacto Deportivo			
+00001493	2005/05/19 08:00	00:30	3	WFDC-DT	Telefutura	Programación Comercial			
+00001494	2005/05/19 08:30	00:30	3	WFDC-DT	Telefutura	Programación Comercial			
+00001491	2005/05/19 05:30	02:00	3	WFDC-DT	Telefutura	Escándalo T.V.	Programa en vivo acerca de variados temas en el que la audiencia participa. Artistas del momento y celebridades del mundo del espectáculo acompañan a sus anfitriones todos los mediodías.		
+0000148f	2005/05/19 03:00	00:30	3	WFDC-DT	Telefutura	Contacto Deportivo	Entrevistas y discusiones sobre los diferentes deportes del momento.		
+00001490	2005/05/19 03:30	02:00	3	WFDC-DT	Telefutura	Psicosis 3	El psicótico encargado de un motel regresa para cumplir con su destino.		
+00001495	2005/05/19 09:00	01:00	3	WFDC-DT	Telefutura	Mónica			
+00001496	2005/05/19 10:00	01:00	3	WFDC-DT	Telefutura	Tres Mujeres			
+00001497	2005/05/19 11:00	01:00	3	WFDC-DT	Telefutura	Camila			
+00001492	2005/05/19 07:30	00:30	3	WFDC-DT	Telefutura	Contacto Deportivo	Entrevistas y discusiones sobre los diferentes deportes del momento.		
+00001498	2005/05/19 12:00	01:00	3	WFDC-DT	Telefutura	Alguna Vez Tendremos Alas			
+00001499	2005/05/19 13:00	01:00	3	WFDC-DT	Telefutura	Trapos ÿntimos			
+0000149a	2005/05/19 14:00	01:00	3	WFDC-DT	Telefutura	Carmencita, la Cuaima			
+00001497	2005/05/19 11:00	01:00	3	WFDC-DT	Telefutura	Camila	Una joven e inocente campesina debe luchar por mantener el amor de su esposo, un abogado en la Ciudad de México, ante las proposiciones de una mujer seductora.		
+00001495	2005/05/19 09:00	01:00	3	WFDC-DT	Telefutura	Mónica	Un `talk show' que presenta los sentimientos, valores y problemas reales que se enfrentan diariamente.		
+00001496	2005/05/19 10:00	01:00	3	WFDC-DT	Telefutura	Tres Mujeres	Sobre las pasiones y decepciones de la Sra. Uriarte y sus dos hijas que luchan contra las opresivas normas sociales para obtener la felicidad en el amor.		
+0000149b	2005/05/19 15:00	01:00	3	WFDC-DT	Telefutura	La Oreja			
+0000149c	2005/05/19 16:00	02:00	3	WFDC-DT	Telefutura	Escándalo T.V.			
+00001499	2005/05/19 13:00	01:00	3	WFDC-DT	Telefutura	Trapos ÿntimos	Un joven viudo, que heredó de su esposa una tienda de lencería, aprende a amar otra vez en los brazos de una tímida mujer que antes de conocerlo desconfía de los hombres.		
+00001498	2005/05/19 12:00	01:00	3	WFDC-DT	Telefutura	Alguna Vez Tendremos Alas	Las historias paralelas de tres personas muy distintas: una mujer que quiere a su cuñado, un compositor casado, y una joven de fuerte carácter enamorada de un hombre de una familia rica.		
+0000149d	2005/05/19 18:00	01:00	3	WFDC-DT	Telefutura	Mónica			
+0000149e	2005/05/19 19:00	01:00	3	WFDC-DT	Telefutura	¿Quién Tiene la Razón?			
+0000149f	2005/05/19 20:00	01:00	3	WFDC-DT	Telefutura	Salomé			
+0000149c	2005/05/19 16:00	02:00	3	WFDC-DT	Telefutura	Escándalo T.V.	Programa en vivo acerca de variados temas en el que la audiencia participa. Artistas del momento y celebridades del mundo del espectáculo acompañan a sus anfitriones todos los mediodías.		
+0000149b	2005/05/19 15:00	01:00	3	WFDC-DT	Telefutura	La Oreja	Un programa que mezcla el chisme con el entretenimiento.		
+000014a0	2005/05/19 21:00	01:00	3	WFDC-DT	Telefutura	Juana, La Virgen			
+000014a1	2005/05/19 22:00	01:00	3	WFDC-DT	Telefutura	Misión S.O.S. Aventura y Amor			
+000014a2	2005/05/19 23:00	01:00	3	WFDC-DT	Telefutura	100 Mexicanos Dijeron			
+0000149f	2005/05/19 20:00	01:00	3	WFDC-DT	Telefutura	Salomé	Una bailarina de un bar de segunda lucha por sus sueños con la esperanza de obtener una mejor forma de vida.		
+0000149d	2005/05/19 18:00	01:00	3	WFDC-DT	Telefutura	Mónica	Un `talk show' que presenta los sentimientos, valores y problemas reales que se enfrentan diariamente.		
+0000149e	2005/05/19 19:00	01:00	3	WFDC-DT	Telefutura	¿Quién Tiene la Razón?	Un programa dedicado a analizar los conflictos de pareja.		
+000014a2	2005/05/19 23:00	01:00	3	WFDC-DT	Telefutura	100 Mexicanos Dijeron	Un programa de juegos, concursos y variedades.		
+000014a1	2005/05/19 22:00	01:00	3	WFDC-DT	Telefutura	Misión S.O.S. Aventura y Amor	Amigos jóvenes forman una pandilla y aceptan una misión para salvar el mundo de destrucción.		
+000001c1	2005/05/19 00:30	00:30	1	MHz1		Dialogue			
+000001c2	2005/05/19 01:00	00:30	1	MHz1		A Beautiful Blend: Mixed Race in America	Multiracial people face challenges in today's society.		
+000001c3	2005/05/19 01:30	00:30	1	MHz1		Toyo Miyatake: Infinite Shades of Gray	The work of the Japanese photographer begins before World War II.		
+000001c4	2005/05/19 02:00	01:00	1	MHz1		News			
+000001c7	2005/05/19 00:00	00:25	2	MHz2		Novosti	Novosti programma.		
+000001c8	2005/05/19 00:25	00:15	2	MHz2		Spokoinoi nochi, malyshi!	Detyam programma.		
+000001c9	2005/05/19 00:40	00:55	2	MHz2		Klub Puteshestvennikov			
+000001ca	2005/05/19 01:35	00:25	2	MHz2		Novosti	Novosti programma.		
+000001cb	2005/05/19 02:00	01:15	2	MHz2		Amerikanskaya tragediya	Yunosha Klaid Griffigs byl chestolyubiv, no beden, oderzhimyi stremleniem sdelat' kar'eru i popast' v vysshee obschestvo, on delal vse, chto priblizit'sya k zavetnoi tseli.		
+000001d5	2005/05/19 00:00	01:00	3	MHz3		Deutsche Welle TV	Deutsche Welle Programming in English, German and Spanish		
+000001d6	2005/05/19 01:00	01:00	3	MHz3		Deutsche Welle TV	Deutsche Welle Programming in English, German and Spanish		
+000001d7	2005/05/19 02:00	01:00	3	MHz3		Deutsche Welle TV	Deutsche Welle Programming in English, German and Spanish		
+000001e1	2005/05/19 00:00	01:00	4	MHz4		Future DTV Program	TBA		
+000001e2	2005/05/19 01:00	01:00	4	MHz4		Future DTV Program	TBA		
+000001e3	2005/05/19 02:00	01:00	4	MHz4		Future DTV Program	TBA		

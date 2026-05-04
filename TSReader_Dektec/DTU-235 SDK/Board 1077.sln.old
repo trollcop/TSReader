@@ -1,0 +1,35 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Board1077", "Board 1077.vcproj", "{FB60AD00-3C1C-4D22-B08D-45130720354B}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SourceCodeControl) = preSolution
+		SccNumberOfProjects = 2
+		SccLocalPath0 = .
+		CanCheckoutShared = true
+		SolutionUniqueID = {3C577768-B89E-49C3-89CA-8F81493A1215}
+		SccProjectUniqueName1 = Board\u00201077.vcproj
+		SccLocalPath1 = .
+		CanCheckoutShared = true
+	EndGlobalSection
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+		Release - All = Release - All
+	EndGlobalSection
+	GlobalSection(ProjectDependencies) = postSolution
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{FB60AD00-3C1C-4D22-B08D-45130720354B}.Debug.ActiveCfg = Debug|Win32
+		{FB60AD00-3C1C-4D22-B08D-45130720354B}.Debug.Build.0 = Debug|Win32
+		{FB60AD00-3C1C-4D22-B08D-45130720354B}.Release.ActiveCfg = Release|Win32
+		{FB60AD00-3C1C-4D22-B08D-45130720354B}.Release.Build.0 = Release|Win32
+		{FB60AD00-3C1C-4D22-B08D-45130720354B}.Release - All.ActiveCfg = Release|Win32
+		{FB60AD00-3C1C-4D22-B08D-45130720354B}.Release - All.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

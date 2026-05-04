@@ -1,0 +1,184 @@
+<HTML>
+<HEAD>
+  <META NAME="GENERATOR" CONTENT="Adobe PageMill 3.0 Win">
+  <TITLE>AudioRIP ReadMe</TITLE>
+</HEAD>
+<BODY BGCOLOR="#ffffff">
+
+<P><B>AudioRip Plugin - version 1.1<BR>
+</B><FONT SIZE="-2">Updated February 4, 2004</FONT></P>
+
+<P><B>Introduction</B></P>
+
+<P>AudioRip is a plugin for TSReader 2.3 or later. To make it
+work, simply put it into the MDPlugins folder in the folder where
+you installed TSReader. It will then show up in the Plugins menu
+next time you start TSReader. AudioRip Plugin is free software
+- you may use it and distribute it without restriction.</P>
+
+<P>When it runs, it finds audio channels in the mux and decodes
+the song title information that both Dish Network and ExpressVu
+send. It can play this audio back on the PC but much more importantly,
+it can make individual MP2 files and tag them with ID3V1 making
+playback with programs like WinAMP a breeze.</P>
+
+<P>Unlike &quot;normal&quot; recording of audio from satellite
+services with a MD/DAT/Cassette deck, there's no signal degradation
+because there's no digital to analog conversion required to save
+the music. Additionally, many Dish Network and ExpressVu transponders
+have multiple audio channels playing at the same time and AudioRip
+can record them all simultaneously. Leave AudioRip running for
+a few days and you'll build up an impressive collection of MP2s!</P>
+
+<P><B>Why AudioRip Plugin doesn't work with other &quot;MD-API&quot;
+programs like ProgDVB and MyTheater</B></P>
+
+<P>The &quot;MD&quot; in MD-API stands for Multidec, a fine freeware
+program written in Germany. It originally supported digitized
+analog video but was later upgraded to support one of the first
+DVB-S cards on the market - the Hauppauge Nexus-S card designed
+by TechnoTrend. This card has a DVB-S tuner along with a TI DSP
+which allows it to decode MPEG-2 video from satellite in real-time
+with virtually no load on the PC's processor and also has pure
+analog interlaced video output for displaying the received video
+directly on a TV.</P>
+
+<P>Because of the way this card works, if a program on the PC
+requests part of the data stream coming from the satellite tuner,
+the data from that PID is sent, but with the transport stream
+header missing. This odd-standard has hung around and by default
+all MD-API plugins are sent packets but with the transport header
+missing. AudioRip was originally written for the Broadlogic card
+which delivers the entire packet, so when the AudioRip Plugin
+was developed, we took advantage of the fact that TSReader can
+be tricked into sending over the entire packet by sending the
+PID to be monitored with the top bit set. </P>
+
+<P>Additionally when TSReader is given a PID with the top bit
+set it doesn't buffer as much data per packet as other programs
+- normal MD-hosting programs send 5 transport packets sans header.
+TSReader behaves the same way except when the top bit is set -
+it then sends one 188 byte packet at a time. Important here because
+song titles are sent once per second on Dish Network and just
+happen to occupy exactly one transport stream packet. </P>
+
+<P>If programs like ProgDVB and MyTheater supported these extensions
+to the MD-API, AudioRip plugin should work fine with them.</P>
+
+<P><B>MP2s?</B></P>
+
+<P>So, everyone knows that MP3 files are MPEG-1 Level 3 audio
+files. On satellite, MPEG-1 Level 2 audio is used since at the
+time the DVB specification was written, real time Level 3 encoders
+weren't readily available, so the less complex Level 2 was chosen
+for the standard.</P>
+
+<P>MP2 isn't as bitrate efficient as MP3, but since MPEG-1 audio
+decoders are backwards compatible over the levels, virtually all
+MP3 decoder programs will handle these MP2 files without a problem.
+For burning onto CD-R media, you may need to change the file extensions
+to .MP3 so that your CD/MP3 player recognizes the files and/or
+change the sampling rate to 44.1KHz with a program like BeSweet.</P>
+
+<P><B>Recorded Filenames</B></P>
+
+<P>AudioRip places the recorded files into sub-folders off the
+folder you specify. Make sure it has lots of free space!</P>
+
+<P>If the channel has song title information, AudioRip will make
+a sub-folder with the name of the artist and then create an MP2
+file with the name of the song. When the song finishes, AudioRip
+will add MP3 ID3V1 tag information and then start another file.
+There's also an option to make the folder tree contain the CD
+name - useful for indexing with programs like Windows Media Player.</P>
+
+<P>If there's no song title data, AudioRip will create a sub-folder
+with the name of the channel (or channel number if no names are
+sent on the satellite) and name the MP2 file with the date and
+time. This file will continue to record until recording is turned
+off, so watch out because you might end up with a huge file.</P>
+
+<P><B>Getting rid of the dross!</B></P>
+
+<P>Dross is Africaans for &quot;rubbish&quot; or &quot;crap&quot;.
+As you might guess, there's lots of dross songs that are sent
+over music services like Dish Network and ExpressVu. Once you've
+discovered there's an artist you don't like (let's use &quot;The
+Spice Girls&quot; as a very apt example), just drop the top level
+folder of that artist's songs onto the AudioRip window and the
+artist will be added to the kill-list. Any more songs coming along
+from that artist will not be recorded. Additionally if you've
+got the &quot;Delete files/folders killed&quot; option turned
+on, AudioRip will also remove any files or folders associated
+with that artist freeing up valuable disk space from The Spice
+Girls et al.</P>
+
+<P>If you have mental problems and decide that you later like
+The Spice Girls, just click the Kill List button and you can remove
+them allowing recording of this artist once more.</P>
+
+<P><B>AudioRip Plugin and fast processors</B></P>
+
+<P>AudioRip Plugin has lots of things to do - potentially it's
+listening to 15 or more audio streams at a time. To do this, it
+has many &quot;threads&quot; running simultaneously. Internally,
+AudioRip Plugin has code to ensure that these threads process
+data correctly and at the right rate, but apparently there are
+some problems. These problems turn up on fast PCs and especially
+those with multiple processors or Intel's HyperThreading technology.
+If you experience odd behaviour with AudioRip plugin, we suggest
+two things:</P>
+
+<UL>
+  <LI>Set all the thread priorities in TSReader to low
+  <LI>If running on multiple processors or with HyperThreading,
+  find the TSReader process in the list shown in the Windows Task
+  Manager, right click and choose &quot;Set Affinity&quot;. Set
+  TSReader to use only CPU0. You need to do this each time you
+  launch TSReader when you want to run AudioRip plugin - TSReader
+  itself is thread safe.
+</UL>
+
+<P>We should probably fix this but, but the workaround well, works!
+AudioRip plugin is after all free software!<B></B></P>
+
+<P><B>Other Stuff to Know</B></P>
+
+<P>Here's some useful information</P>
+
+<UL>
+  <LI>There is up to a second delay before song title information
+  is sent. This may result in files starting a little too late
+  or containing the start of another song right at the end of the
+  file. The solution to this is quite complicated and beyond the
+  scope of this project at the current time.
+  <LI>This delay is more than a second (up to about six seconds)
+  on ExpressVu, so given the fact that Dish Network runs their
+  &quot;CD quality&quot; audio channels at 32Kbps higher than ExpressVu,
+  we recommend recording from Dish Network.
+  <LI>If AudioRip has previously recorded a song and the song comes
+  along on the satellite again, AudioRip will only overwrite it
+  if the bitrate is higher than the existing song. For example,
+  suppose &quot;Hey Jude&quot; by the Beatles was sent at 80Kbps
+  mono, later at 192Kbps stereo and then again at 80Kbps mono.
+  You'd end up with the best quality version, i.e. the 192Kbps
+  version of the song.
+  <LI>The &quot;Complete songs only&quot; option should almost
+  always be turned on. This tells AudioRip to wait until a new
+  song starts playing before recording any songs, preventing recorded
+  files from being created that are already in progress. This function
+  also removes any partially recorded files when you exit AudioRip.
+  <LI>This code hasn't been tested enough on non-ExpressVu / Dish
+  Network muxes. If you live in an area where there's a DBS service
+  sending clear audio with computer readable song titles, you might
+  want to post to the DVB Network forum!
+  <LI>If you see &quot;Waiting for channel names...&quot; for a
+  long time when first starting AudioRip and you know there aren't
+  any names sent on the multiplex, you can press ESC to abort the
+  name search. Pressing ESC for a second time will close AudioRip.
+  <LI>The kill-list is held in a file called AudioRip_Kill_List.txt
+  in the MDPlugins folder. This is a standard text file.
+</UL>
+
+</BODY>
+</HTML>

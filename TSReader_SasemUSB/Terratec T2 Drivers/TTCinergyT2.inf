@@ -1,0 +1,82 @@
+;==============================================================================
+; TTCinergyT2.inf:  TTCinergyT2
+; TerraTec Cinergy T²
+; Driver Install Script
+; Copyright (c) 2004, TerraTec Electronic GmbH
+;
+; 2004-09-29
+;
+;------------------------------------------------------------------------------
+; Notes:
+;  a) Driver filenames must be <= 8 characters (8.3 format) !
+;  b) Win9x: On Windows 98/Me, section names should be no longer than 28 characters.
+;  c) Win9x: [SourceDisksNames] must always come before [SourceDisksFiles]  !!!
+;  d) Win9x: Filenames must be in 8.3 format  !
+;  e) Win9x: Registry pathes must use single slashes
+;  f) [xxx.KnownFiles] sections are used by Win9x only
+;  g) [xxx.Services] sections are used by WinNT only
+;  h) If we have OS specific DDInstall sections we must have
+;     OS specific [xxx.Interfaces] and [.HW] also!
+; History:
+;------------------------------------------------------------------------------
+; 04-Mai-04 First driver version
+;==============================================================================
+
+;-----------------------------------------------------------------------
+[Version]
+;-----------------------------------------------------------------------
+signature="$CHICAGO$"
+Class=MEDIA
+ClassGUID = {4d36e96c-e325-11ce-bfc1-08002be10318}
+Provider=%Prov%
+DriverVer=09/29/2004,1.0.16.0
+CatalogFile=TTCinergyT2.inf.cat
+
+;-----------------------------------------------------------------------
+[Manufacturer]
+;-----------------------------------------------------------------------
+%Prov% = TerraTec
+
+[TerraTec]
+%TTCinergyT2%=TTCinergyT2, USB\VID_0CCD&PID_0038
+
+[SourceDisksNames]
+1 = %SourceDiskName%,,
+
+[SourceDisksFiles]
+TTCinergyT2.sys = 1,,
+
+[DestinationDirs]
+TTCinergyT2.Files.Ext = 10,System32\Drivers
+
+[TTCinergyT2.NT]
+CopyFiles=TTCinergyT2.Files.Ext  ;, TTCinergyT2.Files.Inf
+AddReg=TTCinergyT2.AddReg
+
+[TTCinergyT2.NT.Services]
+Addservice = TTCinergyT2, 0x00000002, TTCinergyT2.AddService
+
+[TTCinergyT2.AddService]
+DisplayName    = %TTCinergyT2.SvcDesc%
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+;StartType     = 2                  ; SERVICE_AUTO_START
+StartType      = 3                  ; SERVICE_DEMAND_START
+ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %10%\System32\Drivers\TTCinergyT2.sys
+LoadOrderGroup = Base
+
+[TTCinergyT2.AddReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,TTCinergyT2.sys
+
+[TTCinergyT2.Files.Ext]
+TTCinergyT2.sys
+
+;---------------------------------------------------------------;
+
+[Strings]
+Prov="TerraTec"
+TTCinergyT2="Cinergy T² "
+TTCinergyT2.SvcDesc="TerraTec Cinergy T² Driver (TTCinergyT2.sys)"
+SourceDiskName="TerraTec Cinergy T² Driver Installation CD"
+;-----------------------------------------------------------------------

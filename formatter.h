@@ -1,0 +1,78 @@
+void FormatDVBSCodeRate(char * szFEC, int nFECRate);
+void FormatDVBTCodeRate(char * szFEC, int nFECRate);
+void FormatDVBTGuardInterval(char * szInterval, int nGuardInterval);
+void FormatDVBTTransmissionMode(char * szTransmissionMode, int nTransmissionMode);
+void FormatPolarity(char * szPolarity, int nPolarityIndicator, BOOL fLong);
+void FormatDVBSModulation(char * szModulation, int nModulationIndicator);
+void DecodeStreamType(int nStreamType, char * szStreamTypeEnglish, int nPMTIndex, int nESIndex);
+void DecodeServiceType(char * szServiceType, int nServiceType);
+char * DecodePrivateDataSpecifierDescriptor(BYTE * pDescriptor);
+void FormatDVBCModulation(char * szModulation, int nModulation);
+void FormatDVBCOuterFEC(char * szFECOuter, int nFECOuter);
+void FormatDVBCInnerFEC(char * szFECInner, int nFECInner);
+void FormatDVBTBandwidth(char * szBandwidth, int nBandwidth);
+void FormatDVBTConstellation(char * szConstellation, int nConstellation);
+void FormatDVBTHierarchyInformation(char * szHierarchyInformation, int nHierarchyInformation);
+void DecodeDescriptorNames(char * szDescriptor, int nDescriptorID);
+
+void FormatCASystemName(int nCASystemID, char * szCAName);
+void DecodeDTSAudioDescriptor(BYTE * pDescriptorData, char * szBuffer);
+void DecodeVBIDataServiceDescription(int data_service_id, char * szBuffer);
+void DecodeMPEG2Descriptor(BYTE * pDescriptorData, BOOL fHTMLMode);
+void FormatATSCModulationMode(char * szModulationMode, int nModulationMode);
+char * DecodeContentNibbles(int content_nibble_level_1, int content_nibble_level_2);
+void DecodeParentalRatingDescriptor(char * szBuffer, BYTE * pDescriptor);
+void DecodeContentDescriptor(char * szBuffer, BYTE * pDescriptor);
+char * DecodeComponentAndStreamContent(int stream_content, int component_type);
+void DecodeComponentDescriptor(char * szBuffer, BYTE * pDescriptor);
+void DecodeMultilingualComponentDescriptor(char * szBuffer, BYTE * pDescriptor);
+void DecodeATSCAC3Descriptor(char * szBuffer, BYTE * pDescriptor);
+void DecodeATSCCaptionServceDescriptor(char * szBuffer, BYTE * pDescriptor);
+void DecodeATSCContentAdvisoryDescriptor(char * szBuffer, BYTE * pDescriptor, BOOL fShortMode);
+void DecodeFEC(int nFEC, char * szFEC, BOOL fDCIIMode);
+char * GetTableDescription(nTableID);
+BOOL QuickFormatNIT(char * szBuffer, int nTransportStreamID, BOOL fLongVersion);
+void DecodeCADescriptor(char * szBuffer, BYTE * pDescriptor);
+void FormatDefaultEITDescriptor(char * szBuffer, BYTE * pDescriptor, BOOL fXML);
+
+char * FormatNITEntry(int nTransportStreamID, BOOL fIncludeHTMLTags);
+char * FormatEITEntry(int nChannelNumber, int nEITFormat, BOOL fIncludeHTMLTags);
+char * FormatCAT(BOOL fHTMLMode);
+char * FormatCVCT(int nCVCTIndex);
+char * FormatBAT(int nBATIndex);
+char * FormatMGT();
+char * FormatRRTEntry(int nRegion);
+char * FormatSITEntry(int nItemIndex);
+char * FormatCDTEntry(int nItemIndex);
+char * FormatDVBTOT();
+char * FormatTDTEntry(int nItemIndex);
+char * FormatMMTEntry(int nItemIndex);
+char * FormatESEntry(int nESPID);
+char * FormatPMTEntry(int nPMTIndex, BOOL fHTMLMode);
+char * FormatSDTEntry(int nChannelNumber, BOOL fHTMLMode);
+char * FormatPAT(BOOL fIncludeHTMLTags, int nExportSITables);
+
+void FormatH264VideoParse(int nPMTIndex, int nESIndex, char * szOutput);
+void FormatMPEG4VideoParse(int nPMTIndex, int nESIndex, char * szOutput);
+void FormatMPEGVideoParse(int nPMTIndex, int nESIndex, char * szOutput);
+void FormatMPEGAudioParse(PPARSEDMPEGAUDIO pMPEG, char * szOutput);
+void FormatAC3Parse(PPARSEDAC3AUDIO pAC3, char * szOutput);
+void FormatAACAudioParse(PPARSEDAACAUDIO pAAC, char * szOutput);
+
+void GetMPEG2VideoAspectRation(int aspect_ratio_information, char * szAspectRatio);
+void GetMPEG2FrameRate(int frame_rate_code, char * szFrameRate);
+void GetMPEG2ChromaFormat(int chroma_format, char * szChromaFormat);
+void GetAFDFormat(DWORD dwAFDData, char * szAFDFormat);
+void GetMPEGAudioMode(int mode, char * szMode);
+void GetMPEGAudioSamplingFrequency(int sampling_frequency, char * szSamplingRate);
+void GetAC3fscod(int fscod, char * szSamplingRate);
+void GetAC3bsmod(int bsmod, int acmod, char * szBitstreamMode);
+void GetAC3acmod(int acmod, char * szAudioCodingMode);
+#ifndef LITE
+void GetAC3cmixlev(int cmixlev, char * szCMixLev);
+void GetAC3surmixlev(int surmixlev, char * szSurMixLev);
+void GetAC3dsurmod(int dsurmod, char * szDSurMod);
+#endif LITE
+#ifdef PRO
+void FormatVC1VideoParse(int nPMTIndex, int nESIndex, char * szOutput);
+#endif PRO

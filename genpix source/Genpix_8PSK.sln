@@ -1,0 +1,21 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Genpix_8PSK", "Genpix_8PSK.vcproj", "{DCEB0F2F-F1DB-4509-B0CF-EF0B0F38EAF3}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{DCEB0F2F-F1DB-4509-B0CF-EF0B0F38EAF3}.Debug.ActiveCfg = Debug|Win32
+		{DCEB0F2F-F1DB-4509-B0CF-EF0B0F38EAF3}.Debug.Build.0 = Debug|Win32
+		{DCEB0F2F-F1DB-4509-B0CF-EF0B0F38EAF3}.Release.ActiveCfg = Release|Win32
+		{DCEB0F2F-F1DB-4509-B0CF-EF0B0F38EAF3}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

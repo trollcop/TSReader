@@ -1,0 +1,4 @@
+LIBRARY TSReader_MPEG4
+
+EXPORTS
+	MPEG4							@1

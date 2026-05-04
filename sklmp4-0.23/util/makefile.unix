@@ -1,0 +1,31 @@
+################################################
+#  Common makefile for unix systems
+################################################
+
+################################################
+
+O       = o 
+CPP	= cpp
+ASM	= asm
+A	= a
+SO	= so
+OUT	= -o
+TO_OBJ	= -c
+DEF     = -D
+INC     = -I
+LIBDEF  = -L
+LIBINC  = -l
+SEP     = /
+
+CC_FLAGS += $(DEBUG) $(DEFINES) $(INCLUDES) $(TO_OBJ)
+LD_FLAGS += $(EXT_LIB) $(LIBC) $(LIBM)
+LDSO_FLAGS += $(EXT_LIB_SO_DYN_LOAD) $(EXT_LIB_SO)
+
+################################################
+
+include $(ROOT_DIR)$(SEP)util$(SEP)makefile.head
+include $(ROOT_DIR)$(SEP)util$(SEP)makefile.all
+include $(ROOT_DIR)$(SEP)util$(SEP)makefile.tail
+
+################################################
+

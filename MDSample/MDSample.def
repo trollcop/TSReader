@@ -1,0 +1,10 @@
+LIBRARY      MDSample
+DESCRIPTION  TSReader Sample MD-API plugin
+
+EXPORTS
+	On_Send_Dll_ID_Name	@1
+	On_Menu_Select		@2
+	On_Channel_Change	@3
+	On_Filter_Receive	@4
+	On_Start			@5
+	On_Exit				@6

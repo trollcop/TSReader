@@ -1,0 +1,9 @@
+LIBRARY DVBTech_Interface
+
+EXPORTS
+	DllMain							@1
+	Start							@2
+	Stop							@3
+	Tune							@4
+	GetSignal						@5
+	ReadTransportData				@6

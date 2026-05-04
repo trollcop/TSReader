@@ -1,0 +1,83 @@
+#########################################################
+#
+# makedefs
+# Common makefile sections
+#
+#########################################################
+
+# Calling files must define:
+# OBJECTS  list of object files to link
+# TARGET   name of executable
+# PROJROOT (relative) path to directory containing directory shared
+
+# Build directory
+OBJDIR = obj/
+
+# Include path
+INCLUDES = -I. -I$(PROJROOT)/shared
+
+# Generic C compilation flags
+# Warn about everything, except:
+#  use of long long to define 64-bit types (done in compiler-specific code)
+#  use of char subscripts: ctype macros with gcc 2.9x produce warnings with
+#       standard use (e.g. isspace(ch))
+CFLAGS_G = -pedantic -Wall -Wno-long-long -Wno-char-subscripts
+# Debug set
+CFLAGS_F = -g $(CFLAGS_G) $(CFLAGS)
+# Release set
+#CFLAGS_F = -DNDEBUG $(CFLAGS_G) $(CFLAGS)
+
+# Use gcc as the compiler available on most systems
+CC = gcc
+LINK = $(CC)
+
+# Compilation/assembly flags.
+CBUILD   = DEPENDENCIES_OUTPUT='$(@:%.o=%.d) $@'; \
+ export DEPENDENCIES_OUTPUT; \
+ echo $(CC) -O2 $(INCLUDES) $(CFLAGS_F) -o $@ -c $<; \
+ $(CC) -O2 $(INCLUDES) $(CFLAGS_F) -o $@ -c $<
+
+DEPENDENCIES = cd $(OBJDIR) ; \
+ rm -f .depends; \
+ for file in *.d; do \
+  if [ -f $$file ]; then cat $$file >> .depends; fi; \
+ done;
+
+
+# How to build .o files
+$(OBJDIR)%.o:: %.c
+	@$(CBUILD)
+
+$(OBJDIR)%.o:: $(PROJROOT)/shared/%.c
+	@$(CBUILD)
+
+# Targets
+
+all: $(TARGET)
+
+clean::
+	rm -rf $(TARGET)
+	rm -rf $(OBJDIR)*.o
+	rm -rf $(OBJDIR)*.d
+	rm -rf $(OBJDIR).depends
+	rm -rf $(OBJDIR)
+
+$(OBJDIR)::
+	@[ -z "$(OBJDIR)" -o -d "$(OBJDIR)" ] || mkdir -p $(OBJDIR)
+
+$(TARGET): $(OBJDIR) $(OBJECTS)
+	@$(DEPENDENCIES)
+	$(LINK) $(OBJECTS) $(LFLAGS) -o $@
+
+.FAILED:
+	echo Failed!
+	@$(DEPENDENCIES)
+
+
+$(OBJDIR).depends::
+	@[ -z "$(OBJDIR)" -o -d "$(OBJDIR)" ] || mkdir -p $(OBJDIR); \
+	touch $(OBJDIR).depends
+
+# Include the dependencies (or empty file generated above)
+
+include $(OBJDIR).depends

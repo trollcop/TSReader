@@ -1,0 +1,1051 @@
+<SIDCACHE Version=1 Format="TPID SID PMT ECM Frequency-Name">
+    Update by Le Doc for WatchTVPro 
+** Astra(19°E) - Hotbird(13°E) - Eutelsat W2(16°E) - Sirius(5°E) - Thor(1°O) - Atlantic Bird1 (8°O) - Hispasat(30°O) **
+    2     8   100  4108 11798000-PREMIERE START                    
+    2    10   101  4106 11798000-PREMIERE 1                    
+    2    11   103  4107-PREMIERE 2                    
+    2    43   109  4139-PREMIERE 3                    
+    2     9   102  4105-PREMIERE 4                    
+    2    29   106  4125-PREMIERE 5                    
+    2    41   107  4137-PREMIERE 6                    
+    2    20   104  4116-PREMIERE 7
+    7    53    98  4149-PREMIERE Austria
+    4   516   106  4612-PREMIERE NOSTALGIE            
+    4    16   102  4112-PREMIERE SERIE                
+    4    23   104  4119-KRIMI &CO                     
+    4    14   105  4110-DISCOVERY CHANNEL             
+   17    36    97  4132-STUDIO UNIVERSAL              
+   17    34    98  4130-Disney Channel              
+   17    22   115  4118-HEIMATKANAL
+   17    28   103  4124-FOX KIDS                      
+   17    42   107  4138-13 TH STREET                  
+    1    13    99  4109-PLANET                        
+   17    15   101  4111-CLASSICA                      
+   17   518   108  4614-GOLDSTAR TV                   
+   17    19   100  4115-JUNIOR 
+   17    12   104  4108-K-TOON                    
+    4   177   108  4273-PREMIERE DIREKT 1a            
+    3   182   108  4278-PREMIERE DIREKT 1b            
+    4   176   110  4272-PREMIERE DIREKT 2a            
+    3   181   107  4277-PREMIERE DIREKT 2b            
+    3   180   106  4276-PREMIERE DIREKT 3a            
+    3   183   109  4279-PREMIERE DIREKT 3b            
+    4    18   103  4114-PREMIERE DIREKT 4a
+    3    17   100  4113-PREMIERE SPORT 1              
+    4    27   100  4123-PREMIERE SPORT 2              
+    3   240   101  4336-BuLi Sp2                      
+    3   241   102  4337-BuLi Sp3                      
+    3   242   103  4338-BuLi Sp4                      
+    3   243   104  4339-BuLi Sp5                      
+    3   244   105  4340-BuLi Sp6                      
+    3   245   112  4341-BuLi Sp7                      
+    4   208   107  4304-BuLi Sp8                      
+    4   209   110  4305-BuLi Sp9                      
+    4   210   111  4306-BuLiKonf                      
+   17    21   102  4117-BEATE-UHSE.TV                 
+    4   513   101  4609-PREMIERE EROTIK 1             
+    3   778   115  4874-PREMIERE EROTIK 2             
+    3   779   116  4875-PREMIERE EROTIK 3             
+    3   780   117  4876-PREMIERE EROTIK 4             
+    7   771   106  4867-BD 1                          
+    7   772   105  4868-BD 3/PARTNER TV               
+    7   773   107  4869-BD 4                          
+    7   769   113  4865-BD_DVB                        
+    7   770   104  4866-BetaBC                        
+ 1105  4011  1011  1283-NED1                          
+ 1105  4012  1012  1284-NED2                          
+ 1105  4013  1013  1285-NED3                          
+ 1097  2004  1004  1281-RTL4                          
+ 1097  2005  1005  1282-RTL5                          
+ 1109  5005  1005  1281-SBS6                          
+ 1109  5015  1015  1283-TMF                           
+ 1105  4005  1005  1281-C+ Rood                       
+ 1105  4006  1006  1282-C+ Blauw                      
+ 1105  4008  1008  1509-The Studio                    
+ 1109  5010  1010  1282-Yorin                         
+ 1105  4007  1007  1508-C+16/9                        
+ 1109  5004  1004  1286-NET5                          
+ 1097  2010  1010  1501-NGC                           
+ 1097  2015  1015  1502-Discovery                     
+ 1105  4009  1009  1507-X-ZONE
+ 1105  4014  1014  1510-TCM
+ 1105  4015  1015  1511-Cartoon Network                        
+ 1109  5020  1020  1284-V8/Fox Kids
+ 1109  5018  1018  1296-Kinder/Veronica                   
+ 1109  5025  1025  1284-BVN                           
+ 1097  2025  1025  1506-Eurosport
+ 1097  2035  1035  1508-Hallmark UK 
+ 1097  2030  1030  1507-BBC Prime                         
+ 1118 28649   319  1331-MTV2                          
+ 1118 28647   317  1224-VH1 Classic                   
+ 1118 28646   316  1216-VH1                           
+ 1118 28642   312  1320-MTV F                         
+ 1118 28644   314  1309-MTV Hits                      
+ 1118 28645   315  1208-MTV Base
+ 1066 28652   312  1320-MTV F
+ 1066 28659   319  1331-MTV 2
+ 1066 28654   314  1309-MTV Hits
+ 1066 28655   315  1208-MTV Base
+ 1066 28656   316  1216-VH1
+ 1066 28657   317  1224-VH1 Classic                      
+ 1117 13001  1001   101-ORF 1                         
+ 1117 13002  1002   102-ORF 2                         
+ 1117 13003  1011   103-ORF 2 W                       
+ 1117 13004  1012   102-ORF 2 N                       
+ 1117 13005  1013   105-ORF 2 B                       
+ 1117 13006  1014   110-ORF 2 O                       
+ 1117 13007  1015   111-ORF 2 S                       
+ 1117 13008  1016   112-ORF 2 T                       
+ 1117 13009  1017   106-ORF 2 V                       
+ 1117 13010  1018   107-ORF 2 St                      
+ 1117 13011  1019   108-ORF 2 K                       
+ 1094 17020   636  1796-AB Moteurs
+ 1094 17021   637  1812-AB 1                          
+ 1094 17022   638  1824-ANIMAUX                       
+ 1094 17023   639  1842-ENCYCLOPEDIA                  
+ 1094 17024   640  1860-Zik / XXL                  
+ 1094 17025   641  1876-ESCALES                       
+ 1094 17026   642  1888-FIT/CHAINE HISTOIRE                     
+ 1094 17027   643  1906-BBC WORLD           
+ 1094 17028   644  1920-RFM TV 
+ 1094 17029   645  1904-FASHION-TV                    
+ 1094 17030   646  1952-ACTION                        
+ 1094 17031   647  1968-MANGA                         
+ 1094 17032   648  1996-CINE BOX
+ 1114  8903  1282  1532-CINE FX
+ 1114  8904  1283  1642-CINE COMIC
+ 1114  8902  1281  1622-CINE POLAR                       
+ 1072  8201  1280  1513-Canal+                        
+ 1072  8202  1281  1622-Canal+ BLEU                   
+ 1072  8203  1282  1532-Canal+ JAUNE                  
+ 1072  8208  1287  1683-Canal+ VERT                   
+ 1072  8204  1283  1642-Canal+ 16/9  
+ 1072  8206  1285  1663-C Cinéma Premier                  
+ 1070  8002  1281  1589-C Cinéma Emotion                  
+ 1070  8003  1282  1640-C Cinéma Frisson
+ 1066  8307  1286  1572-C Cinéma Auteur
+ 1100  8711  1290  1712-C Cinéma Succès      
+ 1114  8901  1280  1511-C/Cinema 16:9 
+ 1114  8905  1284  1551-Teva                
+ 1100  8709  1288  1592-C CINE CLASSICS                 
+ 1080  8809  1288  1604-Kios 1                   
+ 1080  8810  1289  1814-Kios 1                        
+ 1086  8402  1281  1604-Kios 2                        
+ 1086  8403  1282  1655-Kios 3                        
+ 1086  8404  1283  1706-Kios 4                        
+ 1086  8405  1284  1756-Kios 5                        
+ 1086  8406  1285  1805-Kios 6                        
+ 1086  8407  1286  1854-Kios 7
+ 1086  8408  1287  1907-Kios 8                        
+ 1086  8409  1288  1957-Kios 9                        
+ 1086  8410  1289  1983-Kios 10                       
+ 1086  8411  1290  1866-Kios 11                       
+ 1086  8412  1291  1920-Kios 12                       
+ 1080  8811  1290  1724-Kios 13                       
+ 1088 28515  1023  1595-TCM                           
+ 1100  8703  1282  1532-13th Street                   
+ 1100  8702  1281  1622-Comedie!                      
+ 1072  8207  1286  1573-Disney Channel                
+ 1114  8908  1287  1682-Toon Disney
+ 1114  8907  1286  1572-Playhouse
+ 1114  8906  1285  1662-Disney +1
+ 1088 28511  1025  1590-Cartoon N/W                   
+ 1100  8705  1284  1553-Fox Kids                      
+ 1066  8309  1288  1592-TiJi                          
+ 1066  8302  1281  1623-MCM France                    
+ 1066  8305  1284  1746-MCM 2                         
+ 1080  8807  1286  1571-MCM AFRICA                    
+ 1080  8808  1287  1680-TELE MELODY                   
+ 1080  8805  1284  1551-RTL9                          
+ 1066  8306  1285  1798-MATCH TV 
+ 1080  8814  1285  1660-CSAT
+ 1070  8007  1286  1845-Mezzo                        
+ 1066  8312  1281  1822-GOURMET TV                    
+ 1076  8151  8151  1539-EuroSport (F)                 
+ 1080  8813  1292  1751-ESPN CLASSIC                  
+ 1070  8009  1288  1946-Pathe Sport                  
+ 1072  8209  1288  1905-Equidia  
+ 1072  8210  1289  1513-PMU                      
+ 1100  8706  1285  1663-L'quipe TV                    
+ 1070  8004  1283  1691-Euronews 
+ 1080  8803  1282  1538-Canal Evènement                 
+ 1090  8505  1284  1554-Bloomberg TV                      
+ 1090  8502  1281  1622-TV Breizh                     
+ 1076  8152  8152  1589-Monte Carlo TMC               
+ 1076  8154  8154  1691-Paris Premire                 
+ 1076  8155  8155  1746-Voyage                        
+ 1076  8156  8156  1844-LC Info                       
+ 1070  8008  1287  1895-LC Meteo                    
+ 1076  8157  8157  1895-Canal J                       
+ 1076  8159  8159  1982-Sante Vie                     
+ 1068  8111  1290  1982-Sante Vie PLUS                
+ 1070  8001  1280  1538-Seasons                       
+ 1070  8010  1289  1963-i Television                  
+ 1070  8006  1285  1793-Canal Jimmy                   
+ 1114  8909  1285  1591-Club Teleachat                
+ 1100  8701  1280  1513-Demain!                       
+ 1076  8153  8153  1642-Planete                        
+ 1090  8504  1286  1532-Planete Thalassa
+ 1100  8707  1286  1572-Planete Future 
+ 1066  8310  1289  1802-National Geographic Channel                     
+ 1090  8508  1287  1682-RFO Sat                       
+ 1100  8717  1296  1773-Game One                      
+ 1066  8308  1287  1683-Allo Cine TV                  
+ 1076  8160  8160  1996-CUISINE.TV                    
+ 1080  8801  1280  1513-France 2                      
+ 1080  8802  1281  1623-France 3 
+ 1080  8804  1283  1689-Contact TV                    
+ 1080  8812  1291  1740-CANALCLUB                     
+ 1096  8613  1292  1600-IMAGE+                        
+                                                     
+ 6000     1   258  1660-I1                            
+ 6000     2   256  1660-C5                            
+ 6000     3   257  1660-R4                            
+ 6900  8727 57378   584-SCT                           
+15600 10703 57547   902-Ultra Blue TV                 
+ 6900  8731    39  4356-Sex-View                      
+ 6900  8755    40  4356-LiveSex                       
+15600 10710   210   901-123SAT/69XTV                  
+12900  3702  2900  1360-Spice Platinum                
+ 6600 11101  1104  1281-T+ BIANCO                     
+ 6600 11103  1105  1283-T+ NERO                       
+ 6600 11105  1106  1296-T+ GRIGIO                     
+ 8191 11013 58454  1286-TMC                           
+ 6400 11015  1111  1288-TMC2                          
+ 6200 10901  1104  1280-DISNEY CHANNEL                
+ 6600 11111  1110  1292-R/RAGAZZI RAISAT              
+ 6600 11113  1111  1293-TOON                          
+ 6200 10905  1106  1282-EUSP                          
+ 6400 11017  1112  1290-EUROSPORTNEWS                 
+ 6200 10907  1107  1283-HAPPY CHANNEL                 
+ 6200 10909  1108  1284-MATCH MUSIC                   
+ 6200 10911  1109  1285-MTV Italy                     
+ 6400 11007  1107  1283-HALLMARK                      
+ 6200 10913  1110  1286-R/CINEMA RAISAT               
+ 6200 10915  1111  1287-R/SHOW RAISAT                 
+ 6400 11003 58449  1281-R/GAM ROS RAISAT              
+ 6400 11005 58450  1282-R/ALBUM RAISAT                
+ 6400 11009 58452  1284-R/ART RAISAT                  
+ 6400 11011  1109  1285-RaiSAT Fiction                
+ 6200 10903  1105  1281-DISCOVERY                     
+ 6400 11001 58448  1280-CLASSICA                      
+ 6700 11503  1105  1281-BBC                           
+ 6700 11505  1106  1282-BLOOMBERG                     
+ 6700 11513  1110  1287-TV5                           
+ 6700 11507  1107  1283-CNBC                          
+ 6700 11501  1104  1280-CNN                           
+ 8600 11705  1106  1296-JIMMY                         
+ 8600 11703  1105  1288-PLANETE                       
+ 8600 11701  1104  1280-POLO                          
+ 8600 11707  1107  1304-INN                           
+ 8600 11709  1108  1312-CIN1                          
+ 8600 11711  1109  1320-CIN2                          
+ 8600 11713  1110  1328-CINC                          
+ 8600 11715  1111  1336-SEASONS                       
+ 8200 11615  1111  1336-Premium                       
+ 5900 11403  1105  1284-Milan Channel                 
+ 5900 11405  1106  1285-Inter Channel                 
+ 6600 11107  1108  1287-16:9 TELE+                    
+ 8200 11615  1111  1600-PREMIUM                       
+ 6800 11201  1105  1536-PALCO                         
+ 6800 11205  1106  1325-PALCO 16:9                    
+ 6800 11207  1107  1300-PALCO 2                       
+ 6800 11209  1108  1304-PALCO 3                       
+ 6800 11211  1109  1308-PALCO 4                       
+ 6800 11213  1110  1291-PALCO 5                       
+ 6800 11215  1111  1292-PALCO 6                       
+ 5700 11301  1112  1281-PALCO 7                       
+ 5700 11303 58449  1283-PALCO 8                       
+ 5700 11305 58450  1287-PALCO 9                       
+ 8200 11601  1104  1281-PALCO 10                      
+ 8200 11603  1105  1282-PALCO 11                      
+ 8200 11605  1106  1280-PALCO 12                      
+ 8200 11607  1107  1283-PALCO 13                      
+ 8200 11609  1108  1284-PALCO 14                      
+ 8200 11611  1109  1285-PALCO 15                      
+ 8200 11613  1110  1286-PALCO 16                      
+ 5900 11407  1107  1289-TST3                          
+ 5600  3504   277  1358-Stream Intv               
+ 6300  8104   257  1282-cine stream                   
+ 6300  8107   256  1280-cine movie                    
+ 6300  8113   259  1286-Stream2                       
+ 5600  3507   278  1302-Universal                     
+ 5600  3510   269  1306-Cult Network                  
+ 5600  3513   271  1308-Eurosport                     
+ 5600  3516   270  1312-Cartoon Network               
+ 5600  3522   256  1316-Discovery                     
+ 5600  3528   257  1320-tvl                           
+10100  9427   261  1297-Roma Channel                  
+10100  9409   263  1290-cfn                           
+10100  9415   257  1289-Duel Tv                       
+10100  9418   260  1295-Comedy Life                   
+10100  9421   258  1294-Fox Kids                      
+10100  9424   259  1281-nat geo 
+12400  8546   258  1284-MTCH 
+12400  8549   263  1294-Test
+12400  8580   265  1303-Test2                     
+ 5800  3610   256  1298-Stream News                   
+ 5800  3616   258  1280-Canale Viaggi                 
+ 5800  3625   262  1288-CNN Int.                      
+ 5800  3628   263  1290-Info Stream                   
+ 5800  3630   264  1294-Snai                          
+10000  4331   257  1283-Sport Stream                  
+ 9600  4003   263  1288-Calcio Stream                 
+ 9600  4031   258  1280-XXX Club A                    
+ 9600  4028   257  1286-XXX Club B                    
+10000  4310   258  1286-XXX Club C                    
+10000  4307   256  1288-XXX Club D                    
+ 9600  4007   259  1282-MMOV                          
+ 9600  4010   260  1284-MMOV                          
+10000  4313   260  1281-MMOV                          
+10000  4316   261  1290-MMOV                          
+10000  4324   262  1292-MMOV                          
+10000  4327   259  1285-MMOV                          
+ 9500  3910   258  1294-MMOV                          
+ 9500  3913   229  1292-MMOV                          
+ 9500  3917   259  1292-MMOV                          
+ 9500  3918   260  1288-MMOV                          
+ 9500  3919   261  1286-MMOV                          
+ 9500  3920   262  1284-MMOV                          
+ 5800  3632   265  1292-MPPV                          
+ 9500  3921   263  1296-sc 1                          
+ 9500  3924   264  1298-sc 2                          
+ 9500  3927   265  1300-sc 3                          
+ 9600  4001   256  1292-sc 4                          
+ 9600  4002   262  1294-sc 5                          
+ 9600  4003   263  1288-sc 6  
+    1    20   257  1029-TGRT                 
+12600  1720   300   160-GAME ONE                      
+ 7700   101   111   161-CFI PECO PRO                  
+ 7700   104 57458   164-TTN                           
+ 7700   106 57460   163-CANAL+ HORIZONS               
+ 7700   102   112   162-MCM Europe                    
+ 7700   105   115   165-MUZZIK                        
+ 9400  8209  1032  3500-CNNI                          
+ 9400  8204  1027  3302-BBC World                     
+11900  4801  1001  1501-CANAL+                        
+11900  4809  1009  1509-CANAL+ Niebieski              
+11900  4802  1002  1502-CANAL+ Zolty                  
+11900  4804  1004  1504-TMT                           
+11900  4805  1005  1505-ALE KINO!                     
+11900  4806  1006  1506-MINIMAX                       
+11000  4404  1004     0-TV POLONIA                    
+11000  4401  1001  1501-TVN                           
+11000  4405  1005  1505-EUROSPORT                     
+11000  4406  1006  1606-PLANETE                       
+11000  4407  1007  1507-SEASONS                       
+11000  4402  1002  1602-DISCOVERY                     
+  400 13001  1001  1701-HBO                           
+  400 13002  1002  1702-HALLMARK                      
+  400 13007  1007  1707-NATIONAL GEO                  
+  400 13005  1005  1705-TVN 24                        
+  400 13008  1008  1708-REALITY TV                    
+  400 13006  1006  1706-VH 1                          
+11000  4403  1003  1603-RTL7 
+15900   200  1036  1258-RTL 9                   
+15900   201  1024  1219-AB 1                          
+15900   202  1025  1222-AB Moteurs                    
+15900   203  1026  1225-Animaux                       
+15900   204  1027  1228-Chasse & Peche                
+15900   205  1028  1231-AB Moteurs/XXL                   
+15900   206  1029  1234-Musique Classic               
+15900   207  1030  1237-Escales                       
+15900   208  1031  1240-FIT/Hist Ch.                  
+15900   209  1032  1243-RFM TV                         
+15900   210  1033  1246-ACTION                        
+15900   211  1034  1250-Mangas                        
+15900   212  1035  1254-Encyclopedia                  
+ 9900   501  1024  4102-Passions
+ 9900   504  1027  2098-AB 4                      
+ 9900   505  1028  2114-CINE BOX                         
+ 9900   506  1029  2130-CINE POLAR                   
+ 9900   507  1030  2146-CINE FX                       
+ 9900   508  1031  2162-CINE COMIC                          
+ 8500   901   400   707-SF 1                          
+ 8500   907   403   709-SF 2                          
+ 8500   911   407   713-SF i                          
+ 8500   902   401   708-TSR 1                         
+ 8500   908   404   710-TSR 2                         
+ 8500   903   402   712-TSI 1                         
+ 8500   909   406   711-TSI 2
+  200    9   1032  1796-MTV F
+  200    7   1030  1793-VH-1                
+12000  1604   400   460-TF1 
+12000  1605   500   560-Star Academy                          
+11600  1107   700   260-ARTE                          
+11200  1204   400   460-M6                            
+11600  1106   600   160-Paris Première
+11400  1408   800   860-RFO Sat
+11600  1103   300   260-FRANCE 2                      
+11600  1105   500   260-FRANCE 3
+11600  1102   200   260-FRANCE 5                      
+11200  1208   800   860-M6 Music                      
+11600  1101   100   160-LCI                           
+11600  1108   800   160-I TELEVISION                  
+11200  1205   500   560-Serie Club                    
+11200  1206   600   660-FUN TV                        
+11400  1407   700   760-Odysée
+11400  1405   500   560-Histoire
+11400  1404   400   460-FESTIVAL
+11400  1406   600   660-TELETOON
+11400  1402   200   260-REGIONS
+11400  1401   100   160-Infosport
+11400  1409   900   960-Teletoon +1
+11400  1410  1000  1060-TFJ  
+11400  1505   500   560-Allo Ciné Info
+11200  1207   700   760-Teva                          
+11200  1209   900   960-Club Teleachat                
+11800  1501   100   160-RTM                           
+11800  1502   200   260-SIC (TPS / Hotbird 13°E)                         
+11800  1503   300   360-EQUIDIA                       
+11800  1504   400   460-ESPN CLASSIC SPORT            
+11800  1507   700   760-TV Breizh                     
+12000  1607   700   760-TF6 
+13100  7301   310  1280-Motors TV                          
+11400  1403   300   360-EUROSPORT 
+ 9200  9360  2583  2604-Eurosport Fr (Independant)
+ 9200  9362  2832  2826-Eurosport News (Independant)                    
+11800  1506   600   660-BBC PRIME
+ 3801  5001   300  1280-BBC Prime (Independant)                    
+11800  1504   400   460-TV7                           
+11800  1510  1000  1060-La Chaine Parlement           
+11200  1201   100   160-Cinestar 1                    
+11200  1202   200   260-Cinestar 2                    
+11200  1203    33   160-Cinetoile                     
+12000  1602   200   260-Cinéfaz                        
+12000  1601   100   160-TPS star                      
+15800  1301  1301   161-Multivision 1                 
+15800  1302  1302   261-Multivision 2                 
+15800  1303  1303   361-Multivision 3                 
+15800  1304  1304   461-Multivision 4                 
+15800  1305  1305   561-Multivision 5                 
+15800  1306  1306   661-Multivision 6                 
+15800  1307  1307   761-Multivision 7                 
+   61  7101  1024    35-NTV Int.-HTB                  
+   61  7102  1025    36-NTV Int.-Nashe Kino           
+   61  7103  1026    33-NTV Int.-Detsky Mir           
+   61  7104  1027    37-RTV Teleklub                          
+   61  7105  1028    44-NTV International                          
+   61  7106  1029    58-RTV Russia
+ 8000  3201    36   292-SLO-TV1                       
+ 8000  3202    37   293-SLO-TV2                       
+ 8000  3218    53   292-RTB INTERNATIONAL             
+ 9000  8301    33   289-HRT-TV1                       
+ 9000  8302    34   290-HRT-TV2                       
+ 9000  8303    35   291-HRT-TV3
+ 6500   440   270  1289-ART Music 
+ 6500   430   269  1286-ART Movies 
+ 6500   420   258  1283-ART Children
+ 6500   410   257  1280-Variety Europe
+ 6500   450   271  1292-Nile Drama
+ 6500   460   272  1295-LBC
+ 6500   470   273  1298-Nile Variety
+ 6500   476   276  1302-Algerian TV
+ 6500   472   274  1306-ART Sport
+ 8300 10514    32   534-Reality TV 
+ 8300 10507    32   352-Cinema                            
+ 8300 10508    32   368-Club TV                          
+ 8300 10501    32   260-Cartoon Network/TCM                        
+ 8300 10520    32   565-Discovery Travel                        
+ 8300 10512    32   560-Discovery SciTrek               
+ 8300 10513    32   531-Polsat Sport                  
+ 8300 10522    32   537-Civilization                  
+ 8300 10510    32   400-TVP 1                         
+ 8300 10511    32   512-TVP 2 
+ 8100  7319    32   850-CNN                         
+ 8100  7303    32   288-Polsat 1                      
+ 8100  7305    32   320-Polsat 2                      
+ 8100  7304    32   304-TV 4                          
+ 8100  7306    32   336-TVP Wot 
+ 8100  7307    32   544-Infos                      
+ 8100  7315    32   340-Discovery                     
+ 8100  7316    32   343-Animal Planet 
+ 8100  7349    32   336-Fox Kids                
+ 8100  7317    32   352-RTL 7                         
+ 8100  7340    32   544-Playboy/AdultCh.
+11000  4606   106   609-Deepam TV 
+  
+    0     1    32  4097-SIC (Eutelsat W2 16°E)
+    0     1   256   257-SHOWTIME                      
+    0     2   272   273-ROMANTICA                     
+    1     3   288   289-PRIVATE GOLD                  
+   16     1   256   257-Galaxie Sport                                   
+    
+    2     4    51    44-B4U
+    1   870   870  1516-Barnkanalen
+    1 10001   100  1515-SVT1
+    1 10002   110  1518-SVT2
+    1   150   150  1518-SVT2 med Sna
+    1   160   160  1518-SVT2 med ABC
+    1 10003   120  1517-SVT24      
+   10  8000  8000   709-Viasat Xtra 1                 
+   10  8010  8010   709-Viasat Xtra 2                 
+   10  8020  8020   709-Viasat Xtra 3                 
+    2     9  1027   709-TVN Chile Connova             
+    2    25  1034   719-ORT INT. Connova              
+    2    28  1038   708-Viasat3 
+    2    10  1028   742-NTV                           
+    2    11  1029   744-ORT Ukraine          
+    2   225  2034   720-ORT INT. Viasat
+   12  6120  6120  8191-ORT 3               
+    2     1  1025   717-SVT Europa                    
+    7  5010  5010  5019-TVN Chile Viasat              
+   13  6200  6200  6209-TEMTV-ORT Estonia             
+   13  6210  6210  6219-TEMTV-ORT Latvia              
+   13  6220  6220  6229-TEMTV-ORT Lithuania
+   13  6230  6230  6239-TV3 Latvia
+   13  6240  6240  6260-NTV Mire
+   13  6250  6250  6258-Test            
+    7  5050  5050  5551-Travel channel                
+    7  5000  5000  5500-TV3 Latvia                    
+    7  5020  5020  5520-TEMTV-ORT Estonia             
+    7  5030  5030  5530-TEMTV-ORT Lithuania           
+    8  6000  6000  6500-Viasat info                   
+    8  6010  6010  6500-Ticket1                       
+    8  6020  6020  6504-Ticket2                       
+    8  6030  6030  6508-Ticket3                       
+    8  6040  6040  6512-Ticket4                       
+    8  6050  6050  6516-Ticket5                       
+    8  6060  6060  6520-Ticket6                       
+    8  6070  6070  6524-Ticket7                       
+    8  6080  6080  6528-Ticket8                       
+    4  2160  2160  2560-ZTV Norge                     
+    4  2130  2130  2530-3+                            
+    4  2120  2120  2520-BBC WORLD                     
+    4  2140  2140  2540-Hallmark                      
+    3  1160  1160  1560-ZTV Sverige                   
+    3  1100  1100  1500-TV3 Sverige                   
+    3  1110  1110  1510-TV3 Norge                     
+    3  1120  1120  1520-TV3 Danmark                   
+    9  7040  7040  7541-CNN                           
+    9  7010  7010  7510-DR1                           
+    9  7020  7020  7520-DR2                           
+    9  7030  7030  7531-TV8                           
+    6  4040  4040  4500-Viasat Sport Xtra             
+    9  7060  7060  7069-Viasatsport DK                
+    4  2100  2100  2501-Viasatsport SE                
+    4  2110  2110  6703-Nick/TV6/Playboy              
+    4  2150    34  2550-MTV Nordic                    
+    5  3160  3160  3560-VH1                           
+    3  1140  1140  6700-TV1000 1                      
+    5  3100  3100  6704-TV1000 2                      
+    5  3110  3110  6706-TV1000 3                      
+    9  7070  7070  3570-TV1000 Baltic                 
+    3  1150  1150  1550-CINEMA 1                      
+    5  3120  3120  3520-CINEMA 2                      
+    5  3130  3130  3530-CINEMA 3                      
+    5  3170  3170  3178-Reality TV                    
+    5  3140  3140  3541-RTL Germany 
+    7  5040  5040  5049-RTL 
+    
+   19  1908   263    70-New TV Bulgaria
+   19  1906   261    71-Planet TV 
+   19  1903   258    66-Diema+TV
+   19  1905   260    68-Den TV
+   19  1907   262    69-Eurocom
+   19  1922   282    72-7 Days TV
+   19  1902   257    65-MSAT TV
+   19  1921   281    74-TV 2001               
+   15  1501   256  1281-NRK 1                         
+   15  1502   257  1283-NRK 2
+   15  1517   276  1281-NRK Test 1                    
+   15  1518   277  1283-NRK Test 2
+   15  1516   275  1283-Tegnsprk NRK1
+   15  1511   268  1289-Rikstoto Direkte              
+   15  1514   273  1283-NRK Storting                  
+   15  1515   274  1283-NRK Mpetre
+   15  1520   279  1281-NRK1 BuTeVe
+   15  1521   280  1281-NRK1 Nordnytt
+   15  1522   281  1280-NRK 1 CD
+   15  1523   282  1282-NRK 2 CD
+   15  1524   283  1285-N TV2 test
+   15  1509   264  1284-TV Norge
+   15  1508   263  1285-TV2 Norge
+   24   601   256    32-DR1
+   24   602   257    33-DR2
+   20  2002   256    64-DR1 Syd
+   20  2007   256    64-DR2 Syd 
+   24   603   258    34-DK4
+    2   229    40   108-TV Danmark 1
+   24   902   264    35-TV Danmark 2
+   24   611   266    37-TV Zulu
+   20  2001   263    67-Dan Toto
+   20   502   257    65-TV Finland
+   21  1602   257    64-TV4
+   21  2108   256    67-TV4 plus
+    2   403    36   104-Kanal 5
+    3   306   260    36-Canal+ Nor
+    3   302   257    33-Canal+ Swe
+    3   307   263    34-Canal+ Dan
+    3   305   258    35-Canal+ Fin                
+    3   301   256    32-Canal+ GUL
+    3   308   259    38-Canal+ Bla
+    3   309   264    39-Canal+ Zap
+    4   409    36   105-Discovery SE
+    9   998   293    38-Foreigns spa  
+    9   908   259    43-PTV Prime
+    9   605   289    42-Private Gold
+    9   903   264    33-SEB
+    9   993   265    35-Expert
+    4   202    32   102-CNN Int
+    4   406    37   100-Discovery
+    4   412    40   106-Discovery DK
+   10  1014   260    68-DSC Civi
+   10  1015   261    69-DSC Sci-Trek
+   10  1016   268    70-DSC Travel
+    4   203    33   103-Travel
+    4   407    38   101-Animal Planet
+    6  1601    35   107-MUTV
+    1     1    34    49-STV1 (Cable)
+    1     2    35    50-STV2 (Cable)
+    1     4    33    52-DTV2 (Cable)
+    1   134   263    49-RL Test Ch
+    2   201    32   107-National G C
+    4   205    34   104-MTV Nordic
+   22  1614   259   103-MTV3
+    2   204    35   103-VH1
+   10  1018   262    66-VH1 Classic
+    2   230    41   102-Hlm FK
+    2   303    34   102-Hallmark
+    2   401    33   101-Nordic TCM
+    2   402    38   100-Cartoon Network
+    2   411    42   100-TCM Cartoon
+    2   906    39   106-CNBC Nordic
+   11  1104   260    68-JOJ
+   22   304   257   101-Nelonen
+   22  2202   261   106-Nelonen Plus
+   22  2102   258   102-Urheilukanal
+   18   227   257    65-Adult Ch
+   15  1525   284  1282-Zonavi 3
+   22  2301   260   104-subtv
+   18  1829   256    64-Extreme Sports
+   21   905   258    65-Eurosport
+   16  1608   261    32-Eurosport News
+   16  1609   262    71-E! Style  
+   10   206   256    32-Nickelodeon  
+   11  1103   258    66-BBC Prime
+   25  1103   256    64-BBC Prime
+   18  1830   258    66-Bloomberg UK
+   10  1013   259    67-Sky News
+   10  1802   265    72-Adventure1
+   21  2104   262    68-TV Billet1
+   21  2105   263    69-TV Billet2
+   21  2107   259    42-Mediteve 
+   18   111   261    68-Big Brother 1
+   18   112   262    68-Big Brother 2
+   18   113   263    68-Big Brother 3
+   16  2106   256    64-Big Brother Sverige 
+   14   702    33   101-K2
+   14   703    34   102-K3
+   14   704    35   103-K4
+   14   705    36   104-K5
+   14   706    37   105-K6
+   14   707    38   106-K7
+   14   708    39   107-K8
+   14   709    40   108-K9
+   14   710    41   109-K10
+   14   711    42   110-K11
+    8   712   266   110-K12
+    8   801   256   100-K13
+    8   802   257   101-K14
+    8   803   258   102-K15
+    8   804   259   103-K16
+    8   805   260   104-K17
+    8   806   261   105-K18
+    8   807   262   106-K19
+    8   808   263   107-K20
+    8   809   264   108-K21
+    8   810   265   109-K22
+                      
+ 9201   104   114   367-MCM Belgique (AB3 5°O)
+
+ 3872  1250    77  1253-ATV
+ 3872  1150    79  1153-Kanal 7
+ 3872  1200    78  1203-Kanal D Fun
+ 3872  1450  1450  1454-Marco Polo
+ 3872  1300    73  1303-Rai Uno
+ 3872  1350    75  1353-Rai Due
+ 3872  1400    74  1403-Rai Tre
+ 3872  1500    73  1503-TV Polonia
+ 3872  1050    81  1053-Show TV
+ 3872  1100    80  1103-TGRT
+ 3872  1550    34  1553-TRTInt
+ 3873  2200    40  2203-BKTV
+ 3873  2500    39  2503-EDTV
+ 3873  2100    41  2103-ERT Sat
+ 3873  2150    37  2153-HRT1
+ 3873  2550    38  2553-RTR Planeta
+ 3873  2050    42  2053-TVE
+
+   22     1  5497    33-AXN                   
+   36     5  1803    79-Localia                    
+   36     7    33    80-RETELSAT
+   35     3   300  8191-Xarxa TVL        
+    2   218    32    42-Palco X                       
+    2   217    32    41-Palco XX                      
+    2   219    32    43-Palco XGay                    
+    3   201    32    40-Palco 1                      
+    7   202    32    87-Palco 2                      
+    3   203    32    35-Palco 3                      
+    7   204    32    88-Palco 4                      
+    3   205    32    37-Palco 5                      
+    7   206    32    89-Palco 6                      
+    3   207    32    39-Palco 7
+    7   208    32    90-Palco 8
+    3   209    32    33-Palco 9                      
+    7   210    32    91-Palco 10                      
+    3   211    32    34-Palco 11                      
+    7   212    32    92-Palco 12                      
+    3   213    32    36-Palco 13                      
+    7   214    32    93-Palco 14                      
+    3   215    32    38-Palco 15                      
+    7   216    32    94-Palco 16:9
+    7   231    32    33-Futbal 1
+    7   232    32    35-Futbal 2
+    7   233    32    39-Futbal 3
+    7   234    32    40-Futbal 4
+    7   235    32    41-Futbal 5
+    7   236    32    42-Futbal 6
+    7   237    32    43-Futbal 7
+    7   238    32    44-Futbal 8
+    7   239    32    45-Futbal 9                
+    8    67    32    33-MultiFtb.                     
+    1   225    32    32-P-Eventos                     
+    7   245    32    57-PalcoBoxeo
+   12   991    32    40-MultiPlan1
+   12   992    32    41-MultiPlan2
+   12   993    32    42-MultiPlan3
+   12   357    32    43-Aptema                    
+    7    67    32    46-MultiFtb.                     
+    7    70    32 58158-Via Mundial                   
+    1    31    32    42-Gran Va                       
+    1    32    32    43-Gran Va 2                     
+    1    33    32    44-Gran Va 3                     
+    6    47    32    39-Showtime EX 
+    5    83    32    41-Natura                        
+    5    41    32    39-Cine 600                      
+    3   125    32    39-Galavision                    
+    6    44    32    50-Hallmark                      
+    6    85    32    34-Campero                       
+    6   151    32    37-Cocina                        
+    1    10    32    33-TV Catalunya
+    1    10   256  1019-Show TV (Hotbird 13)                    
+    1   106    32    48-VH 1 
+    5    48    32    40-Canal 18 
+    5    43    32    36-CanalStar 
+    1    92    32    67-Fox Kids                         
+    5   155    32    34-Tribunal TV                   
+    5     8    32    33-Madrid LaOtra                 
+    5   126    32    35-Cosmopolitan                  
+    2    63    32    36-TeleDeporte                    
+    3    26    32    34-Expansion TV                  
+    3   127    32    37-Telenovelas
+    2   128    32    38-Nostalgia                   
+    3    88    32    41-Historia                      
+    3    62    32    33-Futbol Total                  
+    3    66    32    35-Canal Barca                   
+    3    12    32    36-CCValenciana                  
+    3    14    32    38-TV Euskadi                    
+    3    94    32    46-Locomotion                    
+    2    24    32    33-24 Horas                      
+    2    84    32    37-Hispavision                   
+    2   110    32    39-Clasico                       
+    3    23    32    47-BBC World                     
+    2   129    32    40-BBC Prime
+    4    22    32    48-Euronews
+    4   169    32    34-Playboy                       
+    4     6    32    33-Andalucia TV 
+    4     7    32    34-Andalucia TV Turismo                 
+    4    82    32    38-Odisea                        
+    4   123    32    41-FDFiccin                      
+    4   102    32    36-MTV                           
+    4    64    32    40-Eurosport 
+    4   101    32    37-Sol Musica
+    4    42    32    39-Hollywood 
+    4   106    32    35-VH1 
+    6    86    32    33-Beca                                            
+    1    93    32    69-Super3/Buzz                   
+    6    81    32    35-Cultura 
+    6    87    32    36-GeoPlaneta                      
+    6    45    32    38-Cinematk                      
+    1    91    32    68-Megatrix
+    6   130    32    40-TV5                      
+    3    95    32    32-Ludi TV                       
+    5   291    32    34-Eurolega 1                    
+    5   292    32    34-Eurolega 2                    
+    5   293    32    34-Eurolega 3                    
+    5   294    32    34-Eurolega 4 
+    7   281    32    48-League 1
+    7   282    32    49-League 2
+    7   283    32    50-League 3
+    7   284    32    51-League 4
+    7   285    32    52-League 5 
+    7   286    32    53-League 6
+    7   287    32    54-League 7
+    7   288    32    55-League 8
+    7   289    32    56-League 9                  
+ 9800  4236  1056  4102-Sea-Test                      
+ 9800  4237  1057  4102-R.Make-up                     
+   36     5  1803   814-LOCALIA                       
+ 9800  4236  1056  1592-R. Baby                       
+   37   706   817  4099-Programacao                   
+   38   870   817   618-Sport TV 
+   36     1   817   614-Mosaïco
+   38   871   817   615-TeleCine Gallery
+   36   851   817   615-IPPV 1
+   36   852   817   616-IPPV 2
+   36   853   817   617-IPPV 3
+   36   854   817   618-IPPV 4               
+   36   813   817   606-SIC                           
+   36   801   817   611-SIC Noticias                  
+   36   802   817   603-SIC Gold                      
+   37   710   817   610-SIC Radical                   
+   36   803   817   601-NTV                           
+   36   811   817   604-RTP 1                         
+   36   812   817   605-RTP 2 
+   37   713   817   615-RTP Africa                        
+   36   814   817   607-TVI                           
+   36   820   817   610-TV Saude/Medicina             
+   38   872   817   616-Telecine 1                    
+   36   835   817   612-BCP TV1
+   38   836   817   614-BCP TV2 
+   37   701   817   601-Gravado
+   36   701   817   609-Bloomberg TV
+   37   702   817   602-Euronews 
+   37   703   817   603-Discovery                     
+   37   704   817   604-People and Arts               
+   37   705   817   605-Parlamento                    
+   37   707   817   607-Historia                      
+   37   708   817   608-Panda                         
+   37   709   817   609-N. Geographic
+   37   711   817   611-Cancao Nova 
+   37   712   817   612-Big Brother
+   37   860   817   601-GNT
+   37   296   817   613-TV Globo
+   37   714   817   616-Cartoon/TCM
+   37   831   817   614-Sexy Hot
+   38     6   817   606-Andalucia TV                  
+   38    23   817   607-SKY News
+   38    42   817   601-Hollywood                     
+   35   900   700   100-Disney Channel                
+   38    64   817   609-Eurosport                     
+   38    82   817   602-Odisseia                      
+   38    94   817   603-Locomotion                    
+   38   101   817   611-Sol Musica                    
+   38   102   817   604-MTV                           
+   38   106   817   605-VH1                           
+   38   751   817   613-M6                            
+   38   129   817   608-Mezzo
+   38   750   817   612-CNN
+   38   169   817   610-Playboy                                                
+    2   150   105  4246-HITLISTE                      
+    2   151   113  4247-ALTERNATIVE ROCK              
+    2   154   114  4250-CLASSIC ROCK                  
+    2   152   117  4248-DANCE                         
+    2   163   118  4259-LOVE SONGS                    
+    2   159   124  4255-GOLD                          
+    2   165   112  4261-OLD GOLD                      
+    2   157   116  4253-SOUL CLASSICS                 
+    2   162   120  4258-EASY LISTENING                
+    2   156   121  4252-DEUTSCHE HITS                 
+    2   166   115  4262-SCHLAGER                      
+    4   145   116  4241-KLASSIK POPULR                
+    4   146   117  4242-ORCHESTRALE WERKE             
+    4   148   113  4244-BAROCK                        
+    4   147   112  4243-OPER                          
+    4   158   123  4254-TRK MZIGI                     
+    3   167   113  4263-VOLKSMUSIK                    
+    3   153   118  4249-COUNTRY                       
+    3   155   120  4251-FILMMUSIK                     
+    3   164   119  4260-MUSICALS                      
+    3   149   114  4245-JAZZ                          
+   17   171   117  4124-Radio GoldStar                
+    7   160   101  4865-ROCKANTENNE                   
+    7   169   102  4865-sunshine live                 
+    7   170   112  4865-ANTENNE BAYERN                
+    7   169   105   163-sunshine live                 
+   17   161   108  4275-100,6                         
+    7   170   112   163-ANTENNE BAYERN                
+    7   168   104   163-Hit-Radio ANTENNE             
+    7   160   101   163-ROCKANTENNE                   
+ 1089 12010  1025  4109-RTLradio-OLDIESENDE           
+ 1109  5031  1031  1291-NLR1                          
+ 1109  5032  1032  1292-NLR2                          
+ 1109  5033  1033  1293-NLR3                          
+ 1109  5034  1034  1294-NLR4                          
+ 1109  5035  1035  1295-NLR5                          
+ 1109  5035  1035  1295-NLR5                          
+ 1109  5071  1071  1282-ClassicFM                     
+ 1109  5080  1080  1288-Concertzender                 
+ 1097  2070  1070     5-RVI (VRT)                     
+ 1109  5072  1072  1282-Radio538                      
+ 1109  5095  1095  1282-Veronica Radio                
+ 1109  5085  1085  1295-Radio 10 FM                   
+ 1109  5050  1050  1282-Yorin FM                      
+ 1109  5055  1055  1282-KINK FM                       
+ 1109  5070  1070  1282-Sky Radio                     
+ 1097  2051  1051     5-OLDIES                        
+ 1109  5060  1060  1282-RNW1                          
+ 1109  5061  1061  1282-RNW2                          
+ 1097  2070  1070  1281-RVi1 (VRT)                    
+ 1097  2075  1075  1281-RVi2 (VRT)                    
+ 1090  8510  1289  1248-RADIOS 2                      
+ 1090  8511  1290  1248-RADIOS 3                      
+ 1090  8512  1291  1792-RADIO INT 2                   
+ 1090  8513  1292  1792-RADIO INT                     
+ 1090  5803  8191  1792-CANALSAT RADIOS               
+ 1068  8110  1289  4105-Journal ChezVous              
+ 1074 29424  1048  4105-Canal BBV                     
+ 1279 20370  1220  1286-Radio Zet                     
+ 1279 20371  1221  4124-Radio Flash                   
+ 1074 29433  1057  4139-AGENDA                        
+ 1074 29444  1068  4139-BANCA 4B                      
+ 1273 20612  1036  4105-RMF FM                        
+ 5700 11365  1806  1336-MULTIMUSIC 1                  
+ 5700 11366  1807  1338-MULTIMUSIC 2                  
+ 5700 11367  1808  1340-MULTIMUSIC 3                  
+ 5700 11311  1141  1340-Tutto Classica                
+ 5700 11312  1142  1340-All Jazz                      
+ 5700 11313  1143  1340-Belcanto                      
+ 5700 11314  1144  1340-Atmosfera                     
+ 5700 11315  1145  1340-La dolce vita                 
+ 5700 11316  1146  1340-Cine Musica                   
+ 5700 11317  1147  1340-Cantautori                    
+ 5700 11318  1148  1340-Canz. d'Italia                
+ 5700 11319  1149  1340-Fisarmonica                   
+ 5700 11320  1150  1340-Canz. di Francia              
+ 5700 11321  1151  1340-Black & Blues                 
+ 5700 11322  1152  1340-Musica Etno                   
+ 5700 11323  1153  1340-Le mie Favorite               
+ 5700 11324  1154  1340-Dance Music                   
+ 5700 11325  1155  1340-Rock Forever                  
+ 5700 11326  1156  1340-Maxi Dance                    
+ 5700 11327  1157  1340-Cactus Country                
+ 5700 11328  1158  1340-Rock alternativo              
+ 5700 11329  1159  1340-Anni '60                      
+ 5700 11330  1160  1340-Pianeta Rap                   
+ 5700 11332  1162  1340-Adagio                        
+ 5700 11331  1161  1340-Sinfonica                     
+ 5700 11333  1163  1340-Grande Opera                  
+ 5700 11334  1164  1340-Da camera                     
+ 5700 11335  1165  1340-Barocca                       
+ 5700 11336  1166  1340-Antica                        
+ 5700 11337  1167  1340-Sacra                         
+ 5700 11338  1168  1340-Jazz leggendario              
+ 5700 11339  1169  1340-Jazz festival                 
+ 5700 11340  1170  1340-New jazz                      
+ 5700 11342  1172  1340-Radio 105                     
+ 8200 11633  1114  1600-RRAD                          
+ 5600  3550   270  1366-rock                          
+ 5600  3553   266  1366-rds                           
+ 5600  3556   262  1366-rtl                           
+ 5600  3562   267  1366-rvoy                          
+ 5600  3564   276  1366-glob                          
+ 5600  3565   265  1366-ant1                          
+ 5600  3566   256  1366-rrad                          
+ 5600  3568   257  1332-mc01                          
+ 5600  3571   263  1334-mc02                          
+ 5600  3574   264  1334-mc03                          
+ 5800  3636   266  1300-mc04                          
+ 5800  3637   267  1302-mc05                          
+ 5800  3638   268  1302-mc06                          
+ 5800  3641   269  1300-mc07                          
+ 5800  3644   270  1302-mc08                          
+ 5800  3647   271  1302-mc09                          
+ 5800  3650   272  1302-mc10                          
+ 5800  3653   273  1302-mc11                          
+ 5800  3656   274  1302-mc12                          
+ 5800  3659   275  1302-mc13                          
+ 5800  3662   276  1302-mc14                          
+ 5800  3665   277  1302-mc15                          
+ 5800  3668   278  1302-mc16                          
+ 5800  3671   279  1300-mc17                          
+ 5800  3674   280  1302-mc18                          
+ 5800  3677   281  1302-mc19                          
+ 9500  3935   282  1313-mc20                          
+ 9500  3938   276  1313-mc21                          
+ 9500  3941   274  1313-mc22                          
+ 9500  3944   268  1313-mc23                          
+ 9500  3947   273  1313-mc24                          
+ 9500  3950   271  1313-mc25                          
+ 9500  3953   263  1313-mc26                          
+ 9500  3956   260  1313-mc27                          
+ 9500  3959   267  1313-mc28                          
+ 9500  3962   256  1313-mc29                          
+ 9500  3965   269  1313-mc30                          
+ 9500  3968   272  1313-mc31                          
+ 9500  3971   275  1313-mc32                          
+ 9500  3974   265  1313-mc33                          
+ 9500  3977   262  1313-mc34                          
+ 9500  3980   261  1313-mc35                          
+ 9500  3983   266  1313-mc36                          
+ 9500  3986   270  1311-mc37                          
+ 9500  3989   257  1313-mc38                          
+ 9500  3992   259  1313-mc39                          
+ 9500  3995   258  1313-mc40                          
+11800  3106  3106   860-NRJ                           
+11800  3109  3109   860-Fun Radio                     
+11800  3110  3110   860-RTL 2                         
+11800  3111  3111   860-RCF                           
+12000  3202  3202   860-Rire et chansons              
+12000  3203  3203   960-MFM                           
+12000  3204  3204   860-Mosqueteiros                  
+12000  3206  3206   960-RMC                           
+12000  3207  3207   860-RFI                           
+12000  3209  3209  1460-Skyrock                       
+12000  3210  3210   960-Nostalgie                     
+12000  3211  3211   860-Radio Coutoisie               
+12000  3212  3212   860-La Voix des Pays              
+12000  3602  3602   860-symphonies                    
+12000  3603  3603   860-Baroque                       
+12000  3604  3604   860-Opra                          
+12000  3605  3605   860-Contemporain                  
+12000  3606  3606   860-Relaxation                    
+12000  3607  3607   860-Blues                         
+12000  3608  3608   860-Jazz                          
+12000  3609  3609   860-Big Band                      
+12000  3601  3601   860-Grand Classique               
+12000  3610  3610   860-Jazz Moderne                  
+12000  3611  3611   860-Les Tubes Franais             
+11900  4840  1040  4848-Polskie Radio Bis             
+11900  4840  1040  4848-Polskie Radio 1               
+11900  4840  1040  4848-Polskie Radio 2               
+11900  4840  1040  1284-Polskie Radio 3               
+11900  4840  1040  1284-RMF FM                        
+11900  4840  1040  1284-JAZZ RADIO                    
+11900  4840  1040  1284-TOK FM                        
+11900  4840  1040  4848-Radiostacja                   
+12700  8005  1028   161-F.A.Z. 93.6 Berlin            
+12700  8010  1032   161-ToProto.gr                    
+13201  5302   200   161-DW 1                          
+13201  5303   300   161-DW 2                          
+13201  5304   400   161-DW 4                          
+13201  5305   500   161-DW 5                          
+13201  5308   800   161-JazzRadio, Berlin             
+13201  5309   900   161-DW 6                          
+15500   604   400   161-big FM                        
+15500   605   500   161-PARTY RADIO                   
+15600 10750   300   161-102.5 CLASSIC                 
+15600 10752  5005   161-Romania Musical               
+15600 10751  5004   161-In direct Romania             
+   85   951   427  4117-SRI-F-I                       
+   85   953   428  4117-SRI-EUROPA                    
+   85   954   429  4117-SRI-INTERCONTINENTA           
+11900  4810  1009   163-RMF FM                        
+ 9100  8828  4614  1592-Bulgaria Radio                
+ 9700    14  5014  1160-Oman Arab                     
+ 9700    14  5014  1160-Sudan Radio                   
+ 9800  4241  1063  4102-R. Reporter 2                 
+ 5100  9523    32  4102-EDTV RADIO 01                 
+ 5100  9524    32  4102-EDTV RADIO 02                 
+ 9400  8201  1024  4099-MBC-FM                        
+    0     0  1024  1532-RadioVoyager                  
+ 7400  1314   265  4106-Athina 9,84                   
+ 7000   711  1034  2222-RADIO ROCK                    
+ 7000   712  1035  2222-RADIO ARMENIA                 
+   73     7  7920  2222-IRIB1 RADIO                   
+   73     8  7921  2222-ARABIC/INT1 RADIO             
+   73     9  7922  2222-INT2/3 RADIO                  
+ 2201   176   306   180-RADIO6                        
+39176   176   306   180-RADIO6                        
+</SIDCACHE>

@@ -1,0 +1,59 @@
+IMPORTANT. This license agreement supersedes any other
+license agreement provided with the software.
+
+Read this License Agreement before installing this software.
+By installing this software, you indicate your acceptance
+of this License Agreement.
+
+COOL.STF LICENSE AGREEMENT
+
+COOL.STF TSReader Release 2
+
+1. LICENSE RIGHTS AND RESTRICTIONS.
+
+COOL.STF grants to you the non-exclusive, non-assignable
+right to use the enclosed product in object code form (the
+"TSReader Code") by a single user on a single computer
+system. You may not reverse engineer, decompile, or
+disassemble the TSReader Code, except to the extent
+that the foregoing restriction is expressly prohibited by
+applicable law. You may not rent or lease the TSReader
+Code, or otherwise transfer the TSReader Code and any
+accompanying written materials. All rights not expressly
+granted are reserved by COOL.STF.
+
+2. NO WARRANTIES.
+
+The TSReader Code and accompanying written
+materials are provided "as is", without warranty of any kind.
+To the maximum extent permitted by law, COOL.STF
+disclaims all warranties, either express or implied, including
+but not limited to implied warranties of merchantability, fitness
+for a particular purpose and noninfringment. The entire risk
+arising out of the use or performance of the TSReader
+Code and any accompanying written materials remains with
+you.
+
+3. NO LIABILITY FOR CONSEQUENTIAL DAMAGES.
+
+To the maximum extent permitted by applicable law: in no
+event shall COOL.STF or its suppliers be liable for any
+damages whatsoever (including, without limitation, damages
+for loss of business profits, business interruption, loss of
+business information, or other pecuniary loss) arising out of
+the use of or inability to use the TSReader Code, even
+if COOL.STF has been advised of the possibility of such
+damages.  Because some states/jurisdictions do not allow
+the exclusion or limitation of liability for consequential or
+incidental damages, the above limitation may not apply
+to you.
+
+4. MISCELLANEOUS.
+
+If you acquired this product in the United States, this
+Agreement is governed by the laws of the State of Maryland.
+If you acquired this product outside the United States, local
+law may apply. If either party employs attorneys to enforce
+any rights arising out of or relating to this Agreement, the
+prevailing party shall be entitled to recover reasonable
+attorneys fees, costs and expenses.

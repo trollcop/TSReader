@@ -1,0 +1,782 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "ATSCSource"=.\ATSCSource\ATSCSource.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "AlteiaPlus"=.\Sources\ReceiverControl\AlteiaPlus\AlteiaPlus.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "BDASource"=.\BDASource\BDASource.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "ContinuityCheck"=.\ContinuityCheck\ContinuityCheck.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "DSR4800"=.\Sources\ReceiverControl\DSR4800\DSR4800.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "DVBSSource"=.\TSReader_DVBsBDA\DVBsBDASource.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "FileSplitter"=.\FileSplitter\FileSplitter.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "HorizonTSRS1"=.\SOURCES\RECEIVERCONTROL\HorizonTSRS1\HorizonTSRS1.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "MDSample"=.\MDSample\MDSample.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "Newtec2063"=.\Sources\ReceiverControl\Newtec2063\Newtec2063.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSASCIIDump"=.\TSASCIIDump\TSASCIIDump.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSRKeyInit"=.\TSRKeyInit\TSRKeyInit.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader"=.\TSReader.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name TSReader_Stradis
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name TSReader_XNS
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name TSReader_VLC
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name TSReader_UDPSender
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name TSReader_SourceHelper
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name h264decoder
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmpeg2
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libmpeg2convert
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libvo
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name TSReader_Scheduler
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "TSReader_Alitronika"=.\TSReader_Alitronika\TSReader_Alitronika.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_ArchiveMonitor"=.\TSReader_ArchiveMonitor\TSReader_ArchiveMonitor.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_Artec"=.\TSReader_Artec\TSReader_Artec.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_B2C2"=.\TSReader_B2C2\TSReader_B2C2.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_Broadlogic"=.\TSReader_Broadlogic\TSReader_Broadlogic.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_DS"=.\TSReader_DS\TSReader_DS.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_DVBCBDASource"=.\TSReader_DVBCBDASource\TSReader_DVBCBDASource.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_DVBWorld"=.\TSReader_DVBWorld\TSReader_DVBWorld.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_DVHS"=.\TSReader_DVHS\TSReader_DVHS.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_Dektec"=.\TSReader_Dektec\TSReader_Dektec.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_FX2"=.\TSReader_FX2\TSReader_FX2.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_File"=.\TSReader_File\TSReader_File.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_Firewire"=.\TSReader_Firewire\TSReader_Firewire.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_Firewire_DVHS"=.\TSReader_FirewireDVHS\TSReader_FireDVHS.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_ForVid"=.\TSReader_ForVid\TSReader_ForVid.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_Freecom"=.\TSReader_Freecom\TSReader_Freecom.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_FutureTel"=.\TSReader_FutureTel\TSReader_FutureTel.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_Fwd_Alitronika"=.\TSReader_Fwd_Alitronika\TSReader_Fwd_Alitronika.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_Fwd_Dektec"=.\TSReader_Fwd_Dektec\TSReader_Fwd_Dektec.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_Fwd_Linear"=.\TSReader_Fwd_Linear\TSReader_Fwd_Linear.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_Fwd_NDSMOD"=.\TSReader_Fwd_NDSMOD\TSReader_Fwd_NDSMOD.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_H264"=.\TSReader_H264\TSReader_H264.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name h264decoder
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "TSReader_HDHomeRun"=.\TSReader_HDHomeRun\TSReader_HDHomeRun.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_HTTP"=.\TSReader_HTTP\TSReader_HTTP.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_Linsys"=.\TSReader_Linsys\TSReader_Linsys.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_MPEG4"=.\TSReader_MPEG4\TSReader_MPEG4.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_Nebula"=.\TSReader_Nebula\TSReader_Nebula.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_SasemUSB"=.\TSReader_SasemUSB\TSReader_SasemUSB.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_Scheduler"=.\TSReader_Scheduler\TSReader_Scheduler.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_SourceHelper"=.\TSReader_SourceHelper\TSReader_SourceHelper.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_Stradis"=.\TSReader_Stradis\TSReader_Stradis.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_TCP"=.\TSReader_TCP\TSReader_TCP.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_TTBudget"=.\TSReader_TTBudget\TSReader_TTBudget.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_TTUSB20"=.\TSReader_TTUSB20\TSReader_TTUSB20.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_Tongshi"=.\TSReader_Tongshi\TSReader_Tongshi.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_Twinhan2"=.\TSReader_Twinhan2\TSReader_Twinhan2.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_UDP"=.\TSReader_UDP\TSReader_UDP.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_UDPSender"=.\TSReader_UDPSender\TSReader_UDPSender.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_VC1"=.\TSReader_VC1\TSReader_VC1.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_VLC"=.\TSReader_VLC\TSReader_VLC.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TSReader_XNS"=.\TSReader_XNS\TSReader_XNS.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "USBProgrammer"=.\USBProgrammer\USBProgrammer.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "dump"=.\dump\dump.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "h264decoder"=.\h264decoder\h264decoder.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libmpeg2"=.\libmpeg2\libmpeg2.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libmpeg2convert"=.\libmpeg2\convert\libmpeg2convert.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libvo"=.\libvo\libvo.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "vOC_BL"=.\voc_bl\vOC_BL.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+

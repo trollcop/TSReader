@@ -1,0 +1,145 @@
+# $Id: PROTOCOL.txt,v 1.1 2002/12/20 00:04:31 alfs Exp alfs $
+# Protocol inventor: RUNTiME et al
+# Document contributors:
+# Stefan Alfredsson <stefan+xbox@alfredsson.org> (first draft)
+# ...
+#
+
+DRAFT OF XBMP2.0 XSTREAM PROTOCOL DESCRIPTION - UNOFFICIAL
+
+Introduction:
+-------------
+
+This documents describes the protocol "XStream" used to enable
+the XBox to communicate with XBox Media Player
+
+The general scenario is that the server listens on TCP port 1400,
+awaits connections from the XBox, does a protocol handshake
+and then accepts the commands from the xbox.
+
+These commands are list directory, open file, read chunk from file,
+and close file.
+
+All commands from the xbox may be of arbitrary length (max 1000) (CORRECT?)
+Replies from server to xbox are padded with space to 32 characters
+The amount of data from server to xbox is sent in advance with the
+OK reply.
+
+Tics (') are only to show command limits, and are not to be transmitted.
+In some cases there are lot of padding before the last ', it should
+be padded to a total of 32 bytes, but I have not counted it. Feel free
+to count and correct.
+
+Formal protocol:
+----------------
+
+Connection phase:
+
+Xbox connects to port 1400 on server.
+
+Server sends: 'HELLO XBOX!\n'
+Xbox sends: 'HELLO XSTREAM 6.0\n'
+
+Connected phase:
+
+Catalog listing command - returns a list of items in a given directory.
+***********************************************************************
+
+Xbox sends: 1. '*CAT' or 2. '*CAT,otherdirectory'
+
+Server sends the contents of 1. current directory or 2. changes
+directory to the one specified, and sends the size of contents
+and then the actual catalog.
+
+The reply is encoded with tags resembling XML (but no DTD),
+for example:
+
+
+264 OK                      <SHARES>
+<ITEM><ATTRIB>16</ATTRIB><PATH>$/mydir</PATH></ITEM>
+<ITEM><ATTRIB>128</ATTRIB><PATH>$/meduza_mera_brännvin.mp3</PATH></ITEM>
+...
+<ITEM><ATTRIB>16</ATTRIB><PATH>$/otherdir</PATH></ITEM>
+</SHARES>
+
+I.e. each file or directory is an "ITEM", has an attribute that
+is 16 for directories, and 128 for files.
+
+The first line sent tells how many bytes that follow, i.e. 264 in
+this case. This is left justified and padded with space to 32 bytes.
+After this follows the catalog.
+
+There is a special command corresponding to moving up a level.
+
+Xbox sends: '*CAT,BACK\n'
+Server replies: '0 OK                     '
+
+
+
+TODO: What is the role of the $ sign. can it be skipped?
+      Theory: $ denotes current working directory.
+TODO: are only relative directories allowed, or full path?
+TODO: how does $ROOT$ work?
+
+
+RCAT command
+***********************************************************************
+
+No info yet.
+
+
+OPEN command
+***********************************************************************
+
+In order to read a file, it must be opened. This is done with the
+open command:
+
+Xbox sends: 'OPEN,$/meduza_mera_brännvin.mp3\n'
+
+Server replies:  '0 OK                         '  if the open was OK,
+otherwise error: '-1 ERROR PERMISSION DENIED   '
+
+CLOSE command
+***********************************************************************
+
+This closes a previously opened file
+
+Xbox sends: 'CLSE\n'
+Server replies:  '0 OK                         '  if the operation was OK,
+otherwise error: '-1 FILE NOT OPEN             '
+
+READ command
+***********************************************************************
+
+The read command is used to transmit data from a previously opened file.
+Since only one file can be open at any time, there is no file handle
+transmitted.
+
+Xbox sends: 'READ,10000,123\n'
+
+Server replies: '123 OK                       ' and then the binary
+content of the file, starting from position 10000 and 123 bytes on.
+
+I.e. the first number after the comma represents the wanted position
+in the file, and the amount of data is indicated after the second
+comma.
+
+If there are less than 123 bytes to read, or end of file, the actual
+amount to be sent is put in the reply instead. If EOF, this corresponds
+to zero.
+
+
+TELL command
+***********************************************************************
+
+This commands informs the client the current position in the stream.
+
+Xbox sends: 'TELL\n'
+Server replies: '10123 OK                     '
+
+
+
+
+
+
+

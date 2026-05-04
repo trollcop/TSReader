@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="Board 1077">
+</Property><Property Name="Solution File" Value="C:\Development\TSReader\TSReader_Dektec\DTU-235 SDK\Board 1077.sln">
+</Property><Property Name="Date" Value="Monday, February 04, 2008">
+</Property><Property Name="Time" Value="14:02">
+</Property><Property Name="Log Number" Value="2">
+</Property></Properties><Event ErrorLevel="2" Project="" Source="Board 1077.sln" Description="Error creating backup file: C:\Development\TSReader\TSReader_Dektec\DTU-235 SDK\Board 1077.sln.old">
+</Event><Event ErrorLevel="0" Project="Board 1077" Source="Board 1077.vcproj" Description="Project upgraded successfully.">
+</Event><Event ErrorLevel="3" Project="Board 1077" Source="Board 1077.vcproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="" Source="Board 1077.sln" Description="Solution converted successfully">
+</Event><Event ErrorLevel="3" Project="" Source="Board 1077.sln" Description="Converted">
+</Event></UpgradeLog>

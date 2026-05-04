@@ -1,0 +1,17 @@
+LIBRARY   MDExtern
+
+
+CODE      PRELOAD MOVEABLE DISCARDABLE
+DATA      PRELOAD SINGLE
+
+EXPORTS
+    _WEP                     @1 RESIDENTNAME
+    On_Start                 @2 
+    On_Exit                  @3 
+	On_Send_Dll_ID_Name      @4
+    On_Menu_Select           @5
+    On_Channel_Change        @6
+	On_Hot_Key               @7
+	On_Osd_Key               @8 
+	On_Filter_Close          @9
+	On_Rec_Play              @10

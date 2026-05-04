@@ -1,0 +1,68 @@
+;----------------------------------------------------------------------------------------;
+; Usb driver instalationfile 
+; Sutible for WXP
+; Alitronika Digital Video BV
+; mrt-2005
+; Peter Hoogervorst
+;----------------------------------------------------------------------------------------;
+
+[Version]
+Signature="$CHICAGO$"
+Class=Media
+ClassGUID={4d36e96c-e325-11ce-bfc1-08002be10318}	
+Provider=%MANIFACT%
+LayoutFile=LAYOUT.INF
+DriverVer=04/04/2005,3.0.0.0
+
+[Manufacturer]
+%MANIFACT%=Alitronika_AT2345678USB_Install
+
+[Alitronika_AT2345678USB_Install]
+%USB\VID_088D&PID_1008.DeviceDesc%=AT2345678USB_Driver, USB\VID_088D&PID_1008
+
+;----------------------------------------------------------------------------------------;
+
+[DestinationDirs]
+AT2345678USB_Driver.Copylist = 12
+
+;----------------------------------------------------------------------------------------;
+; win 2000 & XP: AT600USB driver
+
+[AT2345678USB_Driver.NT]
+CopyFiles=AT2345678USB_Driver.Copylist
+
+[AT2345678USB_Driver.NT.HW]
+Addreg=AT2345678USB_Driver.Addreg
+
+[AT2345678USB_Driver.NT.Services]
+Addservice = AT2345678USB_Driver, 0x00000002, AT2345678USB_Driver.Service
+
+[AT2345678USB_Driver.Service]
+DisplayName    = %AT2345678USB_Driver.SvcDesc%
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 3                  ; SERVICE_AUTO_START
+ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\ATUsbVid.sys
+
+;----------------------------------------------------------------------------------------;
+; copylist
+
+[AT2345678USB_Driver.Copylist]
+ATUsbVid.sys
+AT600USB.hex
+AT600USB_DVB_REC.rbf
+AT600USB_DVB_PLAY.rbf
+
+;----------------------------------------------------------------------------------------;
+; add registry value
+
+[AT2345678USB_Driver.Addreg]
+HKR,,RBFFile,,\SystemRoot\system32\drivers\AT600USB_DVB_PLAY.rbf
+HKR,,HEXFile,,\SystemRoot\system32\drivers\AT600USB.hex
+
+;----------------------------------------------------------------------------------------;
+
+[Strings]
+MANIFACT="Alitronika DVS"
+USB\VID_088D&PID_1008.DeviceDesc="Alitronika AT600 Satellite input / DVB output board"
+AT2345678USB_Driver.SvcDesc="Alitronika AT600 Satellite input / DVB output board"

@@ -1,0 +1,4201 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SI_PARSER DIALOG DISCARDABLE  0, 0, 608, 398
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Sort Decending",IDC_SORT_DECENDING,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,253,142,63,8
+    CONTROL         "Sort by Rate",IDC_SORT_RATE,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,317,142,52,8
+    CONTROL         "Sort by PID",IDC_SORT_PID,"Button",BS_AUTORADIOBUTTON,
+                    371,142,48,8
+    SCROLLBAR       IDC_PIDS_SCROLL,412,150,8,138,SBS_VERT
+    CONTROL         "Tree1",IDC_SI_TREE,"SysTreeView32",TVS_HASBUTTONS | 
+                    TVS_HASLINES | TVS_LINESATROOT | WS_BORDER | WS_TABSTOP,
+                    0,0,161,300
+    GROUPBOX        "MPEG-2 Statistics",IDC_STATISTICS_FRAME,166,300,256,97
+    GROUPBOX        "Active PIDs",IDC_PIDS_BORDER,164,137,257,153,BS_FLAT
+    GROUPBOX        "Video Decode",IDC_VIDEO_FRAME,424,0,179,397
+    SCROLLBAR       IDC_SCROLL_THUMBNAILS,596,5,8,391,SBS_VERT
+    CONTROL         "Disabled",IDC_PID_CHART_DISABLE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,209,142,40,8
+    PUSHBUTTON      "",IDC_LITE_WARNING,377,276,28,9,NOT WS_VISIBLE
+    GROUPBOX        "General Information",IDC_SOURCE_BOX,1,300,161,97
+    EDITTEXT        IDC_SI_TEXT,162,0,258,137,ES_MULTILINE | WS_VSCROLL
+END
+
+IDD_EXPORT_SI_HOOK DIALOG DISCARDABLE  0, 0, 279, 73
+STYLE WS_CHILD | WS_CLIPSIBLINGS
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "PAT",IDC_EXPORT_SI_PAT,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,15,22,29,9
+    CONTROL         "PMTs",IDC_EXPORT_SI_PMTS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,54,22,32,9
+    CONTROL         "CAT",IDC_EXPORT_SI_CAT,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,93,22,29,9
+    CONTROL         "NIT",IDC_EXPORT_SI_NIT,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,132,22,29,9
+    CONTROL         "SDT",IDC_EXPORT_SI_SDT,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,171,22,34,9
+    CONTROL         "EIT",IDC_EXPORT_SI_EIT,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,210,22,29,9
+    PUSHBUTTON      "All",IDC_EXPORT_SI_ALL,242,22,24,11
+    CONTROL         "SDT only for this mux",IDC_EXPORT_SI_SDT_THIS_MUX,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,40,84,9
+    CONTROL         "PID Usage Chart",IDC_EXPORT_SI_PID_CHART,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,109,40,68,9
+    GROUPBOX        "Export Tables and Options",IDC_STATIC,3,3,267,66
+    LTEXT           "",IDC_STATIC,15,34,218,2,SS_SUNKEN | NOT WS_GROUP
+    CONTROL         "Thumbnails",IDC_EXPORT_SI_THUMBNAILS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,190,40,61,9
+    CONTROL         "General Info",IDC_EXPORT_SI_GENERAL_INFO,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,52,84,9
+    CONTROL         "MPEG Stats",IDC_EXPORT_SI_MPEG_STATS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,109,52,68,9
+END
+
+IDD_RECORD DIALOG DISCARDABLE  0, 0, 302, 306
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Stream Selection"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_RECORD_FILE,77,12,202,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_RECORD_BROWSE,283,13,10,11
+    PUSHBUTTON      "...",IDC_CHANGE_FILENAME_FORMAT,283,26,10,11
+    CONTROL         "Split files greater than",IDC_RECORD_SPLIT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,77,41,81,9
+    EDITTEXT        IDC_RECORD_SPLIT_SIZE,163,40,29,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER | WS_DISABLED
+    CONTROL         "MB",IDC_RECORD_MB_LIMIT,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,199,42,23,10
+    CONTROL         "Seconds",IDC_RECORD_SEC_LIMIT,"Button",
+                    BS_AUTORADIOBUTTON,231,42,42,9
+    CONTROL         "Limit recordings to",IDC_RECORD_LIMIT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,77,54,77,8
+    EDITTEXT        IDC_RECORD_LIMIT_SIZE,163,53,29,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER | WS_DISABLED
+    LISTBOX         IDC_RECORD_VIDEO_ES,77,80,218,20,LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_RECORD_AUDIO_ES,77,115,218,34,LBS_MULTIPLESEL | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "All",IDC_RECORD_ALL_AUDIO,49,136,23,12
+    CONTROL         "Defacto",IDC_RECORD_PMT_DEFACTO,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,77,153,54,8
+    CONTROL         "ETSI",IDC_RECORD_PMT_ETSI,"Button",BS_AUTORADIOBUTTON,
+                    137,153,45,8
+    LISTBOX         IDC_RECORD_OTHER_ES,77,176,218,31,LBS_MULTIPLESEL | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "All",IDC_RECORD_ALL_OTHER,49,194,23,12
+    CONTROL         "Remove null PIDs (PID 0x1fff)",IDC_RECORD_NO_NULLS,
+                    "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,77,
+                    224,112,9
+    CONTROL         "Force PIDs to be ATSC compatible",IDC_ATSC_MODE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,77,234,134,9
+    CONTROL         "Transport",IDC_RECORD_TS,"Button",BS_AUTORADIOBUTTON | 
+                    WS_DISABLED | WS_GROUP,77,245,47,9
+    EDITTEXT        IDC_RECORD_TITLE,77,256,218,12,ES_AUTOHSCROLL
+    CONTROL         "Include CA data",IDC_INCLUDE_CA,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,77,271,134,8
+    CONTROL         "Program",IDC_RECORD_PS,"Button",BS_AUTORADIOBUTTON | 
+                    WS_DISABLED,127,245,47,9
+    DEFPUSHBUTTON   "Start",IDOK,195,289,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,249,289,50,14
+    LTEXT           "IDC_RECORD_FILENAME_SAMPLE",IDC_RECORD_FILENAME_SAMPLE,
+                    77,27,202,10,SS_SUNKEN
+    RTEXT           "Output File",IDC_STATIC,7,14,65,8
+    RTEXT           "Video Stream",IDC_RECORD_VIDEO_ES_CAPTION,7,81,65,8
+    RTEXT           "Audio Streams",IDC_RECORD_AUDIO_ES_CAPTION,7,117,65,8
+    RTEXT           "Files to be named",IDC_RECORD_SPLIT_CAPTION,7,27,65,8
+    RTEXT           "Record Title",IDC_RECORD_TITLE_CAPTION,7,258,65,8
+    RTEXT           "Stream Type",IDC_RECORD_STREAM_CAPTION,7,245,65,8,
+                    WS_DISABLED
+    GROUPBOX        "File Settings",IDC_STATIC,2,2,298,67
+    GROUPBOX        "Video Settings",IDC_STATIC,2,70,298,34
+    GROUPBOX        "Audio Settings",IDC_STATIC,2,105,298,60
+    GROUPBOX        "Mux Settings",IDC_STATIC,2,212,298,72
+    RTEXT           "AC3 PMT entry type",IDC_STATIC,7,152,65,8
+    LTEXT           "seconds",IDC_STATIC,198,54,47,8
+    GROUPBOX        "Additional Streams",IDC_STATIC,2,167,298,44
+    RTEXT           "Other Streams",IDC_STATIC,7,179,65,8
+    PUSHBUTTON      "Advanced",IDC_RECORD_ADVANCED_FILE,18,44,41,13,NOT 
+                    WS_VISIBLE
+    PUSHBUTTON      "Advanced",IDC_RECORD_ADVANCED_MUX,18,225,41,13,NOT 
+                    WS_VISIBLE
+END
+
+IDD_IPDVB_PID DIALOG DISCARDABLE  0, 0, 186, 260
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "IP/DVB PID Selection"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LISTBOX         IDC_IPDVB_PID_LIST,27,19,92,226,LBS_MULTIPLESEL | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,128,19,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,128,35,50,14
+    PUSHBUTTON      "Load PID List",IDC_RECORD_PID_LOAD,128,52,50,14
+    PUSHBUTTON      "Save PID List",IDC_RECORD_PID_SAVE,128,69,50,14
+    LTEXT           "Select the PID(s) to be decoded as IP/DVB streams:",
+                    IDC_STATIC,4,6,177,13
+    LTEXT           "PIDs are listed in the same order as the PID chart",
+                    IDC_STATIC,0,249,176,8
+END
+
+IDD_ABOUT DIALOG DISCARDABLE  0, 0, 212, 175
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About..."
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,159,156,50,14
+    ICON            IDD_DVB_LOGO,IDC_STATIC,8,6,20,20
+    LTEXT           "IDC_VERSION",IDC_VERSION,43,2,164,9
+    LTEXT           "Copyright © 2003-2007 COOLSTF.com Inc.",IDC_STATIC,43,
+                    23,164,8
+    LTEXT           "IDC_CURRENT_SOURCE",IDC_CURRENT_SOURCE,48,84,159,9
+    RTEXT           "Source",IDC_CURRENT_SOURCE_CAPTION,8,84,35,8
+    LTEXT           "Warning: this computer program is protected by copyright law and internation treaties. Unauthorized reproduction or distribution of this program, or any portion of it, may result in severe civil and",
+                    IDC_STATIC,6,34,202,25
+    LTEXT           "criminal penalties, and will be prosecuted to the maximum extent possible under the law.",
+                    IDC_STATIC,6,58,202,16
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,5,78,202,1
+    LTEXT           "IDC_SOURCE_PARAMETERS",IDC_SOURCE_PARAMETERS,48,95,159,
+                    9
+    RTEXT           "Parameters",IDC_SOURCE_PARAMETERS_CAPTION,8,95,35,8
+    LTEXT           "IDC_SOURCE_MAX_PIDS",IDC_SOURCE_MAX_PIDS,48,105,159,9
+    RTEXT           "Max. PIDs",IDC_SOURCE_MAX_PIDS_CAPTION,8,105,35,8
+    LTEXT           "IDC_SOURCE_STOPABLE",IDC_SOURCE_STOPABLE,48,115,159,9
+    RTEXT           "Stopable",IDC_SOURCE_STOPABLE_CAPTION,8,115,35,8
+    LTEXT           "IDC_SOURCE_CAPABILITIES",IDC_SOURCE_CAPABILITIES,48,125,
+                    159,26
+    RTEXT           "Capabilities",IDC_SOURCE_CAPABILITIES_CAPTION,8,125,35,
+                    8
+    LTEXT           "IDC_BUILT",IDC_BUILT,43,12,164,9
+END
+
+IDD_RECORD_PID_SELECT DIALOG DISCARDABLE  0, 0, 282, 229
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Record PID Selection"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LISTBOX         IDC_IPDVB_PID_LIST,3,14,92,209,LBS_MULTIPLESEL | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_RECORD_PID_FOLDER,105,34,161,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_RECORD_PID_BROWSE,269,34,10,12
+    CONTROL         "Drop transport stream header",IDC_RECORD_PID_NO_HEADER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,61,115,9
+    CONTROL         "Record to a single file",IDC_RECORD_PID_ONE_FILE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,108,71,115,9
+    CONTROL         "Append to existing file(s)",IDC_RECORD_PID_APPEND,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,108,81,102,9
+    CONTROL         "Generate PCR packets",IDC_RECORD_PID_INCLUDE_PCR,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,108,92,115,10
+    DEFPUSHBUTTON   "OK",IDOK,143,115,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,199,115,50,14
+    PUSHBUTTON      "Load PID List",IDC_RECORD_PID_LOAD,143,133,50,14
+    PUSHBUTTON      "Save PID List",IDC_RECORD_PID_SAVE,199,133,50,14
+    LTEXT           "Select the PID(s) to be saved to disk files",IDC_STATIC,
+                    4,3,177,9
+    CTEXT           "PIDs are listed in the same order as the PID chart",
+                    IDC_STATIC,95,210,186,8
+    LTEXT           "Output Folder",IDC_OUTPUT_FOLDER_CAPTION,103,23,78,8
+    GROUPBOX        "Options",IDC_STATIC,103,50,174,56
+END
+
+IDD_STRADIS DIALOG DISCARDABLE  0, 0, 297, 159
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Stream Selection"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LISTBOX         IDC_RECORD_VIDEO_ES,59,2,233,18,LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_RECORD_AUDIO_ES,59,23,233,38,LBS_MULTIPLESEL | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "All",IDC_RECORD_ALL_AUDIO,31,48,23,12
+    LISTBOX         IDC_RECORD_OTHER_ES,59,64,233,70,LBS_MULTIPLESEL | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "All",IDC_RECORD_ALL_OTHER,31,121,23,12
+    DEFPUSHBUTTON   "Start",IDOK,189,140,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,243,140,50,14
+    RTEXT           "Video Stream",IDC_RECORD_VIDEO_ES_CAPTION,1,5,52,8
+    RTEXT           "Audio Streams",IDC_RECORD_AUDIO_ES_CAPTION,1,26,52,8
+    RTEXT           "Other Streams",IDC_RECORD_OTHER_ES_CAPTION,1,66,52,8
+END
+
+IDD_RESOLUTION_WARNING DIALOG DISCARDABLE  0, 0, 186, 98
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Resolution Warning"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Yes",IDOK,45,67,50,14
+    PUSHBUTTON      "No",IDCANCEL,103,67,50,14
+    ICON            IDI_INFO,IDC_STATIC,3,7,20,20
+    LTEXT           "This software is developed for monitors with 800x600 or higher resolution.",
+                    IDC_STATIC,29,9,148,21
+    LTEXT           "Use of this product may be impaired if you run with your current monitor settings.",
+                    IDC_STATIC,29,30,149,17
+    LTEXT           "Do you want to continue?",IDC_STATIC,29,51,140,9
+    CONTROL         "Don't show this warning again",IDC_RESOLUTION_DONT_SHOW,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,46,85,114,9
+END
+
+IDD_LICENSE DIALOG DISCARDABLE  0, 0, 213, 249
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "License"
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "Yes",IDOK,58,231,50,14
+    PUSHBUTTON      "No",IDCANCEL,114,231,50,14
+    DEFPUSHBUTTON   "Bogus",IDC_BOGUS,2,234,33,11
+    EDITTEXT        IDC_LICENSE_TEXT,1,0,211,213,ES_MULTILINE | 
+                    ES_AUTOHSCROLL | WS_VSCROLL
+    CTEXT           "Do you agree to be bound by the the terms of this license?",
+                    IDC_STATIC,1,216,211,8
+END
+
+IDD_THUMBNAIL_REFRESH_RATE DIALOG DISCARDABLE  0, 0, 220, 119
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Thumbnail Refresh Rate / Maximum Pictures"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_REFRESH_RATE,105,8,29,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_MAXIMUM_MPEG_PICTURES,105,51,29,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_MAXIMUM_DCII_PICTURES,105,66,29,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_MAXIMUM_H264_PICTURES,105,80,29,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,111,99,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,165,99,50,14
+    RTEXT           "Refresh every",IDC_STATIC,7,9,81,9
+    LTEXT           "seconds",IDC_STATIC,139,10,26,8
+    CTEXT           "Set to zero seconds to disable non-startup ES stream parsing",
+                    IDC_STATIC,6,25,210,8
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,6,42,208,1
+    RTEXT           "Maximum MPEG pictures",IDC_STATIC,7,52,81,10
+    RTEXT           "Maximum DCII pictures",IDC_STATIC,6,67,81,10
+    RTEXT           "Maximum H264 pictures",
+                    IDC_MAXIMUM_H264_PICTURES_CAPTION,6,81,81,10
+END
+
+IDD_SOURCE DIALOG DISCARDABLE  0, 0, 368, 255
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Select input source"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "List1",IDC_SOURCE_LIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_NOSORTHEADER | WS_BORDER | 
+                    WS_TABSTOP,5,11,358,178
+    DEFPUSHBUTTON   "OK",IDOK,257,193,50,14,WS_DISABLED
+    PUSHBUTTON      "Cancel",IDCANCEL,313,193,50,14
+    LTEXT           "Select the input source you want to use:",IDC_STATIC,4,
+                    1,234,8
+    LTEXT           "Command-line parameters:",IDC_STATIC,7,209,154,8
+    LTEXT           "IDC_COMMAND_LINE_PARAMETERS",
+                    IDC_COMMAND_LINE_PARAMETERS,7,220,355,22
+    CTEXT           "The source can be changed using the File menu in or by launching this application with the Ctrl key held down.",
+                    IDC_SOURCE_CAPTION,0,246,367,9
+    RTEXT           "Device Number",IDC_STATIC,9,195,56,8
+    EDITTEXT        IDC_SOURCE_DEVICE_NUMBER,73,193,28,12,ES_AUTOHSCROLL
+END
+
+IDD_MANUAL_CHANNELS DIALOG DISCARDABLE  0, 0, 228, 109
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Manual Channels"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "List1",IDC_MANUAL_CHANNEL_LIST,"SysListView32",
+                    LVS_REPORT | LVS_SINGLESEL | WS_BORDER | WS_TABSTOP,7,18,
+                    216,62
+    PUSHBUTTON      "Add...",IDC_ADD_MANUAL_CHANNEL,9,86,50,14
+    PUSHBUTTON      "Edit...",IDC_EDIT_MANUAL_CHANNEL,63,86,50,14
+    PUSHBUTTON      "Delete",IDC_DELETE_MANUAL_CHANNEL,117,86,50,14
+    DEFPUSHBUTTON   "Close",IDCANCEL,171,86,50,14
+    LTEXT           "Currently defined manual channels:",IDC_STATIC,3,4,156,
+                    8
+END
+
+IDD_MANUAL_CHANNEL_EDIT DIALOG DISCARDABLE  0, 0, 287, 130
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Manual Channel Definition"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_MANUAL_PROGRAM_NUMBER,81,4,41,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    EDITTEXT        IDC_MANUAL_PCR_PID,81,22,41,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_MANUAL_CHANNEL_ES_TYPE,85,50,41,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_MANUAL_CHANNEL_ES_PID,85,98,41,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "Add",IDC_MANUAL_ES_ADD,133,98,42,14
+    PUSHBUTTON      "Delete",IDC_MANUAL_ES_DELETE,179,98,42,14
+    LISTBOX         IDC_MANUAL_ES_LIST,228,68,41,46,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "MPEG Video",IDC_MANUAL_ES_MPEG_VIDEO,131,49,56,12
+    PUSHBUTTON      "MPEG Audio",IDC_MANUAL_ES_MPEG_AUDIO,131,62,56,12
+    PUSHBUTTON      "AC3 Audio",IDC_MANUAL_ES_AC3_AUDIO,131,75,56,12
+    DEFPUSHBUTTON   "OK",IDOK,176,10,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,232,10,50,14
+    RTEXT           "Program Number",IDC_STATIC,7,6,67,8
+    RTEXT           "Stream Type (hex)",IDC_MANUAL_CHANNEL_ES_TYPE_CAPTION,
+                    11,51,66,8
+    RTEXT           "Stream PID (hex)",IDC_MANUAL_CHANNEL_ES_PID_CAPTION,11,
+                    99,66,9
+    RTEXT           "PCR PID (hex)",IDC_MANUAL_PCR_PID_CAPTION,7,24,67,8
+    GROUPBOX        "Elementary Streams",IDC_STATIC,6,40,274,85
+    LTEXT           "Defined Streams",IDC_STATIC,234,49,27,18
+END
+
+IDD_PROGRAM_STREAM_WARNING DIALOG DISCARDABLE  0, 0, 186, 95
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Program Stream Warning"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Yes",IDOK,46,60,50,14
+    PUSHBUTTON      "No",IDCANCEL,102,60,50,14
+    ICON            IDI_INFO,IDC_STATIC,7,5,20,20
+    CONTROL         "Don't tell me this again",IDC_NO_PS_WARNING,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,48,82,119,9
+    LTEXT           "This version has issues with the Program Stream mux rate. This may result in a file that doesn't play correctly. This issue will be resolved in a future release of this product.",
+                    IDC_STATIC,37,6,143,34
+    LTEXT           "Do you want to continue?",IDC_STATIC,37,45,132,10
+END
+
+IDD_XNS_SERVER DIALOG DISCARDABLE  0, 0, 186, 60
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "XNS Server Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_XNS_SERVER_PORT,64,11,29,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    DEFPUSHBUTTON   "OK",IDOK,129,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
+    LTEXT           "Server Port",IDC_STATIC,7,13,43,8
+    LTEXT           "If you change the port, you'll need to stop and restart this application for the change to take effect.",
+                    IDC_STATIC,8,31,112,25
+END
+
+IDD_VLC_SETTINGS DIALOG DISCARDABLE  0, 0, 362, 146
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "VLC Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_VLC_EXE_LOCATION,98,7,213,13,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_VLC_BROWSE,313,7,13,13
+    CONTROL         "Enabled",IDC_VLC_CONTROL_ENABLE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,98,23,68,9
+    EDITTEXT        IDC_VLC_PORT,98,36,24,12,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "Enabled",IDC_VLC_CONTROL_SEND_LENGTH,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,98,52,68,9
+    PUSHBUTTON      "-",IDC_VLC_CONFIG_DOWN,8,92,15,12
+    PUSHBUTTON      "+",IDC_VLC_CONFIG_UP,26,92,15,12
+    EDITTEXT        IDC_VLC_CONFIG_DESCRIPTION,98,92,258,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_VLC_CONFIG_COMMAND,98,106,258,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,252,124,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,307,124,50,14
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,9,72,320,1
+    RTEXT           "VLC Executable",IDC_STATIC,13,8,77,8
+    RTEXT           "TSReader controls VLC",IDC_STATIC,13,23,77,8
+    RTEXT           "Data on TCP port",IDC_STATIC,13,38,77,8
+    LTEXT           "VLC Configurations",IDC_STATIC,13,78,61,10
+    CTEXT           "IDC_VLC_CONFIG_NUMBER",IDC_VLC_CONFIG_NUMBER,9,108,31,8
+    RTEXT           "Description",IDC_STATIC,52,93,38,8
+    RTEXT           "Command",IDC_STATIC,52,107,38,8
+    LTEXT           "<IP> in the command is replaced with the internal HTTP server address, i.e. http://127.0.0.1:1234. This is required.",
+                    IDC_STATIC,12,124,215,16
+    RTEXT           "Send data length",IDC_STATIC,13,52,77,8
+    PUSHBUTTON      "Default",IDC_VLC_SETTINGS_DEFAULT,331,7,28,13
+END
+
+IDD_VLC_WARNING DIALOG DISCARDABLE  0, 0, 238, 135
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "VLC Control Info"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Yes",IDOK,73,101,50,14
+    PUSHBUTTON      "No",IDCANCEL,130,101,50,14
+    ICON            IDI_INFO,IDC_STATIC,10,9,20,20
+    LTEXT           "Unless you're planning on using this application to send video over the network to another device running VLC, it is strongly recommend that you turn on VLC control in TSReader.",
+                    IDC_STATIC,39,11,192,24
+    LTEXT           "When you turn on VLC control, this application will start and stop VLC as required when you turn off playback or change channel. It's also recommended that you don't close VLC - let this application close it for you when you turn off playback.",
+                    IDC_STATIC,39,38,192,33
+    LTEXT           "Would you like to turn on VLC control? If you want to turn it off later, use the Settings/VLC menu.",
+                    IDC_STATIC,39,77,192,17
+    CONTROL         "Don't show me this again",IDC_VLC_NO_WARNING,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,81,122,94,9
+END
+
+IDD_BUFFER_SIZES DIALOG DISCARDABLE  0, 0, 165, 73
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Buffer Sizes"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_STREAMING_PIPE_SIZE,90,12,32,11,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    EDITTEXT        IDC_THUMBNAIL_PIPE_SIZE,90,27,32,11,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    DEFPUSHBUTTON   "OK",IDOK,57,53,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,111,53,50,14
+    RTEXT           "Streaming Pipe",IDC_STATIC,14,13,62,8
+    RTEXT           "Thumbnail Pipe",IDC_STATIC,14,27,62,8
+    LTEXT           "MB",IDC_STATIC,125,14,12,8
+    LTEXT           "MB",IDC_STATIC,126,28,12,8
+END
+
+IDD_PID_WARNING DIALOG DISCARDABLE  0, 0, 202, 135
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "PID Warning"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Yes",IDOK,62,101,50,14
+    PUSHBUTTON      "No",IDCANCEL,118,101,50,14
+    CONTROL         "Don't show this warning again",IDC_NO_MORE_PID_WARNING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,62,120,118,9
+    ICON            IDI_INFO,IDC_STATIC,3,9,20,20
+    LTEXT           "The hardware interface you're using doesn't support all PIDs from the transport stream. This will most likely result in a useless file.",
+                    IDC_STATIC,40,7,156,28
+    LTEXT           "The only solution to this problem is to use a different hardware interface that transmits the entire transport stream to the PC. A list of supported interfaces can be found at https://tsreader.co.uk",
+                    IDC_STATIC,40,38,156,42
+    LTEXT           "Do you still want to continue with this function?",
+                    IDC_STATIC,40,86,156,10
+END
+
+IDD_VLC_CONNECTION_DIALOG DIALOG DISCARDABLE  0, 0, 186, 69
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "HTTP Media Streaming"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,81,36,50,14
+    ICON            IDI_INFO,IDC_STATIC,4,3,21,20
+    LTEXT           "IDC_STATUS",IDC_STATUS,39,4,133,26
+    CONTROL         "Don't show this again",IDC_DONT_SHOW,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,60,55,95,9
+END
+
+IDD_FILE_NAME_FORMAT DIALOG DISCARDABLE  0, 0, 241, 209
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Split Record Filename Format"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_FORMAT_STRING,71,156,160,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,131,192,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,186,192,50,14
+    LTEXT           "uses a 'C'-style formatting string to set the name of the files generated when splitting files because of their size or record time.",
+                    IDC_SPLIT_INFO_CAPTION,10,13,221,17
+    LTEXT           "The variables are prefixed with a % sign. Numeric values may contain a size field and are as follows:",
+                    IDC_STATIC,10,32,216,16
+    LTEXT           "f - filename\ne - file extension\nn - file number\ny - year (4 digit)\nm - month\nd - day\n",
+                    IDC_STATIC,49,53,72,49
+    LTEXT           "h - hour\ni - minute\ns - second\n% - percent sign\nv - event name",
+                    IDC_STATIC,129,53,72,53
+    LTEXT           "Examples:",IDC_STATIC,10,105,166,8
+    LTEXT           "%f-%5n.%e - recording-00001.ts\n%f-%4y%2m%2d-%2h%2i.%e - recording-20030404-1000.ts",
+                    IDC_STATIC,28,119,191,16
+    GROUPBOX        "Information",IDC_STATIC,3,1,234,138
+    GROUPBOX        "Current Setting",IDC_STATIC,3,144,234,44
+    RTEXT           "Format String",IDC_STATIC,8,157,57,8
+    RTEXT           "Sample Filename",IDC_STATIC,8,173,57,8
+    EDITTEXT        IDC_FORMAT_SAMPLE,71,171,160,12,ES_AUTOHSCROLL | 
+                    ES_READONLY
+END
+
+IDD_ROKU1000_SETTINGS DIALOG DISCARDABLE  0, 0, 251, 101
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Roku HD1000 Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_ROKU_IP,88,5,112,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ROKU_USERNAME,88,19,112,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ROKU_PASSWORD,88,33,112,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ROKU_MPEGPSPLAY_LOCATION,88,47,159,12,ES_AUTOHSCROLL
+    CONTROL         "Disabled",IDC_ROKU_TRACE_DISABLED,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,88,62,58,8
+    DEFPUSHBUTTON   "OK",IDOK,141,82,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,197,82,50,14
+    RTEXT           "Roku HD1000 IP/Name",IDC_STATIC,0,7,80,8
+    RTEXT           "Username",IDC_STATIC,0,21,80,8
+    RTEXT           "Password",IDC_STATIC,0,35,80,8
+    RTEXT           "Playback Application",IDC_ROKU_PLAYBACK_CAPTION,0,48,80,
+                    8
+    RTEXT           "Trace Window",IDC_STATIC,0,62,80,8
+END
+
+IDD_ROKU_TRACE DIALOGEX 0, 0, 287, 249
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Roku HD1000 trace window"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    LISTBOX         IDC_TRACE_LIST,0,0,286,232,LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Copy to Clipboard",IDC_ROKU_TRACE_COPY,223,234,63,14
+    CONTROL         "Autoscroll Enabled",IDC_ROKU_AUTOSCROLL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,3,237,91,9
+END
+
+IDD_SERIAL_CONTROL DIALOG DISCARDABLE  0, 0, 189, 138
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Serial Receiver Control"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,79,119,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,133,119,50,14
+    GROUPBOX        "Receiver Type",IDC_STATIC,5,17,177,61
+    LISTBOX         IDD_SERIAL_CONTROL_RX_TYPES,10,27,168,47,
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Port Parameters",IDC_STATIC,5,83,177,28
+    RTEXT           "Serial Port",IDC_STATIC,11,95,42,8
+    COMBOBOX        IDC_SERIAL_CONTROL_PORT,58,93,65,58,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Serial Receiver Control Enabled",
+                    IDC_SERIAL_CONTROL_ENABLED,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,4,5,169,9
+END
+
+IDD_CONTROL_SERVER DIALOG DISCARDABLE  0, 0, 141, 71
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Control Server Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Enabled",IDC_CONTROL_SERVER_ENABLED,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,71,9,69,8
+    EDITTEXT        IDC_CONTROL_SERVER_PORT,71,24,29,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    DEFPUSHBUTTON   "OK",IDOK,21,47,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,77,47,50,14
+    RTEXT           "Server Port",IDC_STATIC,10,25,51,8
+    RTEXT           "Server Function",IDC_STATIC,10,9,51,8
+END
+
+IDD_PID_LIST DIALOG DISCARDABLE  0, 0, 295, 236
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "PID List"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,242,219,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,162,219,14,14,NOT WS_VISIBLE
+    LISTBOX         IDC_PID_LISTBOX,3,3,289,212,LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "PIDs are listed in the same order as the PID chart",
+                    IDC_STATIC,2,222,159,8
+    PUSHBUTTON      "Copy to Clipboard",IDC_PID_LIST_COPY,178,219,61,14
+END
+
+IDD_IP_SETTINGS DIALOG DISCARDABLE  0, 0, 240, 95
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "DVB/IP Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_IP_SAVE_FOLDER,7,21,213,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_IP_SAVE_FOLDER_ELIPSES,227,22,10,9
+    DEFPUSHBUTTON   "OK",IDOK,128,76,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,183,76,50,14
+    LTEXT           "Folder for IP data:",IDC_STATIC,5,7,128,10
+END
+
+IDD_IP_DEVICE DIALOG DISCARDABLE  0, 0, 373, 126
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "IP Retransmit Device Selection"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,266,108,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,320,108,50,14
+    LTEXT           "Select the network interface you want to transmit traffic onto:",
+                    IDC_STATIC,3,2,202,8
+    LISTBOX         IDC_IP_DEVICE_LIST,3,12,366,91,LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_LITE_CHART_WARNING DIALOG DISCARDABLE  0, 0, 186, 63
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "TSReader Lite restriction"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,131,43,50,14
+    ICON            IDI_INFO,IDC_STATIC,3,6,20,20
+    LTEXT           "In the Lite version of TSReader you may only use one chart at a time. To switch to a different chart, you must quit and restart TSReader.",
+                    IDC_STATIC,32,9,151,28
+    CONTROL         "Don't tell me this again",IDC_LITE_CHART_NO_WARN,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,32,45,85,9
+END
+
+IDD_EPG_GRID_SETTINGS DIALOG DISCARDABLE  0, 0, 277, 303
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "EPG Grid Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    SCROLLBAR       IDC_EPG_WIDTH,123,13,115,9
+    SCROLLBAR       IDC_EPG_HEIGHT,123,30,115,9
+    CONTROL         "Show only channels with EPG data",
+                    IDC_EPG_ONLY_EPG_CHANNELS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,11,49,126,8
+    CONTROL         "Show channels on this mux only",IDC_EPG_THIS_MUX_ONLY,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,146,49,116,8
+    CONTROL         "Show time grid",IDC_EPG_SHOW_TIME_GRID,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,11,60,126,8
+    CONTROL         "Grid on top",IDC_EPG_GRID_ON_TOP,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,146,60,116,8
+    CONTROL         "Update grid in realtime",IDC_EPG_UPDATE_REALTIME,"Button",
+                    BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,11,72,126,
+                    8
+    PUSHBUTTON      "Change",IDC_EPG_EVENT_BACK_COLOR,110,83,41,11
+    PUSHBUTTON      "Change",IDC_EPG_CHANNEL_BACK_COLOR,110,96,41,11
+    PUSHBUTTON      "Change",IDC_EPG_SELECTED_BACK_COLOR,110,109,41,11
+    PUSHBUTTON      "Change",IDC_EPG_PRIMARY_TEXT_COLOR,110,122,41,11
+    PUSHBUTTON      "Change",IDC_EPG_SECONDARY_TEXT_COLOR,110,135,41,11
+    PUSHBUTTON      "Change",IDC_EPG_TIME_GRID_COLOR,110,148,41,11
+    EDITTEXT        IDC_SCHEDULER_USERNAME,83,181,86,11,ES_AUTOHSCROLL
+    EDITTEXT        IDC_SCHEDULER_PASSWORD,83,194,86,11,ES_PASSWORD | 
+                    ES_AUTOHSCROLL
+    EDITTEXT        IDC_SCHEDULER_RECORD_DIRECTORY,83,207,181,11,
+                    ES_AUTOHSCROLL
+    EDITTEXT        IDC_EPG_DEFAULT_PREROLL,83,220,33,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EPG_DEFAULT_POSTROLL,157,220,33,12,ES_AUTOHSCROLL
+    CONTROL         "Don't include date/time in recorded programs",
+                    IDC_SCHEDULER_NO_DATE_TIME,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,83,238,159,8
+    CONTROL         "Scheduler requires login",IDC_SCHEDULER_REQUIRES_LOGIN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,83,248,109,8
+    CONTROL         "Record Program Stream",IDC_EPG_RECORD_PS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,83,258,126,8
+    CONTROL         "Wake system to run recording",IDC_EPG_SCHEDULE_WAKE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,83,267,126,8
+    DEFPUSHBUTTON   "OK",IDOK,170,284,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,224,284,50,14
+    LTEXT           "Width of EPG events",IDC_STATIC,11,13,68,8
+    LTEXT           "Height of EPG events",IDC_STATIC,12,30,69,8
+    LTEXT           "Narrow",IDC_STATIC,91,13,23,8
+    LTEXT           "Wide",IDC_STATIC,247,13,17,8
+    LTEXT           "Short",IDC_STATIC,92,29,19,8
+    LTEXT           "Tall",IDC_STATIC,248,31,16,8
+    GROUPBOX        "Display Settings",IDC_STATIC,4,3,269,162
+    GROUPBOX        "Scheduler Settings",IDC_STATIC,3,168,270,112
+    RTEXT           "Username",IDC_STATIC,9,182,68,8
+    RTEXT           "Password",IDC_STATIC,9,195,68,8
+    RTEXT           "Record Folder",IDC_STATIC,9,208,68,8
+    RTEXT           "Event background color",IDC_STATIC,15,84,85,8
+    RTEXT           "Channel background color",IDC_STATIC,15,97,85,8
+    RTEXT           "Selected background color",IDC_STATIC,15,110,85,8
+    RTEXT           "Primary text color",IDC_STATIC,15,123,85,8
+    RTEXT           "Secondary text color",IDC_STATIC,15,136,85,8
+    RTEXT           "Time grid color",IDC_STATIC,15,149,85,8
+    RTEXT           "Default Pre-roll",IDC_STATIC,9,222,68,8
+    LTEXT           "Post-roll",IDC_STATIC,123,222,27,8
+    RTEXT           "Options",IDC_STATIC,9,238,68,8
+END
+
+IDD_TABLE_VIEWER DIALOG DISCARDABLE  0, 0, 405, 167
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Table Viewer"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_TABLE_VIEWER_PID,60,1,35,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "Start",IDOK,298,4,50,14
+    PUSHBUTTON      "Close",IDCANCEL,352,4,50,14
+    CONTROL         "List1",IDC_TABLE_VIEWER_LIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_NOSORTHEADER | WS_BORDER | 
+                    WS_TABSTOP,3,25,399,140
+    LTEXT           "PID to monitor",IDC_STATIC,5,3,48,8
+    LTEXT           "IDC_TABLE_VIEWER_PID_FORMAT",
+                    IDC_TABLE_VIEWER_PID_FORMAT,99,3,48,8
+    LTEXT           "(Select only PIDs carrying MPEG-2 sections)",IDC_STATIC,
+                    5,15,203,8
+END
+
+IDD_GRAPH_REFRESH DIALOG DISCARDABLE  0, 0, 206, 58
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Graph Refresh Rate"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_GRAPH_REFRESH_RATE,91,10,43,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    EDITTEXT        IDC_GRAPH_HISTORICAL_POINTS,92,23,43,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    DEFPUSHBUTTON   "OK",IDOK,147,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,147,24,50,14
+    RTEXT           "Rate (milliseconds)",IDC_STATIC,5,11,79,9
+    RTEXT           "Historical chart points",
+                    IDC_GRAPH_HISTORICAL_POINTS_CAPTION,5,24,79,9
+END
+
+IDD_AUTO_RESTART DIALOG DISCARDABLE  0, 0, 216, 82
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Auto Restart Options"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Auto Restart when stream stops for",
+                    IDC_AUTORESTART_STOP,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,17,123,9
+    CONTROL         "Auto Restart on PAT version change",
+                    IDC_AUTORESTART_PAT_CHANGE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,6,171,9
+    CONTROL         "When restarting don't show tune dialog",
+                    IDC_AUTORESTART_NO_TUNE_DIALOG,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,39,193,9
+    CONTROL         "Don't beep when auto-restarting",IDC_RESTART_NOBEEP,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,50,182,9
+    DEFPUSHBUTTON   "OK",IDOK,107,64,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,162,64,50,14
+    EDITTEXT        IDC_AUTORESTART_STOP_DELAY,138,16,27,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    LTEXT           "seconds",IDC_STATIC,171,17,28,8
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,5,32,205,1
+END
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_ARCHIVE_SETUP$(PRO) DIALOG DISCARDABLE  0, 0, 324, 325
+#else
+IDD_ARCHIVE_SETUP DIALOG DISCARDABLE  0, 0, 324, 325
+#endif
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Record All Programs"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "List3",IDC_ARCHIVE_CHANNEL_LIST,"SysListView32",
+                    LVS_REPORT | LVS_SINGLESEL | LVS_NOSORTHEADER | 
+                    WS_BORDER | WS_TABSTOP,10,10,301,148
+    CONTROL         "Enabled",IDC_ARCHIVE_CHANNEL_ENABLED,"Button",
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,11,164,42,8
+    EDITTEXT        IDC_ARCHIVE_CHANNEL_OUTPUT_NAME,111,162,50,12,
+                    ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_ARCHIVE_CHANNEL_OUTPUT_LOCATION,227,162,84,12,
+                    ES_AUTOHSCROLL | WS_DISABLED
+    CONTROL         "Local EPG",IDC_ARCHIVE_CHANNEL_CURRENTEPG,"Button",
+                    BS_AUTORADIOBUTTON | WS_DISABLED | WS_GROUP,110,181,48,9
+    CONTROL         "EPG Server",IDC_ARCHIVE_CHANNEL_REMOTE_EPG,"Button",
+                    BS_AUTORADIOBUTTON | WS_DISABLED,164,181,50,9
+    CONTROL         "30 Mins.",IDC_ARCHIVE_CHANNEL_HALFHOUR,"Button",
+                    BS_AUTORADIOBUTTON | WS_DISABLED,223,181,40,9
+    EDITTEXT        IDC_ARCHIVE_CHANNEL_EPG_SERVER,166,192,145,12,
+                    ES_AUTOHSCROLL | WS_DISABLED
+    PUSHBUTTON      "Default Names",IDC_ARCHIVE_CHANNELS_DEFAULT_NAME,9,197,
+                    52,14
+    PUSHBUTTON      "Clone Channel",IDC_ARCHIVE_CLONE,65,197,52,14
+    EDITTEXT        IDC_ARCHIVE_BLOCKSIZE,68,228,26,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    CONTROL         "When storage < ",IDC_ARCHIVE_AUTO_DELETE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,15,249,65,8
+    EDITTEXT        IDC_ARCHIVE_AUTO_DELETE_GB,84,248,26,12,ES_AUTOHSCROLL
+    CONTROL         "Delete files",IDC_ARCHIVE_AUTO_DELETE_DELETE,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,128,250,47,8
+    CONTROL         "Move files to",IDC_ARCHIVE_AUTO_DELETE_MOVE,"Button",
+                    BS_AUTORADIOBUTTON,177,250,52,8
+    EDITTEXT        IDC_ARCHIVE_AUTO_DELETE_MOVE_LOCATION,234,248,72,12,
+                    ES_AUTOHSCROLL
+    EDITTEXT        IDC_ARCHIVE_WARNING_GB,65,263,22,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ARCHIVE_ERROR_GB,156,263,22,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "Alarm Sound...",IDC_ARCHIVE_SELECT_ALARM_SOUND,256,283,
+                    53,14
+    CONTROL         "Automatic restart if crashed",IDC_ARCHIVE_RESTART,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,286,102,8
+    PUSHBUTTON      "Save Settings",IDC_SAVE_SETTINGS,158,306,50,14
+    DEFPUSHBUTTON   "Start",IDOK,213,306,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,269,306,50,14
+    GROUPBOX        "Channel Settings",IDC_STATIC,4,0,316,216
+    RTEXT           "Output Location",IDC_STATIC,165,164,55,8
+    LTEXT           "Channel Name",IDC_STATIC,58,164,48,8
+    GROUPBOX        "Global Settings",IDC_STATIC,4,218,316,84
+    RTEXT           "Blocking Factor",IDC_STATIC,12,230,52,8
+    LTEXT           "IDC_ARCHIVE_SETUP_MEMORY",IDC_ARCHIVE_SETUP_MEMORY,98,
+                    230,131,8
+    LTEXT           "Program Splits",IDC_STATIC,58,181,50,8
+    LTEXT           "GB:",IDC_STATIC,113,250,11,8
+    LTEXT           "Warning when",IDC_STATIC,13,265,47,8
+    LTEXT           "GB free, error when",IDC_STATIC,90,265,66,8
+    LTEXT           "GB free",IDC_STATIC,182,265,37,8
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,13,243,295,1
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,13,278,295,1
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_ARCHIVE_RUN$(PRO) DIALOGEX 0, 0, 271, 268
+#else
+IDD_ARCHIVE_RUN DIALOGEX 0, 0, 271, 268
+#endif
+STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Archive Status"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Force New",IDC_ARCHIVE_RUN_FORCE_NEW,2,1,52,12
+    PUSHBUTTON      "Reset MinMax",IDC_ARCHIVE_RUN_RESET_MIN_MAX,56,1,52,12
+    CONTROL         "Silent",IDC_ARCHIVE_SILENT,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,111,3,31,8
+    PUSHBUTTON      "Debug",IDC_ARCHIVE_RUN_DEBUG,249,0,19,12
+    CONTROL         "Show Local Times",IDC_ARCHIVE_LOCAL_TIME,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,147,3,70,8
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_ARCHIVE_VIEW$(PRO) DIALOG DISCARDABLE  0, 0, 326, 252
+#else
+IDD_ARCHIVE_VIEW DIALOG DISCARDABLE  0, 0, 326, 252
+#endif
+STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "View Archived Recordings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Archive Root Folder",IDC_STATIC,7,5,64,8
+    EDITTEXT        IDC_ARCHIVE_VIEW_BASE_FOLDER,76,3,138,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_VIEW_ARCHIVE_BROWSE,217,3,12,12
+    DEFPUSHBUTTON   "Load",IDC_ARCHIVE_VIEW_LOAD,296,2,26,16
+    GROUPBOX        "Archived Recordings",IDC_STATIC,2,17,322,150
+    CONTROL         "List1",IDC_ARCHIVE_VIEW_LIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_NOSORTHEADER | WS_BORDER | 
+                    WS_TABSTOP,5,27,314,109
+    PUSHBUTTON      "Play",IDC_VIEW_ARCHIVE_PLAY,268,139,21,18,BS_ICON
+    PUSHBUTTON      "Del",IDC_VIEW_ARCHIVE_DELETE,292,139,21,18,BS_ICON
+    CONTROL         "Show local times",IDC_VIEW_ARCHIVE_SHOW_LOCAL_TIME,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,145,70,8
+    CTEXT           "IDC_VIEW_ARCHIVE_LOAD_PROGRESS",
+                    IDC_VIEW_ARCHIVE_LOAD_PROGRESS,242,5,40,8
+    LTEXT           "IDC_VIEW_ARCHIVE_DESCRIPTION",
+                    IDC_VIEW_ARCHIVE_DESCRIPTION,74,139,157,25
+    PUSHBUTTON      "Copy",IDC_ARCHIVE_VIEW_COPY_FILENAME,234,139,32,18
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_EIT_SERVER$(PRO) DIALOG DISCARDABLE  0, 0, 214, 151
+#else
+IDD_EIT_SERVER DIALOG DISCARDABLE  0, 0, 214, 151
+#endif
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "EIT Server Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "EIT Server enabled",IDC_EIT_SERVER_ENABLED,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,13,15,79,9
+    EDITTEXT        IDC_EIT_SERVER_PORT,145,14,29,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    LISTBOX         IDC_EIT_SERVER_CONNECTIONS,13,50,189,55,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Refresh",IDC_EIT_SERVER_REFRESH_CONNECTIONS,154,108,50,
+                    14
+    DEFPUSHBUTTON   "OK",IDOK,102,132,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,160,132,50,14
+    LTEXT           "TCP port",IDC_STATIC,112,15,29,8
+    GROUPBOX        "Options",IDC_STATIC,6,1,203,33
+    GROUPBOX        "Active Connections",IDC_STATIC,6,38,203,89
+END
+#endif
+
+IDD_SAVE_EPG DIALOG DISCARDABLE  0, 0, 208, 50
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Save All EPG Data"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_SAVE_EPG_FOLDER,63,8,124,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_SAVE_ALL_EPG_BROWSE,190,8,12,12
+    DEFPUSHBUTTON   "Start",IDOK,98,31,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,151,31,50,14
+    RTEXT           "Output Folder",IDC_STATIC,7,9,48,8
+END
+
+IDD_PID_CHART_COLORS DIALOG DISCARDABLE  0, 0, 201, 101
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "PID Chart Color Selection"
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "...",IDC_UNSCRAMBLED_PID_COLOR_BROWSE,179,6,15,11
+    PUSHBUTTON      "...",IDC_UNSCRAMBLED_INACTIVE_PID_COLOR_BROWSE,179,20,
+                    15,11
+    PUSHBUTTON      "...",IDC_SCRAMBLED_PID_COLOR_BROWSE,179,34,15,11
+    PUSHBUTTON      "...",IDC_SCRAMBLED_INACTIVE_PID_COLOR_BROWSE,179,48,15,
+                    11
+    PUSHBUTTON      "...",IDC_HIGHLIGHT_PID_COLOR_BROWSE,179,62,15,11
+    DEFPUSHBUTTON   "OK",IDOK,91,82,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,145,82,50,14
+    RTEXT           "Unscrambled PID color",IDC_STATIC,8,6,102,8
+    RTEXT           "Unscrambled inactive PID color",IDC_STATIC,8,20,102,8
+    RTEXT           "Scrambled PID color",IDC_STATIC,8,34,102,8
+    RTEXT           "Scrambled inactive PID color",IDC_STATIC,8,48,102,8
+    RTEXT           "Highlighted PID color",IDC_STATIC,8,62,102,8
+END
+
+IDD_CAM_MENU DIALOG DISCARDABLE  0, 0, 296, 223
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Common Interface CAM menu"
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "EXIT",IDCANCEL,240,204,50,14
+    RTEXT           "Application Type",IDC_STATIC,7,4,60,8
+    RTEXT           "Application Info",IDC_STATIC,7,16,60,8
+    LTEXT           "IDC_CAM_APPLICATION_TYPE",IDC_CAM_APPLICATION_TYPE,76,4,
+                    91,9,SS_SUNKEN
+    LTEXT           "IDC_CAM_APPLICATION_INFO",IDC_CAM_APPLICATION_INFO,76,
+                    16,91,9,SS_SUNKEN
+    GROUPBOX        "",IDC_STATIC,5,27,283,171
+    LTEXT           "IDC_CAM_HEADER",IDC_CAM_HEADER,12,38,269,8
+    LTEXT           "IDC_CAM_SUB_HEADER",IDC_CAM_SUB_HEADER,12,49,269,39
+    LTEXT           "IDC_CAM_BOTTOM_LINE",IDC_CAM_BOTTOM_LINE,12,185,269,8
+    LISTBOX         IDC_CAM_LIST,15,90,259,89,LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "OK",IDOK,186,204,50,14
+    ICON            IDI_INFO,IDC_STATIC,5,202,20,20
+    LTEXT           "Warning: Very preliminary code",IDC_STATIC,36,206,118,9
+    ICON            IDI_RECORD,IDC_CAM_ERROR_INDICATOR,257,6,20,20,NOT 
+                    WS_VISIBLE
+END
+
+IDD_PROFILE_NEW DIALOG DISCARDABLE  0, 0, 312, 238
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "New Profile"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_PROFILE_NEW_NAME,138,8,147,13,ES_AUTOHSCROLL
+    CONTROL         "List1",IDC_PROFILE_NEW_LIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_NOSORTHEADER | WS_BORDER | 
+                    WS_TABSTOP,5,45,300,163
+    DEFPUSHBUTTON   "OK",IDOK,257,218,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,201,218,50,14
+    LTEXT           "What name do you want for the profile?",IDC_STATIC,7,9,
+                    126,9
+    LTEXT           "Click the Transport Stream source you wish to use",
+                    IDC_STATIC,7,33,195,10
+END
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_SETTINGS$(PRO) DIALOG DISCARDABLE  0, 0, 432, 239
+#else
+IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 432, 239
+#endif
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,5,220,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,60,220,50,14
+    CONTROL         "Tree1",IDC_SETTINGS_TREE,"SysTreeView32",WS_BORDER | 
+                    WS_TABSTOP,7,7,91,204
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,215,417,1
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_SETTINGS_THREADS$(PRO) DIALOG DISCARDABLE  0, 0, 321, 162
+#else
+IDD_SETTINGS_THREADS DIALOG DISCARDABLE  0, 0, 321, 162
+#endif
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Realtime",IDC_PROCESS_REALTIME,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,83,23,45,8
+    CONTROL         "High",IDC_PROCESS_HIGH,"Button",BS_AUTORADIOBUTTON,141,
+                    23,31,9
+    CONTROL         "Above Normal",IDC_PROCESS_ABOVE_NORMAL,"Button",
+                    BS_AUTORADIOBUTTON,184,23,58,9
+    CONTROL         "Normal",IDC_PROCESS_NORMAL,"Button",BS_AUTORADIOBUTTON,
+                    247,23,45,9
+    CONTROL         "Below Normal",IDC_PROCESS_BELOW_NORMAL,"Button",
+                    BS_AUTORADIOBUTTON,83,34,57,8
+    CONTROL         "Low",IDC_PROCESS_LOW,"Button",BS_AUTORADIOBUTTON,141,34,
+                    45,9
+    CONTROL         "Critical",IDC_DATA_INPUT_CRITICAL,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,83,55,43,8
+    CONTROL         "High",IDC_DATA_INPUT_HIGH,"Button",BS_AUTORADIOBUTTON,
+                    141,55,38,8
+    CONTROL         "Normal",IDC_DATA_INPUT_NORMAL,"Button",
+                    BS_AUTORADIOBUTTON,184,55,43,8
+    CONTROL         "Low",IDC_DATA_INPUT_LOW,"Button",BS_AUTORADIOBUTTON,247,
+                    55,43,8
+    CONTROL         "High",IDC_STREAM_PROCESSING_HIGH,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,83,76,43,8
+    CONTROL         "Normal",IDC_STREAM_PROCESSING_NORMAL,"Button",
+                    BS_AUTORADIOBUTTON,141,76,38,8
+    CONTROL         "Low",IDC_STREAM_PROCESSING_LOW,"Button",
+                    BS_AUTORADIOBUTTON,184,76,43,8
+    LTEXT           "Thread Settings",IDC_TITLE,0,0,321,14
+    LTEXT           "Data Input Priority",IDC_STATIC,0,55,71,8
+    LTEXT           "Stream Processing Priority",IDC_STATIC,0,75,76,17
+    LTEXT           "Main Process Priority",IDC_STATIC,0,23,71,8
+    LTEXT           "Thumbnail Processing Priority",IDC_STATIC,0,100,69,17
+    CONTROL         "High",IDC_THUMBNAIL_PROCESSING_HIGH,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,83,101,43,8
+    CONTROL         "Normal",IDC_THUMBNAIL_PROCESSING_NORMAL,"Button",
+                    BS_AUTORADIOBUTTON,141,101,37,8
+    CONTROL         "Low",IDC_THUMBNAIL_PROCESSING_LOW,"Button",
+                    BS_AUTORADIOBUTTON,184,101,43,8
+    CONTROL         "Disabled",IDC_THUMBNAIL_PROCESSING_DISABLED,"Button",
+                    BS_AUTORADIOBUTTON,247,101,43,8
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,47,305,1
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,69,305,1
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,95,305,1
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_SETTINGS_EIT$(PRO) DIALOG DISCARDABLE  0, 0, 321, 162
+#else
+IDD_SETTINGS_EIT DIALOG DISCARDABLE  0, 0, 321, 162
+#endif
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "EIT Settings",IDC_TITLE,0,0,321,14
+    CONTROL         "EIT Server Enabled",IDC_EIT_SERVER_ENABLED,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,0,37,120,8
+    LTEXT           "EIT Server TCP port",IDC_STATIC,0,48,67,8
+    EDITTEXT        IDC_EIT_SERVER_PORT,72,46,28,12,ES_AUTOHSCROLL
+    CONTROL         "Keep past EIT data",IDC_EIT_KEEP_PAST_DATA,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,0,26,76,8
+    SCROLLBAR       IDC_EPG_WIDTH,115,63,115,9
+    SCROLLBAR       IDC_EPG_HEIGHT,115,75,115,9
+    CONTROL         "Show only channels with EPG data",
+                    IDC_EPG_ONLY_EPG_CHANNELS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,0,89,126,8
+    CONTROL         "Show channels on this mux only",IDC_EPG_THIS_MUX_ONLY,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,99,127,8
+    LTEXT           "Width of EPG events",IDC_STATIC,0,63,68,8
+    LTEXT           "Height of EPG events",IDC_STATIC,0,75,69,8
+    LTEXT           "Narrow",IDC_STATIC,83,63,23,8
+    LTEXT           "Wide",IDC_STATIC,239,63,23,8
+    LTEXT           "Short",IDC_STATIC,84,74,19,8
+    LTEXT           "Tall",IDC_STATIC,240,76,19,8
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_SETTINGS_THUMBNAILS$(PRO) DIALOG DISCARDABLE  0, 0, 321, 162
+#else
+IDD_SETTINGS_THUMBNAILS DIALOG DISCARDABLE  0, 0, 321, 162
+#endif
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Thumbnail Settings",IDC_TITLE,0,0,321,14
+    CONTROL         "Animated thumbnails",IDC_THUMBNAIL_ANIMATED,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,0,26,209,8
+    CONTROL         "Display full thumbnails only",
+                    IDC_THUMBNAIL_FULL_THUMBNAILS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,0,36,209,8
+    CONTROL         "Audio thumbnails enabled",IDC_THUMBNAIL_AUDIO,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,0,46,209,8
+    CONTROL         "Full-size saved thumbnails",
+                    IDC_THUMBNAIL_FULL_SIZE_SAVED,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,0,56,209,8
+    CONTROL         "Hide thumbnail icons",IDC_THUMBNAIL_HIDE_ICONS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,0,66,209,8
+    CONTROL         "Large thumbnails",IDC_THUMBNAIL_LARGE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,0,76,209,8
+    LTEXT           "Refresh Rate",IDC_STATIC,0,117,44,8
+    EDITTEXT        IDC_THUMBNAIL_REFRESH_RATE,46,115,29,12,ES_AUTOHSCROLL
+    LTEXT           "seconds",IDC_STATIC,79,116,43,8
+    CONTROL         "Save All uses same name",
+                    IDC_THUMBNAIL_SAVE_ALL_SAME_NAME,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,0,86,209,8
+    CONTROL         "Show scrambled channels",IDC_THUMBNAIL_SHOW_SCRAMBLED,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,95,209,8
+    CONTROL         "Wait for CA before picture",IDC_THUMBNAIL_WAIT_CA,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,105,209,8
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_SETTINGS_IPDVB$(PRO) DIALOG DISCARDABLE  0, 0, 321, 162
+#else
+IDD_SETTINGS_IPDVB DIALOG DISCARDABLE  0, 0, 321, 162
+#endif
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "IP/DVB Settings",IDC_TITLE,0,0,321,14
+    CONTROL         "Auto Expand IPs",IDC_IP_AUTO_EXPAND,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,1,27,86,8
+    LTEXT           "Folder for IP data",IDC_STATIC,1,42,62,8
+    EDITTEXT        IDC_IP_SAVE_FOLDER,69,40,208,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_IP_SAVE_FOLDER_ELIPSES,281,40,13,12
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_SETTINGS_PARSER$(PRO) DIALOG DISCARDABLE  0, 0, 321, 190
+#else
+IDD_SETTINGS_PARSER DIALOG DISCARDABLE  0, 0, 321, 190
+#endif
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Parser Settings",IDC_TITLE,0,0,321,14
+    CONTROL         "Count continuity errors",IDC_PARSER_COUNT_CONTINUITY,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,28,101,8
+    CONTROL         "Ignore table CRC errors",IDC_PARSER_IGNORE_CRC,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,0,38,101,8
+    CONTROL         "Ignore DCII PMT for channel 80",IDC_PARSER_DCII_PMT_80,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,48,123,8
+    CONTROL         "Ignore DVB EIT and SDT",IDC_PARSER_IGNORE_DVB_EIT_SDT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,57,123,8
+    CONTROL         "Ignore PMTs above channel 65500",
+                    IDC_PARSER_IGNORE_PMT_65500,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,0,67,128,8
+    EDITTEXT        IDC_STREAMING_PIPE_SIZE,56,151,32,11,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    EDITTEXT        IDC_THUMBNAIL_PIPE_SIZE,56,164,32,11,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    RTEXT           "Streaming Pipe",IDC_STATIC,0,152,49,8
+    RTEXT           "Thumbnail Pipe",IDC_STATIC,0,164,50,8
+    LTEXT           "MB",IDC_STATIC,91,153,12,8
+    LTEXT           "MB",IDC_STATIC,91,164,12,8
+    CONTROL         "Plain CA descriptor decoding",
+                    IDC_PARSER_PLAIN_CA_DESCRIPTOR,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,0,77,128,8
+    CONTROL         "SDT only for current mux",IDC_PARSER_SDT_CURRENT_MUX,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,87,128,8
+    CONTROL         "Timestamp packets",IDC_PARSER_TIMESTAMP_PACKETS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,0,97,128,8
+    CONTROL         "Auto Restart when stream stops for",
+                    IDC_AUTORESTART_STOP,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,0,119,123,8
+    CONTROL         "Auto Restart on PAT version change",
+                    IDC_AUTORESTART_PAT_CHANGE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,0,107,171,8
+    CONTROL         "When restarting don't show tune dialog",
+                    IDC_AUTORESTART_NO_TUNE_DIALOG,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,0,130,193,8
+    CONTROL         "Don't beep when auto-restarting",IDC_RESTART_NOBEEP,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,139,182,8
+    EDITTEXT        IDC_AUTORESTART_STOP_DELAY,131,116,27,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    LTEXT           "seconds",IDC_STATIC,164,119,28,8
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_SETTINGS_CHART$(PRO) DIALOG DISCARDABLE  0, 0, 321, 162
+#else
+IDD_SETTINGS_CHART DIALOG DISCARDABLE  0, 0, 321, 162
+#endif
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Chart Settings",IDC_TITLE,0,0,321,14
+    PUSHBUTTON      "...",IDC_UNSCRAMBLED_PID_COLOR_BROWSE,171,21,15,11
+    PUSHBUTTON      "...",IDC_UNSCRAMBLED_INACTIVE_PID_COLOR_BROWSE,171,35,
+                    15,11
+    PUSHBUTTON      "...",IDC_SCRAMBLED_PID_COLOR_BROWSE,171,49,15,11
+    PUSHBUTTON      "...",IDC_SCRAMBLED_INACTIVE_PID_COLOR_BROWSE,171,63,15,
+                    11
+    PUSHBUTTON      "...",IDC_HIGHLIGHT_PID_COLOR_BROWSE,171,77,15,11
+    RTEXT           "Unscrambled PID color",IDC_STATIC,0,21,102,8
+    RTEXT           "Unscrambled inactive PID color",IDC_STATIC,0,35,102,8
+    RTEXT           "Scrambled PID color",IDC_STATIC,0,49,102,8
+    RTEXT           "Scrambled inactive PID color",IDC_STATIC,0,63,102,8
+    RTEXT           "Highlighted PID color",IDC_STATIC,0,77,102,8
+    CONTROL         "Realtime charting",IDC_CHART_REALTIME,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,1,95,185,8
+    LTEXT           "Chart refresh rate",IDC_STATIC,1,107,57,8
+    EDITTEXT        IDC_CHART_REFRESH_RATE,61,106,38,12,ES_AUTOHSCROLL
+    LTEXT           "ms",IDC_STATIC,103,107,57,8
+    LTEXT           "Chart Style",IDC_STATIC,1,123,48,8
+    COMBOBOX        IDC_CHART_STYLE,61,122,139,38,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_SETTINGS_UI$(PRO) DIALOG DISCARDABLE  0, 0, 321, 162
+#else
+IDD_SETTINGS_UI DIALOG DISCARDABLE  0, 0, 321, 162
+#endif
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "User Interface Settings",IDC_TITLE,0,0,321,14
+    CONTROL         "Auto expand PMTs",IDC_UI_AUTO_EXPAND_PMTS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,0,26,108,8
+    CONTROL         "Decimal PIDs",IDC_UI_DECIMAL_PIDS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,0,36,108,8
+    CONTROL         "Hide when minimized",IDC_UI_HIDE_MINIMIZED,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,0,46,108,8
+    CONTROL         "Keep special XML",IDC_UI_KEEP_SPECIAL_XML,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,0,56,108,8
+    CONTROL         "Show non-video PCR icons",IDC_UI_SHOW_NON_VIDEO_PCR,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,66,108,8
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_SETTINGS_RECEIVER$(PRO) DIALOG DISCARDABLE  0, 0, 321, 162
+#else
+IDD_SETTINGS_RECEIVER DIALOG DISCARDABLE  0, 0, 321, 162
+#endif
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Serial Receiver Settings",IDC_TITLE,0,0,321,14
+    LISTBOX         IDD_SERIAL_CONTROL_RX_TYPES,0,50,168,47,
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Serial Port",IDC_STATIC,0,105,33,8
+    COMBOBOX        IDC_SERIAL_CONTROL_PORT,44,103,65,58,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Serial Receiver Control Enabled",
+                    IDC_SERIAL_CONTROL_ENABLED,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,0,26,169,9
+    LTEXT           "Receiver Type",IDC_STATIC,0,40,61,8
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_SETTINGS_CONTROL_SERVER$(PRO) DIALOG DISCARDABLE  0, 0, 321, 162
+#else
+IDD_SETTINGS_CONTROL_SERVER DIALOG DISCARDABLE  0, 0, 321, 162
+#endif
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Control Server Settings",IDC_TITLE,0,0,321,14
+    CONTROL         "Control Server enabled",IDC_CONTROL_SERVER_ENABLED,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,27,115,8
+    EDITTEXT        IDC_CONTROL_SERVER_PORT,67,39,29,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    RTEXT           "Server on TCP Port",IDC_STATIC,0,40,62,8
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_SETTINGS_SPLIT_FILENAMES$(PRO) DIALOG DISCARDABLE  0, 0, 321, 191
+#else
+IDD_SETTINGS_SPLIT_FILENAMES DIALOG DISCARDABLE  0, 0, 321, 191
+#endif
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Split Filename Settings",IDC_TITLE,0,0,321,14
+    EDITTEXT        IDC_FORMAT_STRING,62,138,160,12,ES_AUTOHSCROLL
+    LTEXT           "This software uses a 'C'-style formatting string to set the name of the files generated when splitting files because of their size or record time.",
+                    IDC_STATIC,10,18,221,17
+    LTEXT           "The variables are prefixed with a % sign. Numeric values may contain a size field and are as follows:",
+                    IDC_STATIC,10,35,216,16
+    LTEXT           "f - filename\ne - file extension\nn - file number\ny - year\nm - month\nv - event name",
+                    IDC_STATIC,49,55,72,49
+    LTEXT           "d - day\nh - hour\ni - minute\ns - second\n% - percent sign",
+                    IDC_STATIC,129,55,72,42
+    LTEXT           "Examples:",IDC_STATIC,10,104,166,8
+    LTEXT           "%f-%5n.%e - recording-00001.ts\n%f-%4y%2m%2d-%2h%2i.%e - recording-20030404-1000.ts",
+                    IDC_STATIC,28,115,191,16
+    RTEXT           "Format String",IDC_STATIC,0,140,41,8
+    RTEXT           "Sample Filename",IDC_STATIC,0,154,53,8
+    EDITTEXT        IDC_FORMAT_SAMPLE,62,153,160,12,ES_AUTOHSCROLL | 
+                    ES_READONLY
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_SETTINGS_DVHS$(PRO) DIALOG DISCARDABLE  0, 0, 321, 162
+#else
+IDD_SETTINGS_DVHS DIALOG DISCARDABLE  0, 0, 321, 162
+#endif
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "D-VHS Settings",IDC_TITLE,0,0,321,14
+    CONTROL         "Auto Record/Stop",IDC_DVHS_AUTO_REC_STOP,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,0,27,89,8
+    CONTROL         "Auto Power on/off",IDC_DVHS_AUTO_POWER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,0,37,89,8
+    CONTROL         "Force PIDs to be ATSC compatible",IDC_DVHS_ATSC_PIDS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,47,143,8
+END
+#endif
+
+IDD_SETTINGS_SOURCE DIALOG DISCARDABLE  0, 0, 321, 208
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Source Module Selection",IDC_TITLE,0,0,321,14
+    CONTROL         "List1",IDC_SOURCE_LIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_NOSORTHEADER | WS_BORDER | 
+                    WS_TABSTOP,0,18,304,161
+    LTEXT           "Currently selected:",IDC_STATIC,0,196,62,8
+    LTEXT           "IDC_SOURCE_SELECTED_SOURCE",IDC_SOURCE_SELECTED_SOURCE,
+                    64,196,238,8
+    LTEXT           "Device Number",IDC_SOURCE_DEVICE_NUMBER_CAPTION,0,184,
+                    53,8
+    EDITTEXT        IDC_SOURCE_DEVICE_NUMBER,64,183,27,12,ES_AUTOHSCROLL
+END
+
+IDD_PLUGIN_SETTINGS DIALOG DISCARDABLE  0, 0, 186, 50
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "CA Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,129,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
+    CONTROL         "Prefered CA ID enabled",
+                    IDC_PLUGINS_PREFERED_CA_ID_ENABLED,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,9,103,8
+    LTEXT           "Prefered CA ID (hex)",IDC_STATIC,7,25,68,8
+    EDITTEXT        IDC_PLUGINS_PREFERED_CA_ID,78,24,39,12,ES_AUTOHSCROLL
+END
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_FORWARDER_SETUP$(PRO) DIALOG DISCARDABLE  0, 0, 327, 317
+#else
+IDD_FORWARDER_SETUP DIALOG DISCARDABLE  0, 0, 327, 317
+#endif
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Forward to UDP"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "List3",IDC_FORWARDER_CHANNEL_LIST,"SysListView32",
+                    LVS_REPORT | LVS_SINGLESEL | LVS_NOSORTHEADER | 
+                    WS_BORDER | WS_TABSTOP,10,10,301,148
+    CONTROL         "Enabled",IDC_FORWARDER_CHANNEL_ENABLED,"Button",
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,11,163,42,8
+    EDITTEXT        IDC_FORWARDER_CHANNEL_DESTINATION,143,161,168,12,
+                    ES_AUTOHSCROLL | WS_DISABLED
+    CONTROL         "Include Conditional Access Tables",
+                    IDC_FORWARDER_INCLUDE_CA,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,11,176,141,8
+    CONTROL         "Enabled",IDC_FORWARDER_MUX_ENABLED,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,11,208,42,8
+    EDITTEXT        IDC_FORWARDER_MUX_DESTINATION,143,206,115,12,
+                    ES_AUTOHSCROLL
+    CONTROL         "Drop NULLs",IDC_FORWARDER_MUX_NO_NULLS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,264,208,52,9
+    COMBOBOX        IDC_INTERFACE_ADDRESS,147,236,86,100,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Enabled",IDC_FORWARDER_SAP_ENABLED,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,147,251,40,8
+    EDITTEXT        IDC_FORWARDER_SAP_GROUP,147,261,81,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FORWARDER_MULTICAST_TTL,147,275,24,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    DEFPUSHBUTTON   "Start",IDOK,210,298,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,266,298,50,14
+    GROUPBOX        "Channel Forwarding",IDC_STATIC,4,0,316,190
+    RTEXT           "Destination Address:Port",IDC_STATIC,57,163,79,8
+    GROUPBOX        "Output Interface",IDC_STATIC,4,227,316,68
+    RTEXT           "Select Network Interface",IDC_STATIC,35,238,102,8
+    RTEXT           "SAP Announcments",IDC_STATIC,35,250,102,9
+    RTEXT           "SAP Group Name",IDC_STATIC,35,263,102,9
+    GROUPBOX        "Mux forwarding",IDC_STATIC,4,195,316,30
+    RTEXT           "Destination Address:Port",IDC_STATIC,57,208,79,8
+    LTEXT           "For multiple addresses comma seperate addr:port",
+                    IDC_STATIC,5,300,196,8
+    RTEXT           "Multicast IP Time to Live",IDC_STATIC,35,276,102,9
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_FORWARDER_RUN$(PRO) DIALOGEX 0, 0, 382, 244
+#else
+IDD_FORWARDER_RUN DIALOGEX 0, 0, 382, 244
+#endif
+STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Forwarder Status"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+END
+#endif
+
+IDD_EPG_GOTO_CHANNEL DIALOG DISCARDABLE  0, 0, 186, 45
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Goto Channel"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_GOTO_CHANNEL_NUMBER,79,10,37,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,129,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
+    RTEXT           "Goto to channel",IDC_STATIC,5,11,57,8
+    LTEXT           "Enter channel number or name",IDC_STATIC,15,28,102,10
+END
+
+IDD_EPG_FIND_STRING DIALOG DISCARDABLE  0, 0, 210, 74
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Find EPG String"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDD_EPG_SEARCH_STRING,17,21,119,12,ES_AUTOHSCROLL
+    CONTROL         "Search titles",IDC_EPG_SEARCH_TITLE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,19,41,113,9
+    CONTROL         "Search descriptions",IDC_EPG_SEARCH_DESCRIPTION,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,19,52,113,9
+    DEFPUSHBUTTON   "OK",IDOK,151,4,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,151,22,50,14
+    LTEXT           "Enter the string you wish to search for",IDC_STATIC,9,7,
+                    123,8
+END
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_SETTINGS_ROKU$(PRO) DIALOG DISCARDABLE  0, 0, 321, 162
+#else
+IDD_SETTINGS_ROKU DIALOG DISCARDABLE  0, 0, 321, 162
+#endif
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Roku HD-1000 Settings",IDC_TITLE,0,0,321,14
+    EDITTEXT        IDC_ROKU_IP,84,31,112,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ROKU_USERNAME,84,45,112,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ROKU_PASSWORD,84,59,112,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ROKU_MPEGPSPLAY_LOCATION,84,73,112,12,ES_AUTOHSCROLL
+    CONTROL         "Disabled",IDC_ROKU_TRACE_DISABLED,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,84,88,58,8
+    RTEXT           "Roku HD1000 IP/Name",IDC_STATIC,0,32,77,8
+    RTEXT           "Username",IDC_STATIC,0,46,77,8
+    RTEXT           "Password",IDC_STATIC,0,60,77,8
+    RTEXT           "CinemaSix Location",IDC_ROKU_PLAYBACK_CAPTION,0,73,77,8
+    RTEXT           "Trace Window",IDC_STATIC,0,87,77,8
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_SETTINGS_STRADIS$(PRO) DIALOG DISCARDABLE  0, 0, 321, 162
+#else
+IDD_SETTINGS_STRADIS DIALOG DISCARDABLE  0, 0, 321, 162
+#endif
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Stradis Settings",IDC_TITLE,0,0,321,14
+    CONTROL         "Force output to PAL mode",IDC_STRADIS_FORCE_PAL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,1,27,110,8
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_SETTINGS_VLC$(PRO) DIALOG DISCARDABLE  0, 0, 334, 162
+#else
+IDD_SETTINGS_VLC DIALOG DISCARDABLE  0, 0, 334, 162
+#endif
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "VLC Settings",IDC_TITLE,0,0,321,14
+    EDITTEXT        IDC_VLC_EXE_LOCATION,83,28,213,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_VLC_BROWSE,299,29,13,11
+    CONTROL         "Enabled",IDC_VLC_CONTROL_ENABLE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,83,44,68,9
+    EDITTEXT        IDC_VLC_PORT,83,57,24,12,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "Enabled",IDC_VLC_CONTROL_SEND_LENGTH,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,83,73,68,9
+    PUSHBUTTON      "-",IDC_VLC_CONFIG_DOWN,0,113,15,12
+    PUSHBUTTON      "+",IDC_VLC_CONFIG_UP,18,113,15,12
+    EDITTEXT        IDC_VLC_CONFIG_DESCRIPTION,83,113,225,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_VLC_CONFIG_COMMAND,83,127,225,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,0,93,320,1
+    RTEXT           "VLC Executable",IDC_STATIC,0,29,75,8
+    RTEXT           "TSReader controls VLC",IDC_STATIC,0,44,75,8
+    RTEXT           "Data on TCP port",IDC_STATIC,0,59,75,8
+    LTEXT           "VLC Configurations",IDC_STATIC,0,99,61,10
+    CTEXT           "IDC_VLC_CONFIG_NUMBER",IDC_VLC_CONFIG_NUMBER,1,129,31,8
+    RTEXT           "Description",IDC_STATIC,39,114,38,8
+    RTEXT           "Command",IDC_STATIC,39,128,38,8
+    LTEXT           "<IP> in the command is replaced with the internal HTTP server address, i.e. http://127.0.0.1:1234. This is required.",
+                    IDC_STATIC,89,142,235,16
+    RTEXT           "Send data length",IDC_STATIC,0,73,75,8
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_SETTINGS_CA$(PRO) DIALOG DISCARDABLE  0, 0, 321, 162
+#else
+IDD_SETTINGS_CA DIALOG DISCARDABLE  0, 0, 321, 162
+#endif
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Conditional Access Settings",IDC_TITLE,0,0,321,14
+    CONTROL         "Prefered CA ID enabled",
+                    IDC_PLUGINS_PREFERED_CA_ID_ENABLED,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,0,26,103,8
+    LTEXT           "Prefered CA ID (hex)",IDC_STATIC,0,42,68,8
+    EDITTEXT        IDC_PLUGINS_PREFERED_CA_ID,71,40,39,12,ES_AUTOHSCROLL
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_SETTINGS_XNS$(PRO) DIALOG DISCARDABLE  0, 0, 321, 162
+#else
+IDD_SETTINGS_XNS DIALOG DISCARDABLE  0, 0, 321, 162
+#endif
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "XNS Server Settings",IDC_TITLE,0,0,321,14
+    LTEXT           "XNS Server Port",IDC_STATIC,3,26,62,9
+    EDITTEXT        IDC_XNS_SERVER_PORT,74,24,36,12,ES_AUTOHSCROLL
+END
+#endif
+
+IDD_MDI_INDEX DIALOG DISCARDABLE  0, 0, 324, 242
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "MDI Index"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LISTBOX         IDC_MDI_DEBUG,2,2,319,213,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Average bitrate:",IDC_STATIC,3,222,52,10
+    LTEXT           "",IDC_MDI_AVERAGE_BR,59,222,67,10,SS_SUNKEN
+    ICON            IDI_INFO,IDC_STATIC,173,218,21,20
+    LTEXT           "Warning: Very preliminary code",IDC_STATIC,204,222,118,
+                    9
+END
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_DESCRIPTOR_USAGE$(PRO) DIALOG DISCARDABLE  0, 0, 367, 172
+#else
+IDD_DESCRIPTOR_USAGE DIALOG DISCARDABLE  0, 0, 367, 172
+#endif
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Descriptor Usage"
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "Cancel",IDCANCEL,314,153,50,14
+    CONTROL         "List1",IDC_DESCRIPTOR_LIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_NOSORTHEADER | WS_BORDER | 
+                    WS_TABSTOP,2,2,363,146
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_STREAM_MONITOR$(PRO) DIALOG DISCARDABLE  0, 0, 356, 335
+#else
+IDD_STREAM_MONITOR DIALOG DISCARDABLE  0, 0, 356, 335
+#endif
+STYLE DS_MODALFRAME | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Stream Monitor"
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "Start",IDOK,251,0,40,14,NOT WS_VISIBLE | WS_DISABLED | 
+                    NOT WS_TABSTOP
+    DEFPUSHBUTTON   "Close",IDCANCEL,3,1,50,14
+    PUSHBUTTON      "Debug",IDC_DEBUG,60,0,48,13
+    PUSHBUTTON      "Settings...",IDC_STREAM_MONITOR_SETTINGS,304,1,50,14
+    PUSHBUTTON      "Save...",IDC_STREAM_MONITOR_SAVE,191,0,50,14,NOT 
+                    WS_VISIBLE | WS_DISABLED | NOT WS_TABSTOP
+    CONTROL         "List1",IDC_MONITOR_LIST,"SysListView32",LVS_REPORT | 
+                    LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,4,18,348,92
+    GROUPBOX        "Priority 1",IDC_STATIC,4,111,348,65
+    ICON            IDI_MONITOR_GREY,IDC_MONITOR_1_1,9,123,20,20,SS_NOTIFY | 
+                    SS_SUNKEN
+    ICON            IDI_MONITOR_GREY,IDC_MONITOR_1_2,92,123,20,20,SS_NOTIFY | 
+                    SS_SUNKEN
+    LTEXT           "1.1 TS sync loss",IDC_MONITOR_1_1_CAPTION,35,123,49,18
+    LTEXT           "1.2 Sync byte error",IDC_MONITOR_1_2_CAPTION,117,123,49,
+                    18
+    ICON            IDI_MONITOR_GREY,IDC_MONITOR_1_3,177,123,20,20,SS_NOTIFY | 
+                    SS_SUNKEN
+    LTEXT           "1.3 PAT error",IDC_MONITOR_1_3_CAPTION,203,123,49,18
+    ICON            IDI_MONITOR_GREY,IDC_MONITOR_1_4,262,123,20,20,SS_NOTIFY | 
+                    SS_SUNKEN
+    LTEXT           "1.4 Continuity count error",IDC_MONITOR_1_4_CAPTION,288,
+                    123,49,18
+    ICON            IDI_MONITOR_GREY,IDC_MONITOR_1_5,9,148,20,20,SS_NOTIFY | 
+                    SS_SUNKEN
+    LTEXT           "1.5 PMT error",IDC_MONITOR_1_5_CAPTION,35,148,49,18
+    ICON            IDI_MONITOR_GREY,IDC_MONITOR_1_6,92,148,20,20,SS_NOTIFY | 
+                    SS_SUNKEN
+    LTEXT           "1.6 PID error",IDC_MONITOR_1_6_CAPTION,117,148,49,18
+    GROUPBOX        "Priority 2",IDC_STATIC,4,181,348,65
+    ICON            IDI_MONITOR_GREY,IDC_MONITOR_2_1,9,193,20,20,SS_NOTIFY | 
+                    SS_SUNKEN
+    LTEXT           "2.1 Transport error",IDC_MONITOR_2_1_CAPTION,35,193,49,
+                    18
+    ICON            IDI_MONITOR_GREY,IDC_MONITOR_2_2,92,193,20,20,SS_NOTIFY | 
+                    SS_SUNKEN
+    LTEXT           "2.2 CRC error",IDC_MONITOR_2_2_CAPTION,117,193,49,18
+    ICON            IDI_MONITOR_GREY,IDC_MONITOR_2_3,177,193,20,20,SS_NOTIFY | 
+                    SS_SUNKEN
+    LTEXT           "2.3 PCR error",IDC_MONITOR_2_3_CAPTION,203,193,49,18
+    ICON            IDI_MONITOR_GREY,IDC_MONITOR_2_4,262,193,20,20,SS_NOTIFY | 
+                    SS_SUNKEN
+    LTEXT           "2.4 PCR accuracy error",IDC_MONITOR_2_4_CAPTION,288,193,
+                    49,18
+    ICON            IDI_MONITOR_GREY,IDC_MONITOR_2_5,9,217,20,20,SS_NOTIFY | 
+                    SS_SUNKEN
+    LTEXT           "2.5 PTS error",IDC_MONITOR_2_5_CAPTION,35,217,49,18
+    ICON            IDI_MONITOR_GREY,IDC_MONITOR_2_6,92,217,20,20,SS_NOTIFY | 
+                    SS_SUNKEN
+    LTEXT           "2.6 CAT error",IDC_MONITOR_2_6_CAPTION,117,217,49,18
+    GROUPBOX        "Priority 3",IDC_STATIC,4,249,348,85
+    ICON            IDI_MONITOR_GREY,IDC_MONITOR_3_1,9,259,20,20,SS_NOTIFY | 
+                    SS_SUNKEN
+    LTEXT           "3.1 NIT error",IDC_MONITOR_3_1_CAPTION,35,259,49,18
+    ICON            IDI_MONITOR_GREY,IDC_MONITOR_3_2,92,261,20,20,SS_NOTIFY | 
+                    SS_SUNKEN
+    LTEXT           "3.2 SI repetition error",IDC_MONITOR_3_2_CAPTION,117,
+                    259,49,18
+    ICON            IDI_MONITOR_GREY,IDC_MONITOR_3_3,177,259,20,20,SS_NOTIFY | 
+                    SS_SUNKEN
+    LTEXT           "3.3 Buffer error",IDC_MONITOR_3_3_CAPTION,203,259,49,18
+    ICON            IDI_MONITOR_GREY,IDC_MONITOR_3_4,262,259,20,20,SS_NOTIFY | 
+                    SS_SUNKEN
+    LTEXT           "3.4 Un- referenced PID",IDC_MONITOR_3_4_CAPTION,288,259,
+                    49,18
+    ICON            IDI_MONITOR_GREY,IDC_MONITOR_3_5,9,284,20,20,SS_NOTIFY | 
+                    SS_SUNKEN
+    LTEXT           "3.5 SDT error",IDC_MONITOR_3_5_CAPTION,35,284,49,18
+    ICON            IDI_MONITOR_GREY,IDC_MONITOR_3_6,92,284,20,20,SS_NOTIFY | 
+                    SS_SUNKEN
+    LTEXT           "3.6 EIT error",IDC_MONITOR_3_6_CAPTION,117,284,49,18
+    ICON            IDI_MONITOR_GREY,IDC_MONITOR_3_7,177,284,20,20,SS_NOTIFY | 
+                    SS_SUNKEN
+    LTEXT           "3.7 RST error",IDC_MONITOR_3_7_CAPTION,203,284,49,18
+    ICON            IDI_MONITOR_GREY,IDC_MONITOR_3_8,262,284,20,20,SS_NOTIFY | 
+                    SS_SUNKEN
+    LTEXT           "3.8 TDT error",IDC_MONITOR_3_8_CAPTION,288,284,49,18
+    ICON            IDI_MONITOR_GREY,IDC_MONITOR_3_9,9,308,20,20,SS_NOTIFY | 
+                    SS_SUNKEN
+    LTEXT           "3.9 Empty buffer error",IDC_MONITOR_3_9_CAPTION,35,308,
+                    49,18
+    ICON            IDI_MONITOR_GREY,IDC_MONITOR_3_10,92,308,20,20,SS_NOTIFY | 
+                    SS_SUNKEN
+    LTEXT           "3.10 Data delay error",IDC_MONITOR_3_10_CAPTION,117,308,
+                    49,18
+END
+#endif
+
+IDD_EPG_DATE DIALOG DISCARDABLE  0, 0, 133, 114
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Go to EPG Starting Date"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,25,94,50,15
+    PUSHBUTTON      "Cancel",IDCANCEL,80,94,50,14
+    CONTROL         "MonthCalendar1",IDC_MONTHCALENDAR,"SysMonthCal32",
+                    MCS_NOTODAY | WS_TABSTOP,2,2,128,86
+END
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_CHART_SAVE_DATA$(PRO) DIALOG DISCARDABLE  0, 0, 265, 69
+#else
+IDD_CHART_SAVE_DATA DIALOG DISCARDABLE  0, 0, 265, 69
+#endif
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Save Chart Data"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Enabled",IDC_SAVE_CHART_DATA_ENABLED,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,7,8,50,8
+    EDITTEXT        IDC_SAVE_CHART_DATA_FOLDER,70,25,187,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,153,46,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,208,46,50,14
+    RTEXT           "Files written to",IDC_STATIC,9,27,50,8
+END
+#endif
+
+IDD_STRADIS_SETTINGS DIALOG DISCARDABLE  0, 0, 241, 98
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Stradis Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Force PAL output mode",IDC_STRADIS_FORCE_PAL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,6,104,8
+    CONTROL         "Stradis 1.2 API (SDM025, SDM026, SDM250, SDM275)",
+                    IDC_STRADIS_API_12,"Button",BS_AUTORADIOBUTTON | 
+                    BS_MULTILINE | WS_GROUP,10,33,223,14
+    CONTROL         "Stradis 1.6 API (HDM500, SDM290e, SDM280e, SDM260e, SDM290, SDM280, SDM260, SDM230)",
+                    IDC_STRADIS_API_16,"Button",BS_AUTORADIOBUTTON | 
+                    BS_MULTILINE,10,46,223,23
+    DEFPUSHBUTTON   "OK",IDOK,132,79,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,187,79,50,14
+    GROUPBOX        "Card Interface",IDC_STATIC,3,22,234,50
+END
+
+IDD_EPG_SHOW_SCHEDULE DIALOG DISCARDABLE  0, 0, 342, 175
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Scheduled Recordings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,225,156,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,281,156,50,14
+    CONTROL         "List1",IDC_EPG_SCHEDULE_LIST,"SysListView32",LVS_REPORT | 
+                    LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,2,3,337,149
+END
+
+IDD_BOMB_WARNING DIALOG DISCARDABLE  0, 0, 186, 95
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Crash"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,72,74,50,14
+    ICON            IDI_BOMB,IDC_STATIC,5,5,20,20
+    LTEXT           "This application has crashed. This may be due to stream issues, plugins or a bug.",
+                    IDC_STATIC,43,6,130,18
+    LTEXT           "If this continues to happen please click Help/Support and request assistance.",
+                    IDC_STATIC,43,27,130,17
+    CONTROL         "Don't tell me this again",IDC_BOMB_DONT_TELL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,60,53,100,12
+END
+
+IDD_EPG_MANUAL DIALOG DISCARDABLE  0, 0, 299, 117
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Schedule Manual Record"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "DateTimePicker1",IDC_EPG_DATETIMEPICKER_DATE,
+                    "SysDateTimePick32",DTS_RIGHTALIGN | DTS_LONGDATEFORMAT | 
+                    WS_TABSTOP,96,4,131,13
+    CONTROL         "DateTimePicker1",IDC_EPG_DATETIMEPICKER_TIME,
+                    "SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | 
+                    WS_TABSTOP | 0x8,233,4,57,13
+    CONTROL         "DateTimePicker2",IDC_EPG_MANUAL_DURATION,
+                    "SysDateTimePick32",DTS_RIGHTALIGN | DTS_UPDOWN | 
+                    WS_TABSTOP | 0x8,96,20,46,13
+    PUSHBUTTON      "+ 00:15:00",IDC_EPG_MANUAL_ADD_15,157,20,42,14
+    PUSHBUTTON      "+ 00:30:00",IDC_EPG_MANUAL_ADD_30,202,20,42,14
+    PUSHBUTTON      "+ 01:00:00",IDC_EPG_MANUAL_ADD_60,248,20,42,14
+    EDITTEXT        IDC_EPG_MANUAL_PROGRAM,96,57,25,12,ES_AUTOHSCROLL | 
+                    ES_NUMBER
+    EDITTEXT        IDC_EPG_MANUAL_SOURCE_PARAMETERS,96,72,159,12,
+                    ES_AUTOHSCROLL
+    PUSHBUTTON      "Current",IDC_EPG_MANUAL_CURRENT_MUX,260,72,34,12
+    DEFPUSHBUTTON   "Add",IDOK,183,98,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,239,98,50,14
+    RTEXT           "Start Date && Time",IDC_STATIC,1,6,87,8
+    RTEXT           "Source module parameters",IDC_STATIC,1,74,87,8
+    RTEXT           "Duration",IDC_STATIC,1,22,87,8
+    RTEXT           "Recording will complete",
+                    IDC_EPG_MANUAL_COMPLETE_CAPTION,1,39,87,8,NOT WS_VISIBLE
+    LTEXT           "IDC_EPG_MANUAL_COMPLETE",IDC_EPG_MANUAL_COMPLETE,97,39,
+                    192,9
+    RTEXT           "MPEG Program",IDC_STATIC,1,59,87,8
+    LTEXT           "IDC_EPG_MANUAL_SOURCE_PARAMETERS_FORMAT",
+                    IDC_EPG_MANUAL_SOURCE_PARAMETERS_FORMAT,96,86,199,9
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,96,51,198,1
+END
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_RECORD_ADVANCED_FILE$(PRO) DIALOG DISCARDABLE  0, 0, 255, 68
+#else
+IDD_RECORD_ADVANCED_FILE DIALOG DISCARDABLE  0, 0, 255, 68
+#endif
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Advanced Record Options"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Remove old files from recording folder when",
+                    IDC_ADVANCED_RECORD_REMOVE_OLD,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,5,6,151,8
+    EDITTEXT        IDC_ADVANCED_RECORD_REMOVE_OLD_SIZE,161,5,24,12,
+                    ES_AUTOHSCROLL
+    CONTROL         "Split files use UTC versus local time",
+                    IDC_ADVANCED_RECORD_UTC,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,5,19,145,8
+    DEFPUSHBUTTON   "OK",IDOK,148,48,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,201,48,50,14
+    LTEXT           "GB or less free",IDC_STATIC,190,6,48,8
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_RECORD_ADVANCED_MUX$(PRO) DIALOG DISCARDABLE  0, 0, 186, 242
+#else
+IDD_RECORD_ADVANCED_MUX DIALOG DISCARDABLE  0, 0, 186, 242
+#endif
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Advanced Record Options"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,117,27,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,117,44,50,14
+    CONTROL         "Drop the following PIDs from the recording",
+                    IDC_ADVANCED_MUX_PID_DROP_ENABLE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,6,7,156,9
+    LISTBOX         IDC_IPDVB_PID_LIST,8,25,92,209,LBS_MULTIPLESEL | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Load PID List",IDC_RECORD_PID_LOAD,117,62,50,14
+    PUSHBUTTON      "Save PID List",IDC_RECORD_PID_SAVE,117,80,50,14
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_EMAIL_SETUP$(PRO) DIALOG DISCARDABLE  0, 0, 228, 149
+#else
+IDD_EMAIL_SETUP DIALOG DISCARDABLE  0, 0, 228, 149
+#endif
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Email Setup"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_ARCHIVE_EMAIL,87,3,129,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ARCHIVE_EMAIL_FROM,87,16,129,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ARCHIVE_SMTP_SERVER,87,38,129,12,ES_AUTOHSCROLL
+    CONTROL         "SMTP server requires authentication",
+                    IDC_ARCHIVE_SMTP_AUTHENTICATE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,87,53,136,8
+    EDITTEXT        IDC_ARCHIVE_SMTP_USERNAME,87,63,129,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ARCHIVE_SMTP_PASSWORD,87,76,129,12,ES_PASSWORD | 
+                    ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,119,131,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,173,131,50,14
+    RTEXT           "Email to send warnings",IDC_STATIC,4,4,75,8
+    RTEXT           "SMTP Server",IDC_STATIC,4,40,75,8
+    RTEXT           "Email ""from"" address",IDC_STATIC,4,18,75,8
+    ICON            IDI_INFO,IDC_STATIC,13,101,21,20
+    LTEXT           "If configured, this email information is used to send warning and error messages from the Record All Programs and Stream Monitor functions",
+                    IDC_STATIC,44,99,168,27
+    RTEXT           "SMTP Username",IDC_STATIC,4,66,75,8
+    RTEXT           "SMTP Password",IDC_STATIC,4,78,75,8
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_STREAM_MONITOR_SETTINGS$(PRO) DIALOG DISCARDABLE  0, 0, 186, 92
+#else
+IDD_STREAM_MONITOR_SETTINGS DIALOG DISCARDABLE  0, 0, 186, 92
+#endif
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Stream Monitor Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_STREAM_MONITOR_ALARM_TIMEOUT,76,5,29,12,
+                    ES_AUTOHSCROLL
+    CONTROL         "Mux rate PCR",IDC_STREAM_MONITOR_ALARM_CLOCK_PCR,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,76,23,57,9
+    CONTROL         "PC counter",IDC_STREAM_MONITOR_ALARM_CLOCK_SYSTEM,
+                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,76,33,60,9
+    CONTROL         "Enabled",IDC_STREAM_MONITOR_ALARM_EMAIL_ENABLED,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,76,46,96,8
+    DEFPUSHBUTTON   "OK",IDOK,74,71,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,71,50,14
+    RTEXT           "Alarm Timeout",IDC_STATIC,0,7,70,8
+    LTEXT           "seconds",IDC_STATIC,108,7,47,8
+    RTEXT           "Clock Reference",IDC_STATIC,0,23,70,8
+    RTEXT           "Email Alarms",IDC_STATIC,0,46,70,8
+END
+#endif
+
+IDD_SCHEDULER_WARNING DIALOG DISCARDABLE  0, 0, 177, 74
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Unable to connect to Scheduler"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,67,34,50,14
+    ICON            IDI_INFO,IDC_STATIC,10,10,20,20
+    LTEXT           "Unable to start Windows scheduler - scheduled recordings will not be available",
+                    IDC_STATIC,39,10,132,20
+    CONTROL         "Don't tell me this again",IDC_DONT_SHOW,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,54,57,85,8
+END
+
+IDD_EIT_LANGUAGE_SETTINGS DIALOG DISCARDABLE  0, 0, 214, 87
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "EIT Language Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Language filtering enabled",
+                    IDC_EIT_LANGUAGE_FILTER_ENABLED,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,17,8,98,8
+    EDITTEXT        IDC_EIT_LANGUAGE_FILTER_LANGUAGE,160,20,18,12,
+                    ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,106,66,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,160,66,50,14
+    LTEXT           "Allow only descriptions with language code",
+                    IDC_EIT_LANGUAGE_FILTER_LANGUAGE_CAPTION,19,23,136,8
+    ICON            IDI_INFO,IDC_STATIC,19,40,21,20
+    LTEXT           "Any changes will require a TSReader restart to take full effect.",
+                    IDC_STATIC,46,42,157,16
+END
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_RECORD_TABLES$(PRO) DIALOG DISCARDABLE  0, 0, 294, 261
+#else
+IDD_RECORD_TABLES DIALOG DISCARDABLE  0, 0, 294, 261
+#endif
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Record Tables"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_RECORD_TABLE_TABLE_NUMBER,71,12,47,12,ES_AUTOHSCROLL
+    LISTBOX         IDC_IPDVB_PID_LIST,14,38,104,96,LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      ">",IDC_RECORD_TABLES_ADD,129,73,31,16
+    CONTROL         "List1",IDC_RECORD_TABLES_PID_TABLE_LIST,"SysListView32",
+                    LVS_REPORT | LVS_SINGLESEL | LVS_NOSORTHEADER | 
+                    WS_BORDER | WS_TABSTOP,172,38,104,96
+    PUSHBUTTON      "Remove",IDC_RECORD_TABLES_REMOVE,202,140,42,14
+    PUSHBUTTON      "Load PID List",IDC_RECORD_PID_LOAD,10,161,56,14
+    PUSHBUTTON      "Save PID List",IDC_RECORD_PID_SAVE,68,161,56,14
+    PUSHBUTTON      "Load Table List",IDC_RECORD_TABLES_LOAD,168,161,56,14
+    PUSHBUTTON      "Save Table List",IDC_RECORD_TABLE_SAVE,226,161,56,14
+    EDITTEXT        IDC_RECORD_TABLES_OUTPUT_LOCATION,100,198,171,12,
+                    ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_RECORD_TABLES_OUTPUT_LOCATION_BROWSE,274,198,
+                    12,12
+    CONTROL         "Raw",IDC_RECORD_TABLES_RAW,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,99,219,30,8
+    CONTROL         "Hex/ASCII",IDC_RECORD_TABLES_HEX_ASCII,"Button",
+                    BS_AUTORADIOBUTTON,139,219,52,8
+    DEFPUSHBUTTON   "OK",IDOK,186,241,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,240,241,50,14
+    CTEXT           "PIDs are listed in the same order as the PID chart",
+                    IDC_STATIC,14,140,104,21
+    GROUPBOX        "PID / Table list",IDC_STATIC,3,1,287,181
+    LTEXT           "PIDs",IDC_STATIC,13,27,31,8
+    RTEXT           "Table numbers",IDC_STATIC,12,14,48,10
+    LTEXT           "Selected PID/Tables list",IDC_STATIC,170,27,92,8
+    GROUPBOX        "Output",IDC_STATIC,3,186,288,50
+    RTEXT           "Record to Folder",IDC_STATIC,16,200,77,8
+    RTEXT           "Record Format",IDC_STATIC,16,218,77,8
+    LTEXT           "(single number or range like 50-5f)",
+                    IDC_RECORD_TABLE_TABLE_CAPTION,126,13,154,8
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_THUMBNAIL_REFRESH_RATE_PRO$(PRO) DIALOG DISCARDABLE  0, 0, 220, 167
+#else
+IDD_THUMBNAIL_REFRESH_RATE_PRO DIALOG DISCARDABLE  0, 0, 220, 167
+#endif
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Thumbnail Refresh Rate / Maximum Pictures"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_REFRESH_RATE,105,3,29,12,ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_MAXIMUM_MPEG_PICTURES,105,41,29,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_MAXIMUM_DCII_PICTURES,105,56,29,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_MAXIMUM_H264_PICTURES,105,70,29,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_MAXIMUM_THUMBNAIL_THREADS,105,96,29,12,
+                    ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,111,148,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,165,148,50,14
+    RTEXT           "Refresh every",IDC_STATIC,7,4,81,9
+    LTEXT           "seconds",IDC_STATIC,139,5,26,8
+    CTEXT           "Set to zero seconds to disable non-startup ES stream parsing",
+                    IDC_STATIC,6,20,210,8
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,6,34,208,1
+    RTEXT           "Maximum MPEG pictures",IDC_STATIC,7,42,81,10
+    RTEXT           "Maximum DCII pictures",IDC_STATIC,6,57,81,10
+    RTEXT           "Maximum threads",IDC_MAXIMUM_THUMBNAIL_THREADS_CAPTION,
+                    6,97,81,10
+    RTEXT           "Maximum H264 pictures",
+                    IDC_MAXIMUM_H264_PICTURES_CAPTION,6,71,81,10
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,6,91,208,1
+    CTEXT           "This value sets the number of ES that can be parsed by TSReader simultaneously. If you see Continuity Errors or the Input Buffer display red during thumbnail generation, lower this value as the number of threads are probably overloading the CPU.",
+                    IDC_STATIC,6,111,210,33
+END
+#endif
+
+IDD_EXPORT_NIT_INI DIALOG DISCARDABLE  0, 0, 261, 74
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Export NIT as INI files"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_EXPORT_INI_FOLDER,85,6,157,13,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_EXPORT_NIT_BROWSE,245,6,13,13
+    CONTROL         "DVB-S2",IDC_EXPORT_NIT_DVBS2,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,85,25,45,9
+    CONTROL         "Turbo",IDC_EXPORT_NIT_TURBO,"Button",BS_AUTORADIOBUTTON,
+                    137,25,45,9
+    CONTROL         "Enabled",IDC_EXPORT_NIT_INCLUDE_IGNORED,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,86,40,85,8
+    DEFPUSHBUTTON   "OK",IDOK,147,55,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,205,55,50,14
+    RTEXT           "Export folder",IDC_STATIC,3,9,76,8
+    RTEXT           "High order modulation",IDC_STATIC,3,25,76,8
+    RTEXT           "Include ignored nets.",IDC_STATIC,3,40,76,8
+END
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_ARCHIVE_WAIT_EPG$(PRO) DIALOGEX 0, 0, 183, 46
+#else
+IDD_ARCHIVE_WAIT_EPG DIALOGEX 0, 0, 183, 46
+#endif
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Waiting for EPG data"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    LTEXT           "One or more channels need local EPG data and this currently isn't available. Please wait while the EPG data trickles in...",
+                    IDC_STATIC,13,8,157,24
+END
+#endif
+
+IDD_EPG_SCHEDULE_SETTINGS DIALOG DISCARDABLE  0, 0, 154, 79
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Scheduled Recording Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_EPG_PREROLL,70,9,31,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EPG_POSTROLL,70,24,31,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,42,56,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,96,56,50,14
+    RTEXT           "Pre-roll",IDC_STATIC,10,11,51,8
+    RTEXT           "Post-roll",IDC_STATIC,17,25,44,8
+    LTEXT           "minutes",IDC_STATIC,106,11,25,8
+    LTEXT           "minutes",IDC_STATIC,105,26,25,8
+END
+
+IDD_EPG_MANUAL_NO_SOURCE_PARAMETERS DIALOG DISCARDABLE  0, 0, 205, 98
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "No source parameters!"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,63,63,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,119,63,50,14
+    CONTROL         "Don't show this again",IDC_DONT_ASK,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,74,83,85,8
+    LTEXT           "No source parameters are specified. Depending on the TSReader source module being used, this may be acceptable.",
+                    IDC_STATIC,31,8,174,25
+    LTEXT           "If this is correct, click OK to continue or click Cancel and fill in the source parameter field.",
+                    IDC_STATIC,31,38,174,19
+    ICON            IDI_INFO,IDC_STATIC,4,9,22,20
+END
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_TABLE_VIEWER_PRO$(PRO) DIALOG DISCARDABLE  0, 0, 405, 330
+#else
+IDD_TABLE_VIEWER_PRO DIALOG DISCARDABLE  0, 0, 405, 330
+#endif
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Table Viewer"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_TABLE_VIEWER_PID,60,1,35,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "Start",IDOK,298,4,50,14
+    PUSHBUTTON      "Close",IDCANCEL,352,4,50,14
+    CONTROL         "List1",IDC_TABLE_VIEWER_LIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_NOSORTHEADER | WS_BORDER | 
+                    WS_TABSTOP,3,25,399,140
+    LTEXT           "PID to monitor",IDC_STATIC,5,3,48,8
+    LTEXT           "IDC_TABLE_VIEWER_PID_FORMAT",
+                    IDC_TABLE_VIEWER_PID_FORMAT,99,3,48,8
+    GROUPBOX        "Section Viewer",IDC_STATIC,3,167,399,161
+    CONTROL         "Show sections from the selected table",
+                    IDC_TABLE_VIEWER_SHOW_SECTIONS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,10,177,137,9
+    EDITTEXT        IDC_TABLE_VIEWER_SECTION_DISPLAY,10,189,385,135,
+                    ES_MULTILINE | ES_AUTOVSCROLL
+    LTEXT           "(Select only PIDs carrying MPEG-2 sections)",IDC_STATIC,
+                    5,15,203,8
+END
+#endif
+
+IDD_CHECK_NEW_VERSION DIALOG DISCARDABLE  0, 0, 169, 157
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Check for New Version"
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "Cancel",IDCANCEL,63,132,50,14
+    LTEXT           "Connecting to Internet...",IDC_STATIC,47,9,91,8
+    LTEXT           "Connecting to Server...",IDC_STATIC,47,32,91,8
+    ICON            IDI_UPDATE,IDC_UPDATE_STEP_1,21,3,20,20
+    ICON            IDI_UPDATE,IDC_UPDATE_STEP_2,21,26,20,20
+    LTEXT           "Opening Request....",IDC_STATIC,47,56,91,8
+    ICON            IDI_UPDATE,IDC_UPDATE_STEP_3,21,50,20,20
+    LTEXT           "Sending Request....",IDC_STATIC,47,79,91,8
+    ICON            IDI_UPDATE,IDC_UPDATE_STEP_4,21,74,20,20
+    LTEXT           "Reading Versions...",IDC_STATIC,47,102,91,8
+    ICON            IDI_UPDATE,IDC_UPDATE_STEP_5,21,96,20,20
+END
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_GPS_SIGNAL_EXPORT$(PRO) DIALOG DISCARDABLE  0, 0, 349, 228
+#else
+IDD_GPS_SIGNAL_EXPORT DIALOG DISCARDABLE  0, 0, 349, 228
+#endif
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "GPS/Signal Logger"
+FONT 8, "MS Sans Serif"
+BEGIN
+    COMBOBOX        IDC_GPS_PORT,30,13,108,13,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_GPS_RATE,174,13,44,13,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    EDITTEXT        IDC_GPS_OUTPUT_FILE,49,59,268,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_GPS_OUTPUT_FILE_BROWSE,323,59,13,12
+    CONTROL         "Log every",IDC_GPS_LOG_TIMED,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,50,75,44,8
+    EDITTEXT        IDC_GPS_LOG_SECONDS,99,73,23,12,ES_AUTOHSCROLL
+    CONTROL         "Manually",IDC_GPS_LOG_MANUAL,"Button",
+                    BS_AUTORADIOBUTTON,161,75,43,8
+    CONTROL         "GPS Time",IDC_GPS_GPS_TIME,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,50,88,46,8
+    CONTROL         "PC Local Time",IDC_GPS_PC_LOCAL_TIME,"Button",
+                    BS_AUTORADIOBUTTON,107,88,60,8
+    CONTROL         "PC UTC Time",IDC_GPS_PC_UTC_TIME,"Button",
+                    BS_AUTORADIOBUTTON,178,88,60,8
+    CONTROL         "Monitor CC/TEI errors for",IDC_GPS_ERROR_LOG_ENABLED,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,50,101,91,8
+    EDITTEXT        IDC_GPS_ERROR_LOG_MS,146,99,27,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "Log Now",IDOK,4,210,50,14
+    PUSHBUTTON      "Close",IDCANCEL,293,210,50,14
+    GROUPBOX        "GPS Interface",IDC_STATIC,3,2,342,43
+    RTEXT           "Port",IDC_STATIC,6,16,19,8
+    LTEXT           "GPS Data:",IDC_STATIC,12,32,35,8
+    LTEXT           "IDC_GPS_DATA",IDC_GPS_DATA,54,32,273,8
+    RTEXT           "Rate",IDC_STATIC,147,16,19,8
+    GROUPBOX        "Output Details",IDC_STATIC,3,48,342,68
+    RTEXT           "Output File",IDC_STATIC,6,60,36,8
+    GROUPBOX        "GPS/Signal Info",IDC_GPS_LOG_INFO,3,120,342,85
+    RTEXT           "Log Mode",IDC_STATIC,6,74,36,8
+    LTEXT           "seconds",IDC_STATIC,125,75,27,8
+    RTEXT           "Time Mode",IDC_STATIC,6,88,36,8
+    RTEXT           "Error Log",IDC_STATIC,6,100,36,8
+    LTEXT           "milliseconds",IDC_STATIC,177,101,41,8
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_FORWARD_SETTINGS$(PRO) DIALOG DISCARDABLE  0, 0, 209, 95
+#else
+IDD_FORWARD_SETTINGS DIALOG DISCARDABLE  0, 0, 209, 95
+#endif
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Forwarder Module Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "188 byte",IDC_FWD_188,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,88,6,41,8
+    CONTROL         "188 byte + 16 byte zero",IDC_FWD_188_16,"Button",
+                    BS_AUTORADIOBUTTON,88,16,89,8
+    CONTROL         "204 byte DVB-S Reed-Solomon",IDC_FWD_204,"Button",
+                    BS_AUTORADIOBUTTON,88,25,115,8
+    CONTROL         "Enabled",IDC_FWD_SYNC_INVERT,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,88,39,72,8
+    CONTROL         "Enabled",IDC_FWD_SYNC_RANDOMIZER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,88,50,72,8
+    CONTROL         "Enabled",IDC_FWD_SYNC_INTERLEAVER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,88,60,72,8
+    DEFPUSHBUTTON   "OK",IDOK,100,76,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,153,76,50,14
+    RTEXT           "Packet Length",IDC_STATIC,3,6,76,8
+    RTEXT           "DVB Sync Inversion",IDC_STATIC,3,38,76,8
+    RTEXT           "DVB-S Randomiser",IDC_STATIC,3,49,76,8
+    RTEXT           "DVB-S Interleaver",IDC_STATIC,3,60,76,8
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_CC_MASK_STREAMS$(PRO) DIALOG DISCARDABLE  0, 0, 141, 130
+#else
+IDD_CC_MASK_STREAMS DIALOG DISCARDABLE  0, 0, 141, 130
+#endif
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Mask CC Streams"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "ATSC",IDC_CC_MASK_1,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,8,37,136,8
+    CONTROL         "C-CUBE",IDC_CC_MASK_2,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,8,47,136,8
+    CONTROL         "SCTE-20",IDC_CC_MASK_3,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,8,57,136,8
+    CONTROL         "Scientific Atlanta",IDC_CC_MASK_4,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,8,67,136,8
+    CONTROL         "DIRECTV",IDC_CC_MASK_5,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,8,78,136,8
+    CONTROL         "System 321/33f",IDC_CC_MASK_6,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,8,88,135,8
+    DEFPUSHBUTTON   "OK",IDOK,21,106,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,75,106,50,14
+    LTEXT           "If the user data contains multiple caption streams, use the checkboxes below to mask out the streams you do not want to process",
+                    IDC_STATIC,5,2,130,33
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_CC_DUMP_STREAMS_HOOK$(PRO) DIALOG DISCARDABLE  0, 0, 279, 73
+#else
+IDD_CC_DUMP_STREAMS_HOOK DIALOG DISCARDABLE  0, 0, 279, 73
+#endif
+STYLE WS_CHILD | WS_CLIPSIBLINGS
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Raw User Data",IDC_CC_DUMP_RAW_USER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,18,64,8
+    CONTROL         "Dump EIA-608 Data",IDC_CC_DUMP_EIA_608,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,29,88,8
+    CONTROL         "Dump EIA-708 Data",IDC_CC_DUMP_EIA_708,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,16,40,88,8
+    LTEXT           "WARNING - no options selected - nothing will be logged",
+                    IDC_CC_DUMP_WARNING,4,55,178,8
+    LTEXT           "Dump Options",IDC_STATIC,3,2,54,8
+END
+#endif
+
+IDD_AUTO_RECORD_NO_PROGRAM DIALOG DISCARDABLE  0, 0, 181, 82
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Unable to start auto-record"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,71,60,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,10,56,22,14,NOT WS_VISIBLE
+    CONTROL         "Don't tell me this again",IDC_DONT_WARN,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,53,46,88,8
+    ICON            IDI_INFO,IDC_STATIC,9,7,20,20
+    LTEXT           "TSReader was unable to locate the program to be recorded in this mux.",
+                    IDC_STATIC,47,7,114,17
+    LTEXT           "Recording has been cancelled.",IDC_STATIC,47,29,114,9
+END
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDD_AUDIO_THUMBNAIL_SETTINGS$(PRO) DIALOG DISCARDABLE  0, 0, 186, 95
+#else
+IDD_AUDIO_THUMBNAIL_SETTINGS DIALOG DISCARDABLE  0, 0, 186, 95
+#endif
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Audio Thumbnail Settings"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Scope-style audio thumbnails enabled",
+                    IDC_AUDIO_THUMBNAILS_ENABLED,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,9,8,133,8
+    CONTROL         "Song title thumbnail generator enabled",
+                    IDC_TITLE_PARSER_ENABLED,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,9,23,155,8
+    EDITTEXT        IDC_AUDIO_TITLE_PMT_TYPE,100,36,25,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_AUDIO_TITLE_MPEG_TABLE_NUMBER,100,50,26,13,
+                    ES_AUTOHSCROLL | NOT WS_VISIBLE
+    DEFPUSHBUTTON   "OK",IDOK,74,73,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,73,50,14
+    RTEXT           "PMT Stream Type",IDC_STATIC,20,38,68,8
+    RTEXT           "MPEG Table Number",IDC_STATIC,20,51,68,8,NOT WS_VISIBLE
+    LTEXT           "IDC_AUDIO_THUMBNAIL_BASE",IDC_AUDIO_THUMBNAIL_BASE,130,
+                    38,44,8
+    LTEXT           "IDC_AUDIO_THUMBNAIL_BASE",IDC_AUDIO_THUMBNAIL_BASE2,130,
+                    51,44,8,NOT WS_VISIBLE
+END
+#endif
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+#if defined(APSTUDIO_INVOKED) || defined(ATSC_ICON)
+#if defined(APSTUDIO_INVOKED)
+IDD_DVB_LOGO$(ATSC_ICON) ICON    DISCARDABLE     "idd_atsc.ico"
+#else
+IDD_DVB_LOGO            ICON    DISCARDABLE     "idd_atsc.ico"
+#endif
+#endif
+#if defined(APSTUDIO_INVOKED) || defined(STANDARD_ICON)
+#if defined(APSTUDIO_INVOKED)
+IDD_DVB_LOGO$(STANDARD_ICON) ICON    DISCARDABLE     "dvb.ico"
+#else
+IDD_DVB_LOGO            ICON    DISCARDABLE     "dvb.ico"
+#endif
+#endif
+IDI_SI_VIDEO_ES         ICON    DISCARDABLE     "si_video_es.ico"
+IDI_SI_CAT              ICON    DISCARDABLE     "si_cat.ico"
+IDI_SI_DESCRIPTOR       ICON    DISCARDABLE     "si_descriptor.ico"
+IDI_SI_EIT              ICON    DISCARDABLE     "si_eit.ico"
+IDI_SI_NIT              ICON    DISCARDABLE     "si_nit.ico"
+IDI_SI_PAT              ICON    DISCARDABLE     "si_pat.ico"
+IDI_SI_PCR              ICON    DISCARDABLE     "si_pcr.ico"
+IDI_SI_PMT              ICON    DISCARDABLE     "si_pmt.ico"
+IDI_SI_SDT              ICON    DISCARDABLE     "si_sdt.ico"
+IDI_SI_USER_ES          ICON    DISCARDABLE     "si_user.ico"
+IDI_SI_AUDIO_ES         ICON    DISCARDABLE     "si_audio_es.ico"
+IDI_SI_BASE             ICON    DISCARDABLE     "si_base.ico"
+IDI_SI_BASE2            ICON    DISCARDABLE     "si_base2.ico"
+IDI_SI_IP               ICON    DISCARDABLE     "si_ip.ico"
+IDI_SI_VCT              ICON    DISCARDABLE     "si_base1.ico"
+IDI_SI_TDT              ICON    DISCARDABLE     "si_tdt.ico"
+IDI_SI_SIT              ICON    DISCARDABLE     "ico00001.ico"
+IDI_SI_CDT              ICON    DISCARDABLE     "si_cdt.ico"
+IDI_SI_MMT              ICON    DISCARDABLE     "si_mmt.ico"
+IDI_INFO                ICON    DISCARDABLE     "Info.ico"
+IDI_RUN_1               ICON    DISCARDABLE     "icon1.ico"
+IDI_RUN_2               ICON    DISCARDABLE     "run_2.ico"
+IDI_RUN_3               ICON    DISCARDABLE     "run_3.ico"
+IDI_RUN_4               ICON    DISCARDABLE     "run_4.ico"
+IDI_RECORD              ICON    DISCARDABLE     "record.ico"
+IDI_BLANK               ICON    DISCARDABLE     "blank.ico"
+IDI_STREAM              ICON    DISCARDABLE     "stream.ico"
+IDI_SI_USER_VBI         ICON    DISCARDABLE     "si_vbi.ico"
+IDI_SI_DATA             ICON    DISCARDABLE     "si_data.ico"
+IDI_SI_MGT              ICON    DISCARDABLE     "si_mgt.ico"
+IDI_SI_USER_SUBTL       ICON    DISCARDABLE     "si_sub.ico"
+IDI_SI_IP_STREAMING     ICON    DISCARDABLE     "si_ip_st.ico"
+IDI_SI_IP_SAVING        ICON    DISCARDABLE     "si_ip_sa.ico"
+#if defined(APSTUDIO_INVOKED) || defined(STANDARD_ICON)
+#if defined(APSTUDIO_INVOKED)
+IDI_DVBSMALL_LOGO$(STANDARD_ICON) ICON    DISCARDABLE     "dvbsmall.ico"
+#else
+IDI_DVBSMALL_LOGO       ICON    DISCARDABLE     "dvbsmall.ico"
+#endif
+#endif
+IDI_SI_BAT              ICON    DISCARDABLE     "si_bat.ico"
+IDI_TV_Y                ICON    DISCARDABLE     "ico00002.ico"
+IDI_TV_Y7               ICON    DISCARDABLE     "ico00003.ico"
+IDI_TV_Y7FV             ICON    DISCARDABLE     "tv_y7fv.ico"
+IDI_TV_G                ICON    DISCARDABLE     "ico00004.ico"
+IDI_TV_PG               ICON    DISCARDABLE     "tv_pg.ico"
+IDI_TV_14               ICON    DISCARDABLE     "ico00005.ico"
+IDI_TV_MA               ICON    DISCARDABLE     "tv_ma.ico"
+IDI_CC                  ICON    DISCARDABLE     "ico00006.ico"
+IDI_SI_SDT_OTHER        ICON    DISCARDABLE     "si_sdt_o.ico"
+IDI_LOG_INFO            ICON    DISCARDABLE     "ico00007.ico"
+IDI_LOG_STOP            ICON    DISCARDABLE     "ico00008.ico"
+IDI_LOG_WARNING         ICON    DISCARDABLE     "log_warn.ico"
+IDI_DELETE              ICON    DISCARDABLE     "ico00009.ico"
+IDI_PLAY                ICON    DISCARDABLE     "ico00010.ico"
+IDI_SI_BAT_SELECTED     ICON    DISCARDABLE     "si_bat_s.ico"
+#if defined(APSTUDIO_INVOKED) || defined(STANDARD_ICON)
+#if defined(APSTUDIO_INVOKED)
+IDI_DVB_LOGO_SMALL_RED$(STANDARD_ICON) ICON    DISCARDABLE     "dvb_logo_small_red.ico"
+#else
+IDI_DVB_LOGO_SMALL_RED  ICON    DISCARDABLE     "dvb_logo_small_red.ico"
+#endif
+#endif
+#if defined(APSTUDIO_INVOKED) || defined(STANDARD_ICON)
+#if defined(APSTUDIO_INVOKED)
+IDI_DVB_LOGO_SMALL_BLACK$(STANDARD_ICON) ICON    DISCARDABLE     "dvb_logo_small_black.ico"
+#else
+IDI_DVB_LOGO_SMALL_BLACK ICON    DISCARDABLE     "dvb_logo_small_black.ico"
+#endif
+#endif
+IDI_MONITOR_GREEN       ICON    DISCARDABLE     "monitor_green.ico"
+IDI_MONITOR_RED         ICON    DISCARDABLE     "monitor_red.ico"
+IDI_MONITOR_YELLOW      ICON    DISCARDABLE     "monitor_yellow.ico"
+IDI_MONITOR_GREY        ICON    DISCARDABLE     "monitor_grey.ico"
+IDI_SI_NIT_OTHER        ICON    DISCARDABLE     "si_nit_i.ico"
+IDI_SI_NIT_IGNORED      ICON    DISCARDABLE     "si_nit_o.ico"
+IDI_BOMB                ICON    DISCARDABLE     "bomb.ico"
+#if defined(APSTUDIO_INVOKED) || defined(ATSC_ICON)
+#if defined(APSTUDIO_INVOKED)
+IDI_DVB_LOGO_SMALL_BLACK$(ATSC_ICON) ICON    DISCARDABLE     "dvba_logo.ico"
+#else
+IDI_DVB_LOGO_SMALL_BLACK ICON    DISCARDABLE     "dvba_logo.ico"
+#endif
+#endif
+#if defined(APSTUDIO_INVOKED) || defined(ATSC_ICON)
+#if defined(APSTUDIO_INVOKED)
+IDI_DVB_LOGO_SMALL_RED$(ATSC_ICON) ICON    DISCARDABLE     "dvbar_logo.ico"
+#else
+IDI_DVB_LOGO_SMALL_RED  ICON    DISCARDABLE     "dvbar_logo.ico"
+#endif
+#endif
+#if defined(APSTUDIO_INVOKED) || defined(ATSC_ICON)
+#if defined(APSTUDIO_INVOKED)
+IDI_DVBSMALL_LOGO$(ATSC_ICON) ICON    DISCARDABLE     "ico00011.ico"
+#else
+IDI_DVBSMALL_LOGO       ICON    DISCARDABLE     "ico00011.ico"
+#endif
+#endif
+IDI_MONITOR_DISABLED    ICON    DISCARDABLE     "monitor_disabled.ico"
+IDI_UPDATE_GOOD         ICON    DISCARDABLE     "update_good.ico"
+IDI_UPDATE              ICON    DISCARDABLE     "update.ico"
+IDI_UPDATE_BAD          ICON    DISCARDABLE     "update_bad.ico"
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDI_FWD_1$(PRO)         ICON    DISCARDABLE     "fwd_1.ico"
+#else
+IDI_FWD_1               ICON    DISCARDABLE     "fwd_1.ico"
+#endif
+#endif
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDI_FWD_2$(PRO)         ICON    DISCARDABLE     "fwd_2.ico"
+#else
+IDI_FWD_2               ICON    DISCARDABLE     "fwd_2.ico"
+#endif
+#endif
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDI_FWD_3$(PRO)         ICON    DISCARDABLE     "fwd_3.ico"
+#else
+IDI_FWD_3               ICON    DISCARDABLE     "fwd_3.ico"
+#endif
+#endif
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDI_FWD_4$(PRO)         ICON    DISCARDABLE     "fwd_4.ico"
+#else
+IDI_FWD_4               ICON    DISCARDABLE     "fwd_4.ico"
+#endif
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_SI_PARSER, DIALOG
+    BEGIN
+        RIGHTMARGIN, 586
+        BOTTOMMARGIN, 387
+    END
+
+    IDD_EXPORT_SI_HOOK, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 52
+    END
+
+    IDD_RECORD, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 295
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 299
+    END
+
+    IDD_IPDVB_PID, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 253
+    END
+
+    IDD_ABOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 168
+    END
+
+    IDD_RECORD_PID_SELECT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 275
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 222
+    END
+
+    IDD_STRADIS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 290
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 152
+    END
+
+    IDD_RESOLUTION_WARNING, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 91
+    END
+
+    IDD_LICENSE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 206
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 242
+    END
+
+    IDD_THUMBNAIL_REFRESH_RATE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 213
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 112
+    END
+
+    IDD_SOURCE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 361
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 248
+    END
+
+    IDD_MANUAL_CHANNELS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 221
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 102
+    END
+
+    IDD_MANUAL_CHANNEL_EDIT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 280
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 123
+    END
+
+    IDD_PROGRAM_STREAM_WARNING, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 88
+    END
+
+    IDD_XNS_SERVER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 53
+    END
+
+    IDD_VLC_SETTINGS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 355
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 139
+    END
+
+    IDD_VLC_WARNING, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 231
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 128
+    END
+
+    IDD_BUFFER_SIZES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 158
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 66
+    END
+
+    IDD_PID_WARNING, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 195
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 128
+    END
+
+    IDD_VLC_CONNECTION_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 62
+    END
+
+    IDD_FILE_NAME_FORMAT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 234
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 202
+    END
+
+    IDD_ROKU1000_SETTINGS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 244
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 94
+    END
+
+    IDD_ROKU_TRACE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 280
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 242
+    END
+
+    IDD_SERIAL_CONTROL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 182
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 131
+    END
+
+    IDD_CONTROL_SERVER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 134
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 64
+    END
+
+    IDD_PID_LIST, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 288
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 229
+    END
+
+    IDD_IP_SETTINGS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 233
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 88
+    END
+
+    IDD_IP_DEVICE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 366
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 119
+    END
+
+    IDD_LITE_CHART_WARNING, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 56
+    END
+
+    IDD_EPG_GRID_SETTINGS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 270
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 296
+    END
+
+    IDD_TABLE_VIEWER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 398
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 160
+    END
+
+    IDD_GRAPH_REFRESH, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 199
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 51
+    END
+
+    IDD_AUTO_RESTART, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 209
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 75
+    END
+
+    IDD_SAVE_EPG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 201
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 43
+    END
+
+    IDD_PID_CHART_COLORS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 194
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 94
+    END
+
+    IDD_CAM_MENU, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 289
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 216
+    END
+
+    IDD_PROFILE_NEW, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 305
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 231
+    END
+
+    "IDD_SETTINGS$(PRO)", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 425
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 232
+    END
+
+    "IDD_SETTINGS_CHART$(PRO)", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 314
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 155
+    END
+
+    IDD_SETTINGS_SOURCE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 314
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 201
+    END
+
+    IDD_PLUGIN_SETTINGS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 43
+    END
+
+    IDD_EPG_GOTO_CHANNEL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 38
+    END
+
+    IDD_EPG_FIND_STRING, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 67
+    END
+
+    IDD_MDI_INDEX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 317
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 235
+    END
+
+    "IDD_DESCRIPTOR_USAGE$(PRO)", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 360
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 165
+    END
+
+    "IDD_STREAM_MONITOR$(PRO)", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 349
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 328
+    END
+
+    IDD_EPG_DATE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 126
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 107
+    END
+
+    "IDD_CHART_SAVE_DATA$(PRO)", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 258
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 62
+    END
+
+    IDD_STRADIS_SETTINGS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 234
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 91
+    END
+
+    IDD_EPG_SHOW_SCHEDULE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 335
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 168
+    END
+
+    IDD_BOMB_WARNING, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 88
+    END
+
+    IDD_EPG_MANUAL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 292
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 110
+    END
+
+    "IDD_EMAIL_SETUP$(PRO)", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 221
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 142
+    END
+
+    "IDD_STREAM_MONITOR_SETTINGS$(PRO)", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 85
+    END
+
+    IDD_SCHEDULER_WARNING, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 170
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 67
+    END
+
+    IDD_EIT_LANGUAGE_SETTINGS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 207
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 80
+    END
+
+    "IDD_THUMBNAIL_REFRESH_RATE_PRO$(PRO)", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 213
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 160
+    END
+
+    IDD_EXPORT_NIT_INI, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 254
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 67
+    END
+
+    "IDD_ARCHIVE_WAIT_EPG$(PRO)", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 176
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 39
+    END
+
+    IDD_EPG_SCHEDULE_SETTINGS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 147
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 72
+    END
+
+    IDD_EPG_MANUAL_NO_SOURCE_PARAMETERS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 198
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 91
+    END
+
+    "IDD_TABLE_VIEWER_PRO$(PRO)", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 398
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 323
+    END
+
+    IDD_CHECK_NEW_VERSION, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 162
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 150
+    END
+
+    "IDD_GPS_SIGNAL_EXPORT$(PRO)", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 342
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 221
+    END
+
+    "IDD_FORWARD_SETTINGS$(PRO)", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 202
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 88
+    END
+
+    "IDD_CC_MASK_STREAMS$(PRO)", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 134
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 123
+    END
+
+    "IDD_CC_DUMP_STREAMS_HOOK$(PRO)", DIALOG
+    BEGIN
+        BOTTOMMARGIN, 52
+    END
+
+    IDD_AUTO_RECORD_NO_PROGRAM, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 174
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 75
+    END
+
+    "IDD_AUDIO_THUMBNAIL_SETTINGS$(PRO)", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 88
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+#if defined(APSTUDIO_INVOKED) || defined(STANDARD_ICON)
+#if defined(APSTUDIO_INVOKED)
+VS_VERSION_INFO$(STANDARD_ICON) VERSIONINFO
+#else
+VS_VERSION_INFO VERSIONINFO
+#endif
+ FILEVERSION 2,8,53,0
+ PRODUCTVERSION 2,8,53,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments", "\0"
+            VALUE "CompanyName", "COOLSTF.com Inc.\0"
+            VALUE "FileDescription", "TSReader\0"
+            VALUE "FileVersion", "2.8.53b-memorial\0"
+            VALUE "InternalName", "TSReader\0"
+            VALUE "LegalCopyright", "Copyright © 2003-2008 COOLSTF.com Inc. - Memorial build 2026\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "TSReader.exe\0"
+            VALUE "PrivateBuild", "\0"
+            VALUE "ProductName", "TSReaderPro\0"
+            VALUE "ProductVersion", "2.8.53b-memorial\0"
+            VALUE "SpecialBuild", "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(ATSC_ICON)
+#if defined(APSTUDIO_INVOKED)
+VS_VERSION_INFO$(ATSC_ICON) VERSIONINFO
+#else
+VS_VERSION_INFO VERSIONINFO
+#endif
+ FILEVERSION 2,8,53,0
+ PRODUCTVERSION 2,8,53,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments", "\0"
+            VALUE "CompanyName", "COOLSTF.com Inc.\0"
+            VALUE "FileDescription", "DTVSentinel\0"
+            VALUE "FileVersion", "2.8.53b-memorial\0"
+            VALUE "InternalName", "TSReader\0"
+            VALUE "LegalCopyright", "Copyright © 2003-2008 COOLSTF.com Inc. - Memorial build 2026\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "DTVSentinel.exe\0"
+            VALUE "PrivateBuild", "\0"
+            VALUE "ProductName", "COOLSTF.com DTVSentinel\0"
+            VALUE "ProductVersion", "2.8.53b-memorial\0"
+            VALUE "SpecialBuild", "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+#endif
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+#if defined(APSTUDIO_INVOKED) || defined(NONOEM)
+#if defined(APSTUDIO_INVOKED)
+IDR_MAIN$(NONOEM) MENU DISCARDABLE 
+#else
+IDR_MAIN MENU DISCARDABLE 
+#endif
+BEGIN
+    POPUP "File"
+    BEGIN
+        MENUITEM "CI-CAM Menu...",              ID_FILE_CICAMMENU
+        MENUITEM "DiSEqC Positioner...",        ID_FILE_DISEQCPOSITIONER
+        MENUITEM SEPARATOR
+        MENUITEM "Restart Source...\tAlt+R",    ID_FILE_RESTART_SOURCE
+        MENUITEM "Select Source...",            ID_FILE_SELECTSOURCE
+        MENUITEM "Stop Source",                 ID_FILE_STOPSOURCE
+        MENUITEM SEPARATOR
+        MENUITEM "Define manual channels...\tAlt+M", 
+                                                ID_FILE_DEFINEMANUALCHANNELS
+        MENUITEM "Load manual channels...",     ID_FILE_LOADMANUALCHANNELS
+        MENUITEM "Load PID list...",            ID_FILE_LOADPIDLIST
+        MENUITEM "Save manual channels...",     ID_FILE_SAVEMANUALCHANNELS
+        MENUITEM SEPARATOR
+        POPUP "Import Satellite Lists"
+        BEGIN
+            MENUITEM "Import CSV...",               ID_FILE_IMPORTSATELLITELISTS_IMPORTCSV
+
+            MENUITEM "Import SDX...",               ID_FILE_IMPORTSATELLITELISTS_IMPORTSDX
+
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "IP/DVB Mode...\tAlt+I",       IDC_SI_PARSER_IP_DVB_MODE
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_FILE_EXIT
+    END
+    POPUP "Export"
+    BEGIN
+        MENUITEM "GPS/Signal Export...",        ID_EXPORT_GPSSIGNALEXPORT
+        MENUITEM "HTML Export...\tCtrl+H",      IDC_SI_PARSER_EXPORT
+        MENUITEM "HTML Export via NIT...",      IDC_SI_PARSER_EXPORT_NIT
+        MENUITEM "XML Export...",               IDC_SI_PARSER_EXPORT_EIT
+        MENUITEM "XMLTV Export...",             ID_EXPORT_XMLTVEXPORT
+        MENUITEM SEPARATOR
+        MENUITEM "Save All EPG data...",        ID_EXPORT_SAVEEPGDATA
+        MENUITEM "Save thumbnails...",          ID_EXPORT_SAVETHUMBNAILS
+        MENUITEM "Save all thumbnails...",      ID_EXPORT_SAVEALLTHUMBNAILS
+    END
+    POPUP "View"
+    BEGIN
+        MENUITEM "Always on Top",               ID_VIEW_ALWAYSONTOP
+        MENUITEM "Archived Recordings...",      ID_VIEW_ARCHIVEDFILES
+        MENUITEM "Closed Captions...\tAlt+A",   ID_VIEW_CLOSEDCAPTIONS
+        POPUP "Chart"
+        BEGIN
+            MENUITEM "Active PIDs by rate...",      ID_VIEW_ACTIVEPIDSBYRATE
+            MENUITEM "Active PIDs by PID...",       ID_VIEW_ACTIVEPIDSBYPID
+            MENUITEM SEPARATOR
+            MENUITEM "PID usage 2D pie...",         ID_VIEW_PIDUSAGE2DPIECHART
+
+            MENUITEM "PID usage 3D chart...",       ID_VIEW_PIDPIECHART
+            MENUITEM "PID usage stacked area...",   ID_VIEW_CHART_PIDUSAGEVBRSTACKEDAREA
+
+            MENUITEM SEPARATOR
+            MENUITEM "Mux usage stacked area...",   ID_VIEW_MUXUSAGEAREACHART
+
+            MENUITEM "Mux usage line...",           ID_VIEW_MUXUSAGELINECHART
+
+            MENUITEM SEPARATOR
+            MENUITEM "Program usage stacked bar...", 
+                                                    ID_VIEW_CHART_PROGRAMUSAGESTACKEDBARCHART
+
+            MENUITEM SEPARATOR
+            MENUITEM "Signal...",                   ID_VIEW_CHART_SIGNALCHART
+
+            MENUITEM SEPARATOR
+            POPUP "Settings"
+            BEGIN
+                MENUITEM "PID Chart Colors...",         ID_VIEW_CHART_SETTINGS_PIDCHARTCOLORS
+
+                MENUITEM "Real-time Charting",          ID_SETTINGS_REALTIMECHARTING
+
+                MENUITEM "Refresh Rate...",             ID_VIEW_CHART_SETTINGS_REFRESHRATE
+
+                MENUITEM "Save Chart Data...",          ID_VIEW_CHART_SETTINGS_SAVECHARTDATA
+
+                POPUP "Style"
+                BEGIN
+                    MENUITEM "No Style",                    ID_VIEW_CHARTSETTINGS_STYLE_NOSTYLE
+
+                    MENUITEM "Light Colors with Inset Border", 
+                                                            ID_VIEW_CHARTSETTINGS_STYLE_LIGHTCOLORSWITHINSETBORDER
+
+                    MENUITEM "Light Colors with Shadow Border", 
+                                                            ID_VIEW_CHARTSETTINGS_STYLE_LIGHTCOLORSWITHSHADOWBORDER
+
+                    MENUITEM "Light Colors with Line Border", 
+                                                            ID_VIEW_CHARTSETTINGS_STYLE_LIGHTCOLORSWITHLINEBORDER
+
+                    MENUITEM "Light Colors with No Border", ID_VIEW_CHARTSETTINGS_STYLE_LIGHTCOLORSWITHNOBORDER
+
+                    MENUITEM "Medium Colors with Inset Border", 
+                                                            ID_VIEW_CHARTSETTINGS_STYLE_MEDIUMCOLORSWITHINSETBORDER
+
+                    MENUITEM "Medium Colors with Shadow Border", 
+                                                            ID_VIEW_CHARTSETTINGS_STYLE_MEDIUMCOLORSWITHSHADOWBORDER
+
+                    MENUITEM "Medium Colors with Line Border", 
+                                                            ID_VIEW_CHARTSETTINGS_STYLE_MEDIUMCOLORSWITHLINEBORDER
+
+                    MENUITEM "Medium Colors with No Border", 
+                                                            ID_VIEW_CHARTSETTINGS_STYLE_MEDIUMCOLORSWITHNOBORDER
+
+                    MENUITEM "Dark Colors with Inset Border", 
+                                                            ID_VIEW_CHARTSETTINGS_STYLE_DARKCOLORSWITHINSETBORDER
+
+                    MENUITEM "Dark Colors with Shadow Border", 
+                                                            ID_VIEW_CHARTSETTINGS_STYLE_DARKCOLORSWITHSHADOWBORDER
+
+                    MENUITEM "Dark Colors with Line Border", 
+                                                            ID_VIEW_CHARTSETTINGS_STYLE_DARKCOLORSWITHLINEBORDER
+
+                    MENUITEM "Dark Colors with No Border",  ID_VIEW_CHARTSETTINGS_STYLE_DARKCOLORSWITHNOBORDER
+
+                    MENUITEM SEPARATOR
+                    MENUITEM "Gradient Bitmap Background",  ID_VIEW_CHART_SETTINGS_STYLE_GRADIENTBITMAPBACKGROUND
+
+                END
+            END
+            MENUITEM SEPARATOR
+            MENUITEM "Video bit rate area...",      ID_VIEW_VIDEOBITRATEAREACHART
+
+            MENUITEM "Video bit-rate line...",      ID_VIEW_VIDEOBITRATECHART
+
+            MENUITEM SEPARATOR
+            MENUITEM "Video composition...",        ID_VIEW_CHART_VIDEOCOMPOSITIONCHART
+
+        END
+        MENUITEM "Descriptor Usage...",         ID_VIEW_DESCRIPTORUSAGE
+        MENUITEM "EPG Grid...\tAlt+E",          ID_VIEW_SHOWEPGGRID
+        MENUITEM "MDI Index...",                ID_VIEW_MDIINDEX
+        MENUITEM "PID List...\tAlt+P",          ID_HELP_SHOWPIDLIST
+        POPUP "PMT Tree"
+        BEGIN
+            MENUITEM "Expand all PMTs\tAlt+X",      ID_VIEW_PMTTREE_EXPANDALLPMTS
+
+            MENUITEM "Collapse all PMTs\tAlt+C",    ID_VIEW_PMTTREE_CONTRACTALLPMTS
+
+        END
+        MENUITEM "Stream Monitor...\tAlt+S",    ID_VIEW_STREAMMONITOR
+        MENUITEM "Table List...\tAlt+L",        ID_VIEW_TABLELIST
+        MENUITEM "Video Mosaic...\tCtrl+M",     ID_VIEW_VIDEOMOSAIC
+    END
+    POPUP "Record"
+    BEGIN
+        MENUITEM "Record All Programs...\tCtrl+V", 
+                                                ID_RECORD_RECORDALLPROGRAMS
+        MENUITEM "Record Mux...\tCtrl+A",       IDC_SI_PARSER_RECORD_ALL
+        MENUITEM SEPARATOR
+        MENUITEM "Record Tables...\tCtrl+T",    ID_RECORD_RECORDTABLES
+        MENUITEM "Record PIDs...\tCtrl+P",      IDC_SI_PARSER_RECORD_PID
+        MENUITEM SEPARATOR
+        MENUITEM "Record Program...\tCtrl+R",   IDC_SI_PARSER_RECORD
+        MENUITEM "Record Program to D-VHS...\tCtrl+D", 
+                                                ID_RECORD_RECORDPROGRAMTODVHS
+
+    END
+    POPUP "Playback"
+    BEGIN
+        POPUP "Roku HD1000"
+        BEGIN
+            MENUITEM "Play...",                     ID_PLAYBACK_ROKUHD1000
+            MENUITEM SEPARATOR
+            MENUITEM "Settings...",                 ID_SETTINGS_ROKUHD1000
+        END
+        POPUP "Stradis MPEG-2 Decoder"
+        BEGIN
+            MENUITEM "Play...",                     IDC_SI_PARSER_TO_STRADIS
+            MENUITEM SEPARATOR
+            MENUITEM "Settings...",                 ID_PLAYBACK_STRADISMPEG2DECODER_SETTINGS
+
+        END
+        POPUP "XNS"
+        BEGIN
+            MENUITEM "Play",                        ID_PLAYBACK_XNSSERVER
+            MENUITEM SEPARATOR
+            MENUITEM "Settings...",                 ID_SETTINGS_XNSSERVER
+        END
+        POPUP "VLC"
+        BEGIN
+            MENUITEM "VLC1",                        ID_PLAYBACK_VLC_1
+            MENUITEM "VLC2",                        ID_PLAYBACK_VLC_2
+            MENUITEM "VLC3",                        ID_PLAYBACK_VLC_3
+            MENUITEM "VLC4",                        ID_PLAYBACK_VLC_4
+            MENUITEM "VLC5",                        ID_PLAYBACK_VLC_5
+            MENUITEM "VLC6",                        ID_PLAYBACK_VLC_6
+            MENUITEM "VLC7",                        ID_PLAYBACK_VLC_7
+            MENUITEM "VLC8",                        ID_PLAYBACK_VLC_8
+            MENUITEM "VLC9",                        ID_PLAYBACK_VLC_9
+            MENUITEM "VLC10",                       ID_PLAYBACK_VLC_10
+            MENUITEM "VLC11",                       ID_PLAYBACK_VLC_11
+            MENUITEM "VLC12",                       ID_PLAYBACK_VLC_12
+            MENUITEM "VLC13",                       ID_PLAYBACK_VLC_13
+            MENUITEM "VLC14",                       ID_PLAYBACK_VLC_14
+            MENUITEM "VLC15",                       ID_PLAYBACK_VLC_15
+            MENUITEM "VLC16",                       ID_PLAYBACK_VLC_16
+            MENUITEM SEPARATOR
+            MENUITEM "Settings...\tAlt+V",          ID_SETTINGS_VLC
+        END
+    END
+    POPUP "Forward"
+    BEGIN
+        MENUITEM "Forward to UDP...",           ID_FORWARD_FORWARDTOUDP
+        MENUITEM SEPARATOR
+        MENUITEM "Settings...",                 ID_FORWARD_SETTINGS
+    END
+    POPUP "Plugins"
+    BEGIN
+        MENUITEM "Something",                   ID_PLUGINS_SOMETHING
+    END
+    POPUP "Settings"
+    BEGIN
+        POPUP "Data Input Thead Priority"
+        BEGIN
+            MENUITEM "Critical",                    ID_SETTINGS_DATAINPUTTHEADPRIORITY_CRITICAL
+
+            MENUITEM "High",                        ID_SETTINGS_DATAINPUTTHEADPRIORITY_HIGH
+
+            MENUITEM "Normal",                      ID_SETTINGS_DATAINPUTTHEADPRIORITY_NORMAL
+
+            MENUITEM "Low",                         ID_SETTINGS_DATAINPUTTHEADPRIORITY_LOW
+
+        END
+        POPUP "Main Process Priority"
+        BEGIN
+            MENUITEM "Realtime",                    ID_SETTINGS_MAINPROCESSPRIORITY_REALTIME
+
+            MENUITEM "High",                        ID_SETTINGS_MAINPROCESSPRIORITY_HIGH
+
+            MENUITEM "Above Normal",                ID_SETTINGS_MAINPROCESSPRIORITY_ABOVENORMAL
+
+            MENUITEM "Normal",                      ID_SETTINGS_MAINPROCESSPRIORITY_NORMAL
+
+            MENUITEM "Below Normal",                ID_SETTINGS_MAINPROCESSPRIORITY_BELOWNORMAL
+
+            MENUITEM "Low",                         ID_SETTINGS_MAINPROCESSPRIORITY_LOW
+
+        END
+        POPUP "Stream Processing Thread Priority"
+        BEGIN
+            MENUITEM "High",                        ID_SETTINGS_STREAMPROCESSINGTHREADPRIORITY_HIGH
+
+            MENUITEM "Normal",                      ID_SETTINGS_STREAMPROCESSINGTHREADPRIORITY_NORMAL
+
+            MENUITEM "Low",                         ID_SETTINGS_STREAMPROCESSINGTHREADPRIORITY_LOW
+
+        END
+        POPUP "Thumbnail Thread"
+        BEGIN
+            MENUITEM "Priority High",               ID_SETTINGS_THUMBNAILTHREADPRIORITY_HIGH
+
+            MENUITEM "Priority Normal",             ID_SETTINGS_THUMBNAILTHREADPRIORITY_NORMAL
+
+            MENUITEM "Priority Low",                ID_SETTINGS_THUMBNAILTHREADPRIORITY_LOW
+
+            MENUITEM "Disabled",                    ID_SETTINGS_THUMBNAILTHREADPRIORITY_DISABLED
+
+            MENUITEM SEPARATOR
+            MENUITEM "Animated",                    ID_SETTINGS_THUMBNAILTHREADPRIORITY_ANIMATED
+
+            MENUITEM "Audio thumbnails enabled",    ID_SETTINGS_THUMBNAILTHREAD_ENABLEAUDIOTHUMBNAILS
+
+            MENUITEM "Display full thumbnails only", 
+                                                    ID_SETTINGS_THUMBNAILTHREAD_DISPLAYFULLTHUMBNAILSONLY
+
+            POPUP "Display Order"
+            BEGIN
+                MENUITEM "Top Down",                    ID_SETTINGS_THUMBNAILTHREAD_DISPLAYORDER_TOPDOWN
+
+                MENUITEM "Right to Left",               ID_SETTINGS_THUMBNAILTHREAD_DISPLAYORDER_RIGHTTOLEFT
+
+            END
+            MENUITEM "Full-size saved thumbnails",  ID_SETTINGS_THUMBNAILTHREAD_FULLSIZESAVEDTHUMBNAILS
+
+            MENUITEM "Hide thumbnail icons",        ID_SETTINGS_THUMBNAILTHREAD_HIDETHUMBNAILICONS
+
+            MENUITEM "Refresh rate/Maximum pictures...", 
+                                                    ID_SETTINGS_THUMBNAILTHREADPRIORITY_REFRESHRATE
+
+            MENUITEM "Refresh now\tF5",             ID_SETTINGS_THUMBNAILTHREAD_REFRESHNOW
+
+            MENUITEM "Save All uses same name",     ID_SETTINGS_THUMBNAILTHREAD_SAVEALLUSESSAMENAME
+
+            MENUITEM "Show scrambled channels",     ID_SETTINGS_THUMBNAILTHREAD_SHOWSCRAMBLEDCHANNELS
+
+            POPUP "Thumbnail Size"
+            BEGIN
+                MENUITEM "Small",                       ID_SETTINGS_THUMBNAILTHREAD_THUMBNAILSIZE_SMALL
+
+                MENUITEM "Normal",                      ID_SETTINGS_THUMBNAILTHREAD_THUMBNAILSIZE_NORMAL
+
+                MENUITEM "Large",                       ID_SETTINGS_THUMBNAILTHREAD_THUMBNAILSIZE_LARGE
+
+            END
+            MENUITEM "Wait for CA before picture",  ID_SETTINGS_THUMBNAILTHREAD_WAITFORCABEFOREPICTURE
+
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Auto restart...",             ID_SETTINGS_AUTORESTART
+        MENUITEM "Auto Expand PMTs",            ID_SETTINGS_AUTOEXPANDPMTS
+        MENUITEM "Auto Expand IPs",             ID_SETTINGS_AUTOEXPANDIPS
+        MENUITEM "Buffer Sizes...",             ID_SETTINGS_BUFFERSIZES
+        MENUITEM "CA Settings...",              ID_SETTINGS_PLUGINSETTINGS
+        MENUITEM "Control Server Settings...",  ID_SETTINGS_CONTROLSERVERSETTINGS
+
+        MENUITEM "Count Continuity Errors",     ID_SETTINGS_COUNTCONTINUITYERRORS
+
+        POPUP "D-VHS"
+        BEGIN
+            MENUITEM "Auto REC/STOP",               ID_SETTINGS_CONTROLDVHSDECK
+
+            MENUITEM "Auto Power On/Off",           ID_SETTINGS_DVHSCONTROL_AUTOPOWERONOFF
+
+            MENUITEM "Force PIDs to be ATSC compatible", 
+                                                    ID_SETTINGS_DVHS_FORCEPIDSTOBEATSCCOMPATIBLE
+
+        END
+        MENUITEM "Decimal PIDs",                ID_SETTINGS_DECIMALPIDS
+        MENUITEM "EIT Language...",             ID_SETTINGS_EITLANGUAGE
+        MENUITEM "EIT Server...",               ID_SETTINGS_EITSERVER
+        MENUITEM "Email Settings...",           ID_SETTINGS_EMAILSETTINGS
+        MENUITEM "EPG Grid...",                 ID_SETTINGS_EPGGRID
+        MENUITEM "Hide when minimized",         ID_SETTINGS_HIDEWHENMINIMIZED
+
+        MENUITEM "Keep special XML characters", ID_SETTINGS_KEEPSPECIALXMLCHARACTERS
+
+        MENUITEM "Keep past EIT data",          ID_SETTINGS_KEEPPASTEITDATA
+        MENUITEM "Ignore Table CRC Errors",     ID_SETTINGS_IGNORETABLECRCERRORS
+
+        MENUITEM "Ignore DCII PMT ch. 80",      ID_SETTINGS_IGNOREDCIIPMTCH80
+
+        MENUITEM "Ignore DVB EIT and SDT",      ID_SETTINGS_IGNOREEIT
+        MENUITEM "Ignore PMTs above ch. 65500", ID_SETTINGS_IGNOREPMTSABOVECH65500
+
+        MENUITEM "IP/DVB Settings...",          ID_SETTINGS_IPDVBSETTINGS
+        MENUITEM "Plain CA descriptor decoding", 
+                                                ID_SETTINGS_PLAINCADESCRIPTORDECODING
+
+        MENUITEM "SDT only for current mux",    ID_SETTINGS_SDTONLYFORCURRENTMUX
+
+        MENUITEM "Serial Receiver Control...",  ID_SETTINGS_SERIALRECEVIERCONTROL
+
+        MENUITEM "Show non-video PCR icons",    ID_SETTINGS_SHOWNONVIDEOPCRICONS
+
+        MENUITEM "Split Record Filenames...",   ID_SETTINGS_SPLITRECORDFILENAMES
+
+        MENUITEM "Timestamp Packets",           ID_SETTINGS_TIMESTAMPPACKETS
+        MENUITEM "Warning before overwritng recordings", 
+                                                ID_SETTINGS_WARNINGBEFOREOVERWRITNGRECORDINGS
+
+    END
+    POPUP "Help"
+    BEGIN
+        MENUITEM "About...",                    IDC_SI_PARSER_ABOUT
+        MENUITEM "Check for New Version...",    ID_HELP_CHECKFORNEWVERSION
+        MENUITEM SEPARATOR
+        MENUITEM "Purchase TSReader...",        ID_HELP_PURCHASETSREADER
+        MENUITEM "Technical Support...\tF1",    IDC_SUPPORT
+        MENUITEM SEPARATOR
+        MENUITEM "Reset All Counters\tF6",      ID_HELP_RESETALL
+        MENUITEM "Reset Continuity Counters",   ID_HELP_RESETCONTINUITYCOUNTERS
+
+        MENUITEM "Reset CRC Counters",          ID_HELP_RESETCRCCOUNTERS
+        MENUITEM "Reset PID Chart",             ID_HELP_RESETPIDCHART
+        MENUITEM "Reset Section Counters",      ID_HELP_RESETSECTIONCOUNTERS
+        MENUITEM "Reset TEI Counters",          ID_HELP_RESETTEICOUNTERS
+    END
+END
+#endif
+
+IDR_IP_POPUP MENU DISCARDABLE 
+BEGIN
+    POPUP "IDR_IP_POPUP"
+    BEGIN
+        MENUITEM "Save payload",                ID_IDRIPPOPUP_SAVEPAYLOAD
+        MENUITEM "Save payload and xxx/IP header", 
+                                                ID_IDRIPPOPUP_SAVEPAYLOADANDXXXIPHEADER
+
+        MENUITEM "Save payload, xxx/IP header and MPE header", 
+                                                ID_IDRIPPOPUP_SAVEPAYLOADXXXIPHEADERANDMPEHEADER
+
+        MENUITEM "Stop saving",                 ID_IDRIPPOPUP_STOPSAVING
+        MENUITEM SEPARATOR
+        MENUITEM "Retransmit UDP payload",      ID_IDRIPPOPUP_RETRANSMITPAYLOAD
+
+        MENUITEM "Stop transmitting",           ID_IDRIPPOPUP_STOPTRANSMITTING
+
+    END
+END
+
+IDR_NIT_POPUP MENU DISCARDABLE 
+BEGIN
+    POPUP "IDR_NIT_POPUP"
+    BEGIN
+        MENUITEM "Retune to this mux",          ID_IDRNITPOPUP_RETUNETOTHISMUX
+
+        MENUITEM "Toggle network ignore",       ID_IDRNITPOPUP_IGNORETHISNETWORK
+
+    END
+END
+
+IDR_IP_POPUP_PID MENU DISCARDABLE 
+BEGIN
+    POPUP "IDR_IP_POPUP_PID"
+    BEGIN
+        MENUITEM "Save all payloads on PID",    ID_IDRIPPOPUP_SAVEPAYLOAD_PID
+
+        MENUITEM "Save all payload and xxx/IP headers on PID", 
+                                                ID_IDRIPPOPUPPID_SAVEALLPAYLOADANDXXXIPHEADERSONPID
+
+        MENUITEM "Save all payload, xxx/IP header and MPE headers on PID", 
+                                                ID_IDRIPPOPUPPID_SAVEALLPAYLOADXXXIPHEADERANDMPEHEADERSONPID
+
+        MENUITEM "Stop saving",                 ID_IDRIPPOPUP_STOPSAVING_PID
+        MENUITEM SEPARATOR
+        MENUITEM "Retransmit all UDP payloads on PID", 
+                                                ID_IDRIPPOPUP_RETRANSMITPAYLOAD_PID
+
+        MENUITEM "Stop transmitting",           ID_IDRIPPOPUP_STOPTRANSMITTING_PID
+
+    END
+END
+
+IDR_IP_POPUP_MAC MENU DISCARDABLE 
+BEGIN
+    POPUP "IDR_IP_POPUP_MAC"
+    BEGIN
+        MENUITEM "Save all payloads for MAC",   ID_IDRIPPOPUP_SAVEPAYLOAD_MAC
+
+        MENUITEM "Save all payload and xxx/IP headers for MAC", 
+                                                ID_IDRIPPOPUPMAC_SAVEALLPAYLOADANDXXXIPHEADERSFORMAC
+
+        MENUITEM "Save all payload, xxx/IP header and MPE headers for MAC", 
+                                                ID_IDRIPPOPUPMAC_SAVEALLPAYLOADXXXIPHEADERANDMPEHEADERSFORMAC
+
+        MENUITEM "Stop saving",                 ID_IDRIPPOPUP_STOPSAVING_MAC
+        MENUITEM SEPARATOR
+        MENUITEM "Retransmit all UDP payloads for MAC", 
+                                                ID_IDRIPPOPUP_RETRANSMITPAYLOAD_MAC
+
+        MENUITEM "Stop transmitting",           ID_IDRIPPOPUP_STOPTRANSMITTING_MAC
+
+    END
+END
+
+#if defined(APSTUDIO_INVOKED) || defined(INEOQUEST)
+#if defined(APSTUDIO_INVOKED)
+IDR_MAIN$(INEOQUEST) MENU DISCARDABLE 
+#else
+IDR_MAIN MENU DISCARDABLE 
+#endif
+BEGIN
+    POPUP "File"
+    BEGIN
+        MENUITEM "Define manual channels...\tAlt+M", 
+                                                ID_FILE_DEFINEMANUALCHANNELS
+        MENUITEM "Load manual channels...",     ID_FILE_LOADMANUALCHANNELS
+        MENUITEM "Save manual channels...",     ID_FILE_SAVEMANUALCHANNELS
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_FILE_EXIT
+    END
+    POPUP "Export"
+    BEGIN
+        MENUITEM "HTML Export...\tCtrl+H",      IDC_SI_PARSER_EXPORT
+        MENUITEM "HTML Export via NIT...",      IDC_SI_PARSER_EXPORT_NIT
+        MENUITEM "XML Export...",               IDC_SI_PARSER_EXPORT_EIT
+        MENUITEM "XMLTV Export...",             ID_EXPORT_XMLTVEXPORT
+        MENUITEM SEPARATOR
+        MENUITEM "Save thumbnails...",          ID_EXPORT_SAVETHUMBNAILS
+        MENUITEM "Save all thumbnails...",      ID_EXPORT_SAVEALLTHUMBNAILS
+    END
+    POPUP "View"
+    BEGIN
+        MENUITEM "Always on Top",               ID_VIEW_ALWAYSONTOP
+        POPUP "Chart"
+        BEGIN
+            MENUITEM "Active PIDs by rate...",      ID_VIEW_ACTIVEPIDSBYRATE
+            MENUITEM "Active PIDs by PID...",       ID_VIEW_ACTIVEPIDSBYPID
+            MENUITEM SEPARATOR
+            MENUITEM "PID usage 2D pie chart...",   ID_VIEW_PIDUSAGE2DPIECHART
+
+            MENUITEM "PID usage 3D pie chart...",   ID_VIEW_PIDPIECHART
+            MENUITEM SEPARATOR
+            MENUITEM "Mux usage stacked area chart...", 
+                                                    ID_VIEW_MUXUSAGEAREACHART
+
+            MENUITEM "Mux usage line chart...",     ID_VIEW_MUXUSAGELINECHART
+
+            MENUITEM SEPARATOR
+            MENUITEM "Program usage stacked bar chart...", 
+                                                    ID_VIEW_CHART_PROGRAMUSAGESTACKEDBARCHART
+
+            MENUITEM SEPARATOR
+            POPUP "Settings"
+            BEGIN
+                MENUITEM "PID Chart Colors...",         ID_VIEW_CHART_SETTINGS_PIDCHARTCOLORS
+
+                MENUITEM "Real-time Charting",          ID_SETTINGS_REALTIMECHARTING
+
+                MENUITEM "Refresh Rate...",             ID_VIEW_CHART_SETTINGS_REFRESHRATE
+
+                POPUP "Style"
+                BEGIN
+                    MENUITEM "No Style",                    ID_VIEW_CHARTSETTINGS_STYLE_NOSTYLE
+
+                    MENUITEM "Light Colors with Inset Border", 
+                                                            ID_VIEW_CHARTSETTINGS_STYLE_LIGHTCOLORSWITHINSETBORDER
+
+                    MENUITEM "Light Colors with Shadow Border", 
+                                                            ID_VIEW_CHARTSETTINGS_STYLE_LIGHTCOLORSWITHSHADOWBORDER
+
+                    MENUITEM "Light Colors with Line Border", 
+                                                            ID_VIEW_CHARTSETTINGS_STYLE_LIGHTCOLORSWITHLINEBORDER
+
+                    MENUITEM "Light Colors with No Border", ID_VIEW_CHARTSETTINGS_STYLE_LIGHTCOLORSWITHNOBORDER
+
+                    MENUITEM "Medium Colors with Inset Border", 
+                                                            ID_VIEW_CHARTSETTINGS_STYLE_MEDIUMCOLORSWITHINSETBORDER
+
+                    MENUITEM "Medium Colors with Shadow Border", 
+                                                            ID_VIEW_CHARTSETTINGS_STYLE_MEDIUMCOLORSWITHSHADOWBORDER
+
+                    MENUITEM "Medium Colors with Line Border", 
+                                                            ID_VIEW_CHARTSETTINGS_STYLE_MEDIUMCOLORSWITHLINEBORDER
+
+                    MENUITEM "Medium Colors with No Border", 
+                                                            ID_VIEW_CHARTSETTINGS_STYLE_MEDIUMCOLORSWITHNOBORDER
+
+                    MENUITEM "Dark Colors with Inset Border", 
+                                                            ID_VIEW_CHARTSETTINGS_STYLE_DARKCOLORSWITHINSETBORDER
+
+                    MENUITEM "Dark Colors with Shadow Border", 
+                                                            ID_VIEW_CHARTSETTINGS_STYLE_DARKCOLORSWITHSHADOWBORDER
+
+                    MENUITEM "Dark Colors with Line Border", 
+                                                            ID_VIEW_CHARTSETTINGS_STYLE_DARKCOLORSWITHLINEBORDER
+
+                    MENUITEM "Dark Colors with No Border",  ID_VIEW_CHARTSETTINGS_STYLE_DARKCOLORSWITHNOBORDER
+
+                END
+            END
+            MENUITEM SEPARATOR
+            MENUITEM "Video bit rate area chart...", 
+                                                    ID_VIEW_VIDEOBITRATEAREACHART
+
+            MENUITEM "Video bit-rate line chart...", 
+                                                    ID_VIEW_VIDEOBITRATECHART
+
+            MENUITEM SEPARATOR
+            MENUITEM "Video composition chart...",  ID_VIEW_CHART_VIDEOCOMPOSITIONCHART
+
+        END
+        MENUITEM "PID List...\tAlt+P",          ID_HELP_SHOWPIDLIST
+        POPUP "PMT Tree"
+        BEGIN
+            MENUITEM "Expand all PMTs\tAlt+X",      ID_VIEW_PMTTREE_EXPANDALLPMTS
+
+            MENUITEM "Collapse all PMTs\tAlt+C",    ID_VIEW_PMTTREE_CONTRACTALLPMTS
+
+        END
+        MENUITEM "Table List...\tAlt+L",        ID_VIEW_TABLELIST
+    END
+    POPUP "Record"
+    BEGIN
+        MENUITEM "Record All...\tCtrl+A",       IDC_SI_PARSER_RECORD_ALL
+        MENUITEM "Record PIDs...\tCtrl+P",      IDC_SI_PARSER_RECORD_PID
+        MENUITEM SEPARATOR
+        MENUITEM "Record Program...\tCtrl+R",   IDC_SI_PARSER_RECORD
+        MENUITEM "Record Program to D-VHS...\tCtrl+D", 
+                                                ID_RECORD_RECORDPROGRAMTODVHS
+
+    END
+    POPUP "Playback"
+    BEGIN
+        POPUP "Roku HD1000"
+        BEGIN
+            MENUITEM "Play",                        ID_PLAYBACK_ROKUHD1000
+            MENUITEM SEPARATOR
+            MENUITEM "Settings...",                 ID_SETTINGS_ROKUHD1000
+        END
+        POPUP "Stradis MPEG-2 Decoder..."
+        BEGIN
+            MENUITEM "Play",                        IDC_SI_PARSER_TO_STRADIS
+            MENUITEM SEPARATOR
+            MENUITEM "Settings...",                 ID_PLAYBACK_STRADISMPEG2DECODER_SETTINGS
+
+        END
+        POPUP "VLC"
+        BEGIN
+            MENUITEM "VLC1",                        ID_PLAYBACK_VLC_1
+            MENUITEM "VLC2",                        ID_PLAYBACK_VLC_2
+            MENUITEM "VLC3",                        ID_PLAYBACK_VLC_3
+            MENUITEM "VLC4",                        ID_PLAYBACK_VLC_4
+            MENUITEM "VLC5",                        ID_PLAYBACK_VLC_5
+            MENUITEM "VLC6",                        ID_PLAYBACK_VLC_6
+            MENUITEM "VLC7",                        ID_PLAYBACK_VLC_7
+            MENUITEM "VLC8",                        ID_PLAYBACK_VLC_8
+            MENUITEM "VLC9",                        ID_PLAYBACK_VLC_9
+            MENUITEM "VLC10",                       ID_PLAYBACK_VLC_10
+            MENUITEM "VLC11",                       ID_PLAYBACK_VLC_11
+            MENUITEM "VLC12",                       ID_PLAYBACK_VLC_12
+            MENUITEM "VLC13",                       ID_PLAYBACK_VLC_13
+            MENUITEM "VLC14",                       ID_PLAYBACK_VLC_14
+            MENUITEM "VLC15",                       ID_PLAYBACK_VLC_15
+            MENUITEM "VLC16",                       ID_PLAYBACK_VLC_16
+            MENUITEM SEPARATOR
+            MENUITEM "Settings...\tAlt+V",          ID_SETTINGS_VLC
+        END
+    END
+    POPUP "Plugins"
+    BEGIN
+        MENUITEM "Something",                   ID_PLUGINS_SOMETHING
+    END
+    POPUP "Settings"
+    BEGIN
+        POPUP "Thumbnails"
+        BEGIN
+            MENUITEM "Animated",                    ID_SETTINGS_THUMBNAILTHREADPRIORITY_ANIMATED
+
+            MENUITEM "Display full thumbnails only", 
+                                                    ID_SETTINGS_THUMBNAILTHREAD_DISPLAYFULLTHUMBNAILSONLY
+
+            POPUP "Display Order"
+            BEGIN
+                MENUITEM "Top Down",                    ID_SETTINGS_THUMBNAILTHREAD_DISPLAYORDER_TOPDOWN
+
+                MENUITEM "Right to Left",               ID_SETTINGS_THUMBNAILTHREAD_DISPLAYORDER_RIGHTTOLEFT
+
+            END
+            MENUITEM "Enable audio thumbnails",     ID_SETTINGS_THUMBNAILTHREAD_ENABLEAUDIOTHUMBNAILS
+
+            MENUITEM "Full-size saved thumbnails",  ID_SETTINGS_THUMBNAILTHREAD_FULLSIZESAVEDTHUMBNAILS
+
+            MENUITEM "Hide thumbnail icons",        ID_SETTINGS_THUMBNAILTHREAD_HIDETHUMBNAILICONS
+
+            MENUITEM "Refresh rate/Maximum pictures...", 
+                                                    ID_SETTINGS_THUMBNAILTHREADPRIORITY_REFRESHRATE
+
+            MENUITEM "Refresh now\tF5",             ID_SETTINGS_THUMBNAILTHREAD_REFRESHNOW
+
+            MENUITEM "Save All uses same name",     ID_SETTINGS_THUMBNAILTHREAD_SAVEALLUSESSAMENAME
+
+            MENUITEM "Show scrambled channels",     ID_SETTINGS_THUMBNAILTHREAD_SHOWSCRAMBLEDCHANNELS
+
+            POPUP "Thumbnail Size"
+            BEGIN
+                MENUITEM "Small",                       ID_SETTINGS_THUMBNAILTHREAD_THUMBNAILSIZE_SMALL
+
+                MENUITEM "Normal",                      ID_SETTINGS_THUMBNAILTHREAD_THUMBNAILSIZE_NORMAL
+
+                MENUITEM "Large",                       ID_SETTINGS_THUMBNAILTHREAD_THUMBNAILSIZE_LARGE
+
+            END
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Auto restart...",             ID_SETTINGS_AUTORESTART
+        MENUITEM "Auto Expand PMTs",            ID_SETTINGS_AUTOEXPANDPMTS
+        MENUITEM "Auto Expand IPs",             ID_SETTINGS_AUTOEXPANDIPS
+        MENUITEM "Control Server Settings...",  ID_SETTINGS_CONTROLSERVERSETTINGS
+
+        MENUITEM "Count Continuity Errors",     ID_SETTINGS_COUNTCONTINUITYERRORS
+
+        POPUP "D-VHS"
+        BEGIN
+            MENUITEM "Auto REC/STOP",               ID_SETTINGS_CONTROLDVHSDECK
+
+            MENUITEM "Auto Power On/Off",           ID_SETTINGS_DVHSCONTROL_AUTOPOWERONOFF
+
+            MENUITEM "Force PIDs to be ATSC compatible", 
+                                                    ID_SETTINGS_DVHS_FORCEPIDSTOBEATSCCOMPATIBLE
+
+        END
+        MENUITEM "Decimal PIDs",                ID_SETTINGS_DECIMALPIDS
+        MENUITEM "Hide when minimized",         ID_SETTINGS_HIDEWHENMINIMIZED
+
+        MENUITEM "Keep special XML characters", ID_SETTINGS_KEEPSPECIALXMLCHARACTERS
+
+        MENUITEM "Ignore Table CRC Errors",     ID_SETTINGS_IGNORETABLECRCERRORS
+
+        MENUITEM "Ignore DCII PMT ch. 80",      ID_SETTINGS_IGNOREDCIIPMTCH80
+
+        MENUITEM "Ignore PMTs above ch. 65500", ID_SETTINGS_IGNOREPMTSABOVECH65500
+
+        MENUITEM "Show non-video PCR icons",    ID_SETTINGS_SHOWNONVIDEOPCRICONS
+
+        MENUITEM "Split Record Filenames...",   ID_SETTINGS_SPLITRECORDFILENAMES
+
+        MENUITEM "Timestamp Packets",           ID_SETTINGS_TIMESTAMPPACKETS
+    END
+    POPUP "Help"
+    BEGIN
+        MENUITEM "About...",                    IDC_SI_PARSER_ABOUT
+        MENUITEM "Technical Support...\tF1",    IDC_SUPPORT
+        MENUITEM SEPARATOR
+        MENUITEM "Reset All",                   ID_HELP_RESETALL
+        MENUITEM "Reset Continuity Counters",   ID_HELP_RESETCONTINUITYCOUNTERS
+
+        MENUITEM "Reset CRC Counters",          ID_HELP_RESETCRCCOUNTERS
+        MENUITEM "Reset Section Counters",      ID_HELP_RESETSECTIONCOUNTERS
+        MENUITEM "Reset TEI Counters",          ID_HELP_RESETTEICOUNTERS
+    END
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDR_PROFILES$(PRO) MENU DISCARDABLE 
+#else
+IDR_PROFILES MENU DISCARDABLE 
+#endif
+BEGIN
+    POPUP "File"
+    BEGIN
+        MENUITEM "New...\tIns",                 ID_FILE_NEW_PROFILE
+        MENUITEM "Edit\tAlt+Enter",             ID_FILE_EDIT
+        MENUITEM "Delete\tDel",                 ID_FILE_DELETE
+        MENUITEM "Launch Profile...\tEnter",    ID_FILE_LAUNCHPROFILE
+        MENUITEM SEPARATOR
+        MENUITEM "Create Desktop Shortcut",     ID_FILE_CREATEDESKTOPSHORTCUT
+
+        MENUITEM SEPARATOR
+        MENUITEM "Exit",                        ID_FILE_EXIT
+    END
+    POPUP "Edit"
+    BEGIN
+        MENUITEM "Copy\tCtrl+C",                IDC_EDIT_COPY
+        MENUITEM "Paste\tCtrl+V",               IDC_EDIT_PASTE
+    END
+    POPUP "View"
+    BEGIN
+        MENUITEM "Large Icons",                 ID_VIEW_LARGEICONS
+        MENUITEM "Small Icons",                 ID_VIEW_SMALLICONS
+        MENUITEM "List",                        ID_VIEW_PROFILE_LIST
+        MENUITEM "Details",                     ID_VIEW_PROFILE_DETAILS
+        MENUITEM SEPARATOR
+        MENUITEM "Refresh\tF5",                 ID_VIEW_REFRESH
+    END
+    POPUP "Help"
+    BEGIN
+        MENUITEM "About...",                    ID_HELP_ABOUT
+        MENUITEM "Check for New Version...",    ID_HELP_CHECKFORNEWVERSION
+    END
+END
+#endif
+
+IDR_BAT_POPUP MENU DISCARDABLE 
+BEGIN
+    POPUP "IDR_BAT_POPUP"
+    BEGIN
+        MENUITEM "Select this BAT",             ID_IDRBATPOPUP_SELECTTHISBAT
+    END
+END
+
+IDR_TDT_POPUP MENU DISCARDABLE 
+BEGIN
+    POPUP "IDR_TDT_POPUP"
+    BEGIN
+        MENUITEM "Set PC time to this time",    ID_IDRTDTPOPUP_SETPCTIMETOTHISTIME
+
+    END
+END
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDR_PROFILES_POPUP$(PRO) MENU DISCARDABLE 
+#else
+IDR_PROFILES_POPUP MENU DISCARDABLE 
+#endif
+BEGIN
+    POPUP "IDR_PROFILES_POPUP"
+    BEGIN
+        MENUITEM "Create Desktop Shortcut",     ID_FILE_CREATEDESKTOPSHORTCUT
+
+        MENUITEM "Launch Profile",              ID_FILE_LAUNCHPROFILE
+        MENUITEM SEPARATOR
+        MENUITEM "Copy",                        IDC_EDIT_COPY
+        MENUITEM "Delete",                      ID_FILE_DELETE
+        MENUITEM "Rename",                      ID_IDRPROFILESPOPUP_RENAME
+        MENUITEM SEPARATOR
+        MENUITEM "Profile Configuration...",    ID_FILE_EDIT
+    END
+END
+#endif
+
+IDR_SDT_POPUP MENU DISCARDABLE 
+BEGIN
+    POPUP "IDR_SDT_POPUP"
+    BEGIN
+        MENUITEM "Retune to mux carrying this service", 
+                                                ID_IDRNITPOPUP_RETUNETOTHISMUX_SDT
+
+    END
+END
+
+IDR_SDT_CH_POPUP MENU DISCARDABLE 
+BEGIN
+    POPUP "IDR_SDT_CH_POPUP"
+    BEGIN
+        MENUITEM "Retune to this service",      ID_IDRNITPOPUP_RETUNETOTHISMUX_SDT
+
+    END
+END
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDR_STREAM_MONITOR_POPUP$(PRO) MENU DISCARDABLE 
+#else
+IDR_STREAM_MONITOR_POPUP MENU DISCARDABLE 
+#endif
+BEGIN
+    POPUP "IDR_STREAM_MONITOR_POPUP"
+    BEGIN
+        MENUITEM "Mask this item",              ID_IDRSTREAMMONITORPOPUP_MASKTHISITEM
+
+        MENUITEM "Reset alarm",                 ID_IDRSTREAMMONITORPOPUP_RESETALARM
+
+    END
+END
+#endif
+
+IDR_NIT_EXPORT MENU DISCARDABLE 
+BEGIN
+    POPUP "IDR_NIT_EXPORT"
+    BEGIN
+        MENUITEM "Export NIT to INI files...",  ID_NIT_EXPORT_EXPORT_TO_INI
+    END
+END
+
+IDR_EPG_POPUP MENU DISCARDABLE 
+BEGIN
+    POPUP "IDR_EPG_POPUP"
+    BEGIN
+        MENUITEM "Cancel Recording",            ID_IDREPGPOPUP_CANCELRECORDING
+
+        MENUITEM "Record Options...",           ID_IDREPGPOPUP_RECORDOPTIONS
+    END
+END
+
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDR_PCR_POPUP$(PRO) MENU DISCARDABLE 
+#else
+IDR_PCR_POPUP MENU DISCARDABLE 
+#endif
+BEGIN
+    POPUP "ID_PCR_POPUP"
+    BEGIN
+        MENUITEM "Use this PID for muxrate",    ID_IDPCRPOPUP_USETHISPIDFORMUXRATE
+
+    END
+END
+#endif
+
+IDR_MANUAL_EPG_CURRENT MENU DISCARDABLE 
+BEGIN
+    POPUP "IDR_MANUAL_EPG_CURRENT"
+    BEGIN
+        MENUITEM "for DVB-S tuners",            ID_IDRMANUALEPGCURRENT_FORDVBSTUNERS
+
+        MENUITEM "for Advanced satellite tuners", 
+                                                ID_IDRMANUALEPGCURRENT_FORADVANCEDSATELLITETUNERS
+
+        MENUITEM "for DVB-T tuners",            ID_IDRMANUALEPGCURRENT_FORDVBTTUNERS
+
+        MENUITEM "for DVB-C tuners",            ID_IDRMANUALEPGCURRENT_FORDVBCTUNERS
+
+        MENUITEM "for ATSC tuners",             ID_IDRMANUALEPGCURRENT_FORATSCTUNERS
+
+    END
+END
+
+IDR_ES_POPUP MENU DISCARDABLE 
+BEGIN
+    POPUP "IDR_ES_POPUP"
+    BEGIN
+        MENUITEM "Remove ES Blacklist",         ID_IDRESPOPUP_REMOVEESBLACKLIST
+
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_TXT_TXT             BITMAP  DISCARDABLE     "txt_txt.bmp"
+IDB_TXT_SUB             BITMAP  DISCARDABLE     "txt_sub.bmp"
+IDB_TXT_CC              BITMAP  DISCARDABLE     "txt_cc.bmp"
+IDB_TXT_VPS             BITMAP  DISCARDABLE     "txt_vps.bmp"
+IDB_TXT_ITXT            BITMAP  DISCARDABLE     "txt_itxt.bmp"
+IDB_TXT_USER            BITMAP  DISCARDABLE     "txt_sub4.bmp"
+IDB_TXT_422             BITMAP  DISCARDABLE     "txt_422.bmp"
+IDB_TXT_WSS             BITMAP  DISCARDABLE     "txt_wss.bmp"
+IDB_ATSC_CC             BITMAP  DISCARDABLE     "atsc_cc.bmp"
+IDB_ASPECT_43           BITMAP  DISCARDABLE     "aspect43.bmp"
+IDB_ASPECT_149          BITMAP  DISCARDABLE     "aspect149.bmp"
+IDB_ASPECT_169          BITMAP  DISCARDABLE     "aspect169.bmp"
+IDB_ATSC_RC             BITMAP  DISCARDABLE     "atsc_rc.bmp"
+IDB_AUD_MPEG            BITMAP  DISCARDABLE     "aud_mpeg.bmp"
+IDB_AUD_AC3             BITMAP  DISCARDABLE     "aud_ac3.bmp"
+IDB_ASPECT_AFD          BITMAP  DISCARDABLE     "aspect_a.bmp"
+IDB_PROFILE_TOOLBAR     BITMAP  DISCARDABLE     "profile_.bmp"
+IDB_VID_MPEG2           BITMAP  DISCARDABLE     "vid_mp2.bmp"
+IDB_VID_MPEG4           BITMAP  DISCARDABLE     "vid_mpg4.bmp"
+IDB_VID_H264            BITMAP  DISCARDABLE     "vid_h264.bmp"
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDB_VID_VC1$(PRO)       BITMAP  DISCARDABLE     "vid_vc1.bmp"
+#else
+IDB_VID_VC1             BITMAP  DISCARDABLE     "vid_vc1.bmp"
+#endif
+#endif
+IDB_BVID_H264           BITMAP  DISCARDABLE     "bvid_h26.bmp"
+IDB_BVID_MPEG2          BITMAP  DISCARDABLE     "bvid_mp2.bmp"
+IDB_BVID_MPEG4          BITMAP  DISCARDABLE     "bvid_mp4.bmp"
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDB_BVID_VC1$(PRO)      BITMAP  DISCARDABLE     "bvid_vc1.bmp"
+#else
+IDB_BVID_VC1            BITMAP  DISCARDABLE     "bvid_vc1.bmp"
+#endif
+#endif
+IDB_BAUD_AC3            BITMAP  DISCARDABLE     "baud_ac3.bmp"
+IDB_BAUD_MPEG           BITMAP  DISCARDABLE     "baud_mpe.bmp"
+IDB_VID_DCII            BITMAP  DISCARDABLE     "vid_dcii.bmp"
+IDB_BVID_DCII           BITMAP  DISCARDABLE     "bvid_dcii.bmp"
+IDB_AUD_AAC             BITMAP  DISCARDABLE     "aud_aac.bmp"
+IDB_BAUD_AAC            BITMAP  DISCARDABLE     "baud_aac.bmp"
+IDB_BITMAP3             BITMAP  DISCARDABLE     "bitmap3.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+#if defined(APSTUDIO_INVOKED) || defined(NONOEM)
+#if defined(APSTUDIO_INVOKED)
+IDR_ACCELERATOR_TOP$(NONOEM) ACCELERATORS DISCARDABLE 
+#else
+IDR_ACCELERATOR_TOP ACCELERATORS DISCARDABLE 
+#endif
+BEGIN
+    "0",            ID_PLAYBACK_VLC_1,      VIRTKEY, CONTROL, NOINVERT
+    "1",            ID_PLAYBACK_VLC_2,      VIRTKEY, CONTROL, NOINVERT
+    "2",            ID_PLAYBACK_VLC_3,      VIRTKEY, CONTROL, NOINVERT
+    "3",            ID_PLAYBACK_VLC_4,      VIRTKEY, CONTROL, NOINVERT
+    "4",            ID_PLAYBACK_VLC_5,      VIRTKEY, CONTROL, NOINVERT
+    "5",            ID_PLAYBACK_VLC_6,      VIRTKEY, CONTROL, NOINVERT
+    "6",            ID_PLAYBACK_VLC_7,      VIRTKEY, CONTROL, NOINVERT
+    "7",            ID_PLAYBACK_VLC_8,      VIRTKEY, CONTROL, NOINVERT
+    "8",            ID_PLAYBACK_VLC_9,      VIRTKEY, CONTROL, NOINVERT
+    "9",            ID_PLAYBACK_VLC_10,     VIRTKEY, CONTROL, NOINVERT
+    "A",            IDC_SI_PARSER_RECORD_ALL, VIRTKEY, CONTROL, NOINVERT
+    "A",            ID_VIEW_CLOSEDCAPTIONS, VIRTKEY, ALT, NOINVERT
+    "C",            ID_VIEW_PMTTREE_CONTRACTALLPMTS, VIRTKEY, ALT, NOINVERT
+    "D",            ID_RECORD_RECORDPROGRAMTODVHS, VIRTKEY, CONTROL, 
+                                                    NOINVERT
+    "E",            ID_VIEW_SHOWEPGGRID,    VIRTKEY, ALT, NOINVERT
+    "H",            IDC_SI_PARSER_EXPORT,   VIRTKEY, CONTROL, NOINVERT
+    "I",            IDC_SI_PARSER_IP_DVB_MODE, VIRTKEY, ALT, NOINVERT
+    "L",            ID_VIEW_TABLELIST,      VIRTKEY, ALT, NOINVERT
+    "M",            ID_VIEW_VIDEOMOSAIC,    VIRTKEY, CONTROL, NOINVERT
+    "M",            ID_FILE_DEFINEMANUALCHANNELS, VIRTKEY, ALT, NOINVERT
+    "P",            IDC_SI_PARSER_RECORD_PID, VIRTKEY, CONTROL, NOINVERT
+    "P",            ID_HELP_SHOWPIDLIST,    VIRTKEY, ALT, NOINVERT
+    "R",            IDC_SI_PARSER_RECORD,   VIRTKEY, CONTROL, NOINVERT
+    "R",            ID_FILE_RESTART_SOURCE, VIRTKEY, ALT, NOINVERT
+    "S",            ID_VIEW_STREAMMONITOR,  VIRTKEY, ALT, NOINVERT
+    "T",            ID_RECORD_RECORDTABLES, VIRTKEY, CONTROL, NOINVERT
+    "V",            ID_RECORD_RECORDALLPROGRAMS, VIRTKEY, CONTROL, NOINVERT
+    "V",            ID_SETTINGS_VLC,        VIRTKEY, ALT, NOINVERT
+    VK_ESCAPE,      ID_FILE_EXIT,           VIRTKEY, NOINVERT
+    VK_F1,          IDC_SUPPORT,            VIRTKEY, NOINVERT
+    VK_F5,          ID_SETTINGS_THUMBNAILTHREAD_REFRESHNOW, VIRTKEY, 
+                                                    NOINVERT
+    VK_F6,          ID_HELP_RESETALL,       VIRTKEY, NOINVERT
+    "X",            ID_VIEW_PMTTREE_EXPANDALLPMTS, VIRTKEY, ALT, NOINVERT
+END
+#endif
+
+#if defined(APSTUDIO_INVOKED) || defined(INEOQUEST)
+#if defined(APSTUDIO_INVOKED)
+IDR_ACCELERATOR_TOP$(INEOQUEST) ACCELERATORS DISCARDABLE 
+#else
+IDR_ACCELERATOR_TOP ACCELERATORS DISCARDABLE 
+#endif
+BEGIN
+    "0",            ID_PLAYBACK_VLC_1,      VIRTKEY, CONTROL, NOINVERT
+    "1",            ID_PLAYBACK_VLC_2,      VIRTKEY, CONTROL, NOINVERT
+    "2",            ID_PLAYBACK_VLC_3,      VIRTKEY, CONTROL, NOINVERT
+    "3",            ID_PLAYBACK_VLC_4,      VIRTKEY, CONTROL, NOINVERT
+    "4",            ID_PLAYBACK_VLC_5,      VIRTKEY, CONTROL, NOINVERT
+    "5",            ID_PLAYBACK_VLC_6,      VIRTKEY, CONTROL, NOINVERT
+    "6",            ID_PLAYBACK_VLC_7,      VIRTKEY, CONTROL, NOINVERT
+    "7",            ID_PLAYBACK_VLC_8,      VIRTKEY, CONTROL, NOINVERT
+    "8",            ID_PLAYBACK_VLC_9,      VIRTKEY, CONTROL, NOINVERT
+    "9",            ID_PLAYBACK_VLC_10,     VIRTKEY, CONTROL, NOINVERT
+    "A",            IDC_SI_PARSER_RECORD_ALL, VIRTKEY, CONTROL, NOINVERT
+    "D",            ID_RECORD_RECORDPROGRAMTODVHS, VIRTKEY, CONTROL, 
+                                                    NOINVERT
+    "H",            IDC_SI_PARSER_EXPORT,   VIRTKEY, CONTROL, NOINVERT
+    "L",            ID_VIEW_TABLELIST,      VIRTKEY, ALT, NOINVERT
+    "M",            ID_FILE_DEFINEMANUALCHANNELS, VIRTKEY, ALT, NOINVERT
+    "P",            IDC_SI_PARSER_RECORD_PID, VIRTKEY, CONTROL, NOINVERT
+    "P",            ID_HELP_SHOWPIDLIST,    VIRTKEY, ALT, NOINVERT
+    "R",            IDC_SI_PARSER_RECORD,   VIRTKEY, CONTROL, NOINVERT
+    "R",            ID_FILE_RESTART_SOURCE, VIRTKEY, ALT, NOINVERT
+    "V",            ID_SETTINGS_VLC,        VIRTKEY, ALT, NOINVERT
+    VK_ESCAPE,      ID_FILE_EXIT,           VIRTKEY, NOINVERT
+    VK_F1,          IDC_SUPPORT,            VIRTKEY, NOINVERT
+    VK_F5,          ID_SETTINGS_THUMBNAILTHREAD_REFRESHNOW, VIRTKEY, 
+                                                    NOINVERT
+    VK_F6,          ID_HELP_RESETALL,       VIRTKEY, NOINVERT
+END
+#endif
+
+IDR_PROFILES ACCELERATORS DISCARDABLE 
+BEGIN
+    "C",            IDC_EDIT_COPY,          VIRTKEY, CONTROL, NOINVERT
+    "V",            IDC_EDIT_PASTE,         VIRTKEY, CONTROL, NOINVERT
+    VK_DELETE,      ID_FILE_DELETE,         VIRTKEY, NOINVERT
+    VK_ESCAPE,      ID_FILE_EXIT,           VIRTKEY, NOINVERT
+    VK_F5,          ID_VIEW_REFRESH,        VIRTKEY, NOINVERT
+    VK_INSERT,      ID_FILE_NEW_PROFILE,    VIRTKEY, NOINVERT
+    VK_RETURN,      ID_FILE_LAUNCHPROFILE,  VIRTKEY, NOINVERT
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

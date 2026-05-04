@@ -1,0 +1,721 @@
+diff -urNp vdr-1.3.11_p0/csa.c vdr-1.3.11_p0_p1/csa.c
+--- vdr-1.3.11_p0/csa.c	1970-01-01 01:00:00.000000000 +0100
++++ vdr-1.3.11_p0_p1/csa.c	2004-09-17 14:47:49.711756806 +0200
+@@ -0,0 +1,102 @@
++/*
++ * csa.c:
++ *
++ */
++
++#include <stdio.h>
++#include <string.h>
++#include "csa.h"
++
++//#define DEBUG(x...) printf(x)
++#define DEBUG(x...)
++//#define DEBUGFLUSH fflush(stdout)
++#define DEBUGFLUSH
++
++
++#include "FFdecsa/FFdecsa.h"
++
++cCSA::cCSA(void)
++{
++  force_dequeueing=false;
++  even_is_queued=odd_is_queued=false;
++  memset(odd_ck,0,sizeof(odd_ck));
++  memset(even_ck,0,sizeof(even_ck));
++  memset(queued_odd_ck,0,sizeof(queued_odd_ck));
++  memset(queued_even_ck,0,sizeof(queued_even_ck));
++}
++
++void cCSA::SetDescr(ca_descr_t *ca_descr)
++{
++  if(ca_descr->parity==2222) { // flush keys command!
++    DEBUG("csa: flushing keys -----\n");
++    force_dequeueing=true;
++    }
++  else if(ca_descr->parity==0) { // even key
++    memcpy(queued_even_ck,ca_descr->cw,8);
++    even_is_queued=true;
++    DEBUG("csa: queued even key\n");
++    }
++  else {                    // odd key
++    memcpy(queued_odd_ck,ca_descr->cw,8);
++    odd_is_queued=true;
++    DEBUG("csa: \t\t\t\tqueued odd key\n");
++    }
++}
++
++int cCSA::DecryptCluster(unsigned char **cluster)
++{
++  unsigned char **clu=cluster;
++  unsigned char *pkt;
++  bool even_is_used,odd_is_used;
++  int done;
++
++  pkt=*clu;
++  even_is_used=odd_is_used=false;
++  while(1){
++    if(pkt==NULL) break;
++    if(pkt>=*(clu+1)){
++      clu+=2;
++      pkt=*clu;
++      continue;
++    }
++    // process packet
++    if((pkt[3]&0xC0)==0x80) { // even
++      even_is_used=true;
++    }
++    if((pkt[3]&0xC0)==0xC0) { // odd
++      odd_is_used=true;
++    }
++    // increment
++    pkt+=188;
++  }
++#if 1
++  if(even_is_queued&&(!even_is_used||force_dequeueing)) {
++    DEBUG("csa: dequeued even key\n");
++    if(force_dequeueing) DEBUG("csa: forced\n");
++    memcpy(even_ck,queued_even_ck,8);
++    set_control_words(even_ck,odd_ck);
++    even_is_queued=false;
++  }
++  if(odd_is_queued&&(!odd_is_used||force_dequeueing)) {
++    DEBUG("csa: \t\t\t\tdequeued odd key\n");
++    if(force_dequeueing) DEBUG("csa: \t\t\t\tforced\n");
++    memcpy(odd_ck,queued_odd_ck,8);
++    set_control_words(even_ck,odd_ck);
++    odd_is_queued=false;
++  }
++  force_dequeueing=false;
++#endif
++  if(even_is_queued) {
++    DEBUG(" !E! ");
++  }
++  if(odd_is_queued) {
++    DEBUG(" !O! ");
++  }
++  if(even_is_used) DEBUG("E");
++  if(odd_is_used) DEBUG("O");
++  done=decrypt_packets(cluster);
++  DEBUG("/%i ",done);
++  DEBUGFLUSH;
++  return done;
++}
++
+diff -urNp vdr-1.3.11_p0/csa.h vdr-1.3.11_p0_p1/csa.h
+--- vdr-1.3.11_p0/csa.h	1970-01-01 01:00:00.000000000 +0100
++++ vdr-1.3.11_p0_p1/csa.h	2004-09-17 14:47:49.714754815 +0200
+@@ -0,0 +1,27 @@
++/*
++ * csa.h:
++ *
++ */
++
++#ifndef __CSA_H
++#define __CSA_H
++
++#include <linux/dvb/ca.h>
++
++#define HAVE_SOFTCSA // make this patch detectable
++#define SOFTCSA_VERS 0xff // ff stands for FFdecsa
++#define SOFTCSA_SUBVERS 0x00
++
++class cCSA {
++private:
++  unsigned char even_ck[8], odd_ck[8];
++  unsigned char queued_even_ck[8], queued_odd_ck[8];
++  bool even_is_queued, odd_is_queued;
++  bool force_dequeueing;
++public:
++  cCSA(void);
++  int DecryptCluster(unsigned char **data);
++  void SetDescr(ca_descr_t *ca_descr);
++  };
++
++#endif //__CSA_H
+diff -urNp vdr-1.3.11_p0/device.c vdr-1.3.11_p0_p1/device.c
+--- vdr-1.3.11_p0/device.c	2004-06-19 10:51:05.000000000 +0200
++++ vdr-1.3.11_p0_p1/device.c	2004-09-17 14:47:49.716753487 +0200
+@@ -53,6 +53,7 @@ cDevice::cDevice(void)
+   ciHandler = NULL;
+   player = NULL;
+ 
++  csa=0;
+   for (int i = 0; i < MAXRECEIVERS; i++)
+       receiver[i] = NULL;
+ 
+@@ -67,6 +68,7 @@ cDevice::~cDevice()
+   Detach(player);
+   for (int i = 0; i < MAXRECEIVERS; i++)
+       Detach(receiver[i]);
++  delete csa;
+   delete ciHandler;
+   delete nitFilter;
+   delete sdtFilter;
+@@ -714,28 +716,83 @@ void cDevice::Action(void)
+ {
+   if (OpenDvr()) {
+      active = true;
++     bool failed = false;
+      for (; active;) {
+-         // Read data from the DVR device:
++         int collected = 0;
++         int to_be_released;
++         uchar *packets[300]; /* FIXME HARDCODED NUMBER */
++         uchar *range_list[602]; /* FIXME HARDCODED NUMBER */
++         int count_ranges = 0;
+          uchar *b = NULL;
+-         if (GetTSPacket(b)) {
+-            if (b) {
+-               int Pid = (((uint16_t)b[1] & PID_MASK_HI) << 8) | b[2];
+-               // Distribute the packet to all attached receivers:
+-               Lock();
+-               for (int i = 0; i < MAXRECEIVERS; i++) {
+-                   if (receiver[i] && receiver[i]->WantsPid(Pid))
+-                      receiver[i]->Receive(b, TS_SIZE);
+-                   }
+-               Unlock();
++              /* FIXME HARDCODED NUMBER OF PACKETS 70 */
++         for (collected = 0; collected < 70;) {
++         // Read data from the DVR device:
++            if (CollectTSPacket(b)) {
++               if (b) {
++                  packets[collected++] = b;
++                  }
++	       else {
++                  break;
++                  }
++               }
++            else {
++               failed = true;
++               break;
+                }
+             }
+-         else
+-            break;
++         if (failed) break;
++
++         // decrypt
++         for (int i = 0; i < collected; i++) {
++           range_list[count_ranges++]=packets[i];
++           range_list[count_ranges++]=packets[i]+188;
++           }
++         range_list[count_ranges]=NULL;
++         to_be_released=0;
++         if(!ciHandler) {
++            if(!csa) {
++               csaMutex.Lock();
++               if(!csa) csa=new cCSA;
++               csaMutex.Unlock();
++               }
++            if(csa){
++	       to_be_released=csa->DecryptCluster(range_list);
++               }
++	    else{
++               dsyslog("no csa, emergency pass trough\n");
++               to_be_released=collected; // emergency pass through
++	       }
++            }
++
++         // Distribute packets to all attached receivers:
++	 for (int k = 0; k < to_be_released; k++) {
++            b = packets[k];
++            int Pid = (((uint16_t)b[1] & PID_MASK_HI) << 8) | b[2];
++            Lock();
++            for (int i = 0; i < MAXRECEIVERS; i++) {
++                if (receiver[i] && receiver[i]->WantsPid(Pid))
++                   receiver[i]->Receive(b, TS_SIZE);
++                }
++            Unlock();
++            ReleaseTSPacket();
++            }
++         Rewind();
++         collected = 0;
+          }
+      CloseDvr();
+      }
+ }
+ 
++void cDevice::SetCADescr(ca_descr_t *ca_descr)
++{
++  if(!csa) {
++    csaMutex.Lock();
++    if(!csa) csa=new cCSA;
++    csaMutex.Unlock();
++    }
++  if(csa) csa->SetDescr(ca_descr);
++}
++
+ bool cDevice::OpenDvr(void)
+ {
+   return false;
+@@ -745,11 +802,21 @@ void cDevice::CloseDvr(void)
+ {
+ }
+ 
+-bool cDevice::GetTSPacket(uchar *&Data)
++bool cDevice::CollectTSPacket(uchar *&Data)
++{
++  return false;
++}
++
++bool cDevice::ReleaseTSPacket(void)
+ {
+   return false;
+ }
+ 
++void cDevice::Rewind(void)
++{
++  return;
++}
++
+ bool cDevice::AttachReceiver(cReceiver *Receiver)
+ {
+   if (!Receiver)
+@@ -804,7 +871,7 @@ cTSBuffer::cTSBuffer(int File, int Size,
+   f = File;
+   size = Size / TS_SIZE * TS_SIZE;
+   cardIndex = CardIndex;
+-  tsRead = tsWrite = 0;
++  tsCollect = tsRelease = tsWrite = 0;
+   buf = (f >= 0 && size >= TS_SIZE) ? MALLOC(uchar, size + TS_SIZE) : NULL;
+   // the '+ TS_SIZE' allocates some extra space for handling packets that got split by a buffer roll-over
+   firstRead = true;
+@@ -823,19 +890,19 @@ int cTSBuffer::Read(void)
+      int total = 0;
+      do {
+         repeat = false;
+-        if (firstRead || Used() > TS_SIZE || Poller.Poll(100)) { // only wait if there's not enough data in the buffer
++        if (firstRead || Uncollected() > TS_SIZE || Poller.Poll(100)) { // only wait if there's not enough data in the buffer
+            firstRead = false;
+-           if (tsRead == tsWrite)
+-              tsRead = tsWrite = 0; // keep the maximum buffer space available
+-           if (tsWrite >= size && tsRead > 0)
++           if (tsRelease == tsWrite)
++              tsRelease = tsCollect = tsWrite = 0; // keep the maximum buffer space available
++           if (tsWrite >= size && tsRelease > 0)
+               tsWrite = 0;
+-           int free = tsRead <= tsWrite ? size - tsWrite : tsRead - tsWrite - 1;
++           int free = tsRelease <= tsWrite ? size - tsWrite : tsRelease - tsWrite - 1;
+            if (free > 0) {
+               int r = read(f, buf + tsWrite, free);
+               if (r > 0) {
+                  total += r;
+                  tsWrite += r;
+-                 if (tsWrite >= size && tsRead > 0) {
++                 if (tsWrite >= size && tsRelease > 0) {
+                     tsWrite = 0;
+                     repeat = true; // read again after a boundary roll-over
+                     }
+@@ -848,33 +915,69 @@ int cTSBuffer::Read(void)
+   return -1;
+ }
+ 
+-uchar *cTSBuffer::Get(void)
++uchar *cTSBuffer::Collect(void)
+ {
+-  if (Used() >= TS_SIZE) {
+-     uchar *p = buf + tsRead;
++  if (Uncollected() >= TS_SIZE) {
++     uchar *p = buf + tsCollect;
+      if (*p != TS_SYNC_BYTE) {
+-        esyslog("ERROR: not sync'ed to TS packet on device %d", cardIndex);
+-        int tsMax = tsRead < tsWrite ? tsWrite : size;
+-        for (int i = tsRead; i < tsMax; i++) {
++        esyslog("ERROR: (collect) not sync'ed to TS packet on device %d", cardIndex);
++        int tsMax = tsCollect < tsWrite ? tsWrite : size;
++        for (int i = tsCollect; i < tsMax; i++) {
+             if (buf[i] == TS_SYNC_BYTE) {
+-               esyslog("ERROR: skipped %d bytes to sync on TS packet on device %d", i - tsRead, cardIndex);
+-               tsRead = i;
++               esyslog("ERROR: (collect) skipped %d bytes to sync on TS packet on device %d", i - tsCollect, cardIndex);
++               tsCollect = i;
+                return NULL;
+                }
+             }
+-        if ((tsRead = tsMax) >= size)
+-           tsRead = 0;
++        if ((tsCollect = tsMax) >= size)
++           tsCollect = 0;
+         return NULL;
+         }
+-     if (tsRead + TS_SIZE > size) {
+-        // the packet rolled over the buffer boundary, so let's fetch the rest from the beginning (which MUST be there, since Used() >= TS_SIZE)
+-        int rest = TS_SIZE - (size - tsRead);
++     if (tsCollect + TS_SIZE > size) {
++        // the packet rolled over the buffer boundary, so let's fetch the rest from the beginning (which MUST be there, since Uncollected() >= TS_SIZE)
++        int rest = TS_SIZE - (size - tsCollect);
+         memcpy(buf + size, buf, rest);
+-        tsRead = rest;
++        tsCollect = rest;
+         }
+-     else if ((tsRead += TS_SIZE) >= size)
+-        tsRead = 0;
++     else if ((tsCollect += TS_SIZE) >= size)
++        tsCollect = 0;
+      return p;
+      }
+   return NULL;
+ }
++
++bool cTSBuffer::Release(void)
++{ 
++  if (Collected() >= TS_SIZE) {
++     uchar *p = buf + tsRelease;
++     if (*p != TS_SYNC_BYTE) {
++        esyslog("ERROR: (release) not sync'ed to TS packet on device %d", cardIndex);
++        int tsMax = tsRelease < tsCollect ? tsCollect : size;
++        for (int i = tsRelease; i < tsMax; i++) {
++            if (buf[i] == TS_SYNC_BYTE) {
++               esyslog("ERROR: (release) skipped %d bytes to sync on TS packet on device %d", i - tsRelease, cardIndex);
++               tsRelease = i;
++               return true;
++               }
++            }
++        if ((tsRelease = tsMax) >= size)
++           tsRelease = 0;
++        return true;
++        }
++     if (tsRelease + TS_SIZE > size) {
++        // the packet rolled over the buffer boundary, so let's fetch the rest from the beginning (which MUST be there, since Collected() >= TS_SIZE)
++        int rest = TS_SIZE - (size - tsRelease);
++        // no need to move data, so no memcpy(buf + size, buf, rest);
++        tsRelease = rest;
++        }
++     else if ((tsRelease += TS_SIZE) >= size)
++        tsRelease = 0;
++     return true;
++     }
++  return false;
++}
++
++void cTSBuffer::Rewind(void)
++{ 
++   tsCollect = tsRelease;
++}
+diff -urNp vdr-1.3.11_p0/device.h vdr-1.3.11_p0_p1/device.h
+--- vdr-1.3.11_p0/device.h	2004-06-19 10:50:37.000000000 +0200
++++ vdr-1.3.11_p0_p1/device.h	2004-09-17 14:47:49.718752160 +0200
+@@ -10,6 +10,7 @@
+ #ifndef __DEVICE_H
+ #define __DEVICE_H
+ 
++#include "csa.h"
+ #include "ci.h"
+ #include "eit.h"
+ #include "filter.h"
+@@ -400,6 +401,8 @@ public:
+ 
+ private:
+   cReceiver *receiver[MAXRECEIVERS];
++  cMutex csaMutex;
++  cCSA *csa;
+   int CanShift(int Ca, int Priority, int UsedCards = 0) const;
+ protected:
+   int Priority(void) const;
+@@ -411,13 +414,42 @@ protected:
+       ///< Stream for use in a cReceiver.
+   virtual void CloseDvr(void);
+       ///< Shuts down the DVR.
+-  virtual bool GetTSPacket(uchar *&Data);
++  virtual bool CollectTSPacket(uchar *&Data);
+       ///< Gets exactly one TS packet from the DVR of this device and returns
+       ///< a pointer to it in Data. Only the first 188 bytes (TS_SIZE) Data
+       ///< points to are valid and may be accessed. If there is currently no
+       ///< new data available, Data will be set to NULL. The function returns
+       ///< false in case of a non recoverable error, otherwise it returns true,
+       ///< even if Data is NULL.
++      ///< When the 188 bytes Data points to don't need to be accessed anymore,
++      ///< ReleaseTSPacket has to be called.
++      ///< Note: it is possible to have many CollectTSPacket and then many
++      ///< ReleaseTSPacket, e.g. (if C=CollectTSPacket and R=ReleaseTSPacket
++      ///< for brevity) this sequence is allowed: CCCCRCCCRRRRRCRR.
++      ///< After CCCC four packets are accessable, but after CCCCR only
++      ///< three packets are accessable (2nd, 3rd, 4th, because the 1st was
++      ///< released).
++      ///< This semantic allows multiple packets in sequence to be simultaneous
++      ///< accessable.
++      ///< Warning: abuse of this feature (that is, having a significant part
++      ///< of the device buffer in a collected but unreleased state) can increase
++      ///< the probability of buffer underflows.
++      ///< Note that if CollectTSPacket sets Data to NULL, the number of collected
++      ///< packets doesn't increase, so no corresponding ReleaseTSPacket is needed.
++      ///< Extra feature: Rewind can be used to "uncollect" all unreleased collected
++      ///< packets. This means that (W=Rewind) this sequence is allowed:
++      ///< CCCRWCCRR. The 4th and 5th C will collect the same packets the 2nd and 3rd C
++      ///< collected before. The idea behind this semantic is that you can
++      ///< collect many packets, examine them and then decide to put back
++      ///< some packets you will process later.
++  virtual bool ReleaseTSPacket(void);
++      ///< Releases the oldest TS packet currently unreleased. It can only
++      ///< used after CollectTSPacket. See CollectTSPacket for details.
++      ///< The function returns false in case of a non recoverable error (such as
++      ///< when there is no packet to release), otherwise it returns true,
++  virtual void Rewind(void);
++      ///< All the unreleased collected packets go back to unreleased uncollected
++      ///< status, so they can be collected again. See CollectTSPacket for details.
+ public:
+   int  Ca(void) const;
+        ///< Returns the ca of the current receiving session(s).
+@@ -427,6 +459,7 @@ public:
+        ///< Attaches the given receiver to this device.
+   void Detach(cReceiver *Receiver);
+        ///< Detaches the given receiver from this device.
++  void SetCADescr(ca_descr_t *ca_descr);
+   };
+ 
+ /// Derived cDevice classes that can receive channels will have to provide
+@@ -442,16 +475,21 @@ private:
+   int f;
+   int size;
+   int cardIndex;
+-  int tsRead;
++  int tsRelease;
++  int tsCollect;
+   int tsWrite;
+   uchar *buf;
+   bool firstRead;
+-  int Used(void) { return tsRead <= tsWrite ? tsWrite - tsRead : size - tsRead + tsWrite; }
++  int Used(void) { return tsRelease <= tsWrite ? tsWrite - tsRelease : size - tsRelease + tsWrite; }
++  int Uncollected(void) { return tsCollect <= tsWrite ? tsWrite - tsCollect : size - tsCollect + tsWrite; }
++  int Collected(void) { return tsRelease <= tsCollect ? tsCollect - tsRelease : size - tsRelease + tsCollect; }
+ public:
+   cTSBuffer(int File, int Size, int CardIndex);
+   ~cTSBuffer();
+   int Read(void);
+-  uchar *Get(void);
++  uchar *Collect(void);
++  bool Release(void);
++  void Rewind(void);
+   };
+ 
+ #endif //__DEVICE_H
+diff -urNp vdr-1.3.11_p0/dvbdevice.c vdr-1.3.11_p0_p1/dvbdevice.c
+--- vdr-1.3.11_p0/dvbdevice.c	2004-09-17 11:29:29.000000000 +0200
++++ vdr-1.3.11_p0_p1/dvbdevice.c	2004-09-17 14:47:49.719751496 +0200
+@@ -1142,12 +1142,12 @@ void cDvbDevice::CloseDvr(void)
+      }
+ }
+ 
+-bool cDvbDevice::GetTSPacket(uchar *&Data)
++bool cDvbDevice::CollectTSPacket(uchar *&Data)
+ {
+   if (tsBuffer) {
+      int r = tsBuffer->Read();
+      if (r >= 0) {
+-        Data = tsBuffer->Get();
++        Data = tsBuffer->Collect();
+         return true;
+         }
+      else if (FATALERRNO) {
+@@ -1162,3 +1162,18 @@ bool cDvbDevice::GetTSPacket(uchar *&Dat
+      }
+   return false;
+ }
++
++bool cDvbDevice::ReleaseTSPacket(void)
++{
++  if (tsBuffer) {
++     return tsBuffer->Release();
++     }
++  return false;
++}
++
++void cDvbDevice::Rewind(void)
++{
++  if (tsBuffer) {
++     tsBuffer->Rewind();
++     }
++}
+diff -urNp vdr-1.3.11_p0/dvbdevice.h vdr-1.3.11_p0_p1/dvbdevice.h
+--- vdr-1.3.11_p0/dvbdevice.h	2004-06-19 10:51:33.000000000 +0200
++++ vdr-1.3.11_p0_p1/dvbdevice.h	2004-09-17 14:47:49.721750169 +0200
+@@ -126,7 +126,9 @@ private:
+ protected:
+   virtual bool OpenDvr(void);
+   virtual void CloseDvr(void);
+-  virtual bool GetTSPacket(uchar *&Data);
++  virtual bool CollectTSPacket(uchar *&Data);
++  virtual bool ReleaseTSPacket(void);
++  virtual void Rewind(void);
+   };
+ 
+ #endif //__DVBDEVICE_H
+diff -urNp vdr-1.3.11_p0/Make.config.template vdr-1.3.11_p0_p1/Make.config.template
+--- vdr-1.3.11_p0/Make.config.template	2003-08-09 13:03:25.000000000 +0200
++++ vdr-1.3.11_p0_p1/Make.config.template	2004-09-17 14:47:49.710757470 +0200
+@@ -25,3 +25,24 @@ BINDIR   = /usr/local/bin
+ PLUGINDIR= ./PLUGINS
+ PLUGINLIBDIR= $(PLUGINDIR)/lib
+ VIDEODIR = /video
++
++
++
++
++#DVBDIR   = /usr/src/linux-2.6.7
++
++### options for sc plugin
++IRDETO=1
++SECA=1
++VIACCESS=1
++NAGRA=1
++CONAX=1
++SHL=1
++SC_SECA=1
++SC_CRYPTOWORKS=1
++SC_IRDETO=1
++SC_CONAX=1
++CARDCLIENT=1
++DBG=0
++OPENSSL=1
++
+diff -urNp vdr-1.3.11_p0/Makefile vdr-1.3.11_p0_p1/Makefile
+--- vdr-1.3.11_p0/Makefile	2004-05-16 12:51:44.000000000 +0200
++++ vdr-1.3.11_p0_p1/Makefile	2004-09-17 15:01:00.398614566 +0200
+@@ -72,6 +72,13 @@ ifdef VFAT
+ DEFINES += -DVFAT
+ endif
+ 
++# SoftCSA
++OBJS    += csa.o
++
++# FFdecsa
++### compiler flags and other optimizations in FFdecsa/Makefile
++FFDECSA = FFdecsa/FFdecsa.o
++
+ all: vdr
+ font: genfontfile\
+       fontfix.c fontosd.c fontsml.c\
+@@ -96,8 +103,12 @@ $(DEPFILE): Makefile
+ 
+ # The main program:
+ 
+-vdr: $(OBJS) $(SILIB)
+-	$(CXX) $(CXXFLAGS) -rdynamic $(OBJS) $(NCURSESLIB) -ljpeg -lpthread -ldl $(LIBDIRS) $(SILIB) -o vdr
++vdr: $(OBJS) $(SILIB) $(FFDECSA)
++	$(CXX) $(CXXFLAGS) -rdynamic $(OBJS) $(FFDECSA) $(NCURSESLIB) -ljpeg -lpthread -ldl $(LIBDIRS) $(SILIB) -o vdr
++
++# FFdecsa
++FFdecsa/FFdecsa.o:
++	$(MAKE) -C FFdecsa all
+ 
+ # The font files:
+ 
+diff -urNp vdr-1.3.11_p0/PLUGINS/src/sc/cam.c vdr-1.3.11_p0_p1/PLUGINS/src/sc/cam.c
+--- vdr-1.3.11_p0/PLUGINS/src/sc/cam.c	2004-07-01 19:55:21.000000000 +0200
++++ vdr-1.3.11_p0_p1/PLUGINS/src/sc/cam.c	2004-09-17 14:47:49.723748841 +0200
+@@ -226,6 +226,7 @@ void cCam::WriteCW(int index, bool resen
+ {
+   ca_descr_t ca_descr;
+   int i;
++  bool both_cw_changed=false;
+ 
+   if(!sys) {
+     d(printf("softcam %d: sys==NULL in WriteCW\n",cardNum))
+@@ -234,7 +235,13 @@ void cCam::WriteCW(int index, bool resen
+   unsigned char *cw=sys->CW();
+   for(i=0; i<16; i+=4) cw[i+3]=cw[i]+cw[i+1]+cw[i+2];
+ 
++
++  d(printf("     ----- WriteCW -----\n"));
+   ca_descr.index=index;
++  if(memcmp(&cw[0],lastEvenCW,8) && memcmp(&cw[8],lastOddCW,8)) {
++    d(printf("     ----- BOTH CWs HAVE CHANGED -----\n"));
++    both_cw_changed=true;
++    }
+   if(resend || memcmp(&cw[0],lastEvenCW,8)) {
+     memcpy(lastEvenCW,&cw[0],8);
+     ca_descr.parity=0;
+@@ -256,6 +263,16 @@ void cCam::WriteCW(int index, bool resen
+ #endif
+     DTURN('O')
+     }
++
++  if(both_cw_changed) {
++    d(printf("     ----- BOTH CWs HAVE CHANGED ----- flushed\n"));
++#ifdef HAVE_SOFTCSA
++    if(softCSA) {    
++      ca_descr.parity=2222;
++      device->SetCADescr(&ca_descr);
++      }
++#endif
++    }
+ }
+ 
+ void cCam::Process(cFilter *filter, unsigned char *data, int len)
+diff -urNp vdr-1.3.11_p0/PLUGINS/src/sc/system-seca.c vdr-1.3.11_p0_p1/PLUGINS/src/sc/system-seca.c
+--- vdr-1.3.11_p0/PLUGINS/src/sc/system-seca.c	2004-08-07 15:43:23.000000000 +0200
++++ vdr-1.3.11_p0_p1/PLUGINS/src/sc/system-seca.c	2004-09-17 14:47:49.725747514 +0200
+@@ -819,7 +819,7 @@ bool cSystemSeca::ProcessECM(const cEcmI
+ 
+   cPlainKey *pk;
+   cKeySnoop ks(this,'S',ecmD->provId,s->keyNr&0x0F);
+-
++  dse(printf("provid %08x key %08x\n",ecmD->provId,s->keyNr))
+   while((pk=FastKey('S',ecmD->provId,s->keyNr&0x0F))) {
+     unsigned char buff[msgLen];
+     memcpy(buff,ecm,sizeof(buff)); // if decoding fails we need the original data
+diff -urNp vdr-1.3.11_p0/README.SoftCSA vdr-1.3.11_p0_p1/README.SoftCSA
+--- vdr-1.3.11_p0/README.SoftCSA	1970-01-01 01:00:00.000000000 +0100
++++ vdr-1.3.11_p0_p1/README.SoftCSA	2004-09-17 14:47:49.726746850 +0200
+@@ -0,0 +1,58 @@
++
++SoftCSA patch (using FFdecsa for descrambling)
++==============================================
++
++The SoftCSA patch implements software descrambling for budget cards. On full
++featured cards this is done on the hardware ECD chip.
++This version uses FFdecsa to descramble with very low CPU usage.
++
++NOTE: This is a highly experimental feature. Mostly not tested. Expect all
++kinds of bugs, crashes or weird behaviour. Any contributions to the code are
++welcome and I'm pretty sure you will find a place to publish them ...
++
++The SoftCSA function only works with budget cards (current DVB driver isn't
++able to deliver an encrypted stream on a full featured card).
++
++While the descrambling is done with this piece of code, you still need an
++additional plugin to capture and decrypt the CW from the ECM stream. You should
++first install this patch and then compile the plugin or the plugin won't enable
++SoftCSA support (sc 0.1.9+ only).
++
++This version of SoftCSA uses FFdecsa code to perform data descrambling.
++FFdecsa is very fast and doesn't need a fast CPU to work. If you CPU is able to
++decode MPEG in real time without being near 100% utilization, it is likely able
++to descramble too.
++
++There are a couple of things you should tune to optimize performance.
++
++1) The Makefile in the FFdecsa directory should use gcc options for your CPU;
++   you should change the "-march" flag to avoid slow speed or crashes.
++   Recent versions of gcc (3.3.3 or later is recommended) support: pentium,
++   pentium-mmx, pentiumpro, pentium2, pentium3, pentium4, k6, k6-2, k6-3,
++   athlon, athlon-tbird, athlon4, athlon-xp and athlon-mp. You could play
++   with other flags too, but it is not necessary (decreasing unrolling limit
++   may help older CPUs).
++
++2) You should edit FFdecsa.c to select the type of parallelism your CPU
++   supports and prefers from a performance point of view. If your CPU has MMX
++   support, try 64_MMX; if it hasn't or if you have compilation problems, try
++   32_INT. You have to edit the line near the "our choice" string.
++   Read the docs from FFdecsa for more information.
++
++The vdr Makefile tries to automatically build FFdecsa/FFdecsa.o, but it
++is recommend to compile FFdecsa before compiling vdr.
++The executable file named "FFdecsa/FFdecsa_test" will test the correctness and
++speed of FFdecsa.
++
++BUGS: we don't use the appropriate FFdecsa function to know how many packets we
++should put in one cluster, we just use an hardcoded number of 70, which is
++good with 64_MMX and other 64_* only. Change it to 36 for 32_* and 136 for 128_*.
++Using 70 with 128_* will seriously impact speed. You can find the right place
++to edit by searching for "HARDCODED" in device.c.
++
++History:
++--------
++
++17.09.2004: Version 0.255.0
++- Created first version based on FFdecsa-1.0.0.
++

@@ -1,0 +1,80 @@
+; Installation INF for the CielPlus USB interfaces
+
+[Version]
+Signature="$CHICAGO$"
+Class=USB
+ClassGUID={36FC9E60-C465-11CF-8056-444553540000}
+provider=%CielPlus%
+;-------------------------------------------------------------;
+
+[SourceDisksNames]
+1=%CielPlus_INSTALL%,,,
+
+[SourceDisksFiles]
+CielPlus.sys = 1
+CielPlus.spt = 1
+
+[Manufacturer]
+%MfgName%=CielPlus
+
+[CielPlus]
+%VID_14AC&PID_0006.DeviceDesc%=CielPlus, USB\VID_14AC&PID_0006
+%VID_14AC&PID_0007.DeviceDesc%=CielPlus, USB\VID_14AC&PID_0007
+
+;[PreCopySection]
+;HKR,,NoSetupUI,,1
+
+[DestinationDirs]
+CielPlus.Files.Ext = 10,System32\Drivers
+;------------------------------------------------------------;
+
+
+[CielPlus.NT]
+CopyFiles=CielPlus.Files.Ext
+;------------------------------------------------------------;
+AddReg=CielPlus.AddReg
+
+[CielPlus.NT.HW]
+AddReg=CielPlus.AddReg.Guid
+
+[CielPlus.NT.Services]
+Addservice = CielPlus, 0x00000002, CielPlus.AddService
+
+[CielPlus.AddService]
+DisplayName    = %CielPlus.SvcDesc%
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 3                  ; SERVICE_DEMAND_START
+ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %10%\System32\Drivers\CielPlus.sys
+LoadOrderGroup = Base
+ 
+[CielPlus.AddReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,CielPlus.sys
+
+[CielPlus.Files.Ext]
+CielPlus.sys
+
+;-----Uncomment below to support script file processing-----;
+;[CielPlus.Files.Spt]
+;CielPlus.spt
+;------------------------------------------------------------;
+
+[CielPlus.AddReg.Guid]
+HKR,,DriverGUID,,%CielPlus.GUID%
+;-----Uncomment below to support script file processing-----;
+;HKR,,DriverEXECSCRIPT,,%CielPlus.EXECSCRIPT%
+;------------------------------------------------------------;
+
+
+;---------------------------------------------------------------;
+
+[Strings]
+CielPlus="CielPlus"
+MfgName="CielPlus"
+CielPlus_INSTALL="CielPlus USB Driver Installation Disk"
+VID_14AC&PID_0006.DeviceDesc="Sky Interface"
+VID_14AC&PID_0007.DeviceDesc="Dish Interface"
+CielPlus.SvcDesc="CielPlus USB Driver"
+CielPlus.GUID="{FA58C45D-5B19-428b-A2D1-2707856D7E19}"
+

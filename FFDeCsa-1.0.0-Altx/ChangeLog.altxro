@@ -1,0 +1,27 @@
+FFDecsa.h & FFDecsa.c :
+
+* PARALLEL_xx_yy moved form FFDecsa.c into FFDecsa.h
+* Removed internal static keys "csa_keys_t" and added as parameter to functions
+* Removed functions "get_suggested_cluster_size" and "get_control_words"
+  (can be calculated from your app)
+* Added "__declspec(dllexport)" to exported functions
+  (if compiled with MAKE_DLL)
+
+
+FFDecsa_test.c :
+* Run parameters (see sources) 
+* Included timeval.h (in place of sys/time.h) because gettimeofday() is 
+  not defined in MinGW
+
+Makefile:
+* 2 new options "make def" and "make dll" (using dllwrap.exe)
+
+
+How to compile (for Windows):
+
+1) Install MinGW and MSys from http://www.mingw.org
+2) Run msys.bat and chdir do FFDecsa sources directory
+2) Edit FFDecsa.h and change PARALLEL_MODE (optional)
+3) "make clean" & "make dll"
+
+[Altx]

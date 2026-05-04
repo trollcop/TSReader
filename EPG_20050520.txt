@@ -1,0 +1,3 @@
+00001388	2005/05/20 00:00	01:00	3	WFDC-DT	Telefutura	Escándalo T.V. de la Noche			
+000014a3	2005/05/20 01:00	02:00	3	WFDC-DT	Telefutura	Muerte en el Barrio Japonés			
+000014a3	2005/05/20 01:00	02:00	3	WFDC-DT	Telefutura	Muerte en el Barrio Japonés	Dos policías luchan contra un mafioso japonés usando las artes marciales y su conocimiento de la cultura japonesa.		

@@ -1,0 +1,7 @@
+LIBRARY TSReader_XNS
+
+EXPORTS
+	SetupStradis			@1
+	ShutdownStradis			@2
+	SetupSocket				@3
+	ShutdownSocket			@4

@@ -1,0 +1,8 @@
+LIBRARY TSReader_Scheduler
+
+EXPORTS
+	DllMain									@1
+	Scheduler_EnsureServiceRunning			@2
+	Scheduler_CreateNewTask					@3
+	Scheduler_EnumTasks						@4
+	Schedule_DeleteSchedule					@5

@@ -1,0 +1,14 @@
+LIBRARY TSReader_Twinhan
+
+EXPORTS
+	TSReader_Init					@1
+	TSReader_DeInit					@2
+	TSReader_Start					@3
+	TSReader_Stop					@4
+	TSReader_Tune					@5
+	TSReader_GetDescription			@6
+	TSReader_ParseCommandLine		@7
+	TSReader_TuneDialog				@8
+	TSReader_PIDManagement			@9
+	TSReader_IsPIDActive			@10
+	TSReader_SetChannel				@11

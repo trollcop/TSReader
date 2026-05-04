@@ -1,0 +1,5 @@
+LIBRARY SoftCSA
+
+EXPORTS
+	decrypt			@1
+	set_cws			@2

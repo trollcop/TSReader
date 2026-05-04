@@ -1,0 +1,10 @@
+LIBRARY      MDSampleIP
+DESCRIPTION  TSReader Sample IP/DVB plugin
+
+EXPORTS
+	On_Send_Dll_ID_Name	@1
+	On_Menu_Select		@2
+	On_Filter_Receive	@3
+	On_Start			@4
+	On_Exit				@5
+	On_IP_Data_Receive	@6

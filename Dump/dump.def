@@ -1,0 +1,7 @@
+LIBRARY         TSReader_B2C2_Dump.ax
+EXPORTS
+                DllGetClassObject PRIVATE
+                DllCanUnloadNow PRIVATE
+                DllUnregisterServer PRIVATE
+                DllRegisterServer PRIVATE
+

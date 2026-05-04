@@ -1,0 +1,4351 @@
+	TITLE	C:\Development\TSReader\TSReader_Twinhan2\TSReader_Twinhan2.c
+	.386P
+include listing.inc
+if @Version gt 510
+.model FLAT
+else
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+_DATA	SEGMENT DWORD USE32 PUBLIC 'DATA'
+_DATA	ENDS
+CONST	SEGMENT DWORD USE32 PUBLIC 'CONST'
+CONST	ENDS
+_BSS	SEGMENT DWORD USE32 PUBLIC 'BSS'
+_BSS	ENDS
+$$SYMBOLS	SEGMENT BYTE USE32 'DEBSYM'
+$$SYMBOLS	ENDS
+$$TYPES	SEGMENT BYTE USE32 'DEBTYP'
+$$TYPES	ENDS
+_TLS	SEGMENT DWORD USE32 PUBLIC 'TLS'
+_TLS	ENDS
+;	COMDAT ??_C@_0BD@CPCD@Twinhan2?3?5Tune?5OK?6?$AA@
+CONST	SEGMENT DWORD USE32 PUBLIC 'CONST'
+CONST	ENDS
+;	COMDAT ??_C@_0M@LDHM@read?5error?6?$AA@
+CONST	SEGMENT DWORD USE32 PUBLIC 'CONST'
+CONST	ENDS
+;	COMDAT ??_C@_0BF@JKNM@Sync?5with?5188?5bytes?6?$AA@
+CONST	SEGMENT DWORD USE32 PUBLIC 'CONST'
+CONST	ENDS
+;	COMDAT ??_C@_0BF@HJBF@Sync?5with?5204?5bytes?6?$AA@
+CONST	SEGMENT DWORD USE32 PUBLIC 'CONST'
+CONST	ENDS
+;	COMDAT ??_C@_0BF@GOA@ReadTwinhan2Thread?9?6?$AA@
+CONST	SEGMENT DWORD USE32 PUBLIC 'CONST'
+CONST	ENDS
+;	COMDAT ??_C@_0CB@CCDK@Failed?5to?5lock?5signal?4?5Continue?$DP@
+CONST	SEGMENT DWORD USE32 PUBLIC 'CONST'
+CONST	ENDS
+;	COMDAT ??_C@_0BP@OFBK@freq?5pol?5sr?5lnbf?522khz?5?$HLinput?$HN?$AA@
+CONST	SEGMENT DWORD USE32 PUBLIC 'CONST'
+CONST	ENDS
+;	COMDAT ??_C@_0BC@CMED@?$CFd?5?$CFd?5?$CFd?5?$CFd?5?$CFd?5?$CFd?$AA@
+CONST	SEGMENT DWORD USE32 PUBLIC 'CONST'
+CONST	ENDS
+;	COMDAT ??_C@_0OK@LPIH@Usage?5for?5this?5source?3?5freq?5pol?5@
+CONST	SEGMENT DWORD USE32 PUBLIC 'CONST'
+CONST	ENDS
+;	COMDAT _MakeCheckSum
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _GetDeviceHandle
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _GetDriverWritePtr
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _GetDriverBufferAddress
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _Tune
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _SetTuner22KHzAndPower
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _GetTunerStatus
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _StreamCapture
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _ReadFromPipe
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _ReadPipeThread@4
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _ReadTwinhan2Thread@4
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _TSReader_Start
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _TSReader_Stop
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _TSReader_Init
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _TSReader_DeInit
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _TSReader_Tune
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _TSReader_GetDescription
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _TSReader_TuneDialog
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _TSReader_ParseCommandLine
+_TEXT	SEGMENT PARA USE32 PUBLIC 'CODE'
+_TEXT	ENDS
+;	COMDAT _GUID_DST_DEVICE2
+CONST	SEGMENT DWORD USE32 PUBLIC 'CONST'
+CONST	ENDS
+;	COMDAT _GUID_DST_DEVICE1
+CONST	SEGMENT DWORD USE32 PUBLIC 'CONST'
+CONST	ENDS
+FLAT	GROUP _DATA, CONST, _BSS
+	ASSUME	CS: FLAT, DS: FLAT, SS: FLAT
+endif
+PUBLIC	_GUID_DST_DEVICE1
+PUBLIC	_GUID_DST_DEVICE2
+PUBLIC	_nBufferLength
+PUBLIC	_fPipeThreadTerminated
+PUBLIC	_fNeedTuneDialog
+PUBLIC	_gszSourceName
+_DATA	SEGMENT
+COMM	_ptr_set_cws:DWORD
+COMM	_ptr_decrypt:DWORD
+COMM	_v:DWORD
+COMM	_hDevice1:DWORD
+COMM	_hDevice2:DWORD
+COMM	_hPipeRead:DWORD
+COMM	_pDriverBuffer:DWORD
+COMM	_fPowerOn:DWORD
+_DATA	ENDS
+_BSS	SEGMENT
+_fPipeThreadTerminated DD 01H DUP (?)
+_BSS	ENDS
+_DATA	SEGMENT
+COMM	_nFrequency:DWORD
+COMM	_nPolarity:DWORD
+COMM	_nSymbolRate:DWORD
+COMM	_nLNBFrequency:DWORD
+COMM	_n22KHz:DWORD
+COMM	_nDiSEqCInput:DWORD
+COMM	_nPipeBytes:DWORD
+COMM	_csPipeBytes:BYTE:018H
+_DATA	ENDS
+;	COMDAT _GUID_DST_DEVICE1
+CONST	SEGMENT
+_GUID_DST_DEVICE1 DD 0e18d1721H
+	DW	070b5H
+	DW	04de7H
+	DB	083H
+	DB	0b3H
+	DB	035H
+	DB	043H
+	DB	06eH
+	DB	039H
+	DB	054H
+	DB	0edH
+CONST	ENDS
+;	COMDAT _GUID_DST_DEVICE2
+CONST	SEGMENT
+_GUID_DST_DEVICE2 DD 07377db61H
+	DW	0e3cdH
+	DW	011d2H
+	DB	08aH
+	DB	03fH
+	DB	00H
+	DB	00H
+	DB	0f8H
+	DB	078H
+	DB	044H
+	DB	022H
+CONST	ENDS
+CONST	SEGMENT
+_nBufferLength DD 02fc40cH
+CONST	ENDS
+_DATA	SEGMENT
+_fNeedTuneDialog DD 01H
+_gszSourceName DB 'New Twinhan Interface - tested on 1020 and 1030', 00H
+_DATA	ENDS
+PUBLIC	_MakeCheckSum
+;	COMDAT _MakeCheckSum
+_TEXT	SEGMENT
+_pTunerData$ = 8
+_pByte$ = -4
+_chksum$ = -8
+_i$ = -12
+_MakeCheckSum PROC NEAR					; COMDAT
+
+; 31   : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	83 ec 4c	 sub	 esp, 76			; 0000004cH
+  00006	53		 push	 ebx
+  00007	56		 push	 esi
+  00008	57		 push	 edi
+  00009	8d 7d b4	 lea	 edi, DWORD PTR [ebp-76]
+  0000c	b9 13 00 00 00	 mov	 ecx, 19			; 00000013H
+  00011	b8 cc cc cc cc	 mov	 eax, -858993460		; ccccccccH
+  00016	f3 ab		 rep stosd
+
+; 32   : 	unsigned char *pByte = (unsigned char *)pTunerData;
+
+  00018	8b 45 08	 mov	 eax, DWORD PTR _pTunerData$[ebp]
+  0001b	89 45 fc	 mov	 DWORD PTR _pByte$[ebp], eax
+
+; 33   : 	unsigned char chksum = 0;
+
+  0001e	c6 45 f8 00	 mov	 BYTE PTR _chksum$[ebp], 0
+
+; 34   : 	int i;
+; 35   : 
+; 36   : 	for (i = 1; i < 8; i++ )
+
+  00022	c7 45 f4 01 00
+	00 00		 mov	 DWORD PTR _i$[ebp], 1
+  00029	eb 09		 jmp	 SHORT $L77388
+$L77389:
+  0002b	8b 4d f4	 mov	 ecx, DWORD PTR _i$[ebp]
+  0002e	83 c1 01	 add	 ecx, 1
+  00031	89 4d f4	 mov	 DWORD PTR _i$[ebp], ecx
+$L77388:
+  00034	83 7d f4 08	 cmp	 DWORD PTR _i$[ebp], 8
+  00038	7d 10		 jge	 SHORT $L77390
+
+; 37   : 		chksum += pByte[i];
+
+  0003a	8b 55 fc	 mov	 edx, DWORD PTR _pByte$[ebp]
+  0003d	03 55 f4	 add	 edx, DWORD PTR _i$[ebp]
+  00040	8a 45 f8	 mov	 al, BYTE PTR _chksum$[ebp]
+  00043	02 02		 add	 al, BYTE PTR [edx]
+  00045	88 45 f8	 mov	 BYTE PTR _chksum$[ebp], al
+  00048	eb e1		 jmp	 SHORT $L77389
+$L77390:
+
+; 38   : 
+; 39   : 	chksum = ~chksum+1;
+
+  0004a	8b 4d f8	 mov	 ecx, DWORD PTR _chksum$[ebp]
+  0004d	81 e1 ff 00 00
+	00		 and	 ecx, 255		; 000000ffH
+  00053	f7 d1		 not	 ecx
+  00055	83 c1 01	 add	 ecx, 1
+  00058	88 4d f8	 mov	 BYTE PTR _chksum$[ebp], cl
+
+; 40   : 	pByte[8] = chksum;
+
+  0005b	8b 55 fc	 mov	 edx, DWORD PTR _pByte$[ebp]
+  0005e	8a 45 f8	 mov	 al, BYTE PTR _chksum$[ebp]
+  00061	88 42 08	 mov	 BYTE PTR [edx+8], al
+
+; 41   : 	return chksum;
+
+  00064	8a 45 f8	 mov	 al, BYTE PTR _chksum$[ebp]
+
+; 42   : } 
+
+  00067	5f		 pop	 edi
+  00068	5e		 pop	 esi
+  00069	5b		 pop	 ebx
+  0006a	8b e5		 mov	 esp, ebp
+  0006c	5d		 pop	 ebp
+  0006d	c3		 ret	 0
+_MakeCheckSum ENDP
+_TEXT	ENDS
+PUBLIC	_GetDeviceHandle
+EXTRN	__imp__SetupDiGetClassDevsA@16:NEAR
+EXTRN	__imp__CreateFileA@28:NEAR
+EXTRN	_free:NEAR
+EXTRN	_malloc:NEAR
+EXTRN	__imp__SetupDiDestroyDeviceInfoList@4:NEAR
+EXTRN	__imp__SetupDiEnumDeviceInterfaces@20:NEAR
+EXTRN	__imp__SetupDiGetDeviceInterfaceDetailA@24:NEAR
+EXTRN	__imp__GetLastError@0:NEAR
+EXTRN	__chkesp:NEAR
+;	COMDAT _GetDeviceHandle
+_TEXT	SEGMENT
+_ClassGuid$ = 8
+_functionClassDeviceData$ = 24
+_hardwareDeviceInfo$ = -4
+_deviceInfoData$ = -32
+_predictedLength$ = -36
+_requiredLength$ = -40
+_hDev$ = -44
+_GetDeviceHandle PROC NEAR				; COMDAT
+
+; 47   : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	83 ec 6c	 sub	 esp, 108		; 0000006cH
+  00006	53		 push	 ebx
+  00007	56		 push	 esi
+  00008	57		 push	 edi
+  00009	8d 7d 94	 lea	 edi, DWORD PTR [ebp-108]
+  0000c	b9 1b 00 00 00	 mov	 ecx, 27			; 0000001bH
+  00011	b8 cc cc cc cc	 mov	 eax, -858993460		; ccccccccH
+  00016	f3 ab		 rep stosd
+
+; 48   :     HDEVINFO                 hardwareDeviceInfo;
+; 49   :     SP_INTERFACE_DEVICE_DATA deviceInfoData;
+; 50   :     DWORD                    predictedLength = 0;
+
+  00018	c7 45 dc 00 00
+	00 00		 mov	 DWORD PTR _predictedLength$[ebp], 0
+
+; 51   :     DWORD                    requiredLength = 0;
+
+  0001f	c7 45 d8 00 00
+	00 00		 mov	 DWORD PTR _requiredLength$[ebp], 0
+
+; 52   :     HANDLE                   hDev = INVALID_HANDLE_VALUE;
+
+  00026	c7 45 d4 ff ff
+	ff ff		 mov	 DWORD PTR _hDev$[ebp], -1
+
+; 53   : 
+; 54   :     //
+; 55   :     // Open a handle to the plug and play dev node.
+; 56   :     //
+; 57   :     hardwareDeviceInfo = SetupDiGetClassDevs((LPGUID)&ClassGuid,
+; 58   :                                          NULL,
+; 59   :                                          NULL, // Define no
+; 60   :                                          (DIGCF_PRESENT | // Only Devices present
+; 61   :                                          DIGCF_INTERFACEDEVICE)); // Function class devices.
+
+  0002d	8b f4		 mov	 esi, esp
+  0002f	6a 12		 push	 18			; 00000012H
+  00031	6a 00		 push	 0
+  00033	6a 00		 push	 0
+  00035	8d 45 08	 lea	 eax, DWORD PTR _ClassGuid$[ebp]
+  00038	50		 push	 eax
+  00039	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__SetupDiGetClassDevsA@16
+  0003f	3b f4		 cmp	 esi, esp
+  00041	e8 00 00 00 00	 call	 __chkesp
+  00046	89 45 fc	 mov	 DWORD PTR _hardwareDeviceInfo$[ebp], eax
+
+; 62   :     if(0 == hardwareDeviceInfo) {
+
+  00049	83 7d fc 00	 cmp	 DWORD PTR _hardwareDeviceInfo$[ebp], 0
+  0004d	75 08		 jne	 SHORT $L77408
+
+; 63   :         return (hDev);
+
+  0004f	8b 45 d4	 mov	 eax, DWORD PTR _hDev$[ebp]
+  00052	e9 42 01 00 00	 jmp	 $L77398
+$L77408:
+
+; 65   : 
+; 66   :     deviceInfoData.cbSize = sizeof (SP_INTERFACE_DEVICE_DATA);
+
+  00057	c7 45 e0 1c 00
+	00 00		 mov	 DWORD PTR _deviceInfoData$[ebp], 28 ; 0000001cH
+
+; 67   : 
+; 68   :     if (SetupDiEnumDeviceInterfaces (hardwareDeviceInfo,
+; 69   :                                  0,
+; 70   :                                  (LPGUID)&ClassGuid,
+; 71   :                                  0,
+; 72   :                                  &deviceInfoData))
+
+  0005e	8b f4		 mov	 esi, esp
+  00060	8d 4d e0	 lea	 ecx, DWORD PTR _deviceInfoData$[ebp]
+  00063	51		 push	 ecx
+  00064	6a 00		 push	 0
+  00066	8d 55 08	 lea	 edx, DWORD PTR _ClassGuid$[ebp]
+  00069	52		 push	 edx
+  0006a	6a 00		 push	 0
+  0006c	8b 45 fc	 mov	 eax, DWORD PTR _hardwareDeviceInfo$[ebp]
+  0006f	50		 push	 eax
+  00070	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__SetupDiEnumDeviceInterfaces@20
+  00076	3b f4		 cmp	 esi, esp
+  00078	e8 00 00 00 00	 call	 __chkesp
+  0007d	85 c0		 test	 eax, eax
+  0007f	74 7e		 je	 SHORT $L77411
+
+; 74   :         SetupDiGetInterfaceDeviceDetail(
+; 75   :             hardwareDeviceInfo,
+; 76   :             &deviceInfoData,
+; 77   :             NULL,               // probing so no output buffer yet
+; 78   :             0,                  // probing so output buffer length of zero
+; 79   :             &requiredLength,
+; 80   :             NULL);              // not interested in the specific dev-node
+
+  00081	8b f4		 mov	 esi, esp
+  00083	6a 00		 push	 0
+  00085	8d 4d d8	 lea	 ecx, DWORD PTR _requiredLength$[ebp]
+  00088	51		 push	 ecx
+  00089	6a 00		 push	 0
+  0008b	6a 00		 push	 0
+  0008d	8d 55 e0	 lea	 edx, DWORD PTR _deviceInfoData$[ebp]
+  00090	52		 push	 edx
+  00091	8b 45 fc	 mov	 eax, DWORD PTR _hardwareDeviceInfo$[ebp]
+  00094	50		 push	 eax
+  00095	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__SetupDiGetDeviceInterfaceDetailA@24
+  0009b	3b f4		 cmp	 esi, esp
+  0009d	e8 00 00 00 00	 call	 __chkesp
+
+; 81   : 
+; 82   : 
+; 83   :        predictedLength = requiredLength;
+
+  000a2	8b 4d d8	 mov	 ecx, DWORD PTR _requiredLength$[ebp]
+  000a5	89 4d dc	 mov	 DWORD PTR _predictedLength$[ebp], ecx
+
+; 84   : 
+; 85   :        functionClassDeviceData =
+; 86   :             (PSP_INTERFACE_DEVICE_DETAIL_DATA)malloc(predictedLength);
+
+  000a8	8b 55 dc	 mov	 edx, DWORD PTR _predictedLength$[ebp]
+  000ab	52		 push	 edx
+  000ac	e8 00 00 00 00	 call	 _malloc
+  000b1	83 c4 04	 add	 esp, 4
+  000b4	89 45 18	 mov	 DWORD PTR _functionClassDeviceData$[ebp], eax
+
+; 87   :        functionClassDeviceData->cbSize = sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA);
+
+  000b7	8b 45 18	 mov	 eax, DWORD PTR _functionClassDeviceData$[ebp]
+  000ba	c7 00 05 00 00
+	00		 mov	 DWORD PTR [eax], 5
+
+; 88   : 
+; 89   :        if (!SetupDiGetInterfaceDeviceDetail(hardwareDeviceInfo,
+; 90   :                                         &deviceInfoData,
+; 91   :                                         functionClassDeviceData,
+; 92   :                                         predictedLength,
+; 93   :                                         &requiredLength,
+; 94   :                                         NULL))
+
+  000c0	8b f4		 mov	 esi, esp
+  000c2	6a 00		 push	 0
+  000c4	8d 4d d8	 lea	 ecx, DWORD PTR _requiredLength$[ebp]
+  000c7	51		 push	 ecx
+  000c8	8b 55 dc	 mov	 edx, DWORD PTR _predictedLength$[ebp]
+  000cb	52		 push	 edx
+  000cc	8b 45 18	 mov	 eax, DWORD PTR _functionClassDeviceData$[ebp]
+  000cf	50		 push	 eax
+  000d0	8d 4d e0	 lea	 ecx, DWORD PTR _deviceInfoData$[ebp]
+  000d3	51		 push	 ecx
+  000d4	8b 55 fc	 mov	 edx, DWORD PTR _hardwareDeviceInfo$[ebp]
+  000d7	52		 push	 edx
+  000d8	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__SetupDiGetDeviceInterfaceDetailA@24
+  000de	3b f4		 cmp	 esi, esp
+  000e0	e8 00 00 00 00	 call	 __chkesp
+  000e5	85 c0		 test	 eax, eax
+  000e7	75 14		 jne	 SHORT $L77417
+
+; 96   :            free(functionClassDeviceData);
+
+  000e9	8b 45 18	 mov	 eax, DWORD PTR _functionClassDeviceData$[ebp]
+  000ec	50		 push	 eax
+  000ed	e8 00 00 00 00	 call	 _free
+  000f2	83 c4 04	 add	 esp, 4
+
+; 97   :            return (hDev);
+
+  000f5	8b 45 d4	 mov	 eax, DWORD PTR _hDev$[ebp]
+  000f8	e9 9c 00 00 00	 jmp	 $L77398
+$L77417:
+
+; 101  :     else if (ERROR_NO_MORE_ITEMS != GetLastError()) {
+
+  000fd	eb 3a		 jmp	 SHORT $L77419
+$L77411:
+  000ff	8b f4		 mov	 esi, esp
+  00101	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__GetLastError@0
+  00107	3b f4		 cmp	 esi, esp
+  00109	e8 00 00 00 00	 call	 __chkesp
+  0010e	3d 03 01 00 00	 cmp	 eax, 259		; 00000103H
+  00113	74 24		 je	 SHORT $L77419
+
+; 102  :         free(functionClassDeviceData);
+
+  00115	8b 4d 18	 mov	 ecx, DWORD PTR _functionClassDeviceData$[ebp]
+  00118	51		 push	 ecx
+  00119	e8 00 00 00 00	 call	 _free
+  0011e	83 c4 04	 add	 esp, 4
+
+; 103  :         SetupDiDestroyDeviceInfoList(hardwareDeviceInfo);
+
+  00121	8b f4		 mov	 esi, esp
+  00123	8b 55 fc	 mov	 edx, DWORD PTR _hardwareDeviceInfo$[ebp]
+  00126	52		 push	 edx
+  00127	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__SetupDiDestroyDeviceInfoList@4
+  0012d	3b f4		 cmp	 esi, esp
+  0012f	e8 00 00 00 00	 call	 __chkesp
+
+; 104  :         return (hDev);
+
+  00134	8b 45 d4	 mov	 eax, DWORD PTR _hDev$[ebp]
+  00137	eb 60		 jmp	 SHORT $L77398
+$L77419:
+
+; 106  : 
+; 107  :     SetupDiDestroyDeviceInfoList (hardwareDeviceInfo);
+
+  00139	8b f4		 mov	 esi, esp
+  0013b	8b 45 fc	 mov	 eax, DWORD PTR _hardwareDeviceInfo$[ebp]
+  0013e	50		 push	 eax
+  0013f	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__SetupDiDestroyDeviceInfoList@4
+  00145	3b f4		 cmp	 esi, esp
+  00147	e8 00 00 00 00	 call	 __chkesp
+
+; 108  : 
+; 109  :     if (functionClassDeviceData == NULL) {
+
+  0014c	83 7d 18 00	 cmp	 DWORD PTR _functionClassDeviceData$[ebp], 0
+  00150	75 05		 jne	 SHORT $L77421
+
+; 110  :         return (hDev);
+
+  00152	8b 45 d4	 mov	 eax, DWORD PTR _hDev$[ebp]
+  00155	eb 42		 jmp	 SHORT $L77398
+$L77421:
+
+; 112  : 
+; 113  :     hDev = CreateFile(functionClassDeviceData->DevicePath, 
+; 114  :                       GENERIC_READ | GENERIC_WRITE,
+; 115  :                       0,
+; 116  :                       NULL, 
+; 117  :                       OPEN_EXISTING,
+; 118  :                       0, 
+; 119  :                       NULL);
+
+  00157	8b f4		 mov	 esi, esp
+  00159	6a 00		 push	 0
+  0015b	6a 00		 push	 0
+  0015d	6a 03		 push	 3
+  0015f	6a 00		 push	 0
+  00161	6a 00		 push	 0
+  00163	68 00 00 00 c0	 push	 -1073741824		; c0000000H
+  00168	8b 4d 18	 mov	 ecx, DWORD PTR _functionClassDeviceData$[ebp]
+  0016b	83 c1 04	 add	 ecx, 4
+  0016e	51		 push	 ecx
+  0016f	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__CreateFileA@28
+  00175	3b f4		 cmp	 esi, esp
+  00177	e8 00 00 00 00	 call	 __chkesp
+  0017c	89 45 d4	 mov	 DWORD PTR _hDev$[ebp], eax
+
+; 120  :     if (hDev == INVALID_HANDLE_VALUE) {
+
+  0017f	83 7d d4 ff	 cmp	 DWORD PTR _hDev$[ebp], -1
+  00183	75 11		 jne	 SHORT $L77425
+
+; 121  :          free(functionClassDeviceData);
+
+  00185	8b 55 18	 mov	 edx, DWORD PTR _functionClassDeviceData$[ebp]
+  00188	52		 push	 edx
+  00189	e8 00 00 00 00	 call	 _free
+  0018e	83 c4 04	 add	 esp, 4
+
+; 122  :          return (hDev);
+
+  00191	8b 45 d4	 mov	 eax, DWORD PTR _hDev$[ebp]
+  00194	eb 03		 jmp	 SHORT $L77398
+$L77425:
+
+; 124  : 
+; 125  :     return (hDev);
+
+  00196	8b 45 d4	 mov	 eax, DWORD PTR _hDev$[ebp]
+$L77398:
+
+; 126  : }
+
+  00199	5f		 pop	 edi
+  0019a	5e		 pop	 esi
+  0019b	5b		 pop	 ebx
+  0019c	83 c4 6c	 add	 esp, 108		; 0000006cH
+  0019f	3b ec		 cmp	 ebp, esp
+  001a1	e8 00 00 00 00	 call	 __chkesp
+  001a6	8b e5		 mov	 esp, ebp
+  001a8	5d		 pop	 ebp
+  001a9	c3		 ret	 0
+_GetDeviceHandle ENDP
+_TEXT	ENDS
+PUBLIC	_GetDriverWritePtr
+EXTRN	__imp__DeviceIoControl@32:NEAR
+EXTRN	_memcpy:NEAR
+;	COMDAT _GetDriverWritePtr
+_TEXT	SEGMENT
+_outBuf$ = -4
+_outBufLength$ = -8
+_bytesReturned$ = -12
+_nRetVal$ = -16
+_GetDriverWritePtr PROC NEAR				; COMDAT
+
+; 129  : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	83 ec 50	 sub	 esp, 80			; 00000050H
+  00006	53		 push	 ebx
+  00007	56		 push	 esi
+  00008	57		 push	 edi
+  00009	8d 7d b0	 lea	 edi, DWORD PTR [ebp-80]
+  0000c	b9 14 00 00 00	 mov	 ecx, 20			; 00000014H
+  00011	b8 cc cc cc cc	 mov	 eax, -858993460		; ccccccccH
+  00016	f3 ab		 rep stosd
+
+; 130  : 	BYTE outBuf[4];
+; 131  : 	DWORD outBufLength = sizeof(outBuf);
+
+  00018	c7 45 f8 04 00
+	00 00		 mov	 DWORD PTR _outBufLength$[ebp], 4
+
+; 132  : 	DWORD bytesReturned;
+; 133  : 	int nRetVal;
+; 134  : 
+; 135  :     DeviceIoControl(hDevice1, 
+; 136  :                     (DWORD)DST_IOCTL_GET_DATABUFF_BLOCK, 
+; 137  :                     NULL, 
+; 138  :                     0, 
+; 139  :                     outBuf, 
+; 140  :                     outBufLength, 
+; 141  :                     &bytesReturned, 
+; 142  :                     NULL);
+
+  0001f	8b f4		 mov	 esi, esp
+  00021	6a 00		 push	 0
+  00023	8d 45 f4	 lea	 eax, DWORD PTR _bytesReturned$[ebp]
+  00026	50		 push	 eax
+  00027	8b 4d f8	 mov	 ecx, DWORD PTR _outBufLength$[ebp]
+  0002a	51		 push	 ecx
+  0002b	8d 55 fc	 lea	 edx, DWORD PTR _outBuf$[ebp]
+  0002e	52		 push	 edx
+  0002f	6a 00		 push	 0
+  00031	6a 00		 push	 0
+  00033	68 80 2c ff dd	 push	 -570479488		; ddff2c80H
+  00038	a1 00 00 00 00	 mov	 eax, DWORD PTR _hDevice1
+  0003d	50		 push	 eax
+  0003e	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__DeviceIoControl@32
+  00044	3b f4		 cmp	 esi, esp
+  00046	e8 00 00 00 00	 call	 __chkesp
+
+; 143  : 
+; 144  : 	memcpy(&nRetVal, outBuf, sizeof(nRetVal));
+
+  0004b	6a 04		 push	 4
+  0004d	8d 4d fc	 lea	 ecx, DWORD PTR _outBuf$[ebp]
+  00050	51		 push	 ecx
+  00051	8d 55 f0	 lea	 edx, DWORD PTR _nRetVal$[ebp]
+  00054	52		 push	 edx
+  00055	e8 00 00 00 00	 call	 _memcpy
+  0005a	83 c4 0c	 add	 esp, 12			; 0000000cH
+
+; 145  : 	return nRetVal;
+
+  0005d	8b 45 f0	 mov	 eax, DWORD PTR _nRetVal$[ebp]
+
+; 146  : }
+
+  00060	5f		 pop	 edi
+  00061	5e		 pop	 esi
+  00062	5b		 pop	 ebx
+  00063	83 c4 50	 add	 esp, 80			; 00000050H
+  00066	3b ec		 cmp	 ebp, esp
+  00068	e8 00 00 00 00	 call	 __chkesp
+  0006d	8b e5		 mov	 esp, ebp
+  0006f	5d		 pop	 ebp
+  00070	c3		 ret	 0
+_GetDriverWritePtr ENDP
+_TEXT	ENDS
+PUBLIC	_GetDriverBufferAddress
+;	COMDAT _GetDriverBufferAddress
+_TEXT	SEGMENT
+_outBuf$ = -4
+_outBufLength$ = -8
+_bytesReturned$ = -12
+_dwRetVal$ = -16
+_GetDriverBufferAddress PROC NEAR			; COMDAT
+
+; 149  : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	83 ec 50	 sub	 esp, 80			; 00000050H
+  00006	53		 push	 ebx
+  00007	56		 push	 esi
+  00008	57		 push	 edi
+  00009	8d 7d b0	 lea	 edi, DWORD PTR [ebp-80]
+  0000c	b9 14 00 00 00	 mov	 ecx, 20			; 00000014H
+  00011	b8 cc cc cc cc	 mov	 eax, -858993460		; ccccccccH
+  00016	f3 ab		 rep stosd
+
+; 150  : 	BYTE outBuf[4];
+; 151  : 	DWORD outBufLength = sizeof(outBuf);
+
+  00018	c7 45 f8 04 00
+	00 00		 mov	 DWORD PTR _outBufLength$[ebp], 4
+
+; 152  : 	DWORD bytesReturned;
+; 153  : 	DWORD dwRetVal;
+; 154  : 
+; 155  :     DeviceIoControl(hDevice1, 
+; 156  :                     (DWORD)DST_IOCTL_GET_DATABUFF_ADDR, 
+; 157  :                     NULL, 
+; 158  :                     0, 
+; 159  :                     outBuf, 
+; 160  :                     outBufLength, 
+; 161  :                     &bytesReturned, 
+; 162  :                     NULL);
+
+  0001f	8b f4		 mov	 esi, esp
+  00021	6a 00		 push	 0
+  00023	8d 45 f4	 lea	 eax, DWORD PTR _bytesReturned$[ebp]
+  00026	50		 push	 eax
+  00027	8b 4d f8	 mov	 ecx, DWORD PTR _outBufLength$[ebp]
+  0002a	51		 push	 ecx
+  0002b	8d 55 fc	 lea	 edx, DWORD PTR _outBuf$[ebp]
+  0002e	52		 push	 edx
+  0002f	6a 00		 push	 0
+  00031	6a 00		 push	 0
+  00033	68 00 2d ff dd	 push	 -570479360		; ddff2d00H
+  00038	a1 00 00 00 00	 mov	 eax, DWORD PTR _hDevice1
+  0003d	50		 push	 eax
+  0003e	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__DeviceIoControl@32
+  00044	3b f4		 cmp	 esi, esp
+  00046	e8 00 00 00 00	 call	 __chkesp
+
+; 163  : 
+; 164  : 	memcpy(&dwRetVal, outBuf, sizeof(DWORD));
+
+  0004b	6a 04		 push	 4
+  0004d	8d 4d fc	 lea	 ecx, DWORD PTR _outBuf$[ebp]
+  00050	51		 push	 ecx
+  00051	8d 55 f0	 lea	 edx, DWORD PTR _dwRetVal$[ebp]
+  00054	52		 push	 edx
+  00055	e8 00 00 00 00	 call	 _memcpy
+  0005a	83 c4 0c	 add	 esp, 12			; 0000000cH
+
+; 165  : 	return dwRetVal;
+
+  0005d	8b 45 f0	 mov	 eax, DWORD PTR _dwRetVal$[ebp]
+
+; 166  : }
+
+  00060	5f		 pop	 edi
+  00061	5e		 pop	 esi
+  00062	5b		 pop	 ebx
+  00063	83 c4 50	 add	 esp, 80			; 00000050H
+  00066	3b ec		 cmp	 ebp, esp
+  00068	e8 00 00 00 00	 call	 __chkesp
+  0006d	8b e5		 mov	 esp, ebp
+  0006f	5d		 pop	 ebp
+  00070	c3		 ret	 0
+_GetDriverBufferAddress ENDP
+_TEXT	ENDS
+PUBLIC	_Tune
+PUBLIC	??_C@_0BD@CPCD@Twinhan2?3?5Tune?5OK?6?$AA@	; `string'
+EXTRN	__imp__Sleep@4:NEAR
+EXTRN	_memset:NEAR
+EXTRN	__imp__OutputDebugStringA@4:NEAR
+EXTRN	__imp__GetTickCount@0:NEAR
+;	COMDAT ??_C@_0BD@CPCD@Twinhan2?3?5Tune?5OK?6?$AA@
+; File C:\Development\TSReader\TSReader_Twinhan2\TSReader_Twinhan2.c
+CONST	SEGMENT
+??_C@_0BD@CPCD@Twinhan2?3?5Tune?5OK?6?$AA@ DB 'Twinhan2: Tune OK', 0aH, 00H ; `string'
+CONST	ENDS
+;	COMDAT _Tune
+_TEXT	SEGMENT
+_Frequency$ = 8
+_H_V$ = 12
+_LNBType$ = 16
+_SymbolRate$ = 20
+_LNBValue1$ = -4
+_LNBValue2$ = -8
+_LNB$ = -12
+_LNB1$ = -16
+_LNB2$ = -20
+_inFrequency$ = -24
+_inFrequency1$ = -28
+_inFrequency2$ = -32
+_StatusSuccess$ = -36
+_tunerStep$ = -40
+_InNumber$ = -44
+_divRate$ = -48
+_i$ = -52
+_inBufLength$ = -56
+_outBufLength$ = -60
+_bytesReturned$ = -64
+_LockTime$ = -68
+_inBuf$ = -72
+_outBuf$ = -76
+_bBuf$ = -88
+_tunerData$ = -100
+_frequencyRef$ = -164
+_Tune	PROC NEAR					; COMDAT
+
+; 169  : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	81 ec f0 00 00
+	00		 sub	 esp, 240		; 000000f0H
+  00009	53		 push	 ebx
+  0000a	56		 push	 esi
+  0000b	57		 push	 edi
+  0000c	8d bd 10 ff ff
+	ff		 lea	 edi, DWORD PTR [ebp-240]
+  00012	b9 3c 00 00 00	 mov	 ecx, 60			; 0000003cH
+  00017	b8 cc cc cc cc	 mov	 eax, -858993460		; ccccccccH
+  0001c	f3 ab		 rep stosd
+
+; 170  : 	int LNBValue1, LNBValue2;
+; 171  : 	int LNB, LNB1, LNB2;
+; 172  : 	int inFrequency, inFrequency1, inFrequency2;
+; 173  : 	int StatusSuccess;
+; 174  : 	int tunerStep;
+; 175  : 	int InNumber;
+; 176  : 	int divRate;
+; 177  : 	int i;
+; 178  : 	int inBufLength, outBufLength;
+; 179  : 	int bytesReturned;
+; 180  : 	DWORD LockTime;
+; 181  : 	LPVOID inBuf, outBuf;
+; 182  : 	BYTE bBuf[sizeof(TunerData)];
+; 183  : 	TunerData tunerData;
+; 184  :     long frequencyRef[16] = {2, 4, 8, 16, 32, 64, 128, 256, 24, 5, 10, 20, 40, 80, 160, 320 };
+
+  0001e	c7 85 5c ff ff
+	ff 02 00 00 00	 mov	 DWORD PTR _frequencyRef$[ebp], 2
+  00028	c7 85 60 ff ff
+	ff 04 00 00 00	 mov	 DWORD PTR _frequencyRef$[ebp+4], 4
+  00032	c7 85 64 ff ff
+	ff 08 00 00 00	 mov	 DWORD PTR _frequencyRef$[ebp+8], 8
+  0003c	c7 85 68 ff ff
+	ff 10 00 00 00	 mov	 DWORD PTR _frequencyRef$[ebp+12], 16 ; 00000010H
+  00046	c7 85 6c ff ff
+	ff 20 00 00 00	 mov	 DWORD PTR _frequencyRef$[ebp+16], 32 ; 00000020H
+  00050	c7 85 70 ff ff
+	ff 40 00 00 00	 mov	 DWORD PTR _frequencyRef$[ebp+20], 64 ; 00000040H
+  0005a	c7 85 74 ff ff
+	ff 80 00 00 00	 mov	 DWORD PTR _frequencyRef$[ebp+24], 128 ; 00000080H
+  00064	c7 85 78 ff ff
+	ff 00 01 00 00	 mov	 DWORD PTR _frequencyRef$[ebp+28], 256 ; 00000100H
+  0006e	c7 85 7c ff ff
+	ff 18 00 00 00	 mov	 DWORD PTR _frequencyRef$[ebp+32], 24 ; 00000018H
+  00078	c7 45 80 05 00
+	00 00		 mov	 DWORD PTR _frequencyRef$[ebp+36], 5
+  0007f	c7 45 84 0a 00
+	00 00		 mov	 DWORD PTR _frequencyRef$[ebp+40], 10 ; 0000000aH
+  00086	c7 45 88 14 00
+	00 00		 mov	 DWORD PTR _frequencyRef$[ebp+44], 20 ; 00000014H
+  0008d	c7 45 8c 28 00
+	00 00		 mov	 DWORD PTR _frequencyRef$[ebp+48], 40 ; 00000028H
+  00094	c7 45 90 50 00
+	00 00		 mov	 DWORD PTR _frequencyRef$[ebp+52], 80 ; 00000050H
+  0009b	c7 45 94 a0 00
+	00 00		 mov	 DWORD PTR _frequencyRef$[ebp+56], 160 ; 000000a0H
+  000a2	c7 45 98 40 01
+	00 00		 mov	 DWORD PTR _frequencyRef$[ebp+60], 320 ; 00000140H
+
+; 185  : 
+; 186  : 	memset(&tunerData, 0, sizeof(tunerData));
+
+  000a9	6a 09		 push	 9
+  000ab	6a 00		 push	 0
+  000ad	8d 45 9c	 lea	 eax, DWORD PTR _tunerData$[ebp]
+  000b0	50		 push	 eax
+  000b1	e8 00 00 00 00	 call	 _memset
+  000b6	83 c4 0c	 add	 esp, 12			; 0000000cH
+
+; 187  : 
+; 188  :     // LOF select: according the LNB
+; 189  :     switch (LNBType) {
+
+  000b9	8b 4d 10	 mov	 ecx, DWORD PTR _LNBType$[ebp]
+  000bc	89 8d 58 ff ff
+	ff		 mov	 DWORD PTR -168+[ebp], ecx
+  000c2	83 bd 58 ff ff
+	ff 00		 cmp	 DWORD PTR -168+[ebp], 0
+  000c9	74 14		 je	 SHORT $L77482
+  000cb	83 bd 58 ff ff
+	ff 01		 cmp	 DWORD PTR -168+[ebp], 1
+  000d2	74 1b		 je	 SHORT $L77483
+  000d4	83 bd 58 ff ff
+	ff 02		 cmp	 DWORD PTR -168+[ebp], 2
+  000db	74 22		 je	 SHORT $L77484
+  000dd	eb 30		 jmp	 SHORT $L77485
+$L77482:
+
+; 190  :         case 0:	//Normal
+; 191  :         	LNBValue1 = 5150;
+
+  000df	c7 45 fc 1e 14
+	00 00		 mov	 DWORD PTR _LNBValue1$[ebp], 5150 ; 0000141eH
+
+; 192  :         	LNBValue2 = 5750;
+
+  000e6	c7 45 f8 76 16
+	00 00		 mov	 DWORD PTR _LNBValue2$[ebp], 5750 ; 00001676H
+
+; 193  :         	break;
+
+  000ed	eb 2e		 jmp	 SHORT $L77479
+$L77483:
+
+; 194  :         case 1:	//Universal
+; 195  :         	LNBValue1 = 10600;
+
+  000ef	c7 45 fc 68 29
+	00 00		 mov	 DWORD PTR _LNBValue1$[ebp], 10600 ; 00002968H
+
+; 196  :         	LNBValue2 = 9750;
+
+  000f6	c7 45 f8 16 26
+	00 00		 mov	 DWORD PTR _LNBValue2$[ebp], 9750 ; 00002616H
+
+; 197  :         	break;
+
+  000fd	eb 1e		 jmp	 SHORT $L77479
+$L77484:
+
+; 198  :         case 2:	//Custom
+; 199  :         	LNBValue1 = 11250;
+
+  000ff	c7 45 fc f2 2b
+	00 00		 mov	 DWORD PTR _LNBValue1$[ebp], 11250 ; 00002bf2H
+
+; 200  :         	LNBValue2 = 11250;
+
+  00106	c7 45 f8 f2 2b
+	00 00		 mov	 DWORD PTR _LNBValue2$[ebp], 11250 ; 00002bf2H
+
+; 201  :         	break;
+
+  0010d	eb 0e		 jmp	 SHORT $L77479
+$L77485:
+
+; 202  :         default:
+; 203  :         	LNBValue1 = 5150;
+
+  0010f	c7 45 fc 1e 14
+	00 00		 mov	 DWORD PTR _LNBValue1$[ebp], 5150 ; 0000141eH
+
+; 204  :         	LNBValue2 = 5750;
+
+  00116	c7 45 f8 76 16
+	00 00		 mov	 DWORD PTR _LNBValue2$[ebp], 5750 ; 00001676H
+$L77479:
+
+; 207  : 
+; 208  : 	if (Frequency > LNBValue1)
+
+  0011d	8b 55 08	 mov	 edx, DWORD PTR _Frequency$[ebp]
+  00120	3b 55 fc	 cmp	 edx, DWORD PTR _LNBValue1$[ebp]
+  00123	7e 0b		 jle	 SHORT $L77486
+
+; 209  : 		inFrequency1 = Frequency - LNBValue1;
+
+  00125	8b 45 08	 mov	 eax, DWORD PTR _Frequency$[ebp]
+  00128	2b 45 fc	 sub	 eax, DWORD PTR _LNBValue1$[ebp]
+  0012b	89 45 e4	 mov	 DWORD PTR _inFrequency1$[ebp], eax
+
+; 210  : 	else
+
+  0012e	eb 09		 jmp	 SHORT $L77487
+$L77486:
+
+; 211  : 		inFrequency1 = LNBValue1 - Frequency;
+
+  00130	8b 4d fc	 mov	 ecx, DWORD PTR _LNBValue1$[ebp]
+  00133	2b 4d 08	 sub	 ecx, DWORD PTR _Frequency$[ebp]
+  00136	89 4d e4	 mov	 DWORD PTR _inFrequency1$[ebp], ecx
+$L77487:
+
+; 212  : 	if ((inFrequency1 > 950) && (inFrequency1 < 2150)) {
+
+  00139	81 7d e4 b6 03
+	00 00		 cmp	 DWORD PTR _inFrequency1$[ebp], 950 ; 000003b6H
+  00140	7e 0f		 jle	 SHORT $L77488
+  00142	81 7d e4 66 08
+	00 00		 cmp	 DWORD PTR _inFrequency1$[ebp], 2150 ; 00000866H
+  00149	7d 06		 jge	 SHORT $L77488
+
+; 213  : 		LNB1 = LNBValue1;
+
+  0014b	8b 55 fc	 mov	 edx, DWORD PTR _LNBValue1$[ebp]
+  0014e	89 55 f0	 mov	 DWORD PTR _LNB1$[ebp], edx
+$L77488:
+
+; 215  : 
+; 216  : 	if (Frequency > LNBValue2)
+
+  00151	8b 45 08	 mov	 eax, DWORD PTR _Frequency$[ebp]
+  00154	3b 45 f8	 cmp	 eax, DWORD PTR _LNBValue2$[ebp]
+  00157	7e 0b		 jle	 SHORT $L77489
+
+; 217  : 		inFrequency2 = Frequency - LNBValue2;
+
+  00159	8b 4d 08	 mov	 ecx, DWORD PTR _Frequency$[ebp]
+  0015c	2b 4d f8	 sub	 ecx, DWORD PTR _LNBValue2$[ebp]
+  0015f	89 4d e0	 mov	 DWORD PTR _inFrequency2$[ebp], ecx
+
+; 218  : 	else
+
+  00162	eb 09		 jmp	 SHORT $L77490
+$L77489:
+
+; 219  : 		inFrequency2 = LNBValue2 - Frequency;
+
+  00164	8b 55 f8	 mov	 edx, DWORD PTR _LNBValue2$[ebp]
+  00167	2b 55 08	 sub	 edx, DWORD PTR _Frequency$[ebp]
+  0016a	89 55 e0	 mov	 DWORD PTR _inFrequency2$[ebp], edx
+$L77490:
+
+; 220  : 	if ((inFrequency2 > 950) && (inFrequency2 < 2150)) {
+
+  0016d	81 7d e0 b6 03
+	00 00		 cmp	 DWORD PTR _inFrequency2$[ebp], 950 ; 000003b6H
+  00174	7e 0f		 jle	 SHORT $L77491
+  00176	81 7d e0 66 08
+	00 00		 cmp	 DWORD PTR _inFrequency2$[ebp], 2150 ; 00000866H
+  0017d	7d 06		 jge	 SHORT $L77491
+
+; 221  : 		LNB2 = LNBValue2;
+
+  0017f	8b 45 f8	 mov	 eax, DWORD PTR _LNBValue2$[ebp]
+  00182	89 45 ec	 mov	 DWORD PTR _LNB2$[ebp], eax
+$L77491:
+
+; 223  : 
+; 224  : 	if (LNB1 && !LNB2) {
+
+  00185	83 7d f0 00	 cmp	 DWORD PTR _LNB1$[ebp], 0
+  00189	74 17		 je	 SHORT $L77492
+  0018b	83 7d ec 00	 cmp	 DWORD PTR _LNB2$[ebp], 0
+  0018f	75 11		 jne	 SHORT $L77492
+
+; 225  : 		LNB = LNBValue1;
+
+  00191	8b 4d fc	 mov	 ecx, DWORD PTR _LNBValue1$[ebp]
+  00194	89 4d f4	 mov	 DWORD PTR _LNB$[ebp], ecx
+
+; 226  : 		inFrequency = inFrequency1;
+
+  00197	8b 55 e4	 mov	 edx, DWORD PTR _inFrequency1$[ebp]
+  0019a	89 55 e8	 mov	 DWORD PTR _inFrequency$[ebp], edx
+
+; 228  : 	else if (LNB2 && !LNB1) {
+
+  0019d	e9 ae 00 00 00	 jmp	 $L77499
+$L77492:
+  001a2	83 7d ec 00	 cmp	 DWORD PTR _LNB2$[ebp], 0
+  001a6	74 17		 je	 SHORT $L77494
+  001a8	83 7d f0 00	 cmp	 DWORD PTR _LNB1$[ebp], 0
+  001ac	75 11		 jne	 SHORT $L77494
+
+; 229  : 		LNB = LNBValue2;
+
+  001ae	8b 45 f8	 mov	 eax, DWORD PTR _LNBValue2$[ebp]
+  001b1	89 45 f4	 mov	 DWORD PTR _LNB$[ebp], eax
+
+; 230  : 		inFrequency = inFrequency2;
+
+  001b4	8b 4d e0	 mov	 ecx, DWORD PTR _inFrequency2$[ebp]
+  001b7	89 4d e8	 mov	 DWORD PTR _inFrequency$[ebp], ecx
+
+; 232  : 	else if (LNB1 && LNB2) {
+
+  001ba	e9 91 00 00 00	 jmp	 $L77499
+$L77494:
+  001bf	83 7d f0 00	 cmp	 DWORD PTR _LNB1$[ebp], 0
+  001c3	0f 84 80 00 00
+	00		 je	 $L77496
+  001c9	83 7d ec 00	 cmp	 DWORD PTR _LNB2$[ebp], 0
+  001cd	74 7a		 je	 SHORT $L77496
+
+; 233  : 		if (((inFrequency1 > 600) ? (inFrequency1 - 600) : (600 - inFrequency1)) <=
+; 234  : 			((inFrequency2 > 600) ? (inFrequency2 - 600) : (600 - inFrequency2))) {
+
+  001cf	81 7d e4 58 02
+	00 00		 cmp	 DWORD PTR _inFrequency1$[ebp], 600 ; 00000258H
+  001d6	7e 11		 jle	 SHORT $L77816
+  001d8	8b 55 e4	 mov	 edx, DWORD PTR _inFrequency1$[ebp]
+  001db	81 ea 58 02 00
+	00		 sub	 edx, 600		; 00000258H
+  001e1	89 95 54 ff ff
+	ff		 mov	 DWORD PTR -172+[ebp], edx
+  001e7	eb 0e		 jmp	 SHORT $L77817
+$L77816:
+  001e9	b8 58 02 00 00	 mov	 eax, 600		; 00000258H
+  001ee	2b 45 e4	 sub	 eax, DWORD PTR _inFrequency1$[ebp]
+  001f1	89 85 54 ff ff
+	ff		 mov	 DWORD PTR -172+[ebp], eax
+$L77817:
+  001f7	81 7d e0 58 02
+	00 00		 cmp	 DWORD PTR _inFrequency2$[ebp], 600 ; 00000258H
+  001fe	7e 11		 jle	 SHORT $L77818
+  00200	8b 4d e0	 mov	 ecx, DWORD PTR _inFrequency2$[ebp]
+  00203	81 e9 58 02 00
+	00		 sub	 ecx, 600		; 00000258H
+  00209	89 8d 50 ff ff
+	ff		 mov	 DWORD PTR -176+[ebp], ecx
+  0020f	eb 0e		 jmp	 SHORT $L77819
+$L77818:
+  00211	ba 58 02 00 00	 mov	 edx, 600		; 00000258H
+  00216	2b 55 e0	 sub	 edx, DWORD PTR _inFrequency2$[ebp]
+  00219	89 95 50 ff ff
+	ff		 mov	 DWORD PTR -176+[ebp], edx
+$L77819:
+  0021f	8b 85 54 ff ff
+	ff		 mov	 eax, DWORD PTR -172+[ebp]
+  00225	3b 85 50 ff ff
+	ff		 cmp	 eax, DWORD PTR -176+[ebp]
+  0022b	7f 0e		 jg	 SHORT $L77497
+
+; 235  : 			LNB = LNBValue1;
+
+  0022d	8b 4d fc	 mov	 ecx, DWORD PTR _LNBValue1$[ebp]
+  00230	89 4d f4	 mov	 DWORD PTR _LNB$[ebp], ecx
+
+; 236  : 			inFrequency = inFrequency1;
+
+  00233	8b 55 e4	 mov	 edx, DWORD PTR _inFrequency1$[ebp]
+  00236	89 55 e8	 mov	 DWORD PTR _inFrequency$[ebp], edx
+
+; 238  : 		else {
+
+  00239	eb 0c		 jmp	 SHORT $L77498
+$L77497:
+
+; 239  : 			LNB = LNBValue2;
+
+  0023b	8b 45 f8	 mov	 eax, DWORD PTR _LNBValue2$[ebp]
+  0023e	89 45 f4	 mov	 DWORD PTR _LNB$[ebp], eax
+
+; 240  : 			inFrequency = inFrequency2;
+
+  00241	8b 4d e0	 mov	 ecx, DWORD PTR _inFrequency2$[ebp]
+  00244	89 4d e8	 mov	 DWORD PTR _inFrequency$[ebp], ecx
+$L77498:
+
+; 243  : 	else {
+
+  00247	eb 07		 jmp	 SHORT $L77499
+$L77496:
+
+; 244  : 		return 0;
+
+  00249	33 c0		 xor	 eax, eax
+  0024b	e9 f2 01 00 00	 jmp	 $L77454
+$L77499:
+
+; 246  : 
+; 247  : 	tunerStep = 1000000;    //250000
+
+  00250	c7 45 d8 40 42
+	0f 00		 mov	 DWORD PTR _tunerStep$[ebp], 1000000 ; 000f4240H
+
+; 248  : 	
+; 249  : 	InNumber = inFrequency * 1000 / ( tunerStep / 1000 );
+
+  00257	8b 4d e8	 mov	 ecx, DWORD PTR _inFrequency$[ebp]
+  0025a	69 c9 e8 03 00
+	00		 imul	 ecx, 1000		; 000003e8H
+  00260	8b 45 d8	 mov	 eax, DWORD PTR _tunerStep$[ebp]
+  00263	99		 cdq
+  00264	be e8 03 00 00	 mov	 esi, 1000		; 000003e8H
+  00269	f7 fe		 idiv	 esi
+  0026b	8b f0		 mov	 esi, eax
+  0026d	8b c1		 mov	 eax, ecx
+  0026f	99		 cdq
+  00270	f7 fe		 idiv	 esi
+  00272	89 45 d4	 mov	 DWORD PTR _InNumber$[ebp], eax
+
+; 250  : 
+; 251  : 	tunerData.frequencyMSB = (InNumber & 0x00007f00) >> 8;
+
+  00275	8b 55 d4	 mov	 edx, DWORD PTR _InNumber$[ebp]
+  00278	81 e2 00 7f 00
+	00		 and	 edx, 32512		; 00007f00H
+  0027e	c1 fa 08	 sar	 edx, 8
+  00281	88 55 9d	 mov	 BYTE PTR _tunerData$[ebp+1], dl
+
+; 252  : 	tunerData.frequencyLSB = InNumber & 0x000000ff;
+
+  00284	8b 45 d4	 mov	 eax, DWORD PTR _InNumber$[ebp]
+  00287	25 ff 00 00 00	 and	 eax, 255		; 000000ffH
+  0028c	88 45 9e	 mov	 BYTE PTR _tunerData$[ebp+2], al
+
+; 253  : 	divRate = 4000000L / tunerStep;
+
+  0028f	b8 00 09 3d 00	 mov	 eax, 4000000		; 003d0900H
+  00294	99		 cdq
+  00295	f7 7d d8	 idiv	 DWORD PTR _tunerStep$[ebp]
+  00298	89 45 d0	 mov	 DWORD PTR _divRate$[ebp], eax
+
+; 254  : 	
+; 255  : 	for (i=0;i<16;i++)
+
+  0029b	c7 45 cc 00 00
+	00 00		 mov	 DWORD PTR _i$[ebp], 0
+  002a2	eb 09		 jmp	 SHORT $L77500
+$L77501:
+  002a4	8b 4d cc	 mov	 ecx, DWORD PTR _i$[ebp]
+  002a7	83 c1 01	 add	 ecx, 1
+  002aa	89 4d cc	 mov	 DWORD PTR _i$[ebp], ecx
+$L77500:
+  002ad	83 7d cc 10	 cmp	 DWORD PTR _i$[ebp], 16	; 00000010H
+  002b1	7d 13		 jge	 SHORT $L77502
+
+; 257  : 		if (frequencyRef[i] == divRate)
+
+  002b3	8b 55 cc	 mov	 edx, DWORD PTR _i$[ebp]
+  002b6	8b 84 95 5c ff
+	ff ff		 mov	 eax, DWORD PTR _frequencyRef$[ebp+edx*4]
+  002bd	3b 45 d0	 cmp	 eax, DWORD PTR _divRate$[ebp]
+  002c0	75 02		 jne	 SHORT $L77503
+
+; 258  : 			break;
+
+  002c2	eb 02		 jmp	 SHORT $L77502
+$L77503:
+
+; 259  : 	}	
+
+  002c4	eb de		 jmp	 SHORT $L77501
+$L77502:
+
+; 260  : 	if (i > 15)
+
+  002c6	83 7d cc 0f	 cmp	 DWORD PTR _i$[ebp], 15	; 0000000fH
+  002ca	7e 07		 jle	 SHORT $L77504
+
+; 261  : 		i = 15;
+
+  002cc	c7 45 cc 0f 00
+	00 00		 mov	 DWORD PTR _i$[ebp], 15	; 0000000fH
+$L77504:
+
+; 262  : 	tunerData.tunerStep = i;
+
+  002d3	8a 4d cc	 mov	 cl, BYTE PTR _i$[ebp]
+  002d6	88 4d 9f	 mov	 BYTE PTR _tunerData$[ebp+3], cl
+
+; 263  : 
+; 264  :       //H_V: 1 for Horizotal, 0 for Vertical
+; 265  : 	tunerData.flag = 0;
+
+  002d9	c6 45 a3 00	 mov	 BYTE PTR _tunerData$[ebp+7], 0
+
+; 266  : 	
+; 267  : 	/*h/v chosen*/
+; 268  : 	if (H_V)
+
+  002dd	83 7d 0c 00	 cmp	 DWORD PTR _H_V$[ebp], 0
+  002e1	74 09		 je	 SHORT $L77505
+
+; 269  : 		tunerData.flag |= 0x0040;
+
+  002e3	8a 55 a3	 mov	 dl, BYTE PTR _tunerData$[ebp+7]
+  002e6	80 ca 40	 or	 dl, 64			; 00000040H
+  002e9	88 55 a3	 mov	 BYTE PTR _tunerData$[ebp+7], dl
+$L77505:
+
+; 270  : 
+; 271  : 	tunerData.symbolRateHSB = SymbolRate >> 16;
+
+  002ec	8b 45 14	 mov	 eax, DWORD PTR _SymbolRate$[ebp]
+  002ef	c1 f8 10	 sar	 eax, 16			; 00000010H
+  002f2	88 45 a0	 mov	 BYTE PTR _tunerData$[ebp+4], al
+
+; 272  : 	tunerData.symbolRateMSB = SymbolRate >> 8;
+
+  002f5	8b 4d 14	 mov	 ecx, DWORD PTR _SymbolRate$[ebp]
+  002f8	c1 f9 08	 sar	 ecx, 8
+  002fb	88 4d a1	 mov	 BYTE PTR _tunerData$[ebp+5], cl
+
+; 273  : 	tunerData.symbolRateLSB = SymbolRate & 0xff;
+
+  002fe	8b 55 14	 mov	 edx, DWORD PTR _SymbolRate$[ebp]
+  00301	81 e2 ff 00 00
+	00		 and	 edx, 255		; 000000ffH
+  00307	88 55 a2	 mov	 BYTE PTR _tunerData$[ebp+6], dl
+
+; 274  : 
+; 275  : 	MakeCheckSum(&tunerData);
+
+  0030a	8d 45 9c	 lea	 eax, DWORD PTR _tunerData$[ebp]
+  0030d	50		 push	 eax
+  0030e	e8 00 00 00 00	 call	 _MakeCheckSum
+  00313	83 c4 04	 add	 esp, 4
+
+; 276  : 	
+; 277  : 	outBuf = (LPVOID)bBuf;
+
+  00316	8d 4d a8	 lea	 ecx, DWORD PTR _bBuf$[ebp]
+  00319	89 4d b4	 mov	 DWORD PTR _outBuf$[ebp], ecx
+
+; 278  :     inBufLength = sizeof(tunerData);
+
+  0031c	c7 45 c8 09 00
+	00 00		 mov	 DWORD PTR _inBufLength$[ebp], 9
+
+; 279  : 	outBufLength = inBufLength;    
+
+  00323	8b 55 c8	 mov	 edx, DWORD PTR _inBufLength$[ebp]
+  00326	89 55 c4	 mov	 DWORD PTR _outBufLength$[ebp], edx
+
+; 280  :     inBuf = &tunerData;
+
+  00329	8d 45 9c	 lea	 eax, DWORD PTR _tunerData$[ebp]
+  0032c	89 45 b8	 mov	 DWORD PTR _inBuf$[ebp], eax
+
+; 281  :     
+; 282  :     StatusSuccess = DeviceIoControl(hDevice2, 
+; 283  :                                     (DWORD)DST_IOCTL_SCAN_START, 
+; 284  :                                     inBuf,
+; 285  :                                     inBufLength + 1,
+; 286  :                                     outBuf, 
+; 287  :                                     outBufLength, 
+; 288  :                                     &bytesReturned, 
+; 289  :                                     NULL);
+
+  0032f	8b f4		 mov	 esi, esp
+  00331	6a 00		 push	 0
+  00333	8d 4d c0	 lea	 ecx, DWORD PTR _bytesReturned$[ebp]
+  00336	51		 push	 ecx
+  00337	8b 55 c4	 mov	 edx, DWORD PTR _outBufLength$[ebp]
+  0033a	52		 push	 edx
+  0033b	8b 45 b4	 mov	 eax, DWORD PTR _outBuf$[ebp]
+  0033e	50		 push	 eax
+  0033f	8b 4d c8	 mov	 ecx, DWORD PTR _inBufLength$[ebp]
+  00342	83 c1 01	 add	 ecx, 1
+  00345	51		 push	 ecx
+  00346	8b 55 b8	 mov	 edx, DWORD PTR _inBuf$[ebp]
+  00349	52		 push	 edx
+  0034a	68 00 29 bb aa	 push	 -1430574848		; aabb2900H
+  0034f	a1 00 00 00 00	 mov	 eax, DWORD PTR _hDevice2
+  00354	50		 push	 eax
+  00355	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__DeviceIoControl@32
+  0035b	3b f4		 cmp	 esi, esp
+  0035d	e8 00 00 00 00	 call	 __chkesp
+  00362	89 45 dc	 mov	 DWORD PTR _StatusSuccess$[ebp], eax
+
+; 290  :     if (!StatusSuccess)
+
+  00365	83 7d dc 00	 cmp	 DWORD PTR _StatusSuccess$[ebp], 0
+  00369	75 07		 jne	 SHORT $L77509
+
+; 292  :         return FALSE;
+
+  0036b	33 c0		 xor	 eax, eax
+  0036d	e9 d0 00 00 00	 jmp	 $L77454
+$L77509:
+
+; 294  :     StatusSuccess = FALSE;
+
+  00372	c7 45 dc 00 00
+	00 00		 mov	 DWORD PTR _StatusSuccess$[ebp], 0
+
+; 295  : 
+; 296  :     LockTime = GetTickCount();
+
+  00379	8b f4		 mov	 esi, esp
+  0037b	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__GetTickCount@0
+  00381	3b f4		 cmp	 esi, esp
+  00383	e8 00 00 00 00	 call	 __chkesp
+  00388	89 45 bc	 mov	 DWORD PTR _LockTime$[ebp], eax
+$L77511:
+
+; 297  :     while (!StatusSuccess)
+
+  0038b	83 7d dc 00	 cmp	 DWORD PTR _StatusSuccess$[ebp], 0
+  0038f	75 5a		 jne	 SHORT $L77512
+
+; 299  :         if ((GetTickCount() - LockTime) > 3000)
+
+  00391	8b f4		 mov	 esi, esp
+  00393	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__GetTickCount@0
+  00399	3b f4		 cmp	 esi, esp
+  0039b	e8 00 00 00 00	 call	 __chkesp
+  003a0	2b 45 bc	 sub	 eax, DWORD PTR _LockTime$[ebp]
+  003a3	3d b8 0b 00 00	 cmp	 eax, 3000		; 00000bb8H
+  003a8	76 02		 jbe	 SHORT $L77513
+
+; 300  :             break;
+
+  003aa	eb 3f		 jmp	 SHORT $L77512
+$L77513:
+
+; 301  : 
+; 302  :         StatusSuccess = DeviceIoControl(hDevice2, 
+; 303  :                                         (DWORD)DST_IOCTL_SCAN_WAITING, 
+; 304  :                                         NULL, 
+; 305  :                                         0, 
+; 306  :                                         NULL, 
+; 307  :                                         0, 
+; 308  :                                         &bytesReturned, 
+; 309  :                                         NULL);
+
+  003ac	8b f4		 mov	 esi, esp
+  003ae	6a 00		 push	 0
+  003b0	8d 4d c0	 lea	 ecx, DWORD PTR _bytesReturned$[ebp]
+  003b3	51		 push	 ecx
+  003b4	6a 00		 push	 0
+  003b6	6a 00		 push	 0
+  003b8	6a 00		 push	 0
+  003ba	6a 00		 push	 0
+  003bc	68 80 29 bb aa	 push	 -1430574720		; aabb2980H
+  003c1	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _hDevice2
+  003c7	52		 push	 edx
+  003c8	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__DeviceIoControl@32
+  003ce	3b f4		 cmp	 esi, esp
+  003d0	e8 00 00 00 00	 call	 __chkesp
+  003d5	89 45 dc	 mov	 DWORD PTR _StatusSuccess$[ebp], eax
+
+; 310  :         Sleep(10);
+
+  003d8	8b f4		 mov	 esi, esp
+  003da	6a 0a		 push	 10			; 0000000aH
+  003dc	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__Sleep@4
+  003e2	3b f4		 cmp	 esi, esp
+  003e4	e8 00 00 00 00	 call	 __chkesp
+
+; 311  : 
+; 312  :     }
+
+  003e9	eb a0		 jmp	 SHORT $L77511
+$L77512:
+
+; 313  : 
+; 314  :     if (!StatusSuccess)
+
+  003eb	83 7d dc 00	 cmp	 DWORD PTR _StatusSuccess$[ebp], 0
+  003ef	75 04		 jne	 SHORT $L77518
+
+; 316  :         return FALSE;
+
+  003f1	33 c0		 xor	 eax, eax
+  003f3	eb 4d		 jmp	 SHORT $L77454
+$L77518:
+
+; 318  : 
+; 319  :     DeviceIoControl(hDevice2, 
+; 320  :                                     (DWORD)DST_IOCTL_SCAN_END, 
+; 321  :                                     inBuf, 
+; 322  :                                     inBufLength + 1, 
+; 323  :                                     outBuf, 
+; 324  :                                     outBufLength, 
+; 325  :                                     &bytesReturned, 
+; 326  :                                     NULL);
+
+  003f5	8b f4		 mov	 esi, esp
+  003f7	6a 00		 push	 0
+  003f9	8d 45 c0	 lea	 eax, DWORD PTR _bytesReturned$[ebp]
+  003fc	50		 push	 eax
+  003fd	8b 4d c4	 mov	 ecx, DWORD PTR _outBufLength$[ebp]
+  00400	51		 push	 ecx
+  00401	8b 55 b4	 mov	 edx, DWORD PTR _outBuf$[ebp]
+  00404	52		 push	 edx
+  00405	8b 45 c8	 mov	 eax, DWORD PTR _inBufLength$[ebp]
+  00408	83 c0 01	 add	 eax, 1
+  0040b	50		 push	 eax
+  0040c	8b 4d b8	 mov	 ecx, DWORD PTR _inBuf$[ebp]
+  0040f	51		 push	 ecx
+  00410	68 00 2a bb aa	 push	 -1430574592		; aabb2a00H
+  00415	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _hDevice2
+  0041b	52		 push	 edx
+  0041c	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__DeviceIoControl@32
+  00422	3b f4		 cmp	 esi, esp
+  00424	e8 00 00 00 00	 call	 __chkesp
+
+; 327  : 
+; 328  : 
+; 329  : 	OutputDebugString("Twinhan2: Tune OK\n");
+
+  00429	8b f4		 mov	 esi, esp
+  0042b	68 00 00 00 00	 push	 OFFSET FLAT:??_C@_0BD@CPCD@Twinhan2?3?5Tune?5OK?6?$AA@ ; `string'
+  00430	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__OutputDebugStringA@4
+  00436	3b f4		 cmp	 esi, esp
+  00438	e8 00 00 00 00	 call	 __chkesp
+
+; 330  : 	return TRUE;
+
+  0043d	b8 01 00 00 00	 mov	 eax, 1
+$L77454:
+
+; 331  : }
+
+  00442	5f		 pop	 edi
+  00443	5e		 pop	 esi
+  00444	5b		 pop	 ebx
+  00445	81 c4 f0 00 00
+	00		 add	 esp, 240		; 000000f0H
+  0044b	3b ec		 cmp	 ebp, esp
+  0044d	e8 00 00 00 00	 call	 __chkesp
+  00452	8b e5		 mov	 esp, ebp
+  00454	5d		 pop	 ebp
+  00455	c3		 ret	 0
+_Tune	ENDP
+_TEXT	ENDS
+PUBLIC	_SetTuner22KHzAndPower
+;	COMDAT _SetTuner22KHzAndPower
+_TEXT	SEGMENT
+_f22KHz$ = 8
+_fPower$ = 12
+_inBuf$ = -4
+_outBuf$ = -132
+_inBufLength$ = -136
+_outBufLength$ = -140
+_bytesReturned$ = -144
+_tunerData$ = -156
+_SetTuner22KHzAndPower PROC NEAR			; COMDAT
+
+; 334  : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	81 ec dc 00 00
+	00		 sub	 esp, 220		; 000000dcH
+  00009	53		 push	 ebx
+  0000a	56		 push	 esi
+  0000b	57		 push	 edi
+  0000c	8d bd 24 ff ff
+	ff		 lea	 edi, DWORD PTR [ebp-220]
+  00012	b9 37 00 00 00	 mov	 ecx, 55			; 00000037H
+  00017	b8 cc cc cc cc	 mov	 eax, -858993460		; ccccccccH
+  0001c	f3 ab		 rep stosd
+
+; 335  : 	BYTE * inBuf, outBuf[128];
+; 336  : 	int inBufLength, outBufLength;
+; 337  : 	int bytesReturned;
+; 338  :     TunerData tunerData;
+; 339  : 	memset(&tunerData, 0, sizeof(tunerData));
+
+  0001e	6a 09		 push	 9
+  00020	6a 00		 push	 0
+  00022	8d 85 64 ff ff
+	ff		 lea	 eax, DWORD PTR _tunerData$[ebp]
+  00028	50		 push	 eax
+  00029	e8 00 00 00 00	 call	 _memset
+  0002e	83 c4 0c	 add	 esp, 12			; 0000000cH
+
+; 340  : 
+; 341  : 	tunerData.address = 0xaa;
+
+  00031	c6 85 64 ff ff
+	ff aa		 mov	 BYTE PTR _tunerData$[ebp], 170 ; 000000aaH
+
+; 342  : 	if (fPower)
+
+  00038	83 7d 0c 00	 cmp	 DWORD PTR _fPower$[ebp], 0
+  0003c	74 09		 je	 SHORT $L77534
+
+; 343  : 		tunerData.symbolRateMSB = 0x01;
+
+  0003e	c6 85 69 ff ff
+	ff 01		 mov	 BYTE PTR _tunerData$[ebp+5], 1
+
+; 344  : 	else
+
+  00045	eb 07		 jmp	 SHORT $L77535
+$L77534:
+
+; 345  : 		tunerData.symbolRateMSB = 0x00; 
+
+  00047	c6 85 69 ff ff
+	ff 00		 mov	 BYTE PTR _tunerData$[ebp+5], 0
+$L77535:
+
+; 346  : 	tunerData.frequencyLSB = 0x09;
+
+  0004e	c6 85 66 ff ff
+	ff 09		 mov	 BYTE PTR _tunerData$[ebp+2], 9
+
+; 347  : 	if (f22KHz)
+
+  00055	83 7d 08 00	 cmp	 DWORD PTR _f22KHz$[ebp], 0
+  00059	74 09		 je	 SHORT $L77536
+
+; 348  : 		tunerData.tunerStep = 0x02;
+
+  0005b	c6 85 67 ff ff
+	ff 02		 mov	 BYTE PTR _tunerData$[ebp+3], 2
+
+; 349  : 	else
+
+  00062	eb 07		 jmp	 SHORT $L77537
+$L77536:
+
+; 350  : 		tunerData.tunerStep = 0;
+
+  00064	c6 85 67 ff ff
+	ff 00		 mov	 BYTE PTR _tunerData$[ebp+3], 0
+$L77537:
+
+; 351  : 	tunerData.symbolRateHSB = 0xff;
+
+  0006b	c6 85 68 ff ff
+	ff ff		 mov	 BYTE PTR _tunerData$[ebp+4], 255 ; 000000ffH
+
+; 352  : 
+; 353  : 	MakeCheckSum(&tunerData);
+
+  00072	8d 8d 64 ff ff
+	ff		 lea	 ecx, DWORD PTR _tunerData$[ebp]
+  00078	51		 push	 ecx
+  00079	e8 00 00 00 00	 call	 _MakeCheckSum
+  0007e	83 c4 04	 add	 esp, 4
+
+; 354  :  
+; 355  :     inBuf = (BYTE *)&tunerData;
+
+  00081	8d 95 64 ff ff
+	ff		 lea	 edx, DWORD PTR _tunerData$[ebp]
+  00087	89 55 fc	 mov	 DWORD PTR _inBuf$[ebp], edx
+
+; 356  : 	inBufLength = sizeof(tunerData);  
+
+  0008a	c7 85 78 ff ff
+	ff 09 00 00 00	 mov	 DWORD PTR _inBufLength$[ebp], 9
+
+; 357  : 	outBufLength = sizeof(outBuf);
+
+  00094	c7 85 74 ff ff
+	ff 80 00 00 00	 mov	 DWORD PTR _outBufLength$[ebp], 128 ; 00000080H
+
+; 358  :  
+; 359  :     DeviceIoControl(hDevice2, 
+; 360  :                     (DWORD)DST_IOCTL_SET_INFO, 
+; 361  :                     inBuf, 
+; 362  :                     inBufLength + 1, 
+; 363  :                     outBuf, 
+; 364  :                     outBufLength, 
+; 365  :                     &bytesReturned, 
+; 366  :                     NULL);
+
+  0009e	8b f4		 mov	 esi, esp
+  000a0	6a 00		 push	 0
+  000a2	8d 85 70 ff ff
+	ff		 lea	 eax, DWORD PTR _bytesReturned$[ebp]
+  000a8	50		 push	 eax
+  000a9	8b 8d 74 ff ff
+	ff		 mov	 ecx, DWORD PTR _outBufLength$[ebp]
+  000af	51		 push	 ecx
+  000b0	8d 95 7c ff ff
+	ff		 lea	 edx, DWORD PTR _outBuf$[ebp]
+  000b6	52		 push	 edx
+  000b7	8b 85 78 ff ff
+	ff		 mov	 eax, DWORD PTR _inBufLength$[ebp]
+  000bd	83 c0 01	 add	 eax, 1
+  000c0	50		 push	 eax
+  000c1	8b 4d fc	 mov	 ecx, DWORD PTR _inBuf$[ebp]
+  000c4	51		 push	 ecx
+  000c5	68 80 28 bb aa	 push	 -1430574976		; aabb2880H
+  000ca	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _hDevice2
+  000d0	52		 push	 edx
+  000d1	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__DeviceIoControl@32
+  000d7	3b f4		 cmp	 esi, esp
+  000d9	e8 00 00 00 00	 call	 __chkesp
+
+; 367  : }
+
+  000de	5f		 pop	 edi
+  000df	5e		 pop	 esi
+  000e0	5b		 pop	 ebx
+  000e1	81 c4 dc 00 00
+	00		 add	 esp, 220		; 000000dcH
+  000e7	3b ec		 cmp	 ebp, esp
+  000e9	e8 00 00 00 00	 call	 __chkesp
+  000ee	8b e5		 mov	 esp, ebp
+  000f0	5d		 pop	 ebp
+  000f1	c3		 ret	 0
+_SetTuner22KHzAndPower ENDP
+_TEXT	ENDS
+PUBLIC	__real@8@4003f800000000000000
+PUBLIC	__real@8@4006bc00000000000000
+PUBLIC	_GetTunerStatus
+EXTRN	__ftol:NEAR
+EXTRN	__fltused:NEAR
+;	COMDAT __real@8@4003f800000000000000
+; File C:\Development\TSReader\TSReader_Twinhan2\TSReader_Twinhan2.c
+CONST	SEGMENT
+__real@8@4003f800000000000000 DQ 0403f000000000000r ; 31
+CONST	ENDS
+;	COMDAT __real@8@4006bc00000000000000
+CONST	SEGMENT
+__real@8@4006bc00000000000000 DQ 04067800000000000r ; 188
+CONST	ENDS
+;	COMDAT _GetTunerStatus
+_TEXT	SEGMENT
+_LockFlag$ = 8
+_Quality$ = 12
+_Strength$ = 16
+_StatusSuccess$ = -4
+_inBufLength$ = -8
+_outBufLength$ = -12
+_bytesReturned$ = -16
+_inBuf$ = -20
+_outBuf$ = -276
+_pbuf$ = -280
+_Temp$ = -284
+_tunerData$ = -296
+_x$77568 = -304
+_x$77574 = -312
+_GetTunerStatus PROC NEAR				; COMDAT
+
+; 370  : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	81 ec 88 01 00
+	00		 sub	 esp, 392		; 00000188H
+  00009	53		 push	 ebx
+  0000a	56		 push	 esi
+  0000b	57		 push	 edi
+  0000c	8d bd 78 fe ff
+	ff		 lea	 edi, DWORD PTR [ebp-392]
+  00012	b9 62 00 00 00	 mov	 ecx, 98			; 00000062H
+  00017	b8 cc cc cc cc	 mov	 eax, -858993460		; ccccccccH
+  0001c	f3 ab		 rep stosd
+
+; 371  : 	int StatusSuccess;
+; 372  : 	int inBufLength, outBufLength;
+; 373  : 	int bytesReturned;
+; 374  : 	BYTE * inBuf;
+; 375  : 	BYTE outBuf[256];
+; 376  :     BYTE  *pbuf = (BYTE *)outBuf;
+
+  0001e	8d 85 ec fe ff
+	ff		 lea	 eax, DWORD PTR _outBuf$[ebp]
+  00024	89 85 e8 fe ff
+	ff		 mov	 DWORD PTR _pbuf$[ebp], eax
+
+; 377  : 	DWORD Temp = 0;
+
+  0002a	c7 85 e4 fe ff
+	ff 00 00 00 00	 mov	 DWORD PTR _Temp$[ebp], 0
+
+; 378  :     TunerData tunerData;
+; 379  :    	memset(&tunerData, 0, sizeof(tunerData));
+
+  00034	6a 09		 push	 9
+  00036	6a 00		 push	 0
+  00038	8d 8d d8 fe ff
+	ff		 lea	 ecx, DWORD PTR _tunerData$[ebp]
+  0003e	51		 push	 ecx
+  0003f	e8 00 00 00 00	 call	 _memset
+  00044	83 c4 0c	 add	 esp, 12			; 0000000cH
+
+; 380  : 
+; 381  :     inBuf = (BYTE *)&tunerData;
+
+  00047	8d 95 d8 fe ff
+	ff		 lea	 edx, DWORD PTR _tunerData$[ebp]
+  0004d	89 55 ec	 mov	 DWORD PTR _inBuf$[ebp], edx
+
+; 382  :     inBufLength	= sizeof(tunerData);
+
+  00050	c7 45 f8 09 00
+	00 00		 mov	 DWORD PTR _inBufLength$[ebp], 9
+
+; 383  :     
+; 384  :     tunerData.address = 0xaa;
+
+  00057	c6 85 d8 fe ff
+	ff aa		 mov	 BYTE PTR _tunerData$[ebp], 170 ; 000000aaH
+
+; 385  : 	tunerData.frequencyMSB = 0;
+
+  0005e	c6 85 d9 fe ff
+	ff 00		 mov	 BYTE PTR _tunerData$[ebp+1], 0
+
+; 386  : 	tunerData.frequencyLSB = 0x05;
+
+  00065	c6 85 da fe ff
+	ff 05		 mov	 BYTE PTR _tunerData$[ebp+2], 5
+
+; 387  : 
+; 388  : 	MakeCheckSum(&tunerData);
+
+  0006c	8d 85 d8 fe ff
+	ff		 lea	 eax, DWORD PTR _tunerData$[ebp]
+  00072	50		 push	 eax
+  00073	e8 00 00 00 00	 call	 _MakeCheckSum
+  00078	83 c4 04	 add	 esp, 4
+
+; 389  :     
+; 390  : 	outBufLength = sizeof(outBuf);
+
+  0007b	c7 45 f4 00 01
+	00 00		 mov	 DWORD PTR _outBufLength$[ebp], 256 ; 00000100H
+
+; 391  :     StatusSuccess = DeviceIoControl(hDevice2, 
+; 392  :                                     (DWORD)DST_IOCTL_SET_INFO, 
+; 393  :                                     inBuf, // command
+; 394  :                                     inBufLength + 1, 
+; 395  :                                     outBuf, // return signal state
+; 396  :                                     outBufLength, 
+; 397  :                                     &bytesReturned, 
+; 398  :                                     NULL);
+
+  00082	8b f4		 mov	 esi, esp
+  00084	6a 00		 push	 0
+  00086	8d 4d f0	 lea	 ecx, DWORD PTR _bytesReturned$[ebp]
+  00089	51		 push	 ecx
+  0008a	8b 55 f4	 mov	 edx, DWORD PTR _outBufLength$[ebp]
+  0008d	52		 push	 edx
+  0008e	8d 85 ec fe ff
+	ff		 lea	 eax, DWORD PTR _outBuf$[ebp]
+  00094	50		 push	 eax
+  00095	8b 4d f8	 mov	 ecx, DWORD PTR _inBufLength$[ebp]
+  00098	83 c1 01	 add	 ecx, 1
+  0009b	51		 push	 ecx
+  0009c	8b 55 ec	 mov	 edx, DWORD PTR _inBuf$[ebp]
+  0009f	52		 push	 edx
+  000a0	68 80 28 bb aa	 push	 -1430574976		; aabb2880H
+  000a5	a1 00 00 00 00	 mov	 eax, DWORD PTR _hDevice2
+  000aa	50		 push	 eax
+  000ab	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__DeviceIoControl@32
+  000b1	3b f4		 cmp	 esi, esp
+  000b3	e8 00 00 00 00	 call	 __chkesp
+  000b8	89 45 fc	 mov	 DWORD PTR _StatusSuccess$[ebp], eax
+
+; 399  : 
+; 400  : 	Temp = pbuf[7];
+
+  000bb	8b 8d e8 fe ff
+	ff		 mov	 ecx, DWORD PTR _pbuf$[ebp]
+  000c1	33 d2		 xor	 edx, edx
+  000c3	8a 51 07	 mov	 dl, BYTE PTR [ecx+7]
+  000c6	89 95 e4 fe ff
+	ff		 mov	 DWORD PTR _Temp$[ebp], edx
+
+; 401  : 	if (Temp & 0x10) {
+
+  000cc	8b 85 e4 fe ff
+	ff		 mov	 eax, DWORD PTR _Temp$[ebp]
+  000d2	83 e0 10	 and	 eax, 16			; 00000010H
+  000d5	85 c0		 test	 eax, eax
+  000d7	74 0b		 je	 SHORT $L77562
+
+; 402  : 		*LockFlag = FALSE;
+
+  000d9	8b 4d 08	 mov	 ecx, DWORD PTR _LockFlag$[ebp]
+  000dc	c7 01 00 00 00
+	00		 mov	 DWORD PTR [ecx], 0
+
+; 404  : 	else {
+
+  000e2	eb 09		 jmp	 SHORT $L77563
+$L77562:
+
+; 405  : 		*LockFlag = TRUE;
+
+  000e4	8b 55 08	 mov	 edx, DWORD PTR _LockFlag$[ebp]
+  000e7	c7 02 01 00 00
+	00		 mov	 DWORD PTR [edx], 1
+$L77563:
+
+; 407  : 
+; 408  :     Temp = pbuf[3];
+
+  000ed	8b 85 e8 fe ff
+	ff		 mov	 eax, DWORD PTR _pbuf$[ebp]
+  000f3	33 c9		 xor	 ecx, ecx
+  000f5	8a 48 03	 mov	 cl, BYTE PTR [eax+3]
+  000f8	89 8d e4 fe ff
+	ff		 mov	 DWORD PTR _Temp$[ebp], ecx
+
+; 409  : 	Temp = (Temp << 8) | pbuf[4];
+
+  000fe	8b 95 e4 fe ff
+	ff		 mov	 edx, DWORD PTR _Temp$[ebp]
+  00104	c1 e2 08	 shl	 edx, 8
+  00107	8b 85 e8 fe ff
+	ff		 mov	 eax, DWORD PTR _pbuf$[ebp]
+  0010d	33 c9		 xor	 ecx, ecx
+  0010f	8a 48 04	 mov	 cl, BYTE PTR [eax+4]
+  00112	0b d1		 or	 edx, ecx
+  00114	89 95 e4 fe ff
+	ff		 mov	 DWORD PTR _Temp$[ebp], edx
+
+; 410  :     if (*LockFlag) {
+
+  0011a	8b 55 08	 mov	 edx, DWORD PTR _LockFlag$[ebp]
+  0011d	83 3a 00	 cmp	 DWORD PTR [edx], 0
+  00120	0f 84 e3 00 00
+	00		 je	 $L77564
+
+; 411  :         if ((Temp >= 0) && (Temp <= 0x1200)) {
+
+  00126	83 bd e4 fe ff
+	ff 00		 cmp	 DWORD PTR _Temp$[ebp], 0
+  0012d	72 1a		 jb	 SHORT $L77565
+  0012f	81 bd e4 fe ff
+	ff 00 12 00 00	 cmp	 DWORD PTR _Temp$[ebp], 4608 ; 00001200H
+  00139	77 0e		 ja	 SHORT $L77565
+
+; 412  :             *Quality = 98;
+
+  0013b	8b 45 0c	 mov	 eax, DWORD PTR _Quality$[ebp]
+  0013e	c7 00 62 00 00
+	00		 mov	 DWORD PTR [eax], 98	; 00000062H
+
+; 414  : 		else if ((Temp > 0x1200) && (Temp <= 0x1900)) {
+
+  00144	e9 be 00 00 00	 jmp	 $L77578
+$L77565:
+  00149	81 bd e4 fe ff
+	ff 00 12 00 00	 cmp	 DWORD PTR _Temp$[ebp], 4608 ; 00001200H
+  00153	76 50		 jbe	 SHORT $L77567
+  00155	81 bd e4 fe ff
+	ff 00 19 00 00	 cmp	 DWORD PTR _Temp$[ebp], 6400 ; 00001900H
+  0015f	77 44		 ja	 SHORT $L77567
+
+; 415  : 			double x = (double)(Temp - 0x1201) / (double)((0x1900 - 0x1201) / 57);
+
+  00161	8b 8d e4 fe ff
+	ff		 mov	 ecx, DWORD PTR _Temp$[ebp]
+  00167	81 e9 01 12 00
+	00		 sub	 ecx, 4609		; 00001201H
+  0016d	89 8d c0 fe ff
+	ff		 mov	 DWORD PTR -320+[ebp], ecx
+  00173	c7 85 c4 fe ff
+	ff 00 00 00 00	 mov	 DWORD PTR -320+[ebp+4], 0
+  0017d	df ad c0 fe ff
+	ff		 fild	 QWORD PTR -320+[ebp]
+  00183	dc 35 00 00 00
+	00		 fdiv	 QWORD PTR __real@8@4003f800000000000000
+  00189	dd 95 d0 fe ff
+	ff		 fst	 QWORD PTR _x$77568[ebp]
+
+; 416  : 			*Quality = 40 + (58 - (int)x);
+
+  0018f	e8 00 00 00 00	 call	 __ftol
+  00194	ba 3a 00 00 00	 mov	 edx, 58			; 0000003aH
+  00199	2b d0		 sub	 edx, eax
+  0019b	83 c2 28	 add	 edx, 40			; 00000028H
+  0019e	8b 45 0c	 mov	 eax, DWORD PTR _Quality$[ebp]
+  001a1	89 10		 mov	 DWORD PTR [eax], edx
+
+; 418  : 		else if ((Temp > 0x1900) && (Temp <= 0x3500)) {
+
+  001a3	eb 62		 jmp	 SHORT $L77578
+$L77567:
+  001a5	81 bd e4 fe ff
+	ff 00 19 00 00	 cmp	 DWORD PTR _Temp$[ebp], 6400 ; 00001900H
+  001af	76 4d		 jbe	 SHORT $L77573
+  001b1	81 bd e4 fe ff
+	ff 00 35 00 00	 cmp	 DWORD PTR _Temp$[ebp], 13568 ; 00003500H
+  001bb	77 41		 ja	 SHORT $L77573
+
+; 419  : 			double x = (double)(Temp - 0x1901) / (double)((0x3500 - 0x1901) / 38);
+
+  001bd	8b 8d e4 fe ff
+	ff		 mov	 ecx, DWORD PTR _Temp$[ebp]
+  001c3	81 e9 01 19 00
+	00		 sub	 ecx, 6401		; 00001901H
+  001c9	89 8d b8 fe ff
+	ff		 mov	 DWORD PTR -328+[ebp], ecx
+  001cf	c7 85 bc fe ff
+	ff 00 00 00 00	 mov	 DWORD PTR -328+[ebp+4], 0
+  001d9	df ad b8 fe ff
+	ff		 fild	 QWORD PTR -328+[ebp]
+  001df	dc 35 00 00 00
+	00		 fdiv	 QWORD PTR __real@8@4006bc00000000000000
+  001e5	dd 95 c8 fe ff
+	ff		 fst	 QWORD PTR _x$77574[ebp]
+
+; 420  : 			*Quality = 39 - (int)x;
+
+  001eb	e8 00 00 00 00	 call	 __ftol
+  001f0	ba 27 00 00 00	 mov	 edx, 39			; 00000027H
+  001f5	2b d0		 sub	 edx, eax
+  001f7	8b 45 0c	 mov	 eax, DWORD PTR _Quality$[ebp]
+  001fa	89 10		 mov	 DWORD PTR [eax], edx
+
+; 422  : 		else {
+
+  001fc	eb 09		 jmp	 SHORT $L77578
+$L77573:
+
+; 423  : 			*Quality = 0;
+
+  001fe	8b 4d 0c	 mov	 ecx, DWORD PTR _Quality$[ebp]
+  00201	c7 01 00 00 00
+	00		 mov	 DWORD PTR [ecx], 0
+$L77578:
+
+; 426  : 	else {
+
+  00207	eb 09		 jmp	 SHORT $L77579
+$L77564:
+
+; 427  : 		*Quality = 0;
+
+  00209	8b 55 0c	 mov	 edx, DWORD PTR _Quality$[ebp]
+  0020c	c7 02 00 00 00
+	00		 mov	 DWORD PTR [edx], 0
+$L77579:
+
+; 429  : 
+; 430  : 	Temp = pbuf[6];
+
+  00212	8b 85 e8 fe ff
+	ff		 mov	 eax, DWORD PTR _pbuf$[ebp]
+  00218	33 c9		 xor	 ecx, ecx
+  0021a	8a 48 06	 mov	 cl, BYTE PTR [eax+6]
+  0021d	89 8d e4 fe ff
+	ff		 mov	 DWORD PTR _Temp$[ebp], ecx
+
+; 431  : 	if (*LockFlag) {
+
+  00223	8b 55 08	 mov	 edx, DWORD PTR _LockFlag$[ebp]
+  00226	83 3a 00	 cmp	 DWORD PTR [edx], 0
+  00229	74 0d		 je	 SHORT $L77580
+
+; 432  : 		*Strength = Temp;
+
+  0022b	8b 45 10	 mov	 eax, DWORD PTR _Strength$[ebp]
+  0022e	8b 8d e4 fe ff
+	ff		 mov	 ecx, DWORD PTR _Temp$[ebp]
+  00234	89 08		 mov	 DWORD PTR [eax], ecx
+
+; 434  : 	else {
+
+  00236	eb 1f		 jmp	 SHORT $L77583
+$L77580:
+
+; 435  : 		if (Temp > 80) {
+
+  00238	83 bd e4 fe ff
+	ff 50		 cmp	 DWORD PTR _Temp$[ebp], 80 ; 00000050H
+  0023f	76 0b		 jbe	 SHORT $L77582
+
+; 436  : 			*Strength = 80;
+
+  00241	8b 55 10	 mov	 edx, DWORD PTR _Strength$[ebp]
+  00244	c7 02 50 00 00
+	00		 mov	 DWORD PTR [edx], 80	; 00000050H
+
+; 438  : 		else {
+
+  0024a	eb 0b		 jmp	 SHORT $L77583
+$L77582:
+
+; 439  : 			*Strength = Temp;
+
+  0024c	8b 45 10	 mov	 eax, DWORD PTR _Strength$[ebp]
+  0024f	8b 8d e4 fe ff
+	ff		 mov	 ecx, DWORD PTR _Temp$[ebp]
+  00255	89 08		 mov	 DWORD PTR [eax], ecx
+$L77583:
+
+; 442  : }
+
+  00257	5f		 pop	 edi
+  00258	5e		 pop	 esi
+  00259	5b		 pop	 ebx
+  0025a	81 c4 88 01 00
+	00		 add	 esp, 392		; 00000188H
+  00260	3b ec		 cmp	 ebp, esp
+  00262	e8 00 00 00 00	 call	 __chkesp
+  00267	8b e5		 mov	 esp, ebp
+  00269	5d		 pop	 ebp
+  0026a	c3		 ret	 0
+_GetTunerStatus ENDP
+_TEXT	ENDS
+PUBLIC	_StreamCapture
+;	COMDAT _StreamCapture
+_TEXT	SEGMENT
+_fEnable$ = 8
+_bytesReturned$ = -4
+_outBuf$ = -8
+_StreamCapture PROC NEAR				; COMDAT
+
+; 445  : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	83 ec 48	 sub	 esp, 72			; 00000048H
+  00006	53		 push	 ebx
+  00007	56		 push	 esi
+  00008	57		 push	 edi
+  00009	8d 7d b8	 lea	 edi, DWORD PTR [ebp-72]
+  0000c	b9 12 00 00 00	 mov	 ecx, 18			; 00000012H
+  00011	b8 cc cc cc cc	 mov	 eax, -858993460		; ccccccccH
+  00016	f3 ab		 rep stosd
+
+; 446  : 	int bytesReturned;
+; 447  : 	DWORD outBuf;
+; 448  : 
+; 449  : 	if (fEnable)
+
+  00018	83 7d 08 00	 cmp	 DWORD PTR _fEnable$[ebp], 0
+  0001c	74 40		 je	 SHORT $L77590
+
+; 451  : 		DeviceIoControl(hDevice1,
+; 452  : 						(DWORD)DST_IOCTL_START_CAP, 
+; 453  : 						NULL, 
+; 454  : 						0, 
+; 455  : 						&outBuf, 
+; 456  : 						sizeof(DWORD), 
+; 457  : 						&bytesReturned, 
+; 458  : 						NULL);
+
+  0001e	8b f4		 mov	 esi, esp
+  00020	6a 00		 push	 0
+  00022	8d 45 fc	 lea	 eax, DWORD PTR _bytesReturned$[ebp]
+  00025	50		 push	 eax
+  00026	6a 04		 push	 4
+  00028	8d 4d f8	 lea	 ecx, DWORD PTR _outBuf$[ebp]
+  0002b	51		 push	 ecx
+  0002c	6a 00		 push	 0
+  0002e	6a 00		 push	 0
+  00030	68 00 2c ff dd	 push	 -570479616		; ddff2c00H
+  00035	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _hDevice1
+  0003b	52		 push	 edx
+  0003c	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__DeviceIoControl@32
+  00042	3b f4		 cmp	 esi, esp
+  00044	e8 00 00 00 00	 call	 __chkesp
+
+; 459  : 		memcpy(&pDriverBuffer, &outBuf, sizeof(DWORD));
+
+  00049	6a 04		 push	 4
+  0004b	8d 45 f8	 lea	 eax, DWORD PTR _outBuf$[ebp]
+  0004e	50		 push	 eax
+  0004f	68 00 00 00 00	 push	 OFFSET FLAT:_pDriverBuffer
+  00054	e8 00 00 00 00	 call	 _memcpy
+  00059	83 c4 0c	 add	 esp, 12			; 0000000cH
+
+; 461  : 	else
+
+  0005c	eb 29		 jmp	 SHORT $L77596
+$L77590:
+
+; 462  : 		DeviceIoControl(hDevice1,
+; 463  : 						(DWORD)DST_IOCTL_STOP_CAP, 
+; 464  : 						NULL, 
+; 465  : 						0, 
+; 466  : 						NULL, 
+; 467  : 						0, 
+; 468  : 						&bytesReturned, 
+; 469  : 						NULL);
+
+  0005e	8b f4		 mov	 esi, esp
+  00060	6a 00		 push	 0
+  00062	8d 4d fc	 lea	 ecx, DWORD PTR _bytesReturned$[ebp]
+  00065	51		 push	 ecx
+  00066	6a 00		 push	 0
+  00068	6a 00		 push	 0
+  0006a	6a 00		 push	 0
+  0006c	6a 00		 push	 0
+  0006e	68 40 2c ff dd	 push	 -570479552		; ddff2c40H
+  00073	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _hDevice1
+  00079	52		 push	 edx
+  0007a	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__DeviceIoControl@32
+  00080	3b f4		 cmp	 esi, esp
+  00082	e8 00 00 00 00	 call	 __chkesp
+$L77596:
+
+; 470  : }
+
+  00087	5f		 pop	 edi
+  00088	5e		 pop	 esi
+  00089	5b		 pop	 ebx
+  0008a	83 c4 48	 add	 esp, 72			; 00000048H
+  0008d	3b ec		 cmp	 ebp, esp
+  0008f	e8 00 00 00 00	 call	 __chkesp
+  00094	8b e5		 mov	 esp, ebp
+  00096	5d		 pop	 ebp
+  00097	c3		 ret	 0
+_StreamCapture ENDP
+_TEXT	ENDS
+PUBLIC	_ReadFromPipe
+EXTRN	__imp__EnterCriticalSection@4:NEAR
+EXTRN	__imp__LeaveCriticalSection@4:NEAR
+EXTRN	__imp__ReadFile@20:NEAR
+;	COMDAT _ReadFromPipe
+_TEXT	SEGMENT
+_pBuffer$ = 8
+_nLength$ = 12
+_nRequestedLength$ = -4
+_dwRead$ = -8
+_ReadFromPipe PROC NEAR					; COMDAT
+
+; 473  : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	83 ec 48	 sub	 esp, 72			; 00000048H
+  00006	53		 push	 ebx
+  00007	56		 push	 esi
+  00008	57		 push	 edi
+  00009	8d 7d b8	 lea	 edi, DWORD PTR [ebp-72]
+  0000c	b9 12 00 00 00	 mov	 ecx, 18			; 00000012H
+  00011	b8 cc cc cc cc	 mov	 eax, -858993460		; ccccccccH
+  00016	f3 ab		 rep stosd
+
+; 474  : 	int nRequestedLength = nLength;
+
+  00018	8b 45 0c	 mov	 eax, DWORD PTR _nLength$[ebp]
+  0001b	89 45 fc	 mov	 DWORD PTR _nRequestedLength$[ebp], eax
+$L77610:
+
+; 475  : 	DWORD dwRead;
+; 476  : 
+; 477  : 	while (nLength)
+
+  0001e	83 7d 0c 00	 cmp	 DWORD PTR _nLength$[ebp], 0
+  00022	74 79		 je	 SHORT $L77611
+
+; 479  : 		ReadFile(hPipeRead, pBuffer, nLength, &dwRead, NULL);
+
+  00024	8b f4		 mov	 esi, esp
+  00026	6a 00		 push	 0
+  00028	8d 4d f8	 lea	 ecx, DWORD PTR _dwRead$[ebp]
+  0002b	51		 push	 ecx
+  0002c	8b 55 0c	 mov	 edx, DWORD PTR _nLength$[ebp]
+  0002f	52		 push	 edx
+  00030	8b 45 08	 mov	 eax, DWORD PTR _pBuffer$[ebp]
+  00033	50		 push	 eax
+  00034	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR _hPipeRead
+  0003a	51		 push	 ecx
+  0003b	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__ReadFile@20
+  00041	3b f4		 cmp	 esi, esp
+  00043	e8 00 00 00 00	 call	 __chkesp
+
+; 480  : 		if (dwRead == 0)
+
+  00048	83 7d f8 00	 cmp	 DWORD PTR _dwRead$[ebp], 0
+  0004c	75 04		 jne	 SHORT $L77613
+
+; 481  : 			return 0;
+
+  0004e	33 c0		 xor	 eax, eax
+  00050	eb 4e		 jmp	 SHORT $L77606
+$L77613:
+
+; 482  : 		EnterCriticalSection(&csPipeBytes);
+
+  00052	8b f4		 mov	 esi, esp
+  00054	68 00 00 00 00	 push	 OFFSET FLAT:_csPipeBytes
+  00059	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__EnterCriticalSection@4
+  0005f	3b f4		 cmp	 esi, esp
+  00061	e8 00 00 00 00	 call	 __chkesp
+
+; 483  : 		nPipeBytes -= dwRead;
+
+  00066	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _nPipeBytes
+  0006c	2b 55 f8	 sub	 edx, DWORD PTR _dwRead$[ebp]
+  0006f	89 15 00 00 00
+	00		 mov	 DWORD PTR _nPipeBytes, edx
+
+; 484  : 		LeaveCriticalSection(&csPipeBytes);
+
+  00075	8b f4		 mov	 esi, esp
+  00077	68 00 00 00 00	 push	 OFFSET FLAT:_csPipeBytes
+  0007c	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__LeaveCriticalSection@4
+  00082	3b f4		 cmp	 esi, esp
+  00084	e8 00 00 00 00	 call	 __chkesp
+
+; 485  : 		pBuffer += dwRead;
+
+  00089	8b 45 08	 mov	 eax, DWORD PTR _pBuffer$[ebp]
+  0008c	03 45 f8	 add	 eax, DWORD PTR _dwRead$[ebp]
+  0008f	89 45 08	 mov	 DWORD PTR _pBuffer$[ebp], eax
+
+; 486  : 		nLength -= dwRead;
+
+  00092	8b 4d 0c	 mov	 ecx, DWORD PTR _nLength$[ebp]
+  00095	2b 4d f8	 sub	 ecx, DWORD PTR _dwRead$[ebp]
+  00098	89 4d 0c	 mov	 DWORD PTR _nLength$[ebp], ecx
+
+; 487  : 	}
+
+  0009b	eb 81		 jmp	 SHORT $L77610
+$L77611:
+
+; 488  : 
+; 489  : 	return nRequestedLength;
+
+  0009d	8b 45 fc	 mov	 eax, DWORD PTR _nRequestedLength$[ebp]
+$L77606:
+
+; 490  : }
+
+  000a0	5f		 pop	 edi
+  000a1	5e		 pop	 esi
+  000a2	5b		 pop	 ebx
+  000a3	83 c4 48	 add	 esp, 72			; 00000048H
+  000a6	3b ec		 cmp	 ebp, esp
+  000a8	e8 00 00 00 00	 call	 __chkesp
+  000ad	8b e5		 mov	 esp, ebp
+  000af	5d		 pop	 ebp
+  000b0	c3		 ret	 0
+_ReadFromPipe ENDP
+_TEXT	ENDS
+PUBLIC	_ReadPipeThread@4
+PUBLIC	??_C@_0M@LDHM@read?5error?6?$AA@		; `string'
+PUBLIC	??_C@_0BF@JKNM@Sync?5with?5188?5bytes?6?$AA@	; `string'
+PUBLIC	??_C@_0BF@HJBF@Sync?5with?5204?5bytes?6?$AA@	; `string'
+EXTRN	__chkstk:NEAR
+;	COMDAT ??_C@_0M@LDHM@read?5error?6?$AA@
+; File C:\Development\TSReader\TSReader_Twinhan2\TSReader_Twinhan2.c
+CONST	SEGMENT
+??_C@_0M@LDHM@read?5error?6?$AA@ DB 'read error', 0aH, 00H ; `string'
+CONST	ENDS
+;	COMDAT ??_C@_0BF@JKNM@Sync?5with?5188?5bytes?6?$AA@
+CONST	SEGMENT
+??_C@_0BF@JKNM@Sync?5with?5188?5bytes?6?$AA@ DB 'Sync with 188 bytes', 0aH
+	DB	00H						; `string'
+CONST	ENDS
+;	COMDAT ??_C@_0BF@HJBF@Sync?5with?5204?5bytes?6?$AA@
+CONST	SEGMENT
+??_C@_0BF@HJBF@Sync?5with?5204?5bytes?6?$AA@ DB 'Sync with 204 bytes', 0aH
+	DB	00H						; `string'
+CONST	ENDS
+;	COMDAT _ReadPipeThread@4
+_TEXT	SEGMENT
+_nTSBufferIndex$ = -4
+_nSync$ = -8
+_nRead$ = -12
+_fAbort$ = -16
+_syncbuffer$ = -18816
+_dwRead$77630 = -18820
+_nComparePipeBytes$77631 = -18824
+_ReadPipeThread@4 PROC NEAR				; COMDAT
+
+; 494  : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	b8 c8 49 00 00	 mov	 eax, 18888		; 000049c8H
+  00008	e8 00 00 00 00	 call	 __chkstk
+  0000d	53		 push	 ebx
+  0000e	56		 push	 esi
+  0000f	57		 push	 edi
+  00010	8d bd 38 b6 ff
+	ff		 lea	 edi, DWORD PTR [ebp-18888]
+  00016	b9 72 12 00 00	 mov	 ecx, 4722		; 00001272H
+  0001b	b8 cc cc cc cc	 mov	 eax, -858993460		; ccccccccH
+  00020	f3 ab		 rep stosd
+
+; 495  : 	int nTSBufferIndex = 0;
+
+  00022	c7 45 fc 00 00
+	00 00		 mov	 DWORD PTR _nTSBufferIndex$[ebp], 0
+
+; 496  : 	int nSync = 0;
+
+  00029	c7 45 f8 00 00
+	00 00		 mov	 DWORD PTR _nSync$[ebp], 0
+
+; 497  : 	int nRead;
+; 498  : 	BOOL fAbort = FALSE;
+
+  00030	c7 45 f0 00 00
+	00 00		 mov	 DWORD PTR _fAbort$[ebp], 0
+
+; 499  : 	BYTE syncbuffer[188 * 100];
+; 500  : 
+; 501  : 	fPipeThreadTerminated = FALSE;
+
+  00037	c7 05 00 00 00
+	00 00 00 00 00	 mov	 DWORD PTR _fPipeThreadTerminated, 0
+$L77623:
+
+; 504  : 		if (nSync == 0)
+
+  00041	83 7d f8 00	 cmp	 DWORD PTR _nSync$[ebp], 0
+  00045	0f 85 5f 02 00
+	00		 jne	 $L77626
+$L77627:
+
+; 509  : 				DWORD dwRead;
+; 510  : 				int nComparePipeBytes;
+; 511  : 
+; 512  : 				ReadFile(hPipeRead, syncbuffer, 1, &dwRead, NULL);
+
+  0004b	8b f4		 mov	 esi, esp
+  0004d	6a 00		 push	 0
+  0004f	8d 85 7c b6 ff
+	ff		 lea	 eax, DWORD PTR _dwRead$77630[ebp]
+  00055	50		 push	 eax
+  00056	6a 01		 push	 1
+  00058	8d 8d 80 b6 ff
+	ff		 lea	 ecx, DWORD PTR _syncbuffer$[ebp]
+  0005e	51		 push	 ecx
+  0005f	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _hPipeRead
+  00065	52		 push	 edx
+  00066	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__ReadFile@20
+  0006c	3b f4		 cmp	 esi, esp
+  0006e	e8 00 00 00 00	 call	 __chkesp
+
+; 513  : 				if (dwRead == 0)
+
+  00073	83 bd 7c b6 ff
+	ff 00		 cmp	 DWORD PTR _dwRead$77630[ebp], 0
+  0007a	75 0c		 jne	 SHORT $L77633
+
+; 515  : 					fAbort = TRUE;
+
+  0007c	c7 45 f0 01 00
+	00 00		 mov	 DWORD PTR _fAbort$[ebp], 1
+
+; 516  : 					break;
+
+  00083	e9 1d 02 00 00	 jmp	 $L77629
+$L77633:
+
+; 518  : 				EnterCriticalSection(&csPipeBytes);
+
+  00088	8b f4		 mov	 esi, esp
+  0008a	68 00 00 00 00	 push	 OFFSET FLAT:_csPipeBytes
+  0008f	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__EnterCriticalSection@4
+  00095	3b f4		 cmp	 esi, esp
+  00097	e8 00 00 00 00	 call	 __chkesp
+
+; 519  : 				nPipeBytes -= dwRead;
+
+  0009c	a1 00 00 00 00	 mov	 eax, DWORD PTR _nPipeBytes
+  000a1	2b 85 7c b6 ff
+	ff		 sub	 eax, DWORD PTR _dwRead$77630[ebp]
+  000a7	a3 00 00 00 00	 mov	 DWORD PTR _nPipeBytes, eax
+
+; 520  : 				nComparePipeBytes = nPipeBytes;
+
+  000ac	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR _nPipeBytes
+  000b2	89 8d 78 b6 ff
+	ff		 mov	 DWORD PTR _nComparePipeBytes$77631[ebp], ecx
+
+; 521  : 				LeaveCriticalSection(&csPipeBytes);
+
+  000b8	8b f4		 mov	 esi, esp
+  000ba	68 00 00 00 00	 push	 OFFSET FLAT:_csPipeBytes
+  000bf	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__LeaveCriticalSection@4
+  000c5	3b f4		 cmp	 esi, esp
+  000c7	e8 00 00 00 00	 call	 __chkesp
+
+; 522  : 				if (syncbuffer[0] == 0x47)
+
+  000cc	8b 95 80 b6 ff
+	ff		 mov	 edx, DWORD PTR _syncbuffer$[ebp]
+  000d2	81 e2 ff 00 00
+	00		 and	 edx, 255		; 000000ffH
+  000d8	83 fa 47	 cmp	 edx, 71			; 00000047H
+  000db	0f 85 6e 01 00
+	00		 jne	 $L77644
+
+; 524  : 					// Maybe got a sync - read 188 bytes to see if we get another one
+; 525  : 					nRead = ReadFromPipe(&syncbuffer[1], 188);
+
+  000e1	68 bc 00 00 00	 push	 188			; 000000bcH
+  000e6	8d 85 81 b6 ff
+	ff		 lea	 eax, DWORD PTR _syncbuffer$[ebp+1]
+  000ec	50		 push	 eax
+  000ed	e8 00 00 00 00	 call	 _ReadFromPipe
+  000f2	83 c4 08	 add	 esp, 8
+  000f5	89 45 f4	 mov	 DWORD PTR _nRead$[ebp], eax
+
+; 526  : 					if (nRead == 0)
+
+  000f8	83 7d f4 00	 cmp	 DWORD PTR _nRead$[ebp], 0
+  000fc	75 0c		 jne	 SHORT $L77635
+
+; 528  : 						fAbort = TRUE;
+
+  000fe	c7 45 f0 01 00
+	00 00		 mov	 DWORD PTR _fAbort$[ebp], 1
+
+; 529  : 						break;
+
+  00105	e9 9b 01 00 00	 jmp	 $L77629
+$L77635:
+
+; 531  : 					if (nRead != 188)
+
+  0010a	81 7d f4 bc 00
+	00 00		 cmp	 DWORD PTR _nRead$[ebp], 188 ; 000000bcH
+  00111	74 14		 je	 SHORT $L77636
+
+; 533  : 						OutputDebugString("read error\n");
+
+  00113	8b f4		 mov	 esi, esp
+  00115	68 00 00 00 00	 push	 OFFSET FLAT:??_C@_0M@LDHM@read?5error?6?$AA@ ; `string'
+  0011a	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__OutputDebugStringA@4
+  00120	3b f4		 cmp	 esi, esp
+  00122	e8 00 00 00 00	 call	 __chkesp
+$L77636:
+
+; 535  : 					if (syncbuffer[188] == 0x47) // synced
+
+  00127	8b 8d 3c b7 ff
+	ff		 mov	 ecx, DWORD PTR _syncbuffer$[ebp+188]
+  0012d	81 e1 ff 00 00
+	00		 and	 ecx, 255		; 000000ffH
+  00133	83 f9 47	 cmp	 ecx, 71			; 00000047H
+  00136	75 66		 jne	 SHORT $L77638
+
+; 537  : 						OutputDebugString("Sync with 188 bytes\n");
+
+  00138	8b f4		 mov	 esi, esp
+  0013a	68 00 00 00 00	 push	 OFFSET FLAT:??_C@_0BF@JKNM@Sync?5with?5188?5bytes?6?$AA@ ; `string'
+  0013f	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__OutputDebugStringA@4
+  00145	3b f4		 cmp	 esi, esp
+  00147	e8 00 00 00 00	 call	 __chkesp
+
+; 538  : 						nSync = 188;
+
+  0014c	c7 45 f8 bc 00
+	00 00		 mov	 DWORD PTR _nSync$[ebp], 188 ; 000000bcH
+
+; 539  : 						nRead = ReadFromPipe(syncbuffer, 187);
+
+  00153	68 bb 00 00 00	 push	 187			; 000000bbH
+  00158	8d 95 80 b6 ff
+	ff		 lea	 edx, DWORD PTR _syncbuffer$[ebp]
+  0015e	52		 push	 edx
+  0015f	e8 00 00 00 00	 call	 _ReadFromPipe
+  00164	83 c4 08	 add	 esp, 8
+  00167	89 45 f4	 mov	 DWORD PTR _nRead$[ebp], eax
+
+; 540  : 						if (nRead == 0)
+
+  0016a	83 7d f4 00	 cmp	 DWORD PTR _nRead$[ebp], 0
+  0016e	75 0c		 jne	 SHORT $L77640
+
+; 542  : 							fAbort = TRUE;
+
+  00170	c7 45 f0 01 00
+	00 00		 mov	 DWORD PTR _fAbort$[ebp], 1
+
+; 543  : 							break;
+
+  00177	e9 29 01 00 00	 jmp	 $L77629
+$L77640:
+
+; 545  : 						if (nRead != 187)
+
+  0017c	81 7d f4 bb 00
+	00 00		 cmp	 DWORD PTR _nRead$[ebp], 187 ; 000000bbH
+  00183	74 14		 je	 SHORT $L77641
+
+; 547  : 							OutputDebugString("read error\n");
+
+  00185	8b f4		 mov	 esi, esp
+  00187	68 00 00 00 00	 push	 OFFSET FLAT:??_C@_0M@LDHM@read?5error?6?$AA@ ; `string'
+  0018c	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__OutputDebugStringA@4
+  00192	3b f4		 cmp	 esi, esp
+  00194	e8 00 00 00 00	 call	 __chkesp
+$L77641:
+
+; 549  : 						break;
+
+  00199	e9 07 01 00 00	 jmp	 $L77629
+$L77638:
+
+; 551  : 
+; 552  : 					// No sync after 188 bytes, so read 16 more to see if we then get sync
+; 553  : 					nRead = ReadFromPipe(&syncbuffer[188], 16);
+
+  0019e	6a 10		 push	 16			; 00000010H
+  001a0	8d 85 3c b7 ff
+	ff		 lea	 eax, DWORD PTR _syncbuffer$[ebp+188]
+  001a6	50		 push	 eax
+  001a7	e8 00 00 00 00	 call	 _ReadFromPipe
+  001ac	83 c4 08	 add	 esp, 8
+  001af	89 45 f4	 mov	 DWORD PTR _nRead$[ebp], eax
+
+; 554  : 					if (nRead == 0)
+
+  001b2	83 7d f4 00	 cmp	 DWORD PTR _nRead$[ebp], 0
+  001b6	75 0c		 jne	 SHORT $L77642
+
+; 556  : 						fAbort = TRUE;
+
+  001b8	c7 45 f0 01 00
+	00 00		 mov	 DWORD PTR _fAbort$[ebp], 1
+
+; 557  : 						break;
+
+  001bf	e9 e1 00 00 00	 jmp	 $L77629
+$L77642:
+
+; 559  : 					if (nRead != 16)
+
+  001c4	83 7d f4 10	 cmp	 DWORD PTR _nRead$[ebp], 16 ; 00000010H
+  001c8	74 14		 je	 SHORT $L77643
+
+; 561  : 						OutputDebugString("read error\n");
+
+  001ca	8b f4		 mov	 esi, esp
+  001cc	68 00 00 00 00	 push	 OFFSET FLAT:??_C@_0M@LDHM@read?5error?6?$AA@ ; `string'
+  001d1	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__OutputDebugStringA@4
+  001d7	3b f4		 cmp	 esi, esp
+  001d9	e8 00 00 00 00	 call	 __chkesp
+$L77643:
+
+; 563  : 
+; 564  : 					if (syncbuffer[188] == 0x47) // synced
+
+  001de	8b 8d 3c b7 ff
+	ff		 mov	 ecx, DWORD PTR _syncbuffer$[ebp+188]
+  001e4	81 e1 ff 00 00
+	00		 and	 ecx, 255		; 000000ffH
+  001ea	83 f9 47	 cmp	 ecx, 71			; 00000047H
+  001ed	75 60		 jne	 SHORT $L77644
+
+; 566  : 						OutputDebugString("Sync with 204 bytes\n");
+
+  001ef	8b f4		 mov	 esi, esp
+  001f1	68 00 00 00 00	 push	 OFFSET FLAT:??_C@_0BF@HJBF@Sync?5with?5204?5bytes?6?$AA@ ; `string'
+  001f6	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__OutputDebugStringA@4
+  001fc	3b f4		 cmp	 esi, esp
+  001fe	e8 00 00 00 00	 call	 __chkesp
+
+; 567  : 						nSync = 204;
+
+  00203	c7 45 f8 cc 00
+	00 00		 mov	 DWORD PTR _nSync$[ebp], 204 ; 000000ccH
+
+; 568  : 						nRead = ReadFromPipe(syncbuffer, 203);
+
+  0020a	68 cb 00 00 00	 push	 203			; 000000cbH
+  0020f	8d 95 80 b6 ff
+	ff		 lea	 edx, DWORD PTR _syncbuffer$[ebp]
+  00215	52		 push	 edx
+  00216	e8 00 00 00 00	 call	 _ReadFromPipe
+  0021b	83 c4 08	 add	 esp, 8
+  0021e	89 45 f4	 mov	 DWORD PTR _nRead$[ebp], eax
+
+; 569  : 						if (nRead == 0)
+
+  00221	83 7d f4 00	 cmp	 DWORD PTR _nRead$[ebp], 0
+  00225	75 09		 jne	 SHORT $L77646
+
+; 571  : 							fAbort = TRUE;
+
+  00227	c7 45 f0 01 00
+	00 00		 mov	 DWORD PTR _fAbort$[ebp], 1
+
+; 572  : 							break;
+
+  0022e	eb 75		 jmp	 SHORT $L77629
+$L77646:
+
+; 574  : 						if (nRead != 203)
+
+  00230	81 7d f4 cb 00
+	00 00		 cmp	 DWORD PTR _nRead$[ebp], 203 ; 000000cbH
+  00237	74 14		 je	 SHORT $L77647
+
+; 576  : 							OutputDebugString("read error\n");
+
+  00239	8b f4		 mov	 esi, esp
+  0023b	68 00 00 00 00	 push	 OFFSET FLAT:??_C@_0M@LDHM@read?5error?6?$AA@ ; `string'
+  00240	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__OutputDebugStringA@4
+  00246	3b f4		 cmp	 esi, esp
+  00248	e8 00 00 00 00	 call	 __chkesp
+$L77647:
+
+; 578  : 						break;
+
+  0024d	eb 56		 jmp	 SHORT $L77629
+$L77644:
+
+; 581  : 				if (nComparePipeBytes > 100 * 188)
+
+  0024f	81 bd 78 b6 ff
+	ff 70 49 00 00	 cmp	 DWORD PTR _nComparePipeBytes$77631[ebp], 18800 ; 00004970H
+  00259	7e 3d		 jle	 SHORT $L77648
+
+; 583  : 					// Still haven't synced and there's 100 packets
+; 584  : 					// at least in the pipe. Empty these out before
+; 585  : 					// we continue looking
+; 586  : 					if (nComparePipeBytes > 100 * 188)
+
+  0025b	81 bd 78 b6 ff
+	ff 70 49 00 00	 cmp	 DWORD PTR _nComparePipeBytes$77631[ebp], 18800 ; 00004970H
+  00265	7e 0a		 jle	 SHORT $L77649
+
+; 587  : 						nComparePipeBytes = 100 * 188;
+
+  00267	c7 85 78 b6 ff
+	ff 70 49 00 00	 mov	 DWORD PTR _nComparePipeBytes$77631[ebp], 18800 ; 00004970H
+$L77649:
+
+; 588  : 					ReadFromPipe(syncbuffer, nComparePipeBytes);
+
+  00271	8b 85 78 b6 ff
+	ff		 mov	 eax, DWORD PTR _nComparePipeBytes$77631[ebp]
+  00277	50		 push	 eax
+  00278	8d 8d 80 b6 ff
+	ff		 lea	 ecx, DWORD PTR _syncbuffer$[ebp]
+  0027e	51		 push	 ecx
+  0027f	e8 00 00 00 00	 call	 _ReadFromPipe
+  00284	83 c4 08	 add	 esp, 8
+
+; 589  : 					Sleep(1);
+
+  00287	8b f4		 mov	 esi, esp
+  00289	6a 01		 push	 1
+  0028b	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__Sleep@4
+  00291	3b f4		 cmp	 esi, esp
+  00293	e8 00 00 00 00	 call	 __chkesp
+$L77648:
+
+; 591  : 			} while (TRUE);
+
+  00298	ba 01 00 00 00	 mov	 edx, 1
+  0029d	85 d2		 test	 edx, edx
+  0029f	0f 85 a6 fd ff
+	ff		 jne	 $L77627
+$L77629:
+
+; 593  : 		else
+
+  002a5	e9 2b 02 00 00	 jmp	 $L77660
+$L77626:
+
+; 595  : 			while ((TS_BUFFER_SIZE - v->tsb[nTSBufferIndex].nSize) > 0)
+
+  002aa	8b 45 fc	 mov	 eax, DWORD PTR _nTSBufferIndex$[ebp]
+  002ad	6b c0 0c	 imul	 eax, 12			; 0000000cH
+  002b0	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR _v
+  002b6	ba 98 00 02 00	 mov	 edx, 131224		; 00020098H
+  002bb	2b 94 01 fc bb
+	27 00		 sub	 edx, DWORD PTR [ecx+eax+2604028]
+  002c2	85 d2		 test	 edx, edx
+  002c4	0f 8e 13 01 00
+	00		 jle	 $L77653
+
+; 597  : 				nRead = ReadFromPipe(v->tsb[nTSBufferIndex].pData + v->tsb[nTSBufferIndex].nSize, 188);
+
+  002ca	68 bc 00 00 00	 push	 188			; 000000bcH
+  002cf	8b 45 fc	 mov	 eax, DWORD PTR _nTSBufferIndex$[ebp]
+  002d2	6b c0 0c	 imul	 eax, 12			; 0000000cH
+  002d5	8b 4d fc	 mov	 ecx, DWORD PTR _nTSBufferIndex$[ebp]
+  002d8	6b c9 0c	 imul	 ecx, 12			; 0000000cH
+  002db	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _v
+  002e1	8b 84 02 04 bc
+	27 00		 mov	 eax, DWORD PTR [edx+eax+2604036]
+  002e8	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _v
+  002ee	03 84 0a fc bb
+	27 00		 add	 eax, DWORD PTR [edx+ecx+2604028]
+  002f5	50		 push	 eax
+  002f6	e8 00 00 00 00	 call	 _ReadFromPipe
+  002fb	83 c4 08	 add	 esp, 8
+  002fe	89 45 f4	 mov	 DWORD PTR _nRead$[ebp], eax
+
+; 598  : 				if (nRead == 0)
+
+  00301	83 7d f4 00	 cmp	 DWORD PTR _nRead$[ebp], 0
+  00305	75 0c		 jne	 SHORT $L77654
+
+; 600  : 					fAbort = TRUE;
+
+  00307	c7 45 f0 01 00
+	00 00		 mov	 DWORD PTR _fAbort$[ebp], 1
+
+; 601  : 					break;
+
+  0030e	e9 ca 00 00 00	 jmp	 $L77653
+$L77654:
+
+; 603  : 				if (nRead != 188)
+
+  00313	81 7d f4 bc 00
+	00 00		 cmp	 DWORD PTR _nRead$[ebp], 188 ; 000000bcH
+  0031a	74 14		 je	 SHORT $L77655
+
+; 605  : 					OutputDebugString("read error\n");
+
+  0031c	8b f4		 mov	 esi, esp
+  0031e	68 00 00 00 00	 push	 OFFSET FLAT:??_C@_0M@LDHM@read?5error?6?$AA@ ; `string'
+  00323	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__OutputDebugStringA@4
+  00329	3b f4		 cmp	 esi, esp
+  0032b	e8 00 00 00 00	 call	 __chkesp
+$L77655:
+
+; 607  : 				if (*(v->tsb[nTSBufferIndex].pData + v->tsb[nTSBufferIndex].nSize) != 0x47)
+
+  00330	8b 45 fc	 mov	 eax, DWORD PTR _nTSBufferIndex$[ebp]
+  00333	6b c0 0c	 imul	 eax, 12			; 0000000cH
+  00336	8b 4d fc	 mov	 ecx, DWORD PTR _nTSBufferIndex$[ebp]
+  00339	6b c9 0c	 imul	 ecx, 12			; 0000000cH
+  0033c	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _v
+  00342	8b 84 02 04 bc
+	27 00		 mov	 eax, DWORD PTR [edx+eax+2604036]
+  00349	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _v
+  0034f	8b 8c 0a fc bb
+	27 00		 mov	 ecx, DWORD PTR [edx+ecx+2604028]
+  00356	33 d2		 xor	 edx, edx
+  00358	8a 14 08	 mov	 dl, BYTE PTR [eax+ecx]
+  0035b	83 fa 47	 cmp	 edx, 71			; 00000047H
+  0035e	74 09		 je	 SHORT $L77656
+
+; 609  : 					nSync = 0;
+
+  00360	c7 45 f8 00 00
+	00 00		 mov	 DWORD PTR _nSync$[ebp], 0
+
+; 610  : 					break;
+
+  00367	eb 74		 jmp	 SHORT $L77653
+$L77656:
+
+; 612  : 				v->tsb[nTSBufferIndex].nSize += nRead;
+
+  00369	8b 45 fc	 mov	 eax, DWORD PTR _nTSBufferIndex$[ebp]
+  0036c	6b c0 0c	 imul	 eax, 12			; 0000000cH
+  0036f	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR _v
+  00375	8b 94 01 fc bb
+	27 00		 mov	 edx, DWORD PTR [ecx+eax+2604028]
+  0037c	03 55 f4	 add	 edx, DWORD PTR _nRead$[ebp]
+  0037f	8b 45 fc	 mov	 eax, DWORD PTR _nTSBufferIndex$[ebp]
+  00382	6b c0 0c	 imul	 eax, 12			; 0000000cH
+  00385	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR _v
+  0038b	89 94 01 fc bb
+	27 00		 mov	 DWORD PTR [ecx+eax+2604028], edx
+
+; 613  : 				if (nSync == 204)
+
+  00392	81 7d f8 cc 00
+	00 00		 cmp	 DWORD PTR _nSync$[ebp], 204 ; 000000ccH
+  00399	75 3d		 jne	 SHORT $L77659
+
+; 615  : 					nRead = ReadFromPipe(syncbuffer, 16);
+
+  0039b	6a 10		 push	 16			; 00000010H
+  0039d	8d 95 80 b6 ff
+	ff		 lea	 edx, DWORD PTR _syncbuffer$[ebp]
+  003a3	52		 push	 edx
+  003a4	e8 00 00 00 00	 call	 _ReadFromPipe
+  003a9	83 c4 08	 add	 esp, 8
+  003ac	89 45 f4	 mov	 DWORD PTR _nRead$[ebp], eax
+
+; 616  : 					if (nRead == 0)
+
+  003af	83 7d f4 00	 cmp	 DWORD PTR _nRead$[ebp], 0
+  003b3	75 09		 jne	 SHORT $L77658
+
+; 618  : 						fAbort = TRUE;
+
+  003b5	c7 45 f0 01 00
+	00 00		 mov	 DWORD PTR _fAbort$[ebp], 1
+
+; 619  : 						break;
+
+  003bc	eb 1f		 jmp	 SHORT $L77653
+$L77658:
+
+; 621  : 					if (nRead != 16)
+
+  003be	83 7d f4 10	 cmp	 DWORD PTR _nRead$[ebp], 16 ; 00000010H
+  003c2	74 14		 je	 SHORT $L77659
+
+; 623  : 						OutputDebugString("read error\n");
+
+  003c4	8b f4		 mov	 esi, esp
+  003c6	68 00 00 00 00	 push	 OFFSET FLAT:??_C@_0M@LDHM@read?5error?6?$AA@ ; `string'
+  003cb	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__OutputDebugStringA@4
+  003d1	3b f4		 cmp	 esi, esp
+  003d3	e8 00 00 00 00	 call	 __chkesp
+$L77659:
+
+; 626  : 			}		 
+
+  003d8	e9 cd fe ff ff	 jmp	 $L77626
+$L77653:
+
+; 627  : 			
+; 628  : 			if (fAbort == FALSE)
+
+  003dd	83 7d f0 00	 cmp	 DWORD PTR _fAbort$[ebp], 0
+  003e1	0f 85 ee 00 00
+	00		 jne	 $L77660
+
+; 630  : 				EnterCriticalSection(&v->csPIDCounter);
+
+  003e7	a1 00 00 00 00	 mov	 eax, DWORD PTR _v
+  003ec	05 a8 85 10 00	 add	 eax, 1082792		; 001085a8H
+  003f1	8b f4		 mov	 esi, esp
+  003f3	50		 push	 eax
+  003f4	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__EnterCriticalSection@4
+  003fa	3b f4		 cmp	 esi, esp
+  003fc	e8 00 00 00 00	 call	 __chkesp
+
+; 631  : 				v->nLastSecondByteCounter += v->tsb[nTSBufferIndex].nSize;
+
+  00401	8b 4d fc	 mov	 ecx, DWORD PTR _nTSBufferIndex$[ebp]
+  00404	6b c9 0c	 imul	 ecx, 12			; 0000000cH
+  00407	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _v
+  0040d	8b 82 e8 00 00
+	00		 mov	 eax, DWORD PTR [edx+232]
+  00413	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _v
+  00419	03 84 0a fc bb
+	27 00		 add	 eax, DWORD PTR [edx+ecx+2604028]
+  00420	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR _v
+  00426	89 81 e8 00 00
+	00		 mov	 DWORD PTR [ecx+232], eax
+
+; 632  : 				LeaveCriticalSection(&v->csPIDCounter);
+
+  0042c	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _v
+  00432	81 c2 a8 85 10
+	00		 add	 edx, 1082792		; 001085a8H
+  00438	8b f4		 mov	 esi, esp
+  0043a	52		 push	 edx
+  0043b	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__LeaveCriticalSection@4
+  00441	3b f4		 cmp	 esi, esp
+  00443	e8 00 00 00 00	 call	 __chkesp
+
+; 633  : 				v->nLWPtr = nTSBufferIndex;
+
+  00448	a1 00 00 00 00	 mov	 eax, DWORD PTR _v
+  0044d	8b 4d fc	 mov	 ecx, DWORD PTR _nTSBufferIndex$[ebp]
+  00450	89 88 8c 01 00
+	00		 mov	 DWORD PTR [eax+396], ecx
+
+; 634  : 				nTSBufferIndex++;
+
+  00456	8b 55 fc	 mov	 edx, DWORD PTR _nTSBufferIndex$[ebp]
+  00459	83 c2 01	 add	 edx, 1
+  0045c	89 55 fc	 mov	 DWORD PTR _nTSBufferIndex$[ebp], edx
+
+; 635  : 				if (nTSBufferIndex == MAX_TS_BUFFERS)
+
+  0045f	81 7d fc 00 01
+	00 00		 cmp	 DWORD PTR _nTSBufferIndex$[ebp], 256 ; 00000100H
+  00466	75 07		 jne	 SHORT $L77661
+
+; 636  : 					nTSBufferIndex = 0;
+
+  00468	c7 45 fc 00 00
+	00 00		 mov	 DWORD PTR _nTSBufferIndex$[ebp], 0
+$L77661:
+
+; 637  : 				EnterCriticalSection(&v->csTSBuffersInUse);
+
+  0046f	a1 00 00 00 00	 mov	 eax, DWORD PTR _v
+  00474	05 d8 85 10 00	 add	 eax, 1082840		; 001085d8H
+  00479	8b f4		 mov	 esi, esp
+  0047b	50		 push	 eax
+  0047c	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__EnterCriticalSection@4
+  00482	3b f4		 cmp	 esi, esp
+  00484	e8 00 00 00 00	 call	 __chkesp
+
+; 638  : 				v->nTSBuffersInUse++;
+
+  00489	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR _v
+  0048f	8b 91 b8 01 02
+	00		 mov	 edx, DWORD PTR [ecx+131512]
+  00495	83 c2 01	 add	 edx, 1
+  00498	a1 00 00 00 00	 mov	 eax, DWORD PTR _v
+  0049d	89 90 b8 01 02
+	00		 mov	 DWORD PTR [eax+131512], edx
+
+; 639  : 				LeaveCriticalSection(&v->csTSBuffersInUse);
+
+  004a3	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR _v
+  004a9	81 c1 d8 85 10
+	00		 add	 ecx, 1082840		; 001085d8H
+  004af	8b f4		 mov	 esi, esp
+  004b1	51		 push	 ecx
+  004b2	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__LeaveCriticalSection@4
+  004b8	3b f4		 cmp	 esi, esp
+  004ba	e8 00 00 00 00	 call	 __chkesp
+
+; 640  : 				v->tsb[nTSBufferIndex].nSize = 0;
+
+  004bf	8b 55 fc	 mov	 edx, DWORD PTR _nTSBufferIndex$[ebp]
+  004c2	6b d2 0c	 imul	 edx, 12			; 0000000cH
+  004c5	a1 00 00 00 00	 mov	 eax, DWORD PTR _v
+  004ca	c7 84 10 fc bb
+	27 00 00 00 00
+	00		 mov	 DWORD PTR [eax+edx+2604028], 0
+$L77660:
+
+; 643  : 	} while (fAbort == FALSE);
+
+  004d5	83 7d f0 00	 cmp	 DWORD PTR _fAbort$[ebp], 0
+  004d9	0f 84 62 fb ff
+	ff		 je	 $L77623
+
+; 644  : 
+; 645  : 	fPipeThreadTerminated = TRUE;
+
+  004df	c7 05 00 00 00
+	00 01 00 00 00	 mov	 DWORD PTR _fPipeThreadTerminated, 1
+
+; 646  : 	return 0;
+
+  004e9	33 c0		 xor	 eax, eax
+
+; 647  : }
+
+  004eb	5f		 pop	 edi
+  004ec	5e		 pop	 esi
+  004ed	5b		 pop	 ebx
+  004ee	81 c4 c8 49 00
+	00		 add	 esp, 18888		; 000049c8H
+  004f4	3b ec		 cmp	 ebp, esp
+  004f6	e8 00 00 00 00	 call	 __chkesp
+  004fb	8b e5		 mov	 esp, ebp
+  004fd	5d		 pop	 ebp
+  004fe	c2 04 00	 ret	 4
+_ReadPipeThread@4 ENDP
+_TEXT	ENDS
+PUBLIC	_ReadTwinhan2Thread@4
+PUBLIC	??_C@_0BF@GOA@ReadTwinhan2Thread?9?6?$AA@	; `string'
+EXTRN	__imp__WriteFile@20:NEAR
+EXTRN	__imp__CloseHandle@4:NEAR
+EXTRN	__imp__CreatePipe@16:NEAR
+EXTRN	__imp__CreateThread@24:NEAR
+;	COMDAT ??_C@_0BF@GOA@ReadTwinhan2Thread?9?6?$AA@
+; File C:\Development\TSReader\TSReader_Twinhan2\TSReader_Twinhan2.c
+CONST	SEGMENT
+??_C@_0BF@GOA@ReadTwinhan2Thread?9?6?$AA@ DB 'ReadTwinhan2Thread-', 0aH, 00H ; `string'
+CONST	ENDS
+;	COMDAT _ReadTwinhan2Thread@4
+_TEXT	SEGMENT
+_nReadPtr$ = -4
+_dwThreadID$ = -8
+_hPipeReadThread$ = -12
+_hPipeWrite$ = -16
+_nWritePtr$77676 = -20
+_pCurrentBuffer$77678 = -24
+_dwWritten$77679 = -28
+_nLength$77680 = -32
+_ReadTwinhan2Thread@4 PROC NEAR				; COMDAT
+
+; 650  : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	83 ec 60	 sub	 esp, 96			; 00000060H
+  00006	53		 push	 ebx
+  00007	56		 push	 esi
+  00008	57		 push	 edi
+  00009	8d 7d a0	 lea	 edi, DWORD PTR [ebp-96]
+  0000c	b9 18 00 00 00	 mov	 ecx, 24			; 00000018H
+  00011	b8 cc cc cc cc	 mov	 eax, -858993460		; ccccccccH
+  00016	f3 ab		 rep stosd
+
+; 651  : 	int nReadPtr = 0;
+
+  00018	c7 45 fc 00 00
+	00 00		 mov	 DWORD PTR _nReadPtr$[ebp], 0
+
+; 652  : 	DWORD dwThreadID;
+; 653  : 	HANDLE hPipeReadThread;
+; 654  : 	HANDLE hPipeWrite;
+; 655  : 
+; 656  : 	v->fReadThreadTerminated = FALSE;
+
+  0001f	a1 00 00 00 00	 mov	 eax, DWORD PTR _v
+  00024	c7 80 50 02 03
+	00 00 00 00 00	 mov	 DWORD PTR [eax+197200], 0
+
+; 657  : 	v->fTerminateReadThread = FALSE;
+
+  0002e	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR _v
+  00034	c7 81 54 02 03
+	00 00 00 00 00	 mov	 DWORD PTR [ecx+197204], 0
+
+; 658  : 
+; 659  : 	CreatePipe(&hPipeRead, &hPipeWrite, NULL, 10 * 1024 * 1024);
+
+  0003e	8b f4		 mov	 esi, esp
+  00040	68 00 00 a0 00	 push	 10485760		; 00a00000H
+  00045	6a 00		 push	 0
+  00047	8d 55 f0	 lea	 edx, DWORD PTR _hPipeWrite$[ebp]
+  0004a	52		 push	 edx
+  0004b	68 00 00 00 00	 push	 OFFSET FLAT:_hPipeRead
+  00050	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__CreatePipe@16
+  00056	3b f4		 cmp	 esi, esp
+  00058	e8 00 00 00 00	 call	 __chkesp
+
+; 660  : 	hPipeReadThread = CreateThread(NULL, 0, ReadPipeThread, (LPVOID)0, 0, &dwThreadID);
+
+  0005d	8b f4		 mov	 esi, esp
+  0005f	8d 45 f8	 lea	 eax, DWORD PTR _dwThreadID$[ebp]
+  00062	50		 push	 eax
+  00063	6a 00		 push	 0
+  00065	6a 00		 push	 0
+  00067	68 00 00 00 00	 push	 OFFSET FLAT:_ReadPipeThread@4
+  0006c	6a 00		 push	 0
+  0006e	6a 00		 push	 0
+  00070	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__CreateThread@24
+  00076	3b f4		 cmp	 esi, esp
+  00078	e8 00 00 00 00	 call	 __chkesp
+  0007d	89 45 f4	 mov	 DWORD PTR _hPipeReadThread$[ebp], eax
+
+; 661  : 	CloseHandle(hPipeReadThread);
+
+  00080	8b f4		 mov	 esi, esp
+  00082	8b 4d f4	 mov	 ecx, DWORD PTR _hPipeReadThread$[ebp]
+  00085	51		 push	 ecx
+  00086	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__CloseHandle@4
+  0008c	3b f4		 cmp	 esi, esp
+  0008e	e8 00 00 00 00	 call	 __chkesp
+
+; 662  : 
+; 663  : 	StreamCapture(TRUE);
+
+  00093	6a 01		 push	 1
+  00095	e8 00 00 00 00	 call	 _StreamCapture
+  0009a	83 c4 04	 add	 esp, 4
+$L77674:
+
+; 664  : 	while (!v->fTerminateReadThread)
+
+  0009d	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _v
+  000a3	83 ba 54 02 03
+	00 00		 cmp	 DWORD PTR [edx+197204], 0
+  000aa	0f 85 d6 00 00
+	00		 jne	 $L77675
+
+; 666  : 		int nWritePtr = GetDriverWritePtr();
+
+  000b0	e8 00 00 00 00	 call	 _GetDriverWritePtr
+  000b5	89 45 ec	 mov	 DWORD PTR _nWritePtr$77676[ebp], eax
+
+; 667  : 
+; 668  : 		if (nReadPtr != nWritePtr)
+
+  000b8	8b 45 fc	 mov	 eax, DWORD PTR _nReadPtr$[ebp]
+  000bb	3b 45 ec	 cmp	 eax, DWORD PTR _nWritePtr$77676[ebp]
+  000be	0f 84 ac 00 00
+	00		 je	 $L77677
+
+; 670  : 			BYTE * pCurrentBuffer = pDriverBuffer + nReadPtr;
+
+  000c4	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR _pDriverBuffer
+  000ca	03 4d fc	 add	 ecx, DWORD PTR _nReadPtr$[ebp]
+  000cd	89 4d e8	 mov	 DWORD PTR _pCurrentBuffer$77678[ebp], ecx
+
+; 671  : 			DWORD dwWritten;
+; 672  : 			int nLength = nWritePtr - nReadPtr;
+
+  000d0	8b 55 ec	 mov	 edx, DWORD PTR _nWritePtr$77676[ebp]
+  000d3	2b 55 fc	 sub	 edx, DWORD PTR _nReadPtr$[ebp]
+  000d6	89 55 e0	 mov	 DWORD PTR _nLength$77680[ebp], edx
+
+; 673  : 			//char szTemp[100];
+; 674  : 
+; 675  : 			//wsprintf(szTemp, "nReadPtr = %d nWritePtr = %d nLength = %d\n", nReadPtr, nWritePtr, nLength);
+; 676  : 			//OutputDebugString(szTemp);
+; 677  : 
+; 678  : 			if (nLength <= 0)
+
+  000d9	83 7d e0 00	 cmp	 DWORD PTR _nLength$77680[ebp], 0
+  000dd	7f 30		 jg	 SHORT $L77681
+
+; 680  : 				WriteFile(hPipeWrite, pCurrentBuffer, nBufferLength - nReadPtr, &dwWritten, NULL);
+
+  000df	8b f4		 mov	 esi, esp
+  000e1	6a 00		 push	 0
+  000e3	8d 45 e4	 lea	 eax, DWORD PTR _dwWritten$77679[ebp]
+  000e6	50		 push	 eax
+  000e7	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR _nBufferLength
+  000ed	2b 4d fc	 sub	 ecx, DWORD PTR _nReadPtr$[ebp]
+  000f0	51		 push	 ecx
+  000f1	8b 55 e8	 mov	 edx, DWORD PTR _pCurrentBuffer$77678[ebp]
+  000f4	52		 push	 edx
+  000f5	8b 45 f0	 mov	 eax, DWORD PTR _hPipeWrite$[ebp]
+  000f8	50		 push	 eax
+  000f9	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__WriteFile@20
+  000ff	3b f4		 cmp	 esi, esp
+  00101	e8 00 00 00 00	 call	 __chkesp
+
+; 681  : 				nReadPtr = 0;
+
+  00106	c7 45 fc 00 00
+	00 00		 mov	 DWORD PTR _nReadPtr$[ebp], 0
+
+; 683  : 			else
+
+  0010d	eb 2a		 jmp	 SHORT $L77683
+$L77681:
+
+; 685  : 				WriteFile(hPipeWrite, pCurrentBuffer, nLength, &dwWritten, NULL);
+
+  0010f	8b f4		 mov	 esi, esp
+  00111	6a 00		 push	 0
+  00113	8d 4d e4	 lea	 ecx, DWORD PTR _dwWritten$77679[ebp]
+  00116	51		 push	 ecx
+  00117	8b 55 e0	 mov	 edx, DWORD PTR _nLength$77680[ebp]
+  0011a	52		 push	 edx
+  0011b	8b 45 e8	 mov	 eax, DWORD PTR _pCurrentBuffer$77678[ebp]
+  0011e	50		 push	 eax
+  0011f	8b 4d f0	 mov	 ecx, DWORD PTR _hPipeWrite$[ebp]
+  00122	51		 push	 ecx
+  00123	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__WriteFile@20
+  00129	3b f4		 cmp	 esi, esp
+  0012b	e8 00 00 00 00	 call	 __chkesp
+
+; 686  : 				nReadPtr += dwWritten;
+
+  00130	8b 55 fc	 mov	 edx, DWORD PTR _nReadPtr$[ebp]
+  00133	03 55 e4	 add	 edx, DWORD PTR _dwWritten$77679[ebp]
+  00136	89 55 fc	 mov	 DWORD PTR _nReadPtr$[ebp], edx
+$L77683:
+
+; 688  : 			EnterCriticalSection(&csPipeBytes);
+
+  00139	8b f4		 mov	 esi, esp
+  0013b	68 00 00 00 00	 push	 OFFSET FLAT:_csPipeBytes
+  00140	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__EnterCriticalSection@4
+  00146	3b f4		 cmp	 esi, esp
+  00148	e8 00 00 00 00	 call	 __chkesp
+
+; 689  : 			nPipeBytes += dwWritten;
+
+  0014d	a1 00 00 00 00	 mov	 eax, DWORD PTR _nPipeBytes
+  00152	03 45 e4	 add	 eax, DWORD PTR _dwWritten$77679[ebp]
+  00155	a3 00 00 00 00	 mov	 DWORD PTR _nPipeBytes, eax
+
+; 690  : 			LeaveCriticalSection(&csPipeBytes);
+
+  0015a	8b f4		 mov	 esi, esp
+  0015c	68 00 00 00 00	 push	 OFFSET FLAT:_csPipeBytes
+  00161	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__LeaveCriticalSection@4
+  00167	3b f4		 cmp	 esi, esp
+  00169	e8 00 00 00 00	 call	 __chkesp
+
+; 692  : 		else
+
+  0016e	eb 11		 jmp	 SHORT $L77685
+$L77677:
+
+; 693  : 			Sleep(5);
+
+  00170	8b f4		 mov	 esi, esp
+  00172	6a 05		 push	 5
+  00174	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__Sleep@4
+  0017a	3b f4		 cmp	 esi, esp
+  0017c	e8 00 00 00 00	 call	 __chkesp
+$L77685:
+
+; 694  : 	}
+
+  00181	e9 17 ff ff ff	 jmp	 $L77674
+$L77675:
+
+; 695  : 
+; 696  : 	CloseHandle(hPipeWrite);
+
+  00186	8b f4		 mov	 esi, esp
+  00188	8b 4d f0	 mov	 ecx, DWORD PTR _hPipeWrite$[ebp]
+  0018b	51		 push	 ecx
+  0018c	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__CloseHandle@4
+  00192	3b f4		 cmp	 esi, esp
+  00194	e8 00 00 00 00	 call	 __chkesp
+$L77687:
+
+; 697  : 	while (fPipeThreadTerminated == FALSE)
+
+  00199	83 3d 00 00 00
+	00 00		 cmp	 DWORD PTR _fPipeThreadTerminated, 0
+  001a0	75 13		 jne	 SHORT $L77688
+
+; 698  : 		Sleep(10);
+
+  001a2	8b f4		 mov	 esi, esp
+  001a4	6a 0a		 push	 10			; 0000000aH
+  001a6	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__Sleep@4
+  001ac	3b f4		 cmp	 esi, esp
+  001ae	e8 00 00 00 00	 call	 __chkesp
+  001b3	eb e4		 jmp	 SHORT $L77687
+$L77688:
+
+; 699  : 
+; 700  : 	v->fReadThreadTerminated = TRUE;
+
+  001b5	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _v
+  001bb	c7 82 50 02 03
+	00 01 00 00 00	 mov	 DWORD PTR [edx+197200], 1
+
+; 701  : 	v->fTerminateReadThread = FALSE;
+
+  001c5	a1 00 00 00 00	 mov	 eax, DWORD PTR _v
+  001ca	c7 80 54 02 03
+	00 00 00 00 00	 mov	 DWORD PTR [eax+197204], 0
+
+; 702  : 	EnterCriticalSection(&v->csTSBuffersInUse);
+
+  001d4	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR _v
+  001da	81 c1 d8 85 10
+	00		 add	 ecx, 1082840		; 001085d8H
+  001e0	8b f4		 mov	 esi, esp
+  001e2	51		 push	 ecx
+  001e3	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__EnterCriticalSection@4
+  001e9	3b f4		 cmp	 esi, esp
+  001eb	e8 00 00 00 00	 call	 __chkesp
+
+; 703  : 	v->nTSBuffersInUse = -1000;
+
+  001f0	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _v
+  001f6	c7 82 b8 01 02
+	00 18 fc ff ff	 mov	 DWORD PTR [edx+131512], -1000 ; fffffc18H
+
+; 704  : 	LeaveCriticalSection(&v->csTSBuffersInUse);
+
+  00200	a1 00 00 00 00	 mov	 eax, DWORD PTR _v
+  00205	05 d8 85 10 00	 add	 eax, 1082840		; 001085d8H
+  0020a	8b f4		 mov	 esi, esp
+  0020c	50		 push	 eax
+  0020d	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__LeaveCriticalSection@4
+  00213	3b f4		 cmp	 esi, esp
+  00215	e8 00 00 00 00	 call	 __chkesp
+
+; 705  : 	CloseHandle(v->hReadDataThread);
+
+  0021a	8b f4		 mov	 esi, esp
+  0021c	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR _v
+  00222	8b 91 78 85 10
+	00		 mov	 edx, DWORD PTR [ecx+1082744]
+  00228	52		 push	 edx
+  00229	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__CloseHandle@4
+  0022f	3b f4		 cmp	 esi, esp
+  00231	e8 00 00 00 00	 call	 __chkesp
+
+; 706  : 	OutputDebugString("ReadTwinhan2Thread-\n");
+
+  00236	8b f4		 mov	 esi, esp
+  00238	68 00 00 00 00	 push	 OFFSET FLAT:??_C@_0BF@GOA@ReadTwinhan2Thread?9?6?$AA@ ; `string'
+  0023d	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__OutputDebugStringA@4
+  00243	3b f4		 cmp	 esi, esp
+  00245	e8 00 00 00 00	 call	 __chkesp
+
+; 707  : 	return 0;
+
+  0024a	33 c0		 xor	 eax, eax
+
+; 708  : }
+
+  0024c	5f		 pop	 edi
+  0024d	5e		 pop	 esi
+  0024e	5b		 pop	 ebx
+  0024f	83 c4 60	 add	 esp, 96			; 00000060H
+  00252	3b ec		 cmp	 ebp, esp
+  00254	e8 00 00 00 00	 call	 __chkesp
+  00259	8b e5		 mov	 esp, ebp
+  0025b	5d		 pop	 ebp
+  0025c	c2 04 00	 ret	 4
+_ReadTwinhan2Thread@4 ENDP
+_TEXT	ENDS
+PUBLIC	_TSReader_Start
+EXTRN	__imp__ResumeThread@4:NEAR
+EXTRN	__imp__InitializeCriticalSection@4:NEAR
+EXTRN	_SourceHelper_SetWorkerThreadPriorities:NEAR
+;	COMDAT _TSReader_Start
+_TEXT	SEGMENT
+_dwThreadID$ = -4
+_TSReader_Start PROC NEAR				; COMDAT
+
+; 712  : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	83 ec 44	 sub	 esp, 68			; 00000044H
+  00006	53		 push	 ebx
+  00007	56		 push	 esi
+  00008	57		 push	 edi
+  00009	8d 7d bc	 lea	 edi, DWORD PTR [ebp-68]
+  0000c	b9 11 00 00 00	 mov	 ecx, 17			; 00000011H
+  00011	b8 cc cc cc cc	 mov	 eax, -858993460		; ccccccccH
+  00016	f3 ab		 rep stosd
+
+; 713  : 	DWORD dwThreadID;
+; 714  : 
+; 715  : 	nPipeBytes = 0;
+
+  00018	c7 05 00 00 00
+	00 00 00 00 00	 mov	 DWORD PTR _nPipeBytes, 0
+
+; 716  : 	InitializeCriticalSection(&csPipeBytes);
+
+  00022	8b f4		 mov	 esi, esp
+  00024	68 00 00 00 00	 push	 OFFSET FLAT:_csPipeBytes
+  00029	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__InitializeCriticalSection@4
+  0002f	3b f4		 cmp	 esi, esp
+  00031	e8 00 00 00 00	 call	 __chkesp
+
+; 717  : 
+; 718  : 	StreamCapture(TRUE);
+
+  00036	6a 01		 push	 1
+  00038	e8 00 00 00 00	 call	 _StreamCapture
+  0003d	83 c4 04	 add	 esp, 4
+
+; 719  : 
+; 720  : 	v->hReadDataThread = CreateThread(NULL, 0, ReadTwinhan2Thread, (LPVOID)0, CREATE_SUSPENDED, &dwThreadID);
+
+  00040	8b f4		 mov	 esi, esp
+  00042	8d 45 fc	 lea	 eax, DWORD PTR _dwThreadID$[ebp]
+  00045	50		 push	 eax
+  00046	6a 04		 push	 4
+  00048	6a 00		 push	 0
+  0004a	68 00 00 00 00	 push	 OFFSET FLAT:_ReadTwinhan2Thread@4
+  0004f	6a 00		 push	 0
+  00051	6a 00		 push	 0
+  00053	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__CreateThread@24
+  00059	3b f4		 cmp	 esi, esp
+  0005b	e8 00 00 00 00	 call	 __chkesp
+  00060	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR _v
+  00066	89 81 78 85 10
+	00		 mov	 DWORD PTR [ecx+1082744], eax
+
+; 721  : 	SourceHelper_SetWorkerThreadPriorities(FALSE);
+
+  0006c	6a 00		 push	 0
+  0006e	e8 00 00 00 00	 call	 _SourceHelper_SetWorkerThreadPriorities
+  00073	83 c4 04	 add	 esp, 4
+
+; 722  : 	ResumeThread(v->hReadDataThread);
+
+  00076	8b f4		 mov	 esi, esp
+  00078	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _v
+  0007e	8b 82 78 85 10
+	00		 mov	 eax, DWORD PTR [edx+1082744]
+  00084	50		 push	 eax
+  00085	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__ResumeThread@4
+  0008b	3b f4		 cmp	 esi, esp
+  0008d	e8 00 00 00 00	 call	 __chkesp
+
+; 723  : 
+; 724  : 	return TRUE;
+
+  00092	b8 01 00 00 00	 mov	 eax, 1
+
+; 725  : }
+
+  00097	5f		 pop	 edi
+  00098	5e		 pop	 esi
+  00099	5b		 pop	 ebx
+  0009a	83 c4 44	 add	 esp, 68			; 00000044H
+  0009d	3b ec		 cmp	 ebp, esp
+  0009f	e8 00 00 00 00	 call	 __chkesp
+  000a4	8b e5		 mov	 esp, ebp
+  000a6	5d		 pop	 ebp
+  000a7	c3		 ret	 0
+_TSReader_Start ENDP
+_TEXT	ENDS
+PUBLIC	_TSReader_Stop
+EXTRN	__imp__DeleteCriticalSection@4:NEAR
+;	COMDAT _TSReader_Stop
+_TEXT	SEGMENT
+_TSReader_Stop PROC NEAR				; COMDAT
+
+; 728  : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	83 ec 40	 sub	 esp, 64			; 00000040H
+  00006	53		 push	 ebx
+  00007	56		 push	 esi
+  00008	57		 push	 edi
+  00009	8d 7d c0	 lea	 edi, DWORD PTR [ebp-64]
+  0000c	b9 10 00 00 00	 mov	 ecx, 16			; 00000010H
+  00011	b8 cc cc cc cc	 mov	 eax, -858993460		; ccccccccH
+  00016	f3 ab		 rep stosd
+
+; 729  : 	v->fTerminateReadThread = TRUE;
+
+  00018	a1 00 00 00 00	 mov	 eax, DWORD PTR _v
+  0001d	c7 80 54 02 03
+	00 01 00 00 00	 mov	 DWORD PTR [eax+197204], 1
+$L77698:
+
+; 730  : 	while (v->fReadThreadTerminated == FALSE)
+
+  00027	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR _v
+  0002d	83 b9 50 02 03
+	00 00		 cmp	 DWORD PTR [ecx+197200], 0
+  00034	75 13		 jne	 SHORT $L77699
+
+; 731  : 		Sleep(50);
+
+  00036	8b f4		 mov	 esi, esp
+  00038	6a 32		 push	 50			; 00000032H
+  0003a	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__Sleep@4
+  00040	3b f4		 cmp	 esi, esp
+  00042	e8 00 00 00 00	 call	 __chkesp
+  00047	eb de		 jmp	 SHORT $L77698
+$L77699:
+
+; 732  : 
+; 733  : 	StreamCapture(FALSE);
+
+  00049	6a 00		 push	 0
+  0004b	e8 00 00 00 00	 call	 _StreamCapture
+  00050	83 c4 04	 add	 esp, 4
+
+; 734  : 
+; 735  : 	DeleteCriticalSection(&csPipeBytes);
+
+  00053	8b f4		 mov	 esi, esp
+  00055	68 00 00 00 00	 push	 OFFSET FLAT:_csPipeBytes
+  0005a	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__DeleteCriticalSection@4
+  00060	3b f4		 cmp	 esi, esp
+  00062	e8 00 00 00 00	 call	 __chkesp
+
+; 736  : 	
+; 737  : 	return TRUE;
+
+  00067	b8 01 00 00 00	 mov	 eax, 1
+
+; 738  : }
+
+  0006c	5f		 pop	 edi
+  0006d	5e		 pop	 esi
+  0006e	5b		 pop	 ebx
+  0006f	83 c4 40	 add	 esp, 64			; 00000040H
+  00072	3b ec		 cmp	 ebp, esp
+  00074	e8 00 00 00 00	 call	 __chkesp
+  00079	8b e5		 mov	 esp, ebp
+  0007b	5d		 pop	 ebp
+  0007c	c3		 ret	 0
+_TSReader_Stop ENDP
+_TEXT	ENDS
+PUBLIC	_TSReader_Init
+;	COMDAT _TSReader_Init
+_TEXT	SEGMENT
+_pv$ = 8
+_szTemp$ = -128
+_dwDebug$ = -132
+_TSReader_Init PROC NEAR				; COMDAT
+
+; 741  : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	81 ec c4 00 00
+	00		 sub	 esp, 196		; 000000c4H
+  00009	53		 push	 ebx
+  0000a	56		 push	 esi
+  0000b	57		 push	 edi
+  0000c	8d bd 3c ff ff
+	ff		 lea	 edi, DWORD PTR [ebp-196]
+  00012	b9 31 00 00 00	 mov	 ecx, 49			; 00000031H
+  00017	b8 cc cc cc cc	 mov	 eax, -858993460		; ccccccccH
+  0001c	f3 ab		 rep stosd
+
+; 742  : 	char szTemp[128];
+; 743  : 	DWORD dwDebug;
+; 744  : 
+; 745  : 	v = pv;
+
+  0001e	8b 45 08	 mov	 eax, DWORD PTR _pv$[ebp]
+  00021	a3 00 00 00 00	 mov	 DWORD PTR _v, eax
+
+; 746  : 	fPowerOn = FALSE;
+
+  00026	c7 05 00 00 00
+	00 00 00 00 00	 mov	 DWORD PTR _fPowerOn, 0
+
+; 747  : 
+; 748  : 	dwDebug = DST_IOCTL_SCAN_START;
+
+  00030	c7 85 7c ff ff
+	ff 00 29 bb aa	 mov	 DWORD PTR _dwDebug$[ebp], -1430574848 ; aabb2900H
+
+; 749  : 	dwDebug = DST_IOCTL_SCAN_WAITING;
+
+  0003a	c7 85 7c ff ff
+	ff 80 29 bb aa	 mov	 DWORD PTR _dwDebug$[ebp], -1430574720 ; aabb2980H
+
+; 750  : 	dwDebug = DST_IOCTL_SET_INFO;
+
+  00044	c7 85 7c ff ff
+	ff 80 28 bb aa	 mov	 DWORD PTR _dwDebug$[ebp], -1430574976 ; aabb2880H
+
+; 751  : 
+; 752  : 	hDevice1 = GetDeviceHandle(GUID_DST_DEVICE1, NULL, szTemp);
+
+  0004e	8d 4d 80	 lea	 ecx, DWORD PTR _szTemp$[ebp]
+  00051	51		 push	 ecx
+  00052	6a 00		 push	 0
+  00054	83 ec 10	 sub	 esp, 16			; 00000010H
+  00057	8b d4		 mov	 edx, esp
+  00059	a1 00 00 00 00	 mov	 eax, DWORD PTR _GUID_DST_DEVICE1
+  0005e	89 02		 mov	 DWORD PTR [edx], eax
+  00060	8b 0d 04 00 00
+	00		 mov	 ecx, DWORD PTR _GUID_DST_DEVICE1+4
+  00066	89 4a 04	 mov	 DWORD PTR [edx+4], ecx
+  00069	a1 08 00 00 00	 mov	 eax, DWORD PTR _GUID_DST_DEVICE1+8
+  0006e	89 42 08	 mov	 DWORD PTR [edx+8], eax
+  00071	8b 0d 0c 00 00
+	00		 mov	 ecx, DWORD PTR _GUID_DST_DEVICE1+12
+  00077	89 4a 0c	 mov	 DWORD PTR [edx+12], ecx
+  0007a	e8 00 00 00 00	 call	 _GetDeviceHandle
+  0007f	83 c4 18	 add	 esp, 24			; 00000018H
+  00082	a3 00 00 00 00	 mov	 DWORD PTR _hDevice1, eax
+
+; 753  : 	if (hDevice1 == INVALID_HANDLE_VALUE)
+
+  00087	83 3d 00 00 00
+	00 ff		 cmp	 DWORD PTR _hDevice1, -1
+  0008e	75 04		 jne	 SHORT $L77708
+
+; 754  : 		return FALSE;
+
+  00090	33 c0		 xor	 eax, eax
+  00092	eb 62		 jmp	 SHORT $L77703
+$L77708:
+
+; 755  : 
+; 756  :     hDevice2 = GetDeviceHandle(GUID_DST_DEVICE2, NULL, szTemp); 
+
+  00094	8d 55 80	 lea	 edx, DWORD PTR _szTemp$[ebp]
+  00097	52		 push	 edx
+  00098	6a 00		 push	 0
+  0009a	83 ec 10	 sub	 esp, 16			; 00000010H
+  0009d	8b c4		 mov	 eax, esp
+  0009f	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR _GUID_DST_DEVICE2
+  000a5	89 08		 mov	 DWORD PTR [eax], ecx
+  000a7	8b 15 04 00 00
+	00		 mov	 edx, DWORD PTR _GUID_DST_DEVICE2+4
+  000ad	89 50 04	 mov	 DWORD PTR [eax+4], edx
+  000b0	8b 0d 08 00 00
+	00		 mov	 ecx, DWORD PTR _GUID_DST_DEVICE2+8
+  000b6	89 48 08	 mov	 DWORD PTR [eax+8], ecx
+  000b9	8b 15 0c 00 00
+	00		 mov	 edx, DWORD PTR _GUID_DST_DEVICE2+12
+  000bf	89 50 0c	 mov	 DWORD PTR [eax+12], edx
+  000c2	e8 00 00 00 00	 call	 _GetDeviceHandle
+  000c7	83 c4 18	 add	 esp, 24			; 00000018H
+  000ca	a3 00 00 00 00	 mov	 DWORD PTR _hDevice2, eax
+
+; 757  : 	if (hDevice2 == INVALID_HANDLE_VALUE)
+
+  000cf	83 3d 00 00 00
+	00 ff		 cmp	 DWORD PTR _hDevice2, -1
+  000d6	75 19		 jne	 SHORT $L77711
+
+; 759  : 		CloseHandle(hDevice1);
+
+  000d8	8b f4		 mov	 esi, esp
+  000da	a1 00 00 00 00	 mov	 eax, DWORD PTR _hDevice1
+  000df	50		 push	 eax
+  000e0	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__CloseHandle@4
+  000e6	3b f4		 cmp	 esi, esp
+  000e8	e8 00 00 00 00	 call	 __chkesp
+
+; 760  : 		return FALSE;
+
+  000ed	33 c0		 xor	 eax, eax
+  000ef	eb 05		 jmp	 SHORT $L77703
+$L77711:
+
+; 762  : 
+; 763  : 	return TRUE;
+
+  000f1	b8 01 00 00 00	 mov	 eax, 1
+$L77703:
+
+; 764  : }
+
+  000f6	5f		 pop	 edi
+  000f7	5e		 pop	 esi
+  000f8	5b		 pop	 ebx
+  000f9	81 c4 c4 00 00
+	00		 add	 esp, 196		; 000000c4H
+  000ff	3b ec		 cmp	 ebp, esp
+  00101	e8 00 00 00 00	 call	 __chkesp
+  00106	8b e5		 mov	 esp, ebp
+  00108	5d		 pop	 ebp
+  00109	c3		 ret	 0
+_TSReader_Init ENDP
+_TEXT	ENDS
+PUBLIC	_TSReader_DeInit
+;	COMDAT _TSReader_DeInit
+_TEXT	SEGMENT
+_TSReader_DeInit PROC NEAR				; COMDAT
+
+; 767  : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	83 ec 40	 sub	 esp, 64			; 00000040H
+  00006	53		 push	 ebx
+  00007	56		 push	 esi
+  00008	57		 push	 edi
+  00009	8d 7d c0	 lea	 edi, DWORD PTR [ebp-64]
+  0000c	b9 10 00 00 00	 mov	 ecx, 16			; 00000010H
+  00011	b8 cc cc cc cc	 mov	 eax, -858993460		; ccccccccH
+  00016	f3 ab		 rep stosd
+
+; 768  : 	if (fPowerOn)
+
+  00018	83 3d 00 00 00
+	00 00		 cmp	 DWORD PTR _fPowerOn, 0
+  0001f	74 16		 je	 SHORT $L77714
+
+; 769  : 		SetTuner22KHzAndPower(v->n22KHz, FALSE);
+
+  00021	6a 00		 push	 0
+  00023	a1 00 00 00 00	 mov	 eax, DWORD PTR _v
+  00028	8b 88 7c 01 00
+	00		 mov	 ecx, DWORD PTR [eax+380]
+  0002e	51		 push	 ecx
+  0002f	e8 00 00 00 00	 call	 _SetTuner22KHzAndPower
+  00034	83 c4 08	 add	 esp, 8
+$L77714:
+
+; 770  : 
+; 771  : 	CloseHandle(hDevice1);
+
+  00037	8b f4		 mov	 esi, esp
+  00039	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _hDevice1
+  0003f	52		 push	 edx
+  00040	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__CloseHandle@4
+  00046	3b f4		 cmp	 esi, esp
+  00048	e8 00 00 00 00	 call	 __chkesp
+
+; 772  : 	CloseHandle(hDevice2);
+
+  0004d	8b f4		 mov	 esi, esp
+  0004f	a1 00 00 00 00	 mov	 eax, DWORD PTR _hDevice2
+  00054	50		 push	 eax
+  00055	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__CloseHandle@4
+  0005b	3b f4		 cmp	 esi, esp
+  0005d	e8 00 00 00 00	 call	 __chkesp
+
+; 773  : 
+; 774  : 	return TRUE;
+
+  00062	b8 01 00 00 00	 mov	 eax, 1
+
+; 775  : }
+
+  00067	5f		 pop	 edi
+  00068	5e		 pop	 esi
+  00069	5b		 pop	 ebx
+  0006a	83 c4 40	 add	 esp, 64			; 00000040H
+  0006d	3b ec		 cmp	 ebp, esp
+  0006f	e8 00 00 00 00	 call	 __chkesp
+  00074	8b e5		 mov	 esp, ebp
+  00076	5d		 pop	 ebp
+  00077	c3		 ret	 0
+_TSReader_DeInit ENDP
+_TEXT	ENDS
+PUBLIC	_TSReader_Tune
+PUBLIC	??_C@_0CB@CCDK@Failed?5to?5lock?5signal?4?5Continue?$DP@ ; `string'
+EXTRN	__imp__MessageBoxA@16:NEAR
+;	COMDAT ??_C@_0CB@CCDK@Failed?5to?5lock?5signal?4?5Continue?$DP@
+; File C:\Development\TSReader\TSReader_Twinhan2\TSReader_Twinhan2.c
+CONST	SEGMENT
+??_C@_0CB@CCDK@Failed?5to?5lock?5signal?4?5Continue?$DP@ DB 'Failed to lo'
+	DB	'ck signal. Continue?', 00H			; `string'
+CONST	ENDS
+;	COMDAT _TSReader_Tune
+_TEXT	SEGMENT
+_TSReader_Tune PROC NEAR				; COMDAT
+
+; 778  : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	83 ec 40	 sub	 esp, 64			; 00000040H
+  00006	53		 push	 ebx
+  00007	56		 push	 esi
+  00008	57		 push	 edi
+  00009	8d 7d c0	 lea	 edi, DWORD PTR [ebp-64]
+  0000c	b9 10 00 00 00	 mov	 ecx, 16			; 00000010H
+  00011	b8 cc cc cc cc	 mov	 eax, -858993460		; ccccccccH
+  00016	f3 ab		 rep stosd
+
+; 779  : #ifdef TUNE_ENABLED	
+; 780  : 	SetTuner22KHzAndPower(v->n22KHz, TRUE);
+
+  00018	6a 01		 push	 1
+  0001a	a1 00 00 00 00	 mov	 eax, DWORD PTR _v
+  0001f	8b 88 7c 01 00
+	00		 mov	 ecx, DWORD PTR [eax+380]
+  00025	51		 push	 ecx
+  00026	e8 00 00 00 00	 call	 _SetTuner22KHzAndPower
+  0002b	83 c4 08	 add	 esp, 8
+
+; 781  : 	fPowerOn = TRUE;
+
+  0002e	c7 05 00 00 00
+	00 01 00 00 00	 mov	 DWORD PTR _fPowerOn, 1
+
+; 782  : 	if (Tune(v->nFrequency, v->nPolarity, 2, v->nSymbolRate) == FALSE)
+
+  00038	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _v
+  0003e	8b 82 74 01 00
+	00		 mov	 eax, DWORD PTR [edx+372]
+  00044	50		 push	 eax
+  00045	6a 02		 push	 2
+  00047	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR _v
+  0004d	8b 91 70 01 00
+	00		 mov	 edx, DWORD PTR [ecx+368]
+  00053	52		 push	 edx
+  00054	a1 00 00 00 00	 mov	 eax, DWORD PTR _v
+  00059	8b 88 6c 01 00
+	00		 mov	 ecx, DWORD PTR [eax+364]
+  0005f	51		 push	 ecx
+  00060	e8 00 00 00 00	 call	 _Tune
+  00065	83 c4 10	 add	 esp, 16			; 00000010H
+  00068	85 c0		 test	 eax, eax
+  0006a	75 61		 jne	 SHORT $L77719
+
+; 784  : 		SetTuner22KHzAndPower(v->n22KHz, FALSE);
+
+  0006c	6a 00		 push	 0
+  0006e	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _v
+  00074	8b 82 7c 01 00
+	00		 mov	 eax, DWORD PTR [edx+380]
+  0007a	50		 push	 eax
+  0007b	e8 00 00 00 00	 call	 _SetTuner22KHzAndPower
+  00080	83 c4 08	 add	 esp, 8
+
+; 785  : 		fPowerOn = FALSE;
+
+  00083	c7 05 00 00 00
+	00 00 00 00 00	 mov	 DWORD PTR _fPowerOn, 0
+
+; 786  : 		if (v->fAutoXMLExport == FALSE)
+
+  0008d	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR _v
+  00093	83 b9 78 02 03
+	00 00		 cmp	 DWORD PTR [ecx+197240], 0
+  0009a	75 31		 jne	 SHORT $L77719
+
+; 787  : 			if (MessageBox(v->hDlgSIParser, "Failed to lock signal. Continue?", gszSourceName, MB_YESNO) == IDNO)
+
+  0009c	8b f4		 mov	 esi, esp
+  0009e	6a 04		 push	 4
+  000a0	68 00 00 00 00	 push	 OFFSET FLAT:_gszSourceName
+  000a5	68 00 00 00 00	 push	 OFFSET FLAT:??_C@_0CB@CCDK@Failed?5to?5lock?5signal?4?5Continue?$DP@ ; `string'
+  000aa	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _v
+  000b0	8b 82 28 05 10
+	00		 mov	 eax, DWORD PTR [edx+1049896]
+  000b6	50		 push	 eax
+  000b7	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__MessageBoxA@16
+  000bd	3b f4		 cmp	 esi, esp
+  000bf	e8 00 00 00 00	 call	 __chkesp
+  000c4	83 f8 07	 cmp	 eax, 7
+  000c7	75 04		 jne	 SHORT $L77719
+
+; 788  : 				return FALSE;
+
+  000c9	33 c0		 xor	 eax, eax
+  000cb	eb 05		 jmp	 SHORT $L77716
+$L77719:
+
+; 790  : #endif TUNE_ENABLED
+; 791  : 
+; 792  : 	return TRUE;
+
+  000cd	b8 01 00 00 00	 mov	 eax, 1
+$L77716:
+
+; 793  : }
+
+  000d2	5f		 pop	 edi
+  000d3	5e		 pop	 esi
+  000d4	5b		 pop	 ebx
+  000d5	83 c4 40	 add	 esp, 64			; 00000040H
+  000d8	3b ec		 cmp	 ebp, esp
+  000da	e8 00 00 00 00	 call	 __chkesp
+  000df	8b e5		 mov	 esp, ebp
+  000e1	5d		 pop	 ebp
+  000e2	c3		 ret	 0
+_TSReader_Tune ENDP
+_TEXT	ENDS
+PUBLIC	_TSReader_GetDescription
+PUBLIC	??_C@_0BP@OFBK@freq?5pol?5sr?5lnbf?522khz?5?$HLinput?$HN?$AA@ ; `string'
+EXTRN	__imp__lstrcpyA@8:NEAR
+;	COMDAT ??_C@_0BP@OFBK@freq?5pol?5sr?5lnbf?522khz?5?$HLinput?$HN?$AA@
+; File C:\Development\TSReader\TSReader_Twinhan2\TSReader_Twinhan2.c
+CONST	SEGMENT
+??_C@_0BP@OFBK@freq?5pol?5sr?5lnbf?522khz?5?$HLinput?$HN?$AA@ DB 'freq po'
+	DB	'l sr lnbf 22khz {input}', 00H		; `string'
+CONST	ENDS
+;	COMDAT _TSReader_GetDescription
+_TEXT	SEGMENT
+_szDescription$ = 8
+_szCommandLineParameters$ = 12
+_TSReader_GetDescription PROC NEAR			; COMDAT
+
+; 796  : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	83 ec 40	 sub	 esp, 64			; 00000040H
+  00006	53		 push	 ebx
+  00007	56		 push	 esi
+  00008	57		 push	 edi
+  00009	8d 7d c0	 lea	 edi, DWORD PTR [ebp-64]
+  0000c	b9 10 00 00 00	 mov	 ecx, 16			; 00000010H
+  00011	b8 cc cc cc cc	 mov	 eax, -858993460		; ccccccccH
+  00016	f3 ab		 rep stosd
+
+; 797  : 	if (szDescription != NULL)
+
+  00018	83 7d 08 00	 cmp	 DWORD PTR _szDescription$[ebp], 0
+  0001c	74 18		 je	 SHORT $L77728
+
+; 798  : 		lstrcpy(szDescription, gszSourceName);
+
+  0001e	8b f4		 mov	 esi, esp
+  00020	68 00 00 00 00	 push	 OFFSET FLAT:_gszSourceName
+  00025	8b 45 08	 mov	 eax, DWORD PTR _szDescription$[ebp]
+  00028	50		 push	 eax
+  00029	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__lstrcpyA@8
+  0002f	3b f4		 cmp	 esi, esp
+  00031	e8 00 00 00 00	 call	 __chkesp
+$L77728:
+
+; 799  : 	if (szCommandLineParameters != NULL)
+
+  00036	83 7d 0c 00	 cmp	 DWORD PTR _szCommandLineParameters$[ebp], 0
+  0003a	74 18		 je	 SHORT $L77730
+
+; 800  : 		lstrcpy(szCommandLineParameters, "freq pol sr lnbf 22khz {input}");
+
+  0003c	8b f4		 mov	 esi, esp
+  0003e	68 00 00 00 00	 push	 OFFSET FLAT:??_C@_0BP@OFBK@freq?5pol?5sr?5lnbf?522khz?5?$HLinput?$HN?$AA@ ; `string'
+  00043	8b 4d 0c	 mov	 ecx, DWORD PTR _szCommandLineParameters$[ebp]
+  00046	51		 push	 ecx
+  00047	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__lstrcpyA@8
+  0004d	3b f4		 cmp	 esi, esp
+  0004f	e8 00 00 00 00	 call	 __chkesp
+$L77730:
+
+; 801  : 	return TRUE;
+
+  00054	b8 01 00 00 00	 mov	 eax, 1
+
+; 802  : }
+
+  00059	5f		 pop	 edi
+  0005a	5e		 pop	 esi
+  0005b	5b		 pop	 ebx
+  0005c	83 c4 40	 add	 esp, 64			; 00000040H
+  0005f	3b ec		 cmp	 ebp, esp
+  00061	e8 00 00 00 00	 call	 __chkesp
+  00066	8b e5		 mov	 esp, ebp
+  00068	5d		 pop	 ebp
+  00069	c3		 ret	 0
+_TSReader_GetDescription ENDP
+_TEXT	ENDS
+PUBLIC	_TSReader_TuneDialog
+EXTRN	_SourceHelper_DVBSTuneDialog:NEAR
+;	COMDAT _TSReader_TuneDialog
+_TEXT	SEGMENT
+_hWnd$ = 8
+_TSReader_TuneDialog PROC NEAR				; COMDAT
+
+; 805  : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	83 ec 40	 sub	 esp, 64			; 00000040H
+  00006	53		 push	 ebx
+  00007	56		 push	 esi
+  00008	57		 push	 edi
+  00009	8d 7d c0	 lea	 edi, DWORD PTR [ebp-64]
+  0000c	b9 10 00 00 00	 mov	 ecx, 16			; 00000010H
+  00011	b8 cc cc cc cc	 mov	 eax, -858993460		; ccccccccH
+  00016	f3 ab		 rep stosd
+
+; 806  : 	if (v->fDontTune == TRUE)
+
+  00018	a1 00 00 00 00	 mov	 eax, DWORD PTR _v
+  0001d	83 b8 8c 02 03
+	00 01		 cmp	 DWORD PTR [eax+197260], 1
+  00024	75 0a		 jne	 SHORT $L77736
+
+; 807  : 		fNeedTuneDialog = FALSE;
+
+  00026	c7 05 00 00 00
+	00 00 00 00 00	 mov	 DWORD PTR _fNeedTuneDialog, 0
+$L77736:
+
+; 808  : 
+; 809  : 	if (fNeedTuneDialog)
+
+  00030	83 3d 00 00 00
+	00 00		 cmp	 DWORD PTR _fNeedTuneDialog, 0
+  00037	74 16		 je	 SHORT $L77737
+
+; 812  : 		if (SourceHelper_DVBSTuneDialog(hWnd) == FALSE)
+
+  00039	8b 4d 08	 mov	 ecx, DWORD PTR _hWnd$[ebp]
+  0003c	51		 push	 ecx
+  0003d	e8 00 00 00 00	 call	 _SourceHelper_DVBSTuneDialog
+  00042	83 c4 04	 add	 esp, 4
+  00045	85 c0		 test	 eax, eax
+  00047	75 04		 jne	 SHORT $L77738
+
+; 813  : 			return FALSE;
+
+  00049	33 c0		 xor	 eax, eax
+  0004b	eb 79		 jmp	 SHORT $L77735
+$L77738:
+
+; 815  : 	else
+
+  0004d	eb 72		 jmp	 SHORT $L77739
+$L77737:
+
+; 817  : 		v->nFrequency = nFrequency;
+
+  0004f	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _v
+  00055	a1 00 00 00 00	 mov	 eax, DWORD PTR _nFrequency
+  0005a	89 82 6c 01 00
+	00		 mov	 DWORD PTR [edx+364], eax
+
+; 818  : 		v->nPolarity = nPolarity;
+
+  00060	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR _v
+  00066	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _nPolarity
+  0006c	89 91 70 01 00
+	00		 mov	 DWORD PTR [ecx+368], edx
+
+; 819  : 		v->nSymbolRate = nSymbolRate;
+
+  00072	a1 00 00 00 00	 mov	 eax, DWORD PTR _v
+  00077	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR _nSymbolRate
+  0007d	89 88 74 01 00
+	00		 mov	 DWORD PTR [eax+372], ecx
+
+; 820  : 		v->nLNBFrequency = nLNBFrequency;
+
+  00083	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _v
+  00089	a1 00 00 00 00	 mov	 eax, DWORD PTR _nLNBFrequency
+  0008e	89 82 78 01 00
+	00		 mov	 DWORD PTR [edx+376], eax
+
+; 821  : 		v->n22KHz = n22KHz;
+
+  00094	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR _v
+  0009a	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _n22KHz
+  000a0	89 91 7c 01 00
+	00		 mov	 DWORD PTR [ecx+380], edx
+
+; 822  : 		v->nDiSEqCInput = nDiSEqCInput;
+
+  000a6	a1 00 00 00 00	 mov	 eax, DWORD PTR _v
+  000ab	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR _nDiSEqCInput
+  000b1	89 88 bc 01 02
+	00		 mov	 DWORD PTR [eax+131516], ecx
+
+; 823  : 		fNeedTuneDialog = TRUE;
+
+  000b7	c7 05 00 00 00
+	00 01 00 00 00	 mov	 DWORD PTR _fNeedTuneDialog, 1
+$L77739:
+
+; 825  : #else TUNE_ENABLED
+; 826  : 	{
+; 827  : 		if (MessageBox(hWnd,
+; 828  : 					   "The current API from Twinhan doesn't tune quite right. To use this source you\nneed to first tune the mux with another program and then run TSreader.\n\nDo you want to continue?",
+; 829  : 					   gszSourceName, MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1) == IDNO)
+; 830  : 		{
+; 831  : 			return FALSE;
+; 832  : 		}
+; 833  : 	}
+; 834  : #endif TUNE_ENABLED
+; 835  : 
+; 836  : 	return TRUE;
+
+  000c1	b8 01 00 00 00	 mov	 eax, 1
+$L77735:
+
+; 837  : }
+
+  000c6	5f		 pop	 edi
+  000c7	5e		 pop	 esi
+  000c8	5b		 pop	 ebx
+  000c9	83 c4 40	 add	 esp, 64			; 00000040H
+  000cc	3b ec		 cmp	 ebp, esp
+  000ce	e8 00 00 00 00	 call	 __chkesp
+  000d3	8b e5		 mov	 esp, ebp
+  000d5	5d		 pop	 ebp
+  000d6	c3		 ret	 0
+_TSReader_TuneDialog ENDP
+_TEXT	ENDS
+PUBLIC	_TSReader_ParseCommandLine
+PUBLIC	??_C@_0BC@CMED@?$CFd?5?$CFd?5?$CFd?5?$CFd?5?$CFd?5?$CFd?$AA@ ; `string'
+PUBLIC	??_C@_0OK@LPIH@Usage?5for?5this?5source?3?5freq?5pol?5@ ; `string'
+EXTRN	_sscanf:NEAR
+EXTRN	_SourceHelper_ConvertPolarity:NEAR
+EXTRN	__imp__lstrlenA@4:NEAR
+;	COMDAT ??_C@_0BC@CMED@?$CFd?5?$CFd?5?$CFd?5?$CFd?5?$CFd?5?$CFd?$AA@
+; File C:\Development\TSReader\TSReader_Twinhan2\TSReader_Twinhan2.c
+CONST	SEGMENT
+??_C@_0BC@CMED@?$CFd?5?$CFd?5?$CFd?5?$CFd?5?$CFd?5?$CFd?$AA@ DB '%d %d %d'
+	DB	' %d %d %d', 00H				; `string'
+CONST	ENDS
+;	COMDAT ??_C@_0OK@LPIH@Usage?5for?5this?5source?3?5freq?5pol?5@
+CONST	SEGMENT
+??_C@_0OK@LPIH@Usage?5for?5this?5source?3?5freq?5pol?5@ DB 'Usage for thi'
+	DB	's source: freq pol sr lnbf 22khz {input}', 0aH, 0aH, 'freq = '
+	DB	'frequency to tune', 0aH, 'pol = 0 vertical/RHCP 1 horizontal/'
+	DB	'LHCP', 0aH, 'sr = symbol rate', 0aH, 'lnbf = LNB frequency', 0aH
+	DB	'22k = 22KHz tone enable', 0aH, 'input = select DiSEqC input n'
+	DB	'umber (1-4) - optional', 00H		; `string'
+CONST	ENDS
+;	COMDAT _TSReader_ParseCommandLine
+_TEXT	SEGMENT
+_szCommandLine$ = 8
+_nConversionCount$77745 = -4
+_TSReader_ParseCommandLine PROC NEAR			; COMDAT
+
+; 840  : {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	83 ec 44	 sub	 esp, 68			; 00000044H
+  00006	53		 push	 ebx
+  00007	56		 push	 esi
+  00008	57		 push	 edi
+  00009	8d 7d bc	 lea	 edi, DWORD PTR [ebp-68]
+  0000c	b9 11 00 00 00	 mov	 ecx, 17			; 00000011H
+  00011	b8 cc cc cc cc	 mov	 eax, -858993460		; ccccccccH
+  00016	f3 ab		 rep stosd
+
+; 841  : 	if (lstrlen(szCommandLine))
+
+  00018	8b f4		 mov	 esi, esp
+  0001a	8b 45 08	 mov	 eax, DWORD PTR _szCommandLine$[ebp]
+  0001d	50		 push	 eax
+  0001e	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__lstrlenA@4
+  00024	3b f4		 cmp	 esi, esp
+  00026	e8 00 00 00 00	 call	 __chkesp
+  0002b	85 c0		 test	 eax, eax
+  0002d	0f 84 81 00 00
+	00		 je	 $L77744
+
+; 843  : 		int nConversionCount;
+; 844  : 
+; 845  : 		SourceHelper_ConvertPolarity(szCommandLine);
+
+  00033	8b 4d 08	 mov	 ecx, DWORD PTR _szCommandLine$[ebp]
+  00036	51		 push	 ecx
+  00037	e8 00 00 00 00	 call	 _SourceHelper_ConvertPolarity
+  0003c	83 c4 04	 add	 esp, 4
+
+; 846  : 		v->nDiSEqCInput = 1;
+
+  0003f	8b 15 00 00 00
+	00		 mov	 edx, DWORD PTR _v
+  00045	c7 82 bc 01 02
+	00 01 00 00 00	 mov	 DWORD PTR [edx+131516], 1
+
+; 847  : 		nConversionCount = sscanf(szCommandLine,
+; 848  : 								  "%d %d %d %d %d %d", 
+; 849  : 								  &nFrequency,
+; 850  : 								  &nPolarity,
+; 851  : 								  &nSymbolRate,
+; 852  : 								  &nLNBFrequency,
+; 853  : 								  &n22KHz,
+; 854  : 								  &nDiSEqCInput);
+
+  0004f	68 00 00 00 00	 push	 OFFSET FLAT:_nDiSEqCInput
+  00054	68 00 00 00 00	 push	 OFFSET FLAT:_n22KHz
+  00059	68 00 00 00 00	 push	 OFFSET FLAT:_nLNBFrequency
+  0005e	68 00 00 00 00	 push	 OFFSET FLAT:_nSymbolRate
+  00063	68 00 00 00 00	 push	 OFFSET FLAT:_nPolarity
+  00068	68 00 00 00 00	 push	 OFFSET FLAT:_nFrequency
+  0006d	68 00 00 00 00	 push	 OFFSET FLAT:??_C@_0BC@CMED@?$CFd?5?$CFd?5?$CFd?5?$CFd?5?$CFd?5?$CFd?$AA@ ; `string'
+  00072	8b 45 08	 mov	 eax, DWORD PTR _szCommandLine$[ebp]
+  00075	50		 push	 eax
+  00076	e8 00 00 00 00	 call	 _sscanf
+  0007b	83 c4 20	 add	 esp, 32			; 00000020H
+  0007e	89 45 fc	 mov	 DWORD PTR _nConversionCount$77745[ebp], eax
+
+; 855  : 		if (nConversionCount < 5)
+
+  00081	83 7d fc 05	 cmp	 DWORD PTR _nConversionCount$77745[ebp], 5
+  00085	7d 21		 jge	 SHORT $L77747
+
+; 857  : 			MessageBox(NULL,
+; 858  : 					   "Usage for this source: freq pol sr lnbf 22khz {input}\n"
+; 859  : 					   "\n"
+; 860  : 					   "freq = frequency to tune\n"
+; 861  : 					   "pol = 0 vertical/RHCP 1 horizontal/LHCP\n"
+; 862  : 					   "sr = symbol rate\n"
+; 863  : 					   "lnbf = LNB frequency\n"
+; 864  : 					   "22k = 22KHz tone enable\n"
+; 865  : 					   "input = select DiSEqC input number (1-4) - optional",
+; 866  : 					   gszSourceName,
+; 867  : 					   MB_OK | MB_ICONSTOP);
+
+  00087	8b f4		 mov	 esi, esp
+  00089	6a 10		 push	 16			; 00000010H
+  0008b	68 00 00 00 00	 push	 OFFSET FLAT:_gszSourceName
+  00090	68 00 00 00 00	 push	 OFFSET FLAT:??_C@_0OK@LPIH@Usage?5for?5this?5source?3?5freq?5pol?5@ ; `string'
+  00095	6a 00		 push	 0
+  00097	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__MessageBoxA@16
+  0009d	3b f4		 cmp	 esi, esp
+  0009f	e8 00 00 00 00	 call	 __chkesp
+
+; 868  : 			return FALSE;
+
+  000a4	33 c0		 xor	 eax, eax
+  000a6	eb 1b		 jmp	 SHORT $L77743
+$L77747:
+
+; 870  : 		fNeedTuneDialog = FALSE;
+
+  000a8	c7 05 00 00 00
+	00 00 00 00 00	 mov	 DWORD PTR _fNeedTuneDialog, 0
+
+; 872  : 	else
+
+  000b2	eb 0a		 jmp	 SHORT $L77750
+$L77744:
+
+; 873  : 		fNeedTuneDialog = TRUE;
+
+  000b4	c7 05 00 00 00
+	00 01 00 00 00	 mov	 DWORD PTR _fNeedTuneDialog, 1
+$L77750:
+
+; 874  : 
+; 875  : 	return TRUE;
+
+  000be	b8 01 00 00 00	 mov	 eax, 1
+$L77743:
+
+; 876  : }
+
+  000c3	5f		 pop	 edi
+  000c4	5e		 pop	 esi
+  000c5	5b		 pop	 ebx
+  000c6	83 c4 44	 add	 esp, 68			; 00000044H
+  000c9	3b ec		 cmp	 ebp, esp
+  000cb	e8 00 00 00 00	 call	 __chkesp
+  000d0	8b e5		 mov	 esp, ebp
+  000d2	5d		 pop	 ebp
+  000d3	c3		 ret	 0
+_TSReader_ParseCommandLine ENDP
+_TEXT	ENDS
+END

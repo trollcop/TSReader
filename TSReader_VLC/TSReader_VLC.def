@@ -1,0 +1,5 @@
+LIBRARY TSReader_VLC
+
+EXPORTS
+	SetupStradis			@1
+	ShutdownStradis			@2

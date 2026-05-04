@@ -1,0 +1,11 @@
+; List of known SECA-MasterKeys ( KEY 01)
+; Can be edited !! Written by Fenrir/MDLoggen
+; *******  256 Cards Max ********
+; XXXX at start of line = Provider-Ident
+; YYYYYYYY = Shared-Address ( the PPUA are the first 3 bytes ;-) 
+; ZZZZZZZZZZZZZZZZ The Key 01.
+; ZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzz The Key 01 Primary+Secondary.
+;
+XXXX YYYYYYYY ZZZZZZZZZZZZZZZZ;ProviderName;LastUpdate
+XXXX YYYYYYYY ZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzz;ProviderName;LastUpdate
+;Ende

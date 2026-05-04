@@ -1,0 +1,621 @@
+; -------------------------------------------------------------------------
+; ALUSBDVB.INF
+; Alitronika Digital Video Systems
+; Lintdal 36
+; 9723GD Groningen
+; info@alitronika.com
+; www.alitronika.com
+; 20 SEPTEMBER 2006
+; Windows 2K/XP drivers for PCI devices
+; -------------------------------------------------------------------------
+
+[Version]
+Signature="$CHICAGO$"
+Provider=%ALITRONIKA%
+Class=Media
+ClassGUID={4d36e96c-e325-11ce-bfc1-08002be10318}	
+DriverVer= 20/09/2006,5.0.0.2
+
+[DestinationDirs]
+DefaultDestDir=12
+
+[SourceDisksNames]
+1=%DiskName%,,0
+
+[SourceDisksFiles]
+ATUsbVid.sys
+
+;-----------------------------------------------------------
+; Class information
+;-----------------------------------------------------------
+
+[ClassInstall32]
+
+[ClassInstall]
+
+
+;-----------------------------------------------------------
+; Driver information
+;-----------------------------------------------------------
+[Manufacturer]
+%ALITRONIKA%=ALITRONIKA
+
+
+[ALITRONIKA]
+%ShowAT4%=AT4.Install, USB\VID_088D&PID_101E
+%ShowAT20%=AT20.Install, USB\VID_088D&PID_1012
+%ShowAT30%=AT30.Install, USB\VID_088D&PID_1023
+%ShowAT40%=AT40.Install, USB\VID_088D&PID_1016
+%ShowAT40X%=AT40X.Install, USB\VID_088D&PID_1022
+%ShowAT60%=AT60.Install, USB\VID_088D&PID_1017
+%ShowAT70%=AT70.Install, USB\VID_088D&PID_1018
+%ShowAT72%=AT72.Install, USB\VID_088D&PID_101B
+%ShowAT73%=AT73.Install, USB\VID_088D&PID_101D
+%ShowAT80%=AT80.Install, USB\VID_088D&PID_1019
+%ShowAT82%=AT82.Install, USB\VID_088D&PID_1020
+%ShowAT200%=AT200.Install, USB\VID_088D&PID_1000
+%ShowAT300%=AT300.Install, USB\VID_088D&PID_1002
+%ShowAT400%=AT400.Install, USB\VID_088D&PID_1004
+%ShowAT600%=AT600.Install, USB\VID_088D&PID_1008
+%ShowAT700%=AT700.Install, USB\VID_088D&PID_100A
+%ShowAT720%=AT720.Install, USB\VID_088D&PID_101A
+%ShowAT730%=AT720.Install, USB\VID_088D&PID_101C
+%ShowAT800%=AT800.Install, USB\VID_088D&PID_100C
+%ShowAT2600%=AT2600.Install, USB\VID_088D&PID_1025
+%ShowAT2700%=AT2700.Install, USB\VID_088D&PID_1026
+%ShowAT2800%=AT2800.Install, USB\VID_088D&PID_101F
+
+
+;-----------------------------------------------------------
+;
+; Function Device Driver
+;
+; Windows 2000/XP installation section
+;
+;-----------------------------------------------------------
+; AT4USB
+
+[AT4.Install.ntx86]
+CopyFiles=alusbDVB.CopyFileDrivers.ntx86
+CopyFiles=AT4.CopyFileDrivers
+AddReg=AT4.AddReg
+
+[AT4.Install.ntx86.Services]
+Addservice = alusbDVB, 2, alusbDVB.Service
+
+[AT4.AddReg]
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultHexFiles,VID_088D&PID_101E,,\SystemRoot\system32\drivers\%AT4_HEX%
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultFpgaFiles,VID_088D&PID_101E,,\SystemRoot\system32\drivers\%AT4_RBF1%
+
+[AT4.CopyFileDrivers]
+%AT4_HEX%
+%AT4_RBF1%
+%AT4_RBF2%
+
+
+;-----------------------------------------------------------
+; AT20USB
+
+[AT20.Install.ntx86]
+CopyFiles=alusbDVB.CopyFileDrivers.ntx86
+CopyFiles=AT20.CopyFileDrivers
+AddReg=AT20.AddReg
+
+[AT20.Install.ntx86.Services]
+Addservice = alusbDVB, 2, alusbDVB.Service
+
+[AT20.AddReg]
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultHexFiles,VID_088D&PID_1012,,\SystemRoot\system32\drivers\%AT20_HEX%
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultFpgaFiles,VID_088D&PID_1012,,\SystemRoot\system32\drivers\%AT20_RBF1%
+
+[AT20.CopyFileDrivers]
+%AT20_HEX%
+%AT20_RBF1%
+
+;-----------------------------------------------------------
+; AT30USB
+
+[AT30.Install.ntx86]
+CopyFiles=alusbDVB.CopyFileDrivers.ntx86
+CopyFiles=AT30.CopyFileDrivers
+AddReg=AT30.AddReg
+
+[AT30.Install.ntx86.Services]
+Addservice = alusbDVB, 2, alusbDVB.Service
+
+[AT30.AddReg]
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultHexFiles,VID_088D&PID_1023,,\SystemRoot\system32\drivers\%AT30_HEX%
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultFpgaFiles,VID_088D&PID_1023,,\SystemRoot\system32\drivers\%AT30_RBF1%
+
+[AT30.CopyFileDrivers]
+%AT30_HEX%
+%AT30_RBF1%
+
+;-----------------------------------------------------------
+; AT40USB
+
+[AT40.Install.ntx86]
+CopyFiles=alusbDVB.CopyFileDrivers.ntx86
+CopyFiles=AT40.CopyFileDrivers
+AddReg=AT40.AddReg
+
+[AT40.Install.ntx86.Services]
+Addservice = alusbDVB, 2, alusbDVB.Service
+
+[AT40.AddReg]
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultHexFiles,VID_088D&PID_1016,,\SystemRoot\system32\drivers\%AT40_HEX%
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultFpgaFiles,VID_088D&PID_1016,,\SystemRoot\system32\drivers\%AT40_RBF1%
+
+[AT40.CopyFileDrivers]
+%AT40_HEX%
+%AT40_RBF1%
+%AT40_RBF2%
+
+;-----------------------------------------------------------
+; AT40USB
+
+[AT40X.Install.ntx86]
+CopyFiles=alusbDVB.CopyFileDrivers.ntx86
+CopyFiles=AT40X.CopyFileDrivers
+AddReg=AT40X.AddReg
+
+[AT40X.Install.ntx86.Services]
+Addservice = alusbDVB, 2, alusbDVB.Service
+
+[AT40X.AddReg]
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultHexFiles,VID_088D&PID_1022,,\SystemRoot\system32\drivers\%AT40X_HEX%
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultFpgaFiles,VID_088D&PID_1022,,\SystemRoot\system32\drivers\%AT40X_RBF1%
+
+[AT40X.CopyFileDrivers]
+%AT40X_HEX%
+%AT40X_RBF1%
+%AT40X_RBF2%
+
+;-----------------------------------------------------------
+; AT60USB
+
+[AT60.Install.ntx86]
+CopyFiles=alusbDVB.CopyFileDrivers.ntx86
+CopyFiles=AT60.CopyFileDrivers
+AddReg=AT60.AddReg
+
+[AT60.Install.ntx86.Services]
+Addservice = alusbDVB, 2, alusbDVB.Service
+
+[AT60.AddReg]
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultHexFiles,VID_088D&PID_1017,,\SystemRoot\system32\drivers\%AT60_HEX%
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultFpgaFiles,VID_088D&PID_1017,,\SystemRoot\system32\drivers\%AT60_RBF1%
+
+[AT60.CopyFileDrivers]
+%AT60_HEX%
+%AT60_RBF1%
+
+;-----------------------------------------------------------
+; AT70USB
+
+[AT70.Install.ntx86]
+CopyFiles=alusbDVB.CopyFileDrivers.ntx86
+CopyFiles=AT70.CopyFileDrivers
+AddReg=AT70.AddReg
+
+[AT70.Install.ntx86.Services]
+Addservice = alusbDVB, 2, alusbDVB.Service
+
+[AT70.AddReg]
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultHexFiles,VID_088D&PID_1018,,\SystemRoot\system32\drivers\%AT70_HEX%
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultFpgaFiles,VID_088D&PID_1018,,\SystemRoot\system32\drivers\%AT70_RBF1%
+
+[AT70.CopyFileDrivers]
+%AT70_HEX%
+%AT70_RBF1%
+
+;-----------------------------------------------------------
+; AT72USB
+
+[AT72.Install.ntx86]
+CopyFiles=alusbDVB.CopyFileDrivers.ntx86
+CopyFiles=AT72.CopyFileDrivers
+AddReg=AT72.AddReg
+
+[AT72.Install.ntx86.Services]
+Addservice = alusbDVB, 2, alusbDVB.Service
+
+[AT72.AddReg]
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultHexFiles,VID_088D&PID_101B,,\SystemRoot\system32\drivers\%AT72_HEX%
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultFpgaFiles,VID_088D&PID_101B,,\SystemRoot\system32\drivers\%AT72_RBF1%
+
+[AT72.CopyFileDrivers]
+%AT72_HEX%
+%AT72_RBF1%
+
+;-----------------------------------------------------------
+; AT73USB
+
+[AT73.Install.ntx86]
+CopyFiles=alusbDVB.CopyFileDrivers.ntx86
+CopyFiles=AT73.CopyFileDrivers
+AddReg=AT73.AddReg
+
+[AT73.Install.ntx86.Services]
+Addservice = alusbDVB, 2, alusbDVB.Service
+
+[AT73.AddReg]
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultHexFiles,VID_088D&PID_101D,,\SystemRoot\system32\drivers\%AT73_HEX%
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultFpgaFiles,VID_088D&PID_101D,,\SystemRoot\system32\drivers\%AT73_RBF1%
+
+[AT73.CopyFileDrivers]
+%AT73_HEX%
+%AT73_RBF1%
+
+;-----------------------------------------------------------
+; AT80USB
+
+[AT80.Install.ntx86]
+CopyFiles=alusbDVB.CopyFileDrivers.ntx86
+CopyFiles=AT80.CopyFileDrivers
+AddReg=AT80.AddReg
+
+[AT80.Install.ntx86.Services]
+Addservice = alusbDVB, 2, alusbDVB.Service
+
+[AT80.AddReg]
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultHexFiles,VID_088D&PID_1019,,\SystemRoot\system32\drivers\%AT80_HEX%
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultFpgaFiles,VID_088D&PID_1019,,\SystemRoot\system32\drivers\%AT80_RBF1%
+
+[AT80.CopyFileDrivers]
+%AT80_HEX%
+%AT80_RBF1%
+
+;-----------------------------------------------------------
+; AT82USB
+
+[AT82.Install.ntx86]
+CopyFiles=alusbDVB.CopyFileDrivers.ntx86
+CopyFiles=AT82.CopyFileDrivers
+AddReg=AT82.AddReg
+
+[AT82.Install.ntx86.Services]
+Addservice = alusbDVB, 2, alusbDVB.Service
+
+[AT82.AddReg]
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultHexFiles,VID_088D&PID_1020,,\SystemRoot\system32\drivers\%AT82_HEX%
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultFpgaFiles,VID_088D&PID_1020,,\SystemRoot\system32\drivers\%AT82_RBF1%
+
+[AT82.CopyFileDrivers]
+%AT82_HEX%
+%AT82_RBF1%
+
+;-----------------------------------------------------------
+; AT200USB
+
+[AT200.Install.ntx86]
+CopyFiles=alusbDVB.CopyFileDrivers.ntx86
+CopyFiles=AT200.CopyFileDrivers
+AddReg=AT200.AddReg
+
+[AT200.Install.ntx86.Services]
+Addservice = alusbDVB, 2, alusbDVB.Service
+
+[AT200.AddReg]
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultHexFiles,VID_088D&PID_1000,,\SystemRoot\system32\drivers\%AT200_HEX%
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultFpgaFiles,VID_088D&PID_1000,,\SystemRoot\system32\drivers\%AT200_RBF1%
+
+[AT200.CopyFileDrivers]
+%AT200_HEX%
+%AT200_RBF1%
+%AT200_RBF2%
+%AT200_RBF3%
+
+;-----------------------------------------------------------
+; AT300USB
+
+[AT300.Install.ntx86]
+CopyFiles=alusbDVB.CopyFileDrivers.ntx86
+CopyFiles=AT300.CopyFileDrivers
+AddReg=AT300.AddReg
+
+[AT300.Install.ntx86.Services]
+Addservice = alusbDVB, 2, alusbDVB.Service
+
+[AT300.AddReg]
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultHexFiles,VID_088D&PID_1002,,\SystemRoot\system32\drivers\%AT300_HEX%
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultFpgaFiles,VID_088D&PID_1002,,\SystemRoot\system32\drivers\%AT300_RBF1%
+
+[AT300.CopyFileDrivers]
+%AT300_HEX%
+%AT300_RBF1%
+%AT300_RBF2%
+%AT300_RBF3%
+
+;-----------------------------------------------------------
+; AT400USB
+
+[AT400.Install.ntx86]
+CopyFiles=alusbDVB.CopyFileDrivers.ntx86
+CopyFiles=AT400.CopyFileDrivers
+AddReg=AT400.AddReg
+
+[AT400.Install.ntx86.Services]
+Addservice = alusbDVB, 2, alusbDVB.Service
+
+[AT400.AddReg]
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultHexFiles,VID_088D&PID_1004,,\SystemRoot\system32\drivers\%AT400_HEX%
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultFpgaFiles,VID_088D&PID_1004,,\SystemRoot\system32\drivers\%AT400_RBF1%
+
+[AT400.CopyFileDrivers]
+%AT400_HEX%
+%AT400_RBF1%
+%AT400_RBF2%
+%AT400_RBF3%
+%AT400_RBF4%
+%AT400_RBF5%
+%AT400_RBF6%
+
+;-----------------------------------------------------------
+; AT600USB
+
+[AT600.Install.ntx86]
+CopyFiles=alusbDVB.CopyFileDrivers.ntx86
+CopyFiles=AT600.CopyFileDrivers
+AddReg=AT600.AddReg
+
+[AT600.Install.ntx86.Services]
+Addservice = alusbDVB, 2, alusbDVB.Service
+
+[AT600.AddReg]
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultHexFiles,VID_088D&PID_1008,,\SystemRoot\system32\drivers\%AT600_HEX%
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultFpgaFiles,VID_088D&PID_1008,,\SystemRoot\system32\drivers\%AT600_RBF1%
+
+[AT600.CopyFileDrivers]
+%AT600_HEX%
+%AT600_RBF1%
+%AT600_RBF2%
+
+;-----------------------------------------------------------
+; AT700USB
+
+[AT700.Install.ntx86]
+CopyFiles=alusbDVB.CopyFileDrivers.ntx86
+CopyFiles=AT700.CopyFileDrivers
+AddReg=AT700.AddReg
+
+[AT700.Install.ntx86.Services]
+Addservice = alusbDVB, 2, alusbDVB.Service
+
+[AT700.AddReg]
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultHexFiles,VID_088D&PID_100A,,\SystemRoot\system32\drivers\%AT700_HEX%
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultFpgaFiles,VID_088D&PID_100A,,\SystemRoot\system32\drivers\%AT700_RBF1%
+
+[AT700.CopyFileDrivers]
+%AT700_HEX%
+%AT700_RBF1%
+%AT700_RBF2%
+
+;-----------------------------------------------------------
+; AT720USB
+
+[AT720.Install.ntx86]
+CopyFiles=alusbDVB.CopyFileDrivers.ntx86
+CopyFiles=AT720.CopyFileDrivers
+AddReg=AT720.AddReg
+
+[AT720.Install.ntx86.Services]
+Addservice = alusbDVB, 2, alusbDVB.Service
+
+[AT720.AddReg]
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultHexFiles,VID_088D&PID_101A,,\SystemRoot\system32\drivers\%AT720_HEX%
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultFpgaFiles,VID_088D&PID_101A,,\SystemRoot\system32\drivers\%AT720_RBF1%
+
+[AT720.CopyFileDrivers]
+%AT720_HEX%
+%AT720_RBF1%
+%AT720_RBF2%
+
+;-----------------------------------------------------------
+; AT730USB
+
+[AT730.Install.ntx86]
+CopyFiles=alusbDVB.CopyFileDrivers.ntx86
+CopyFiles=AT730.CopyFileDrivers
+AddReg=AT730.AddReg
+
+[AT730.Install.ntx86.Services]
+Addservice = alusbDVB, 2, alusbDVB.Service
+
+[AT730.AddReg]
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultHexFiles,VID_088D&PID_101C,,\SystemRoot\system32\drivers\%AT730_HEX%
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultFpgaFiles,VID_088D&PID_101C,,\SystemRoot\system32\drivers\%AT730_RBF1%
+
+[AT730.CopyFileDrivers]
+%AT730_HEX%
+%AT730_RBF1%
+%AT730_RBF2%
+
+;-----------------------------------------------------------
+; AT800USB
+
+[AT800.Install.ntx86]
+CopyFiles=alusbDVB.CopyFileDrivers.ntx86
+CopyFiles=AT800.CopyFileDrivers
+AddReg=AT800.AddReg
+
+[AT800.Install.ntx86.Services]
+Addservice = alusbDVB, 2, alusbDVB.Service
+
+[AT800.AddReg]
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultHexFiles,VID_088D&PID_100C,,\SystemRoot\system32\drivers\%AT800_HEX%
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultFpgaFiles,VID_088D&PID_100C,,\SystemRoot\system32\drivers\%AT8000_RBF1%
+
+[AT800.CopyFileDrivers]
+%AT800_HEX%
+%AT800_RBF1%
+%AT800_RBF2%
+
+;-----------------------------------------------------------
+; AT2600USB
+
+[AT2600.Install.ntx86]
+CopyFiles=alusbDVB.CopyFileDrivers.ntx86
+CopyFiles=AT2600.CopyFileDrivers
+AddReg=AT2600.AddReg
+
+[AT2600.Install.ntx86.Services]
+Addservice = alusbDVB, 2, alusbDVB.Service
+
+[AT2600.AddReg]
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultHexFiles,VID_088D&PID_1025,,\SystemRoot\system32\drivers\%AT2600_HEX%
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultFpgaFiles,VID_088D&PID_1025,,\SystemRoot\system32\drivers\%AT2600_RBF1%
+
+[AT2600.CopyFileDrivers]
+%AT2600_HEX%
+%AT2600_RBF1%
+
+;-----------------------------------------------------------
+; AT2700USB
+
+[AT2700.Install.ntx86]
+CopyFiles=alusbDVB.CopyFileDrivers.ntx86
+CopyFiles=AT2700.CopyFileDrivers
+AddReg=AT2700.AddReg
+
+[AT2700.Install.ntx86.Services]
+Addservice = alusbDVB, 2, alusbDVB.Service
+
+[AT2700.AddReg]
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultHexFiles,VID_088D&PID_1026,,\SystemRoot\system32\drivers\%AT2700_HEX%
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultFpgaFiles,VID_088D&PID_1026,,\SystemRoot\system32\drivers\%AT2700_RBF1%
+
+[AT2700.CopyFileDrivers]
+%AT2700_HEX%
+%AT2700_RBF1%
+
+;-----------------------------------------------------------
+; AT2800USB
+
+[AT2800.Install.ntx86]
+CopyFiles=alusbDVB.CopyFileDrivers.ntx86
+CopyFiles=AT2800.CopyFileDrivers
+AddReg=AT2800.AddReg
+
+[AT2800.Install.ntx86.Services]
+Addservice = alusbDVB, 2, alusbDVB.Service
+
+[AT2800.AddReg]
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultHexFiles,VID_088D&PID_1027,,\SystemRoot\system32\drivers\%AT2800_HEX%
+HKLM,SYSTEM\CurrentControlSet\Control\Alitronika\DefaultFpgaFiles,VID_088D&PID_1027,,\SystemRoot\system32\drivers\%AT2800_RBF1%
+
+[AT2800.CopyFileDrivers]
+%AT2800_HEX%
+%AT2800_RBF1%
+
+;-----------------------------------------------------------
+; Common CopyFiles installation section
+;-----------------------------------------------------------
+
+[alusbDVB.CopyFileDrivers.ntx86]
+ATUsbVid.sys
+
+
+;-----------------------------------------------------------
+; ALUSBDVB Function driver Service Services
+;-----------------------------------------------------------
+
+[alusbDVB.Service]
+DisplayName    = %alusbDVBService%
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 3                  ; SERVICE_AUTO_START
+ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\ATUsbVid.sys
+
+;----------------------------------------------------------------------------------------;
+
+[Strings]
+ALITRONIKA        ="Alitronika DVS"
+DiskName          ="Alitronika DVB Driver Disk"
+alusbDVBService   ="ALUSBDVB Service"
+
+ShowAT4="Alitronika AT4USB DVB ASI-input and ASI-output board"
+ShowAT20="Alitronika AT20USB DVB ASI-input board"
+ShowAT30="Alitronika AT30USB DVB ASI-output board"
+ShowAT40="Alitronika AT40USB DVB ASI-input and ASI-output board"
+ShowAT40X="Alitronika AT40USB DVB ASI-input and ASI-output board"
+ShowAT60="Alitronika AT60USB Satellite input"
+ShowAT70="Alitronika AT70USB Cable input"
+ShowAT72="Alitronika AT72USB Cable annex-B input"
+ShowAT73="Alitronika AT73USB Cable annex-C input"
+ShowAT80="Alitronika AT80USB Terrestrial input"
+ShowAT82="Alitronika AT82USB Terrestrial input 6Mhz"
+ShowAT200="Alitronika AT200USB DVB input board"
+ShowAT300="Alitronika AT300USB DVB output board"
+ShowAT400="Alitronika AT400USB DVB input and output board"
+ShowAT600="Alitronika AT600USB Satellite input / DVB output board"
+ShowAT700="Alitronika AT700USB Cable input / DVB output board"
+ShowAT720="Alitronika AT720USB Cable annex-B input / DVB output board"
+ShowAT730="Alitronika AT730USB Cable annex-C input / DVB output board"
+ShowAT800="Alitronika AT800USB Terrestrial input, DVB output board"
+ShowAT2600="Alitronika AT2600USB DVB ASI/SPI input and ASI/DVB-S ouput board"
+ShowAT2700="Alitronika AT2700USB DVB ASI/SPI input and ASI/DVB-C ouput board"
+ShowAT2800="Alitronika AT2800USB DVB ASI/SPI input and ASI/DVB-T ouput board"
+
+
+AT4_RBF1		  ="AT4USB_DVB_PLAY.hwcfg"
+AT4_RBF2		  ="AT4USB_DVB_REC.hwcfg"
+AT4_HEX			  ="AT4USB.hex"
+AT20_RBF1		  ="AT20USB_DVB_REC.hwcfg"
+AT20_HEX		  ="AT20USB.hex"
+AT30_RBF1		  ="AT30USB_DVB_PLAY.hwcfg"
+AT30_HEX		  ="AT30USB.hex"
+AT40_RBF1		  ="AT40USB_DVB_PLAY.hwcfg"
+AT40_RBF2		  ="AT40USB_DVB_REC.hwcfg"
+AT40_HEX		  ="AT40USB.hex"
+AT40X_RBF1		  ="AT40XUSB_DVB_PLAY.hwcfg"
+AT40X_RBF2		  ="AT40XUSB_DVB_REC.hwcfg"
+AT40X_HEX		  ="AT40XUSB.hex"
+AT60_RBF1		  ="AT60USB_DVB_REC.hwcfg"
+AT60_HEX		  ="AT60USB.hex"
+AT70_RBF1		  ="AT70USB_DVB_REC.hwcfg"
+AT70_HEX		  ="AT70USB.hex"
+AT72_RBF1		  ="AT72USB_DVB_REC.hwcfg"
+AT72_HEX		  ="AT72USB.hex"
+AT73_RBF1		  ="AT73USB_DVB_PLAY.hwcfg"
+AT73_HEX		  ="AT73USB.hex"
+AT80_RBF1		  ="AT80USB_DVB_REC.hwcfg"
+AT80_HEX		  ="AT80USB.hex"
+AT82_RBF1		  ="AT82USB_DVB_REC.hwcfg"
+AT82_HEX		  ="AT82USB.hex"
+AT200_RBF1        ="AT200USB_DVB_REC.hwcfg"
+AT200_RBF2        ="AT200USB_SMPTE_REC.hwcfg"
+AT200_RBF3        ="AT200USB_RAW_REC.hwcfg"
+AT200_HEX		  ="AT200USB.hex"
+AT300_RBF1        ="AT300USB_DVB_PLAY.hwcfg"
+AT300_RBF2        ="AT300USB_SMPTE_PLAY.hwcfg"
+AT300_RBF3        ="AT300USB_RAW_PLAY.hwcfg"
+AT300_HEX		  ="AT300USB.hex"
+AT400_RBF1        ="AT400USB_DVB_PLAY.hwcfg"
+AT400_RBF2        ="AT400USB_DVB_REC.hwcfg"
+AT400_RBF3        ="AT400USB_SMPTE_PLAY.hwcfg"
+AT400_RBF4        ="AT400USB_SMPTE_REC.hwcfg"
+AT400_RBF5        ="AT400USB_RAW_PLAY.hwcfg"
+AT400_RBF6        ="AT400USB_RAW_REC.hwcfg"
+AT400_HEX		  ="AT400USB.hex"
+AT600_RBF1        ="AT600USB_DVB_PLAY.hwcfg"
+AT600_RBF2        ="AT600USB_DVB_REC.hwcfg"
+AT600_HEX		  ="AT600USB.hex"
+AT700_RBF1        ="AT700USB_DVB_PLAY.hwcfg"
+AT700_RBF2        ="AT700USB_DVB_REC.hwcfg"
+AT700_HEX		  ="AT700USB.hex"
+AT720_RBF1        ="AT700USB_DVB_PLAY.hwcfg"
+AT720_RBF2        ="AT700USB_DVB_REC.hwcfg"
+AT720_HEX		  ="AT720USB.hex"
+AT730_RBF1        ="AT700USB_DVB_PLAY.hwcfg"
+AT730_RBF2        ="AT700USB_DVB_REC.hwcfg"
+AT730_HEX		  ="AT730USB.hex"
+AT800_RBF1        ="AT800USB_DVB_PLAY.hwcfg"
+AT800_RBF2        ="AT800USB_DVB_REC.hwcfg"
+AT800_HEX		  ="AT800USB.hex"
+AT2600_RBF1       ="AT2600USB_DVB.hwcfg"
+AT2600_HEX		  ="AT2600USB.hex"
+AT2700_RBF1       ="AT2700USB_DVB.hwcfg"
+AT2700_HEX		  ="AT2700USB.hex"
+AT2800_RBF1       ="AT2800USB_DVB.hwcfg"
+AT2800_HEX		  ="AT2800USB.hex"

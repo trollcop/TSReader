@@ -1,0 +1,1 @@
+int Decompress(unsigned char *compressed, int length, int table, char *decompressed);

@@ -1,0 +1,195 @@
+<HTML>
+<HEAD>
+  <META NAME="GENERATOR" CONTENT="Adobe PageMill 3.0 Win">
+  <TITLE>COOLSTF.com DVB-SPI Interface -- USB Specification</TITLE>
+</HEAD>
+<BODY BGCOLOR="#ffffff">
+
+<P><B><FONT SIZE="+2">COOLSTF.com DVB-SPI Interface -- USB Specification<BR>
+</FONT></B><FONT SIZE="-2">Updated July 3, 2006</FONT></P>
+
+<P><B><FONT SIZE="+1">Introduction</FONT></B></P>
+
+<P>The COOLSTF.com DVB-SPI Interface allow communications between
+USB 2.0 equipped computer and LVDS-based DVB-SPI interfaces. This
+document describes the USB endpoint protocol between the computer
+and interface. If you don't understand USB endpoints you have
+some reading to do - we suggest you look through the documentation
+on the USB Developer's Forums - <A HREF="http://www.usb.org/"
+TARGET="_blank">www.usb.org</A>.</P>
+
+<P><B><FONT SIZE="+1">Endpoints</FONT></B></P>
+
+<P>The interface has five USB endpoints:</P>
+
+<P><TABLE WIDTH="493" BORDER="1" CELLSPACING="2" CELLPADDING="0">
+  <TR>
+    <TD WIDTH="27%">
+    EP0 IN/OUT</TD> 
+    <TD WIDTH="73%">
+    USB Setup - handled by OS</TD> 
+  </TR>
+  <TR>
+    <TD WIDTH="27%">
+    EP1 IN</TD> 
+    <TD WIDTH="73%">
+    Responses to EP1 OUT commands</TD> 
+  </TR>
+  <TR>
+    <TD WIDTH="27%">
+    EP1 OUT</TD> 
+    <TD WIDTH="73%">
+    Various commands - any responses send</TD> 
+  </TR>
+  <TR>
+    <TD WIDTH="27%">
+    EP2 IN</TD> 
+    <TD WIDTH="73%">
+    Bulk data returned from the tuner</TD> 
+  </TR>
+</TABLE></P>
+
+<P><B><FONT SIZE="+1">Endpoint 1</FONT></B></P>
+
+<P>This endpoint has a maximum packet length of 64 bytes. If the
+OUT command has return data, that data is written to endpoint
+1 IN which is then armed. The caller must perform a transfer on
+endpoint 1 IN to retrieve this data before the next OUT on endpoint
+1 - failure to do so will result in the loss or corruption of
+data.</P>
+
+<P>Command ID the first byte sent to the interface - any parameters
+required by the command immediately follow. Do not send any command-bytes
+other than those documented - some additional commands are used
+for firmware upgrading and are not publically available at this
+time. Sending one of these private commands might result in the
+firmware being erased from the EEPROM and this will render the
+interface unusable.</P>
+
+<P>All values are decimal unless prefixed with 0x to indicate
+hexadecimal.</P>
+
+<P><TABLE WIDTH="76%" BORDER="1" CELLSPACING="2" CELLPADDING="0">
+  <TR>
+    <TD WIDTH="13%" ALIGN="CENTER">
+    <B>Command ID</B></TD> 
+    <TD WIDTH="21%">
+    <B>Function</B></TD> 
+    <TD WIDTH="66%">
+    <B>Description</B></TD> 
+  </TR>
+  <TR>
+    <TD WIDTH="13%" ALIGN="CENTER">
+    7</TD> 
+    <TD WIDTH="21%">
+    DMA Control</TD> 
+    <TD WIDTH="66%">
+    Enables and disables transfers on EP2</TD> 
+  </TR>
+  <TR>
+    <TD WIDTH="13%" ALIGN="CENTER">
+    8</TD> 
+    <TD WIDTH="21%">
+    Get Configuration</TD> 
+    <TD WIDTH="66%">
+    Returns configration information</TD> 
+  </TR>
+  <TR>
+    <TD WIDTH="13%">
+    <P><CENTER>15</CENTER></TD> 
+    <TD WIDTH="21%">
+    Set Transfer Mode</TD> 
+    <TD WIDTH="66%">
+    Selects between async (up to 60 Mbps) and sync (above 55 Mbps)</TD> 
+  </TR>
+</TABLE></P>
+
+<P><B>Command 7 - DMA Control</B></P>
+
+<BLOCKQUOTE>
+  <PRE>out_buffer[0] = 7
+out_buffer[1] = 0 (disable) or 1 (enable)</PRE>
+</BLOCKQUOTE>
+
+<P>Sets up the FIFO inside the FX2 for transfers over endpoint
+2 in bulk mode. This command should be given followed immediately
+by the transfer loop. Once that loop terminates, the DMA should
+be disabled.</P>
+
+<P><B>Command 8 - Get Configration</B></P>
+
+<BLOCKQUOTE>
+  <PRE>out_buffer[0] = 8
+in_buffer[0] = model
+in_buffer[1] = configuration</PRE>
+</BLOCKQUOTE>
+
+<P>This command is used to get configuration information from
+the FX2. The first byte is the model number:</P>
+
+<BLOCKQUOTE>
+  <P><TABLE WIDTH="787" BORDER="1" CELLSPACING="2" CELLPADDING="0">
+    <TR>
+      <TD WIDTH="5%">
+      0x03</TD> 
+      <TD WIDTH="95%">
+      COOLSTf.com DVB-SPI interface</TD> 
+    </TR>
+  </TABLE></P>
+</BLOCKQUOTE>
+
+<P>The second byte is a bit-field with the following bits currently
+defined:</P>
+
+<BLOCKQUOTE>
+  <P><TABLE WIDTH="797" BORDER="1" CELLSPACING="2" CELLPADDING="0">
+    <TR>
+      <TD WIDTH="5%">
+      0</TD> 
+      <TD WIDTH="95%">
+      USB connection speed: 0 on USB 1.1 or 1 if on USB 2.0. USB 1.1
+      is not supported.</TD> 
+    </TR>
+  </TABLE></P>
+</BLOCKQUOTE>
+
+<P><B>Coomand 15 - Select transfer mode</B></P>
+
+<P>Selects between async and synchronous transfers on the USB
+micro-controller. </P>
+
+<BLOCKQUOTE>
+  <P><FONT FACE="Courier New">out_buffer[0] = 15<BR>
+  out_buffer[1] = flag</FONT></P>
+</BLOCKQUOTE>
+
+<P>The second byte (flag) is defined as follows:</P>
+
+<BLOCKQUOTE>
+  <P><TABLE WIDTH="787" BORDER="1" CELLSPACING="2" CELLPADDING="0">
+    <TR>
+      <TD WIDTH="7%">
+      0</TD>
+      <TD WIDTH="93%">
+      Async mode - up to 60 Mbps</TD>
+    </TR>
+    <TR>
+      <TD WIDTH="7%">
+      1</TD>
+      <TD WIDTH="93%">
+      Sync mode - above 55 Mbps</TD>
+    </TR>
+  </TABLE></P>
+</BLOCKQUOTE>
+
+<P><B><FONT SIZE="+1">Endpoint 2</FONT></B></P>
+
+<P>This IN endpoint returns the MPEG data from the tuner. 512
+bytes are transferred at a time. You should use a high priority
+thread and a tight loop with overlapped I/O to read data from
+the interface.</P>
+
+<P>&nbsp;
+
+</BODY>
+</HTML>

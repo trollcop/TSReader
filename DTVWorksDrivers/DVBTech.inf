@@ -1,0 +1,91 @@
+; Installation INF for the DVBTech USB interfaces
+
+[Version]
+Signature="$CHICAGO$"
+Class=USB
+ClassGUID={36FC9E60-C465-11CF-8056-444553540000}
+provider=%DVBTech%
+;-------------------------------------------------------------;
+
+[SourceDisksNames]
+1=%DVBTech_INSTALL%,,,
+
+[SourceDisksFiles]
+DVBTech.sys = 1
+DVBTech.spt = 1
+
+[Manufacturer]
+%MfgName%=DVBTech
+
+[DVBTech]
+%VID_14AC&PID_0100.DeviceDesc%=DVBTech, USB\VID_14AC&PID_0100
+%VID_14AC&PID_1100.DeviceDesc%=DVBTech, USB\VID_14AC&PID_1100
+%VID_14AC&PID_2100.DeviceDesc%=DVBTech, USB\VID_14AC&PID_2100
+%VID_14AC&PID_3100.DeviceDesc%=DVBTech, USB\VID_14AC&PID_3100
+%VID_14AC&PID_4100.DeviceDesc%=DVBTech, USB\VID_14AC&PID_4100
+%VID_14AC&PID_5100.DeviceDesc%=DVBTech, USB\VID_14AC&PID_5100
+%VID_14AC&PID_6100.DeviceDesc%=DVBTech, USB\VID_14AC&PID_6100
+%VID_14AC&PID_7100.DeviceDesc%=DVBTech, USB\VID_14AC&PID_7100
+;[PreCopySection]
+;HKR,,NoSetupUI,,1
+
+[DestinationDirs]
+DVBTech.Files.Ext = 10,System32\Drivers
+;------------------------------------------------------------;
+
+
+[DVBTech.NT]
+CopyFiles=DVBTech.Files.Ext
+;------------------------------------------------------------;
+AddReg=DVBTech.AddReg
+
+[DVBTech.NT.HW]
+AddReg=DVBTech.AddReg.Guid
+
+[DVBTech.NT.Services]
+Addservice = DVBTech, 0x00000002, DVBTech.AddService
+
+[DVBTech.AddService]
+DisplayName    = %DVBTech.SvcDesc%
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 3                  ; SERVICE_DEMAND_START
+ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %10%\System32\Drivers\DVBTech.sys
+LoadOrderGroup = Base
+ 
+[DVBTech.AddReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,DVBTech.sys
+
+[DVBTech.Files.Ext]
+DVBTech.sys
+
+;-----Uncomment below to support script file processing-----;
+;[DVBTech.Files.Spt]
+;DVBTech.spt
+;------------------------------------------------------------;
+
+[DVBTech.AddReg.Guid]
+HKR,,DriverGUID,,%DVBTech.GUID%
+;-----Uncomment below to support script file processing-----;
+;HKR,,DriverEXECSCRIPT,,%DVBTech.EXECSCRIPT%
+;------------------------------------------------------------;
+
+
+;---------------------------------------------------------------;
+
+[Strings]
+DVBTech="DVBTech"
+MfgName="DVBTech"
+DVBTech_INSTALL="DVBTech USB Driver Installation Disk"
+VID_14AC&PID_0100.DeviceDesc="8PSK Interface"
+VID_14AC&PID_1100.DeviceDesc="8PSK Interface Device ID 1"
+VID_14AC&PID_2100.DeviceDesc="8PSK Interface Device ID 2"
+VID_14AC&PID_3100.DeviceDesc="8PSK Interface Device ID 3"
+VID_14AC&PID_4100.DeviceDesc="8PSK Interface Device ID 4"
+VID_14AC&PID_5100.DeviceDesc="8PSK Interface Device ID 5"
+VID_14AC&PID_6100.DeviceDesc="8PSK Interface Device ID 6"
+VID_14AC&PID_7100.DeviceDesc="8PSK Interface Device ID 7"
+DVBTech.SvcDesc="DVBTech USB Driver"
+DVBTech.GUID="{FA58C45D-5B19-428b-A2D1-2707856D7E19}"
+

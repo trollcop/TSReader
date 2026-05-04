@@ -1,0 +1,133 @@
+
+
+
+             ---== REQUIREMENTS ==---
+
+
+
+For Linux/MSVC, you'll need a fairly recent (>=0.98.35) version
+of NASM. See: http://nasm.sourceforge.net/ 
+
+Of course, you'll also need (GNU-)make and a compiler. A Perl
+interpreter would be a plus, too (www.perl.com).
+
+
+
+
+              ---== INSTALLATION ==---
+
+
+
+For Unices:
+
+> cd util;
+> genmake.pl
+> cd ../build/<system>-<compiler>/
+> make subdir
+> make tmp4
+
+'tmp4' is a front end example for the core library.
+there's also a couple of benches: 'make tests'.
+
+For MSVC: 
+
+  There's a build/msvc/sklmp4.dsw workspace.
+
+
+
+            ---== FOOLING AROUND ==---
+
+
+You can tweak the makefile stubs in each build/<system>-<compiler>/ 
+directories. There are some flags to play with...
+
+
+   ---== Dynamically loaded library under Win32 ==---
+
+
+
+A ready-to-use project 'drv_mpg' is available in MSVC workspace. 
+It will build a .dll library available as 'bin/skl_drv_mpg.dll'.
+
+
+
+   ---== Dynamically loaded library under Unix ==---
+
+
+
+When making 'tmp4', a static library 'lib/libskl_syst.a' is
+built and used for linking. Using the command:
+
+'make lib_so/libskl_syst.so'
+
+will build the corresponding ready-to-use shared library.
+
+Note : you can also type: 'make all_so' to build a
+dynamic version of all the libraries. In
+particular, the standalone .dll version of the video driver 
+can prove being useful in itself.
+
+
+
+          ---== Automagic dynamic loading ==---
+
+
+
+In addition using to the 'regular' dynamic library (.dll and .so),
+a built-in library loading is also supplied.
+
+To use it, just define the macro SKL_USE_DYN_LOAD to anything
+when compiling *your* code (Building the library with this flag
+on has no effect).
+
+Then, using the SKL_LOAD_DYN_SYMBOL macro will 'automagically' 
+search for the .dll or .so library, open the file, and map the 
+requested symbol.
+
+This mecanism is useful for having transparent constructor
+of external objects implemented in .dll; or for re-loading
+a .dll at run-time.
+
+Under Unix, don't forget to make the LD_LIBRARY_PATH env variable 
+point to 'lib_so'!
+
+
+
+          ---== Debugging ==---
+
+
+
+If you want to build the debug version (very useful, because
+of all the assert()), just use the command: "make tmp4 DEBUG=-g"
+The debug version is not very slow, compared to the optimized one.
+
+To debug the exceptions and asserts, it's convenient to put a
+debugger breakpoint at the two dummy functions: Skl_Do_Assert() 
+and Skl_Throw().
+
+
+
+
+         ---== POTENTIAL TROUBLES ==---
+
+
+
+
+If you get the following error message:
+
+"../../util/makefile.unix:27: ../../util/makefile.all: 
+No such file or directory
+gmake: *** No rule to make target ../../util/makefile.all'.  Stop."
+
+=> it's just you forgot to launch the "genmake.pl" script in /util.
+
+If you get:
+
+"FATAL: Can't create ./obj/tmp4.o: No such file or directory"
+
+=> it's just you forgot to 'make subdir' in the build directory.
+
+
+In last resort, there's a silly script 'setup.sh' that will try
+to set everything up.
+

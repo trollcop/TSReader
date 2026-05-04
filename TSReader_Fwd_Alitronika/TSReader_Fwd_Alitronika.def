@@ -1,0 +1,8 @@
+LIBRARY TSReader_Fwd_Alitronika
+
+EXPORTS
+	DllMain							@1
+	TSReader_Fwd_Init				@2
+	TSReader_Fwd_DeInit				@3
+	TSReader_Fwd_Data				@4
+	TSReader_Fwd_GetDescription		@5

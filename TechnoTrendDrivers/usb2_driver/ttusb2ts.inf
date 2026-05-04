@@ -1,0 +1,173 @@
+; Installation inf for the TechnoTrend DVB USB 2.0 Devices
+;
+; (c) Copyright 2003 - 2005 TechnoTrend AG
+;
+
+[Version]
+Signature="$CHICAGO$"
+;Class=USB
+;ClassGUID={36FC9E60-C465-11CF-8056-444553540000}
+Class=Media
+ClassGuid={4d36e96c-e325-11ce-bfc1-08002be10318}
+Provider=%MSFT%
+DriverVer=11/30/2005,1.5.4.2
+
+[SourceDisksNames]
+1="TechnoTrend TTUSB2TS Installation Disk",,,
+
+[SourceDisksFiles]
+ttusb2ts.sys = 1
+ttusb2ts.inf = 1
+ndislpu2.sys = 1
+ndislpu2.inf = 1
+readme.txt = 1,DrvSetup\Win98
+cinstall.exe = 1,DrvSetup\Win98
+
+[SourceDisksFiles.x86]
+ttusb2ts.sys = 1
+ttusb2ts.inf = 1
+ndislpu2.sys = 1
+ndislpu2.inf = 1
+fastinst.exe = 1,DrvSetup\Win2000
+
+[Manufacturer]
+%MfgName%=TechnoTrend
+
+[TechnoTrend]
+; HW Rev 0.9 DVB-S
+%USB\VID_0B48&PID_3001.DeviceDesc%=TTUSB2TS.Dev, USB\VID_0B48&PID_3001&REV_0000
+%USB\VID_0B48&PID_3001.DeviceDesc%=TTUSB2TS.DevNW, USB\VID_0B48&PID_3001&REV_0100
+
+; HW Rev 1.0 DVB-S
+%USB\VID_0B48&PID_3001.DeviceDesc%=TTUSB2TS.Dev, USB\VID_0B48&PID_3001&REV_0001
+%USB\VID_0B48&PID_3001.DeviceDesc%=TTUSB2TS.DevNW, USB\VID_0B48&PID_3001&REV_0101
+
+; HW Rev 1.0 DVB-C
+%USB\VID_0B48&PID_3002.DeviceDesc%=TTUSB2TS.Dev, USB\VID_0B48&PID_3002&REV_0001
+%USB\VID_0B48&PID_3002.DeviceDesc%=TTUSB2TS.DevNW, USB\VID_0B48&PID_3002&REV_0101
+
+; HW Rev 1.0 DVB-T
+%USB\VID_0B48&PID_3003.DeviceDesc%=TTUSB2TS.Dev, USB\VID_0B48&PID_3003&REV_0001
+%USB\VID_0B48&PID_3003.DeviceDesc%=TTUSB2TS.DevNW, USB\VID_0B48&PID_3003&REV_0101
+
+; HW Rev 1.0 DVB-T Bus-Powered
+%USB\VID_0B48&PID_3004.DeviceDesc%=TTUSB2TS.Dev, USB\VID_0B48&PID_3004&REV_0000
+%USB\VID_0B48&PID_3004.DeviceDesc%=TTUSB2TS.DevNW, USB\VID_0B48&PID_3004&REV_0100
+
+%USB\VID_0B48&PID_3004.DeviceDesc%=TTUSB2TS.Dev, USB\VID_0B48&PID_3004&REV_0001
+%USB\VID_0B48&PID_3004.DeviceDesc%=TTUSB2TS.DevNW, USB\VID_0B48&PID_3004&REV_0101
+
+%USB\VID_0B48&PID_3005.DeviceDesc%=TTUSB2TS.DevNW, USB\VID_0B48&PID_3005
+
+; HW Rev 1.4 DVB-S TechnoTrend
+%USB\VID_0B48&PID_3006.DeviceDesc%=TTUSB2TS.Dev, USB\VID_0B48&PID_3006&REV_0000
+%USB\VID_0B48&PID_3006.DeviceDesc%=TTUSB2TS.DevNW, USB\VID_0B48&PID_3006&REV_0100
+
+; HW Rev 1.5 DVB-S2 TechnoTrend
+%USB\VID_0B48&PID_3007.DeviceDesc%=TTUSB2TS.Dev, USB\VID_0B48&PID_3007&REV_0001
+%USB\VID_0B48&PID_3007.DeviceDesc%=TTUSB2TS.DevNW, USB\VID_0B48&PID_3007&REV_0101
+
+
+; HW Rev 1.4 DVB-S Pinnacle
+%USB\VID_2304&PID_020F.DeviceDesc%=TTUSB2TS.Dev, USB\VID_2304&PID_020F&REV_0000
+%USB\VID_2304&PID_020F.DeviceDesc%=TTUSB2TS.DevNW, USB\VID_2304&PID_020F&REV_0100
+
+
+; EZ-USB FX2 generic for EEPROM initialization during production
+%USB\VID_04B4&PID_8613.DeviceDesc%=TTUSB2TS.Dev, USB\VID_04B4&PID_8613
+
+
+
+;[PreCopySection]
+;HKR,,NoSetupUI,,1
+
+[DestinationDirs]
+TTUSB2TS.Files.Ext = 10,System32\Drivers
+TTUSB2TS.Files.Inf = 10,INF
+NDISLPU2Files = 10,temp\TTSetup
+NDISLPU2Files.NT = 10,temp\TTSetup
+
+
+[TTUSB2TS.Dev]
+CopyFiles=TTUSB2TS.Files.Ext, TTUSB2TS.Files.Inf, NDISLPU2Files
+AddReg=TTUSB2TS.AddReg
+
+[TTUSB2TS.Dev.NT]
+CopyFiles=TTUSB2TS.Files.Ext, TTUSB2TS.Files.Inf, NDISLPU2Files.NT
+AddReg=TTUSB2TS.AddReg
+
+[TTUSB2TS.Dev.NT.Services]
+Addservice = TTUSB2TS, 0x00000002, TTUSB2TS.AddService
+
+
+[TTUSB2TS.DevNW]
+CopyFiles=TTUSB2TS.Files.Ext, TTUSB2TS.Files.Inf, NDISLPU2Files
+AddReg=TTUSB2TS.AddReg, NDISLPU2.AddReg
+
+[TTUSB2TS.DevNW.NT]
+CopyFiles=TTUSB2TS.Files.Ext, TTUSB2TS.Files.Inf, NDISLPU2Files.NT
+AddReg=TTUSB2TS.AddReg, NDISLPU2.AddReg.NT
+
+[TTUSB2TS.DevNW.NT.Services]
+Addservice = TTUSB2TS, 0x00000002, TTUSB2TS.AddService
+
+
+[TTUSB2TS.AddService]
+DisplayName    = %TTUSB2TS.SvcDesc%
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 3                  ; SERVICE_DEMAND_START
+ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %10%\System32\Drivers\ttusb2ts.sys
+LoadOrderGroup = Base
+
+[TTUSB2TS.AddReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,ttusb2ts.sys
+
+
+[NDISLPU2.AddReg]
+HKLM,%Reg_TT_RunOnce%,TTSetup,,%10%"\temp\TTSetup\cinstall.exe -c""Net"" -m""TechnoTrend AG"" -d""Virtual DVB/USB2.0 Network Adapter"" -i""%10%"\temp\TTSetup\"""
+
+[NDISLPU2.AddReg.NT]
+HKLM,%Reg_TT_RunOnce%,TT_Setup,,%10%"\temp\TTSetup\fastinst.exe "%10%"\temp\TTSetup\ndislpu2.inf"
+
+
+[TTUSB2TS.Files.Ext]
+ttusb2ts.sys
+
+[TTUSB2TS.Files.Inf]
+ttusb2ts.inf
+
+
+[NDISLPU2Files]
+ndislpu2.inf
+ndislpu2.sys,,,2
+readme.txt
+cinstall.exe
+
+[NDISLPU2Files.NT]
+ndislpu2.inf
+ndislpu2.sys,,,2
+fastinst.exe
+
+
+;---------------------------------------------------------------;
+
+[Strings]
+MSFT="TechnoTrend"
+MfgName="TechnoTrend AG"
+USB\VID_0B48&PID_3001.DeviceDesc="TechnoTrend DVB-S USB 2.0 Device"
+USB\VID_0B48&PID_3002.DeviceDesc="TechnoTrend DVB-C USB 2.0 Device"
+USB\VID_0B48&PID_3003.DeviceDesc="TechnoTrend DVB-T USB 2.0 Device"
+USB\VID_0B48&PID_3004.DeviceDesc="TechnoTrend DVB-T USB 2.0 BP Device"
+USB\VID_0B48&PID_3005.DeviceDesc="TechnoTrend DVB-T USB 2.0 BP8K Device"
+USB\VID_0B48&PID_3006.DeviceDesc="TechnoTrend DVB-S USB 2.0 Device"
+USB\VID_0B48&PID_3007.DeviceDesc="TechnoTrend DVB-S2 USB 2.0 Device"
+
+USB\VID_2304&PID_020F.DeviceDesc="Pinnacle DVB-S USB 2.0 Device"
+
+USB\VID_04B4&PID_8613.DeviceDesc="Generic FX2 USB 2.0 Device"
+
+
+TTUSB2TS.SvcDesc="TTUSB2TS USB 2.0 Driver"
+Reg_TT_RunOnce="Software\Microsoft\Windows\CurrentVersion\RunOnce"

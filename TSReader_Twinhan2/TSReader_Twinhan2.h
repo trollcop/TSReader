@@ -1,0 +1,52 @@
+// Device driver interface
+DEFINE_GUID(GUID_DST_DEVICE1, 
+            0xe18d1721, 0x70b5, 0x4de7, 0x83, 0xb3, 0x35, 0x43, 0x6e, 0x39, 0x54, 0xed);
+
+DEFINE_GUID(GUID_DST_DEVICE2, 
+            0x7377db61, 0xe3cd, 0x11d2, 0x8a, 0x3f, 0x0, 0x0, 0xf8, 0x78, 0x44, 0x22);
+
+#define DST_DEVICE1 0xDDFF
+#define DST_DEVICE2 0xAABB
+
+// "Tuner" communications struct
+typedef struct TunerDataStruct
+{
+	unsigned char	address;         // 0
+	unsigned char	frequencyMSB;    // 1
+	unsigned char	frequencyLSB;    // 2
+	unsigned char	tunerStep;       // 3
+	unsigned char	symbolRateHSB;   // 4
+	unsigned char	symbolRateMSB;   // 5
+	unsigned char	symbolRateLSB;   // 6
+	unsigned char	flag;            // 7
+	unsigned char	checkSum;        // 8
+}TunerData;
+
+
+// IOCtls
+#define DST_IOCTL_SCAN_START \
+	CTL_CODE( DST_DEVICE2, 0xA40, METHOD_BUFFERED, FILE_ANY_ACCESS )
+#define DST_IOCTL_SCAN_WAITING \
+	CTL_CODE( DST_DEVICE2, 0xA60, METHOD_BUFFERED, FILE_ANY_ACCESS )
+#define DST_IOCTL_SCAN_END \
+	CTL_CODE( DST_DEVICE2, 0xA80, METHOD_BUFFERED, FILE_ANY_ACCESS )
+#define DST_IOCTL_SET_INFO \
+	CTL_CODE( DST_DEVICE2, 0xA20, METHOD_BUFFERED, FILE_ANY_ACCESS )
+#define DST_IOCTL_SET_INFO \
+	CTL_CODE( DST_DEVICE2, 0xA20, METHOD_BUFFERED, FILE_ANY_ACCESS )
+#define DST_IOCTL_CA_WRITE \
+	CTL_CODE( DST_DEVICE2, 0xA81, METHOD_BUFFERED, FILE_ANY_ACCESS )
+#define DST_IOCTL_CA_READ \
+	CTL_CODE( DST_DEVICE2, 0xA82, METHOD_BUFFERED, FILE_ANY_ACCESS )
+#define DST_IOCTL_RDC8820_RESET \
+	CTL_CODE( DST_DEVICE2, 0xA84, METHOD_BUFFERED, FILE_ANY_ACCESS )
+
+#define DST_IOCTL_START_CAP \
+	CTL_CODE( DST_DEVICE1, 0xB00, METHOD_BUFFERED, FILE_ANY_ACCESS )
+#define DST_IOCTL_STOP_CAP \
+	CTL_CODE( DST_DEVICE1, 0xB10, METHOD_BUFFERED, FILE_ANY_ACCESS )
+#define DST_IOCTL_GET_DATABUFF_BLOCK \
+	CTL_CODE( DST_DEVICE1, 0xB20, METHOD_BUFFERED, FILE_ANY_ACCESS )
+#define DST_IOCTL_GET_DATABUFF_ADDR \
+	CTL_CODE( DST_DEVICE1, 0xB40, METHOD_BUFFERED, FILE_ANY_ACCESS )
+

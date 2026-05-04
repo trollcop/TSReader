@@ -1,0 +1,130 @@
+; Installation INF for the DTVWorks USB interfaces
+; Also supports TSReader operation with:
+;  Sasem USB 2.0 (ATSC)
+;  Terratec Cinegery T2 (DVB-T)
+;  DVBWorld DVB-S2101 (DVB-S)
+;  Freecom DVB-T stick (DVB-T) (also RF Central's RFX-MDR-PC 2 GHz receiver)
+
+[Version]
+Signature="$CHICAGO$"
+Class=USB
+ClassGUID={36FC9E60-C465-11CF-8056-444553540000}
+provider=%DTVWorks%
+;-------------------------------------------------------------;
+
+[SourceDisksNames]
+1=%DTVWorks_INSTALL%,,,
+
+[SourceDisksFiles]
+DTVWorks.sys = 1
+DTVWorks.spt = 1
+
+[Manufacturer]
+%MfgName%=DTVWorks
+
+[DTVWorks]
+%VID_14AC&PID_0001.DeviceDesc%=DTVWorks, USB\VID_14AC&PID_0001
+%VID_14AC&PID_0002.DeviceDesc%=DTVWorks, USB\VID_14AC&PID_0002
+;DVB-SPI interface
+%VID_14AC&PID_0003.DeviceDesc%=DTVWorks, USB\VID_14AC&PID_0003
+%VID_14AC&PID_1003.DeviceDesc%=DTVWorks, USB\VID_14AC&PID_1003
+%VID_14AC&PID_2003.DeviceDesc%=DTVWorks, USB\VID_14AC&PID_2003
+%VID_14AC&PID_3003.DeviceDesc%=DTVWorks, USB\VID_14AC&PID_3003
+%VID_14AC&PID_4003.DeviceDesc%=DTVWorks, USB\VID_14AC&PID_4003
+%VID_14AC&PID_5003.DeviceDesc%=DTVWorks, USB\VID_14AC&PID_5003
+%VID_14AC&PID_6003.DeviceDesc%=DTVWorks, USB\VID_14AC&PID_6003
+%VID_14AC&PID_7003.DeviceDesc%=DTVWorks, USB\VID_14AC&PID_7003
+;
+%VID_14AC&PID_0004.DeviceDesc%=DTVWorks, USB\VID_14AC&PID_0004
+%VID_14AC&PID_0005.DeviceDesc%=DTVWorks, USB\VID_14AC&PID_0005
+%VID_11BA&PID_1001.DeviceDesc%=DTVWorks, USB\VID_11BA&PID_1001
+%VID_11BA&PID_1002.DeviceDesc%=DTVWorks, USB\VID_11BA&PID_1002
+%VID_11BA&PID_1003.DeviceDesc%=DTVWorks, USB\VID_11BA&PID_1003
+%VID_11BA&PID_1101.DeviceDesc%=DTVWorks, USB\VID_11BA&PID_1101
+%VID_0CCD&PID_0038.DeviceDesc%=DTVWorks, USB\VID_0CCD&PID_0038
+%VID_04B4&PID_2101.DeviceDesc%=DTVWorks, USB\VID_04B4&PID_2101
+%VID_04B4&PID_2102.DeviceDesc%=DTVWorks, USB\VID_04B4&PID_2102
+%VID_14AA&PID_022B.DeviceDesc%=DTVWorks, USB\VID_14AA&PID_022B
+%VID_05D8&PID_810E.DeviceDesc%=DTVWorks, USB\VID_05D8&PID_810E
+%VID_734C&PID_2601.DeviceDesc%=DTVWorks, USB\VID_734C&PID_2601
+
+;[PreCopySection]
+;HKR,,NoSetupUI,,1
+
+[DestinationDirs]
+DTVWorks.Files.Ext = 10,System32\Drivers
+;------------------------------------------------------------;
+
+
+[DTVWorks.NT]
+CopyFiles=DTVWorks.Files.Ext
+;------------------------------------------------------------;
+AddReg=DTVWorks.AddReg
+
+[DTVWorks.NT.HW]
+AddReg=DTVWorks.AddReg.Guid
+
+[DTVWorks.NT.Services]
+Addservice = DTVWorks, 0x00000002, DTVWorks.AddService
+
+[DTVWorks.AddService]
+DisplayName    = %DTVWorks.SvcDesc%
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 3                  ; SERVICE_DEMAND_START
+ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %10%\System32\Drivers\DTVWorks.sys
+LoadOrderGroup = Base
+ 
+[DTVWorks.AddReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,DTVWorks.sys
+
+[DTVWorks.Files.Ext]
+DTVWorks.sys
+
+;-----Uncomment below to support script file processing-----;
+;[DTVWorks.Files.Spt]
+;DTVWorks.spt
+;------------------------------------------------------------;
+
+[DTVWorks.AddReg.Guid]
+HKR,,DriverGUID,,%DTVWorks.GUID%
+;-----Uncomment below to support script file processing-----;
+;HKR,,DriverEXECSCRIPT,,%DTVWorks.EXECSCRIPT%
+;------------------------------------------------------------;
+
+
+;---------------------------------------------------------------;
+
+[Strings]
+DTVWorks="DTVWorks"
+MfgName="DTVWorks"
+DTVWorks_INSTALL="DTVWorks USB Driver Installation Disk"
+VID_14AC&PID_0001.DeviceDesc="8PSK Interface"
+VID_14AC&PID_0002.DeviceDesc="8VSB Interface"
+;DVB-SPI interface
+VID_14AC&PID_0003.DeviceDesc="DVB-SPI Interface"
+VID_14AC&PID_1003.DeviceDesc="DVB-SPI Interface Device ID 1"
+VID_14AC&PID_2003.DeviceDesc="DVB-SPI Interface Device ID 2"
+VID_14AC&PID_3003.DeviceDesc="DVB-SPI Interface Device ID 3"
+VID_14AC&PID_4003.DeviceDesc="DVB-SPI Interface Device ID 4"
+VID_14AC&PID_5003.DeviceDesc="DVB-SPI Interface Device ID 5"
+VID_14AC&PID_6003.DeviceDesc="DVB-SPI Interface Device ID 6"
+VID_14AC&PID_7003.DeviceDesc="DVB-SPI Interface Device ID 7"
+;
+VID_14AC&PID_0004.DeviceDesc="DVB-S Interface"
+VID_14AC&PID_0005.DeviceDesc="MPEG-2 Output"
+VID_11BA&PID_1001.DeviceDesc="Sasem OnAir USB HDTV (for TSReader)"
+VID_11BA&PID_1002.DeviceDesc="Sasem OnAir USB HDTV Test (for TSReader)"
+VID_11BA&PID_1003.DeviceDesc="Autumn Wave USB HDTV Creator (for TSReader)"
+VID_11BA&PID_1101.DeviceDesc="Autumn Wave USB HDTV-GT (for TSReader)"
+VID_0CCD&PID_0038.DeviceDesc="Terratec Cinergy T² (for TSReader)"
+VID_04B4&PID_2101.DeviceDesc="DVBWorld DVB-S2101 (for TSReader)"
+VID_04B4&PID_2102.DeviceDesc="DVBWorld DVB-S2102 (for TSReader)"
+VID_14AA&PID_022B.DeviceDesc="Freecom DVB-T stick (for TSReader)"
+VID_05D8&PID_810E.DeviceDesc="Artec T14A Mini (for TSReader)"
+VID_734C&PID_2601.DeviceDesc="Matchbox Pro DVB-S (for TSReader)"
+
+DTVWorks.SvcDesc="DTVWorks USB Driver"
+DTVWorks.GUID="{FA58C45D-5B19-428b-A2D1-2707856D7E19}"
+

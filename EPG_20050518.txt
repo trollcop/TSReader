@@ -1,0 +1,45 @@
+00001486	2005/05/18 16:00	02:00	3	WFDC-DT	Telefutura	Escándalo T.V.			
+00001487	2005/05/18 18:00	01:00	3	WFDC-DT	Telefutura	Mónica			
+00001488	2005/05/18 19:00	01:00	3	WFDC-DT	Telefutura	¿Quién Tiene la Razón?			
+00001489	2005/05/18 20:00	01:00	3	WFDC-DT	Telefutura	Salomé			
+00001486	2005/05/18 16:00	02:00	3	WFDC-DT	Telefutura	Escándalo T.V.	Programa en vivo acerca de variados temas en el que la audiencia participa. Artistas del momento y celebridades del mundo del espectáculo acompañan a sus anfitriones todos los mediodías.		
+00001487	2005/05/18 18:00	01:00	3	WFDC-DT	Telefutura	Mónica	Un `talk show' que presenta los sentimientos, valores y problemas reales que se enfrentan diariamente.		
+00001488	2005/05/18 19:00	01:00	3	WFDC-DT	Telefutura	¿Quién Tiene la Razón?	Un programa dedicado a analizar los conflictos de pareja.		
+00001489	2005/05/18 20:00	01:00	3	WFDC-DT	Telefutura	Salomé	Una bailarina de un bar de segunda lucha por sus sueños con la esperanza de obtener una mejor forma de vida.		
+00001486	2005/05/18 16:00	02:00	3	WFDC-DT	Telefutura	Escándalo T.V.			
+00001487	2005/05/18 18:00	01:00	3	WFDC-DT	Telefutura	Mónica			
+00001488	2005/05/18 19:00	01:00	3	WFDC-DT	Telefutura	¿Quién Tiene la Razón?			
+00001489	2005/05/18 20:00	01:00	3	WFDC-DT	Telefutura	Salomé			
+00001486	2005/05/18 16:00	02:00	3	WFDC-DT	Telefutura	Escándalo T.V.	Programa en vivo acerca de variados temas en el que la audiencia participa. Artistas del momento y celebridades del mundo del espectáculo acompañan a sus anfitriones todos los mediodías.		
+00001487	2005/05/18 18:00	01:00	3	WFDC-DT	Telefutura	Mónica	Un `talk show' que presenta los sentimientos, valores y problemas reales que se enfrentan diariamente.		
+00001488	2005/05/18 19:00	01:00	3	WFDC-DT	Telefutura	¿Quién Tiene la Razón?	Un programa dedicado a analizar los conflictos de pareja.		
+00001489	2005/05/18 20:00	01:00	3	WFDC-DT	Telefutura	Salomé	Una bailarina de un bar de segunda lucha por sus sueños con la esperanza de obtener una mejor forma de vida.		
+0000148a	2005/05/18 21:00	01:00	3	WFDC-DT	Telefutura	Juana, La Virgen			
+0000148b	2005/05/18 22:00	01:00	3	WFDC-DT	Telefutura	Misión S.O.S. Aventura y Amor			
+0000148c	2005/05/18 23:00	01:00	3	WFDC-DT	Telefutura	100 Mexicanos Dijeron			
+0000148c	2005/05/18 23:00	01:00	3	WFDC-DT	Telefutura	100 Mexicanos Dijeron	Un programa de juegos, concursos y variedades.		
+0000148b	2005/05/18 22:00	01:00	3	WFDC-DT	Telefutura	Misión S.O.S. Aventura y Amor	Amigos jóvenes forman una pandilla y aceptan una misión para salvar el mundo de destrucción.		
+00000039	2005/05/18 17:00	00:30	1	MHz1		Russian News	(Russian)		
+0000003a	2005/05/18 17:30	00:30	1	MHz1		Polish News			
+000000bf	2005/05/18 20:30	00:30	1	MHz1		Burt Wolf: Travels & Traditions	Ellis Island, N.Y.		
+00000140	2005/05/18 21:00	03:30	1	MHz1		News			
+000000bb	2005/05/18 18:00	01:00	1	MHz1		Instructional TV	Educational programming.		
+000000bc	2005/05/18 19:00	00:30	1	MHz1		Chinese News			
+000000bd	2005/05/18 19:30	00:30	1	MHz1		Out of Ireland	Irish personalities, entertainment and events.		
+000000be	2005/05/18 20:00	00:30	1	MHz1		Travels in Europe	Rick Steves visits Lisbon, Portugal; Alfama; Pena Palace.		
+000000c6	2005/05/18 20:00	04:00	2	MHz2		SIGN OFF			
+00000045	2005/05/18 15:00	05:00	2	MHz2		SIGN OFF			
+0000004e	2005/05/18 17:00	01:00	3	MHz3		Deutsche Welle TV	Deutsche Welle Programming in English, German and Spanish		
+000000cf	2005/05/18 18:00	01:00	3	MHz3		Deutsche Welle TV	Deutsche Welle Programming in English, German and Spanish		
+000000d0	2005/05/18 19:00	01:00	3	MHz3		Deutsche Welle TV	Deutsche Welle Programming in English, German and Spanish		
+000000d1	2005/05/18 20:00	01:00	3	MHz3		Deutsche Welle TV	Deutsche Welle Programming in English, German and Spanish		
+00000152	2005/05/18 21:00	01:00	3	MHz3		Deutsche Welle TV	Deutsche Welle Programming in English, German and Spanish		
+00000153	2005/05/18 22:00	01:00	3	MHz3		Deutsche Welle TV	Deutsche Welle Programming in English, German and Spanish		
+00000154	2005/05/18 23:00	01:00	3	MHz3		Deutsche Welle TV	Deutsche Welle Programming in English, German and Spanish		
+000000dd	2005/05/18 20:00	01:00	4	MHz4		Future DTV Program	TBA		
+0000015e	2005/05/18 21:00	01:00	4	MHz4		Future DTV Program	TBA		
+0000015f	2005/05/18 22:00	01:00	4	MHz4		Future DTV Program	TBA		
+00000160	2005/05/18 23:00	01:00	4	MHz4		Future DTV Program	TBA		
+0000005a	2005/05/18 17:00	01:00	4	MHz4		Future DTV Program	TBA		
+000000db	2005/05/18 18:00	01:00	4	MHz4		Future DTV Program	TBA		
+000000dc	2005/05/18 19:00	01:00	4	MHz4		Future DTV Program	TBA		

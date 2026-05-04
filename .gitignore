@@ -1,0 +1,38 @@
+# Build output 
+build/ 
+Debug/ 
+Release/ 
+*.obj 
+*.pdb 
+*.ilk 
+*.pch 
+*.idb 
+*.exp 
+*.res 
+*.aps 
+*.clw 
+*.ncb 
+*.opt 
+*.plg 
+*.sdf 
+*.suo 
+*.user 
+*.opensdf 
+ 
+# macOS 
+.DS_Store 
+._* 
+ 
+# Visual Studio 
+*.vcxproj.user 
+.vs/ 
+ 
+# Tarballs 
+*.tar.gz 
+ 
+# Build variant dirs 
+TSReader___Win32_* 
+TSReader_Linsys___* 
+TSReader_TTBudget___* 
+TSReader_Twinhan2___*
+.srcusb  

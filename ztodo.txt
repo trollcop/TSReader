@@ -1,0 +1,96 @@
+2.0:
+
+Update website with 2.0 info
+
+Update Digital River sales page
+
+Test network scanner
+
+Test restart: File OK Stradis ? Twinhan ? Twinhan2 ? TechnoTrend OK
+
+Investigate CPU usage when Twinhan2 attempts to re-sync
+
+Make Twinhan2 source tune
+
+//////////D-VHS record doesn't work in release mode - fully test
+
+//////////Check automatic recording on Twinhan and TechnoTrend
+
+Check uninstall, reinstall date limits and extension codes
+
+//////////Check polarity voltage, DiSEqC and 22KHz tone
+
+//////////Command-line interface for TechnoTrend
+
+//////////When playing if you change channel to a channel that's not video/audio you get the wrong error
+
+//////////Warning for PS recording that the mux rate is wrong
+
+//////////Make sure all DLLs have correct versions
+
+//////////Command line record to D-VHS
+
+//////////Check command-line record selects program correctly
+
+//////////Fix TWinhan2 source
+
+//////////Fix recorded SDT generation
+
+//////////Fix recorded SDT prompt
+
+//////////Check removing past EIT events
+
+//////////Prevent running in the past
+
+//////////Look at stream parser with EU streams
+
+//////////Look at stream parser with 61.5w 12297 - stalls on non-existant audio ES
+
+//////////Add manual channels
+
+//////////Fix plug-in menu
+
+//////////Implement restart capability (Stop, clean, Start, WM_USER + 5)
+
+//////////Remove any old references to FILE_MODE, DVB_MASTER and TWINHAN
+
+//////////Implement thumbnail scrollbar
+
+3.0:
+
+Check G9 3920 V DCII combo mode - thumbnail issue with channel 53
+
+Add signal meter for satellite interfaces
+
+Fill in MD plugin structure correctly
+
+DirectShow decoder
+
+Make source sample and make it standalone
+
+D-VHS source
+
+Clean up destinations -- make them plugins and allow more than one at a time
+
+Make main dialog resizable
+
+Add tuner dialogs for DVB-T and DVB-C
+
+Look into DirectShow source - HiPix for example
+
+Look at Australian AC3 issue (PMT type 0x06 not 0x81)
+
+Implement better command-line parser
+
+Documentation
+
+Allow switch PIDs between hex and decimal
+
+Allow localisation?
+
+Lots of improvements to the IP/DVB decoder
+
+Fix internal MPEG decoder to get rid of blockiness
+
+Fix program stream recording - mux rate needs to be calculated from the PCR of the incoming TS packets
+

@@ -1,0 +1,685 @@
+<?XML version="1.0"?>
+<component>
+
+<registration
+	description="EpgTSReaderPlugin"
+	progid="myHTPC.EpgTSReaderPlugin"
+	version="1.00"
+>
+</registration>
+
+<implements id="Automation" type="Automation">
+	<method Name="Watch"></method>
+	<method Name="Record"></method>
+	<method Name="LiveTV"></method>
+	<method Name="Cancel"></method>
+</implements>
+
+<script language="JScript">
+
+<![CDATA[
+
+
+//------------------------------------------------------------------------------
+//  Funtionality
+//	LiveTv()  	-- Run TSReader
+//	Watch()		-- Change To the selected channel in TSReader Viewing Program
+//	Record()	-- Set a windows schedule task To record the selected program in
+//				   TSReader
+//	Cancel()	-- Remove a scheduled Item from windows scheduled tasks
+//------------------------------------------------------------------------------
+//	Install info: (assuming you already have the EPG configured)
+//	1) Unzip into your myHTPC directory.
+//	2) Right click this File And Select "Register"
+//	3) Run myHTPC configure
+//	4) In the EPG configuration enter this plugin in the box labeled "Plugin
+//	   program ID".  It should be myHTPC.EpgTSReaderPlugin for this plugin.
+//	5) Enjoy!
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+// Get custom settings from registry. 
+// Run configuration program to Set your preferences!
+//
+
+function mySettings()
+{
+
+	Shell = new ActiveXObject("WScript.Shell");
+	baseKey = "HKEY_CURRENT_USER\\Software\\TSReader_MyHTPC_Plugin\\Settings\\";
+
+	try
+	{
+		// Check For existence of listingsPath
+		TSReaderProgram = Shell.RegRead(baseKey + "TSReaderProgram");
+	}
+	catch(codeError)
+	{
+		ProgramNotConfigured();
+	}
+
+        try
+	{
+		// Check For existence of CardType
+		CardType = Shell.RegRead(baseKey + "CardType");
+	}
+	catch(codeError)
+	{
+		ProgramNotConfigured();
+	}
+
+	try
+	{
+		// Check For existence of listingsPath
+		TSReaderPathVB = Shell.RegRead(baseKey + TSReaderProgram + "PathVB");
+	}
+	catch(codeError)
+	{
+		ProgramNotConfigured();
+	}
+	
+	try
+	{
+		// Check For existence of listingsPath
+		TSReaderPathJS = Shell.RegRead(baseKey + TSReaderProgram + "PathJS");
+	}
+	catch(codeError)
+	{
+		ProgramNotConfigured();
+	}
+
+	try
+	{
+		// Check For existence of LNBF1
+		LNBF1 = Shell.RegRead(baseKey + "LNBF1");
+	}
+	catch(codeError)
+	{
+		ProgramNotConfigured();
+	}
+	
+	try
+	{
+		// Check For existence of LNBF2
+		LNBF2 = Shell.RegRead(baseKey + "LNBF2");
+	}
+	catch(codeError)
+	{
+		ProgramNotConfigured();
+	}
+
+	try
+	{
+		// Check For existence of LNBF3
+		LNBF3 = Shell.RegRead(baseKey + "LNBF3");
+	}
+	catch(codeError)
+	{
+		ProgramNotConfigured();
+	}
+
+	try
+	{
+		// Check For existence of LNBF4
+		LNBF4 = Shell.RegRead(baseKey + "LNBF4");
+	}
+	catch(codeError)
+	{
+		ProgramNotConfigured();
+	}
+
+	try
+	{
+		// Check For existence of LNBFStacked1
+		LNBFStacked1 = Shell.RegRead(baseKey + "LNBFStacked1");
+	}
+	catch(codeError)
+	{
+		ProgramNotConfigured();
+	}
+	
+	try
+	{
+		// Check For existence of LNBFStacked2
+		LNBFStacked2 = Shell.RegRead(baseKey + "LNBFStacked2");
+	}
+	catch(codeError)
+	{
+		ProgramNotConfigured();
+	}
+
+	try
+	{
+		// Check For existence of LNBFStacked3
+		LNBFStacked3 = Shell.RegRead(baseKey + "LNBFStacked3");
+	}
+	catch(codeError)
+	{
+		ProgramNotConfigured();
+	}
+
+	try
+	{
+		// Check For existence of LNBFStacked4
+		LNBFStacked4 = Shell.RegRead(baseKey + "LNBFStacked4");
+	}
+	catch(codeError)
+	{
+		ProgramNotConfigured();
+	}
+
+	try
+	{
+		// Check For existence of diseqc1
+		diseqc1 = Shell.RegRead(baseKey + "diseqc1");
+	}
+	catch(codeError)
+	{
+		ProgramNotConfigured();
+	}
+	
+	try
+	{
+		// Check For existence of diseqc2
+		diseqc2 = Shell.RegRead(baseKey + "diseqc2");
+	}
+	catch(codeError)
+	{
+		ProgramNotConfigured();
+	}
+
+    try
+	{
+		// Check For existence of diseqc3
+		diseqc3 = Shell.RegRead(baseKey + "diseqc3");
+	}
+	catch(codeError)
+	{
+		ProgramNotConfigured();
+	}
+        
+    try
+	{
+		// Check For existence of diseqc4
+		diseqc4 = Shell.RegRead(baseKey + "diseqc4");
+	}
+	catch(codeError)
+	{
+		ProgramNotConfigured();
+	}
+
+    try
+	{
+		// Check For existence of RecordingPath
+		RecordingPath = Shell.RegRead(baseKey + "RecordingPath");
+	}
+	catch(codeError)
+	{
+		ProgramNotConfigured();
+	}
+}
+	
+// -----------------------------------------------------------------------------
+//
+
+function ProgramNotConfigured()
+{
+	// Display Error message
+	Shell = new ActiveXObject("WScript.Shell");
+	errorMessage = "The TSReader TV plugin has not been configured!\nPlease run the setup script."
+	dummy = Shell.PopUp(errorMessage,0,"Error!",16);
+	
+	// Kill program With exception
+	Stop();
+}
+
+// -----------------------------------------------------------------------------
+//
+
+
+function getcommand(diseqc1, diseqc2, diseqc3, diseqc4, programDesc)
+{
+
+var pdesc = programDesc.split("|");
+PID = pdesc[1];
+
+var PIDS = PID.split(" ");
+
+
+frequency = PIDS[1];
+frequency = frequency.replace(".","");
+polarity = PIDS[2];
+srvalue = PIDS[3];
+satvalue = PIDS[0];
+rate = PIDS[4];
+mode = PIDS[5];
+ 
+//Shell = new ActiveXObject("WScript.Shell");
+//message = "LNB frequency is " & LNBF & " on port " & diseqc;
+//dummy = Shell.PopUp(message, 0, "Info", 16);
+
+	diseqcport = "0";
+
+	if (satvalue == diseqc1) 
+	{
+		diseqcport = "1";
+		if (LNBFStacked1 != 0 && (polarity == "L" || polarity == "H"))
+			LNBF = LNBFStacked1;
+		else
+			LNBF = LNBF1;
+	}
+	else if (satvalue == diseqc2)
+	{
+		diseqcport = "2";
+		if (LNBFStacked2 != 0 && (polarity == "L" || polarity == "H"))
+			LNBF = LNBFStacked2;
+		else
+			LNBF = LNBF2;
+	}
+	else if (satvalue == diseqc3)
+	{
+		diseqcport = "3";
+		if (LNBFStacked3 != 0 && (polarity == "L" || polarity == "H"))
+			LNBF = LNBFStacked3;
+		else
+			LNBF = LNBF3;
+	}
+	else if (satvalue == diseqc4)
+	{
+		diseqcport = "4"; 
+		if (LNBFStacked4 != 0 && (polarity == "L" || polarity == "H"))
+			LNBF = LNBFStacked4;
+		else
+			LNBF = LNBF4;
+	}
+	else
+	{
+		Shell = new ActiveXObject("WScript.Shell");
+		dummy = Shell.PopUp("Couldn't locate a DiSEqC port for orbital position " & satvalue, 0, "Error!", 16);
+	}
+
+	if (CardType == 2)
+	{
+		if (mode == "QPSK")
+		{
+			modenum = "0";
+			fecnum = "5";	// Use Auto
+		}
+		else if (mode == "8PSK")
+		{
+			modenum = "2";
+			if (rate == "2/3")
+				fecnum = "0";
+			else if (rate == "5/6")
+				fecnum = 3;
+			else if (rate == "8/9")
+				fecnum = 4;
+		}
+		else if (mode == "Turbo QPSK")
+		{
+			modenum = "1";
+			if (rate == "1/4")
+				fecnum = 0;
+			if (rate == "1/2")
+				fecnum = 1;
+			if (rate == "3/4")
+				fecnum = 2;
+		}
+	}
+
+
+	//DVB-S card
+	if (CardType == 1)
+		cmdlineinfo = frequency + ' ' + polarity + ' ' + srvalue + ' ' + LNBF + ' 0 '+ diseqcport;
+
+	// Full-mode card
+	else if (CardType == 2)
+		cmdlineinfo = frequency + ' ' + polarity + ' ' + srvalue + ' ' + LNBF + ' 0 ' + modenum + ' ' + fecnum + ' ' + diseqcport;
+
+	// DVB-T card  (not done yet)
+	else if (CardType == 3)
+		cmdlineinfo = frequency + ' ' + polarity + ' ' + srvalue + ' ' + LNBF + ' 0 ' 
+
+	// DVB-C card  (not done yet)
+	else if (CardType == 4)
+		cmdlineinfo = frequency + ' ' + polarity + ' ' + srvalue + ' ' + LNBF + ' 0 ' + '4' + ' ' + fecnum + ' ' + diseqc;
+
+	// ATSC card  (not done yet)
+	else if (CardType == 5)
+		cmdlineinfo = frequency + ' ' + polarity + ' ' + srvalue + ' ' + LNBF + ' 0 ' + diseqc;
+
+
+	//msgdisplay = cmdlineinfo
+	//Shell = new ActiveXObject("WScript.Shell");
+	//dummy = Shell.PopUp(msgdisplay,0,"Error!",16);
+	return cmdlineinfo;
+
+}
+
+// -----------------------------------------------------------------------------
+//
+
+function Watch( channelID , channelDisplayNames , programTitle , programDesc , startDate , startTime , endDate , endTime , duration, channelNumber, subtitle)
+{
+  // Get custom user settings
+  mySettings();
+
+  //Get command number
+  getcommand(diseqc1, diseqc2, diseqc3, diseqc4, programDesc)
+
+      
+   // This variable Is the Path (And options) To the Dvb Tv Viewing program.  You can change the
+  // directory To anything you want As Long As you keep the Double \\ between directorys.
+
+  var change = '"' + TSReaderPathJS + '\\' + TSReaderProgram + '.exe ' +'"'+'-M -i -v ' + channelNumber + ' ' + '1 '+ cmdlineinfo;
+  var Shell = new ActiveXObject( "WScript.Shell" );
+  Shell.Run( change );
+
+
+
+//msgdisplay = cmdlineinfo
+//Shell = new ActiveXObject("WScript.Shell");
+//dummy = Shell.PopUp(msgdisplay,0,"Error!",16);
+  return "";
+}
+
+
+//------------------------------------------------------------------------------
+// LiveTV should just bring up the TV system in a default state
+// 
+function LiveTV(channelID , channelDisplayNames , programTitle , programDesc , startDate , startTime , endDate , endTime , duration, channelNumber, subtitle)
+{
+  // Get custom user settings
+  mySettings();
+  
+  var change = '"' + TSReaderPathJS + '//' + TSReaderProgram + '.exe" ';
+  var Shell = new ActiveXObject( "WScript.Shell" );
+
+  Shell.Run( change );
+  
+  return "";
+}
+//------------------------------------------------------------------------------
+function Record( channelID , channelDisplayNames , programTitle , programDesc , startDate , startTime , endDate , endTime , duration, channelNumber, subtitle )
+{
+	var filename,limit,startAT,dayNumber; 
+	var Year,Month,datenum,hours,minutes,seconds,ms;
+	var subtitle,strTime;
+
+	// Get custom user settings
+	mySettings();
+
+//Get command number
+  getcommand(diseqc1, diseqc2, diseqc3, diseqc4, programDesc)
+
+
+
+	Year=startDate.slice(0,4);
+	Month=startDate.slice(4,6);
+	Month=Month-1;
+	datenum=startDate.slice(6,8);
+
+	hours=startTime.slice(0,2);
+	minutes=startTime.slice(3,5);
+	seconds=0;
+	ms=0;
+ 
+	start = new Date();
+	start.setUTCFullYear(Year);
+	start.setUTCMonth(Month);
+	start.setUTCDate(datenum);                        
+	start.setUTCHours(hours);
+	start.setUTCMinutes(minutes);
+	start.setUTCSeconds(seconds);
+	start.setUTCMilliseconds(ms);
+	tzoff = start.getTimezoneOffset();
+
+	Year=endDate.slice(0,4);
+	Month=endDate.slice(4,6);
+	Month=Month-1;
+	datenum=endDate.slice(6,8);
+
+	hours=endTime.slice(0,2);
+	minutes=endTime.slice(3,5);
+	seconds=0;
+	ms=0;
+ 
+	endt = new Date();
+	endt.setUTCFullYear(Year);
+	endt.setUTCMonth(Month);
+	endt.setUTCDate(datenum);                        
+	endt.setUTCHours(hours);
+	endt.setUTCMinutes(minutes);
+	endt.setUTCSeconds(seconds);
+	endt.setUTCMilliseconds(ms);
+
+	Schedule( start , endt , channelID , duration , tzoff, programTitle, subtitle, TSReaderProgram, cmdlineinfo, channelNumber);
+	return "";
+}
+
+// -----------------------------------------------------------------------------
+//
+
+function Cancel( channelID , channelDisplayNames , programTitle , programDesc , startDate , startTime , endDate , endTime , duration , channelNumber , subtitle )
+{
+	var filename,limit,startAT,dayNumber;
+	var Year,Month,datenum,hours,minutes,seconds,ms;
+	var subtitle,strTime;
+
+	// Get custom user settings
+	mySettings();
+
+	Year=startDate.slice(0,4);
+	Month=startDate.slice(4,6);
+	Month=Month-1;
+	datenum=startDate.slice(6,8);
+
+	hours=startTime.slice(0,2);
+	minutes=startTime.slice(3,5);
+	seconds=0;
+	ms=0;
+
+	start = new Date();
+	start.setUTCFullYear(Year);
+	start.setUTCMonth(Month);
+	start.setUTCDate(datenum);
+	start.setUTCHours(hours);
+	start.setUTCMinutes(minutes);
+	start.setUTCSeconds(seconds);
+	start.setUTCMilliseconds(ms);
+
+	tzoff = start.getTimezoneOffset();
+
+	Year=endDate.slice(0,4);
+	Month=endDate.slice(4,6);
+	Month=Month-1;
+	datenum=endDate.slice(6,8);
+
+	hours=endTime.slice(0,2);
+	minutes=endTime.slice(3,5);
+	seconds=0;
+	ms=0;
+
+	endt = new Date();
+	endt.setUTCFullYear(Year);
+	endt.setUTCMonth(Month);
+	endt.setUTCDate(datenum);
+	endt.setUTCHours(hours);
+	endt.setUTCMinutes(minutes);
+	endt.setUTCSeconds(seconds);
+	endt.setUTCMilliseconds(ms);
+
+	CancelRecording(start, endt, duration, tzoff, programTitle, subtitle, TSReaderProgram);
+
+	return "";
+
+}
+
+
+]]>
+</script>
+
+<script language="VBScript">
+<![CDATA[
+
+
+
+
+Function Schedule( start , endt , channelID , duration , tzoff, programTitle, subtitle, TSReaderProgram, cmdlineinfo, channelNumber)
+
+Dim arrDateInfo, limit, strStart, strEnd, startCommand, endCommand, startJobID, endJobId, startTime, endTime
+Dim Request
+Dim objNodeList, objNode
+Dim Path
+
+' Instantiate Shell object
+Set Shell = CreateObject("WScript.Shell")
+pathBaseKey = "HKCU\Software\TSReader_MyHTPC_Plugin\Settings\"
+TSReaderProgram = "TSReader"
+DvbTvPath = Shell.RegRead(pathBaseKey + TSReaderProgram + "PathVB")
+RecordingPath = Shell.RegRead(pathBaseKey + "RecordingPath")
+
+Path = Shell.RegRead(pathBaseKey + "myHTPCPath") + "\"
+
+arrDateInfo= Split(start," ",-1,1)
+startTime = arrDateInfo(3)
+startTime = Replace(startTime,":","")
+
+Select Case arrDateInfo(0)
+    Case "Mon"   startdayNumber = 1
+    Case "Tue"   startdayNumber = 2
+    Case "Wed"   startdayNumber = 4
+    Case "Thu"   startdayNumber = 8
+    Case "Fri"   startdayNumber = 16
+    Case "Sat"   startdayNumber = 32
+    Case "Sun"   startdayNumber = 64
+End Select
+
+arrDateInfo= Split(endt," ",-1,1)
+endTime = arrDateInfo(3)
+endTime = Replace(endTime,":","")
+
+Select Case arrDateInfo(0)
+    Case "Mon"   enddayNumber = 1
+    Case "Tue"   enddayNumber = 2
+    Case "Wed"   enddayNumber = 4
+    Case "Thu"   enddayNumber = 8
+    Case "Fri"   enddayNumber = 16
+    Case "Sat"   enddayNumber = 32
+    Case "Sun"   enddayNumber = 64
+End Select
+
+hours = Left(duration,2)
+minutes = Right(duration,2)
+limit = (hours * 60 + minutes)
+
+seconds = (minutes * 60) + (hours * 3600)
+
+programTitle = Replace(programTitle," ","")
+
+  strProgram = """" & DvbTvPath & "\" & TSReaderProgram & ".exe"" -i -d -r "
+  startCommand = strProgram & channelNumber & " """ & RecordingPath & programTitle & ".mpg""" & " " & seconds & " " & cmdlineinfo
+
+
+strStart = "********" & startTime & ".000000-" & tzoff
+strEnd = "********" & endTime & ".000000-" & tzoff
+strComputer = "."
+
+Set objService = GetObject("winmgmts:" & "{impersonationLevel=impersonate}!\\" & strComputer & "\root\cimv2")
+Set objNewJob = objService.Get("Win32_ScheduledJob")
+
+Question2 = "Would you like to make this a weekly recording?" & Chr(13) & Chr(10) & Chr(13) & Chr(10) & ""
+Answer2 = 7
+	Answer2 = MsgBox(Question2,4,"myHTPC plugin for Dvb Tv Viewing")
+	If (Answer2 = 6) Then
+		' User wants weekly recording
+		errJobCreated = objNewJob.Create(startCommand, strStart, True, startdayNumber, , , startJobID)
+		
+	End If
+	If (Answer2 = 7) Then
+		' User doesn't want weekly recording
+		errJobCreated = objNewJob.Create(startCommand, strStart, False, startdayNumber, , , startJobID)
+		
+	End If
+
+End Function
+
+
+Function CancelRecording(start , endt , duration , tzoff, programTitle, subtitle, TSReaderProgram)
+
+	Dim Path, strTitle
+	Dim arrDateInfo, strStart, strEnd, intJobId, startTime, endTime
+
+	' Instantiate Shell object
+	Set Shell = CreateObject("WScript.Shell")
+	pathBaseKey = "HKCU\Software\TSReader_MyHTPC_Plugin\Settings\"
+
+	Path = Shell.RegRead(pathBaseKey + "myHTPCPath") + "\"
+
+	arrDateInfo= Split(start," ",-1,1)
+	startTime = arrDateInfo(3)
+	startTime = Replace(startTime,":","")
+
+	Select Case arrDateInfo(0)
+	    Case "Mon"   startdayNumber = 1
+	    Case "Tue"   startdayNumber = 2
+	    Case "Wed"   startdayNumber = 4
+	    Case "Thu"   startdayNumber = 8
+	    Case "Fri"   startdayNumber = 16
+	    Case "Sat"   startdayNumber = 32
+	    Case "Sun"   startdayNumber = 64
+	End Select
+
+	arrDateInfo= Split(endt," ",-1,1)
+	endTime = arrDateInfo(3)
+	endTime = Replace(endTime,":","")
+
+	Select Case arrDateInfo(0)
+	    Case "Mon"   enddayNumber = 1
+	    Case "Tue"   enddayNumber = 2
+	    Case "Wed"   enddayNumber = 4
+	    Case "Thu"   enddayNumber = 8
+	    Case "Fri"   enddayNumber = 16
+	    Case "Sat"   enddayNumber = 32
+	    Case "Sun"   enddayNumber = 64
+	End Select
+
+	strStart = "********" & startTime & ".000000-" & tzoff
+	strEnd = "********" & endTime & ".000000-" & tzoff
+	strComputer = "."
+
+	'deleting the task from the windows scheduler
+	Set objService = GetObject("winmgmts:\\" & strComputer)
+	Set colScheduledTasks = objService.ExecQuery _ 
+	    ("SELECT * FROM Win32_ScheduledJob")
+
+	Dim regEx, Match, Matches
+	Set regEx = New RegExp
+	regEx.Pattern = ".*(EVENT|Record).\""([^""]+)\"""
+	regEx.IgnoreCase = True
+	regEx.Global = False
+
+
+	For Each objTask in colScheduledTasks
+
+		' Extract the program Title from the job's command
+		Set Matches = regEx.Execute(objTask.Command)
+		Set Match = Matches(0)
+		strTitle = Match.SubMatches(1)
+
+		If (((strTitle = programTitle) Or _
+                    (strTitle = programTitle & ".mpg")) And _
+                    ((objTask.StartTime = strStart) Or _
+                     (objTask.StartTime = strEnd))) Then
+			intJobID = objTask.JobID 
+			Set objInstance = objService.Get("Win32_ScheduledJob.JobID=" & intJobID & "") 
+			objInstance.Delete 
+		End If
+	Next 
+
+End Function
+
+      ]]>
+   </script>
+</component>
+

@@ -1,0 +1,80 @@
+; Installation inf for the TechnoTrend DVB USB series
+;
+; (c) Copyright 2000-2005 TechnoTrend AG
+;
+[Version]
+Signature = "$CHICAGO$"
+Class     = Media
+ClassGuid = {4d36e96c-e325-11ce-bfc1-08002be10318}
+Provider  = %TT%
+DriverVer = 05/23/2005,1.8.6.9
+
+[SourceDisksNames]
+1=%DiskName1%,,0
+
+[SourceDisksFiles]
+ttdvbusb.sys = 1
+ttdvbusb.inf = 1
+
+[Manufacturer]
+%TECHNOTREND%=TECHNOTREND
+
+[TECHNOTREND]
+; The Vendor ID is 0b48, and the Product ID is 100x
+%TTDVBUSB.DeviceDesc_S%=TTDVBUSB.Dev,USB\VID_0b48&PID_1003&MI_01
+%TTDVBUSB.DeviceDesc_C%=TTDVBUSB.Dev,USB\VID_0b48&PID_1004&MI_01
+%TTDVBUSB.DeviceDesc_T%=TTDVBUSB.Dev,USB\VID_0b48&PID_1005&MI_01
+
+[PreCopySection]
+HKR,,NoSetupUI,,1
+
+[DestinationDirs]
+TTDVBUSB.Files.Ext = 10,System32\Drivers
+TTDVBUSB.Files.Inf = 10,INF
+
+[TTDVBUSB.Dev]
+CopyFiles=TTDVBUSB.Files.Ext, TTDVBUSB.Files.Inf
+AddReg=TTDVBUSB.AddReg
+
+[TTDVBUSB.Dev.NT]
+CopyFiles=TTDVBUSB.Files.Ext, TTDVBUSB.Files.Inf
+AddReg=TTDVBUSB.AddReg
+
+[TTDVBUSB.Dev.NT.Services]
+Addservice = TTDVBUSB, 0x00000002, TTDVBUSB.AddService
+
+[TTDVBUSB.AddService]
+DisplayName    = %TTDVBUSB.SvcDesc%
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 3                  ; SERVICE_DEMAND_START
+;StartType      = 2                  ; SERVICE_AUTO_START
+ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %10%\System32\Drivers\ttdvbusb.sys
+LoadOrderGroup = Base
+
+[TTDVBUSB.AddReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,ttdvbusb.sys
+;HKLM,"System\Currentcontrolset\Services\TTDVBUSB\Parameters","MaximumTransferSize",0x10001,256
+HKLM,"System\Currentcontrolset\Services\TTDVBUSB\Parameters","DebugLevel",0x10001,2
+HKLM,"Software\Microsoft\Windows\CurrentVersion\Usb","ErrorCheckingEnabled",0x10001,0
+
+[TTDVBUSB.Files.Ext]
+;Remove the remarks for installation on a target computer
+ttdvbusb.sys
+
+[TTDVBUSB.Files.Inf]
+ttdvbusb.inf
+
+
+;---------------------------------------------------------------;
+
+[Strings]
+
+TT="Technotrend AG"
+TECHNOTREND="Technotrend AG"
+TTDVBUSB.DeviceDesc_S="TechnoTrend TT-PCline USB"
+TTDVBUSB.DeviceDesc_C="TechnoTrend TT-PCline USB"
+TTDVBUSB.DeviceDesc_T="TechnoTrend TT-PCline USB"
+TTDVBUSB.SvcDesc="TechnoTrend - TT-DVB USB Driver"
+DiskName1="TechnoTrend TT-PCline USB Installation Disk"

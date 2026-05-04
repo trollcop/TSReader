@@ -1,0 +1,227 @@
+
+                       -= TMP4 =-
+
+        Toy MPEG4 Plailleure (and Encaudeure)
+                      VERSION 0.23
+
+
+
+Sklmp4 consists in portable C++ sources of a library capable of encoding
+and decoding MPEG-4 video bitstream. Bitstreams conforming to ISO/IEC 14496-2
+(version 2) Advance Simple Profile are fully supported by the
+decoder. Partial support for MPEG-1/2 bitstreams (ISO/IEC 13818-2)
+is also supplied.
+
+For additional details, please refer to the API.txt file available
+in the /doc directory.
+
+
+-QUICKSTART---------------------------------------------------------
+
+For starters, try:
+> cd util;
+> genmake.pl
+> cd ../build/<system>-<compiler>/
+> make subdir
+> make tmp4
+
+or './setup.sh', even. For more infos, please read the "INSTALL" file.
+
+'tmp4' is a front end example for the core library.
+there's also a couple of benches: 'make tests', and a weird
+pgmpipe input generator ('pgm_gen'), for making experiments.
+For two-pass encoding, the 2nd-pass road map can be generated
+using the program 'passreg'. See below.
+There are also some handy utilities available: "ppm2yuv" and
+"showyuv". The names say it all.
+
+For Linux/Win32, you'll need a fairly recent (>=0.98.35) version
+of NASM. See: http://nasm.sourceforge.net/ 
+
+Linux users: This library can be plugged into the very
+powerful MPlayer/MEncoder tool (www.mplayerhq.hu),
+with a little work. See details and recipie on the WWW page mentioned 
+at the end of this README.
+
+--DOC---------------------------------------------------------------
+
+
+Documentation of public classes and API are available for browsing
+using /doc/html/index.html. This documentation has been
+generated with Doxygen. To rebuild it, just go in the /doc
+directory, and type:
+
+ 'make doc'. 
+
+The interesting classes are of course SKL_MP4_ENC and SKL_MP4_DEC.
+
+
+A very simple example (see src/ex_src/example.cpp) demonstrating
+the API follows:
+
+
+        --- encoding loop ---
+
+#include "skl_syst/skl_mpg4.h"
+
+  SKL_MP4_ENC *Enc = Skl_MP4_New_Encoder();
+  Enc->Get_Analyzer()->Set_Param( "my-param", param-value);
+  ...
+  Enc->Get_Analyzer()->Set_Param( "my-param", param-value);
+
+  while(1) {
+    const SKL_MP4_PIC *Pic = Enc->Prepare_Next_Frame(Width, Height);
+
+    /* here, fill in Pic->Y, Pic->U, Pic->V with pixels */
+
+    if (Enc->Encode())
+      fwrite( Enc->Get_Bits(), Enc->Get_Bits_Length(), 1, Out_File );
+  }
+  Skl_MP4_Delete_Encoder(Enc);
+
+
+
+        --- decoding loop ---
+
+#include "skl_syst/skl_mpg4.h"
+
+  SKL_MP4_DEC *Dec = Skl_MP4_New_Decoder();
+  SKL_MP4_PIC Decoded_Frame;
+  while(1) {
+    int Bytes_Consumed = Dec->Decode(Buffer, Buffer_Len);
+
+    /* advance/replenish Buffer here.. */
+
+    if (Dec->Is_Frame_Ready())
+      Dec->Consume_Frame( &Decoded_Frame);
+  }
+  Skl_MP4_Delete_Decoder(Dec);
+
+
+--Two-pass encoding HOWTO-------------------------------------------
+
+The program 'passreg' can be used to generate, from a 1rst-pass
+log file, a "roadmap" for the final encoding (2nd-pass).
+
+Usually, two-pass encoding amounts to the following three steps:
+
+a)  'tmp4 input.ppm -pass 1 -passfile pass1.log -q 2'
+
+This will generate a log file 'pass1.log' during the 1rst pass.
+The input source (input.ppm) is analyzed only, using a fixed quantizer.
+(Note: no bitstream is generated).
+
+b) 'passreg pass1.log -o pass2.log -tp 50 -v'
+
+This will generate a road map file 'pass2.log' that aims at
+reducing the original size by 50%. Various other options are
+available for 'passreg'. For instance: '-ts' to specify a
+target size, '-la'/'-ha/ for asymmetric bit distribution, etc...
+
+c) tmp4 input.ppm -pass 2 -passfile pass2.log -o output.mp4 -trellis -4v 60
+
+This is the final encoding, using 'pass2.log' to drive the
+quality and control the size of the bitstream.. 
+Any additional encoding option can be used (trellis, ...):
+they needn't be exactly the same than the first pass.
+
+
+Note: all of these are rather experimental, and you're encouraged
+to play with options/code, since 'passreg' is an external application
+from the core codec point of view. You ever even dig further into the
+2-pass control source code, to be found in 'src/mpg_src/skl_mpg_2pass.cpp'.
+
+
+--LEGAL STUFF-------------------------------------------------------
+Everything's Copyright (C) 2003 by Pascal Massimino.
+You're not allowed to use part of this for commercial purpose. 
+It's read-only code. See LICENSE.TXT.
+
+Moreover, as this program is an implementation of a part of one or
+more MPEG-4 Video tools as specified in ISO/IEC 14496-2 standard,
+using it in hardware or software products may infringe existing patents
+or copyrights. The original developer of this software module and his/her
+company will have no liability for use of this software or modifications
+or derivatives thereof.
+
+
+---Release notes----------------------------------------------------
+
+03/04: v0.23: . Version 0.22 was totally broken under MSVC+SSE2, because
+                of alignment problems. Forget about v0.22. :)
+
+03/04: v0.22: . Fixes for minor - yet annoying - bugs: Detection of SSE2 is now ok
+                + custom matrix are now writen correctly + fix for h263 quant.
+                + SSE(2) iDCT code contains a flag (IEEE_COMPLIANT) to make
+                the idct fully IEEE-compliant for [-384,383] input
+
+03/04: v0.21: . Major improvements!
+                better encoding + qpel is now really working +
+                2-pass bitrate control is now integrated in the codec +  fcode guessing fixed +
+                improved scene-change detection +
+                enhanced MPlayer interfacing with full 2-pass support +
+                interlaced chroma QPel bug fixed +
+                B-VOP QPel bugs fixed + clipping bug "Clip(a+b)!=Clip(a)+Clip(b)" fixed +
+                AC-Pred for intra fixed + Added simple RGB->YUV conversion funcs + minor fixes
+                on reduced-resolution VOPs
+
+12/03: v0.20: . Two-pass encoding is now working (use 'passreg', whose sources are in src/ex_src)
+
+12/03: v0.19: . Fix in MPEG4-quant + plain-C API wrapper
+11/03: v0.18: . Speed-up on MV-prediction + RESYNC marker now ok + MPEG trellis-quant
+10/03: v0.17: . cleanup + doc + SSE2 port now ok (use "-cpu sse2" option).
+                Next step is: improving the ME.
+09/03: v0.16: . Overall cleanup + little bugfixes + some docs.
+                A *lot* of useless code has been 'stripped' out of the archive.
+                Improvements of ME are will be for next release.
+05/03: v0.15: . Trellis based adaptive quantization (use with variable bitrate!) + 
+                H264 codec stub + fixed GMC + Bug correction
+04/03: v0.14: . hpel ME eventually improved. It's now up to standards. pfewww...
+04/03: v0.13: . Fixed and Improved GMC encoding: it starts showing some results.
+              + multos bugos fixos! TODO: Still have 1dB to gain on hpel ME :)
+03/03: v0.12: . Improved INTER4V and interlaced field-prediction encoding
+              + external computation of PSNR as a special "Slicer" encoder plug-in.
+03/03: v0.11: . Improved ME range enforcement + dynamic fcode.
+03/03: v0.10: . Fixed some annoyments (missing emms(),etc.) + improved ME
+03/03: v0.09: . *MAJOR* rewrite of Motion Search -> Must have gained 10 or 20dB :)
+              . Analyzer is now a real interface (->subclassed in a 2-pass analyzer, as example)
+              . first DivX->MPEG4 transcoding succeeded! (~110FPS)
+03/03: v0.08: . (somehow) fixed the encoder
+02/03: v0.07: . Added some optimized Hadamard SAD + fixed MPEG2 decoding (IDCT-Add/Copy)
+              + fixed MMX Sparse/Put/Add IDCT (wrong tables used)
+02/03: v0.06: . Big decoder speed-up (MMX/SSE) with a new self-contained Sparse IDCT 
+                and an experimental IDCT-Add and IDCT-Put. No real impact yet for
+                the encoder. Should maybe do the same with quant/dequantization...
+02/03: v0.05: . Sparse IDCT (MMX/SSE) was not rounded correctly => "greenish"
+                color bleeding was *very* visible.
+              + removed some unnecessary code: Arithmetic coding, LZW codec,
+                Symbol entropy, Gif-PCX-Tga I/O... I'll put it back if needed later.
+02/03: v0.04: still fixing quantization (w/ C-speedup) + some SSE2 funcs (some broken)
+02/03: v0.03: quantization almost fixed. MMX version will still crash for
+              very strange custom quant matrices... + speed-up (Idct16_Sparse)
+01/03: v0.02: temporarily fixed quantization mess. H263-quantization still
+              broken for q=1,2(,3), (MMX/C) (needs a deeper fix)
+
+01/03: v0.01. initial release:
+
+
+The decoder is pretty ok: almost all reference bitstreams are 
+decoded right. They are available at:
+
+ftp://ftp.tnt.uni-hannover.de/pub/MPEG/video/conformance/version_2/
+
+
+---Contacting the author----------------------------------------------------
+
+Non-bug reports should be sent to: 
+
+        skal@planet-d.net
+        http://skal.planet-d.net
+
+Home + additional details + online documentation: 
+
+	http://skal.planet-d.net/coding/mpeg4codec.html
+
+Haf phun!
+
+

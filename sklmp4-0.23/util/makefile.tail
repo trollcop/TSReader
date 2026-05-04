@@ -1,0 +1,69 @@
+################################################
+# Tail for shared makefile.all
+################################################
+
+################################################	
+
+printconf:
+	echo EXT_LIB_LD=$(EXT_LIB_LD)
+	echo EXT_LIB=$(EXT_LIB)
+	echo INCLUDES=$(INCLUDES)
+	echo DEFINES=$(DEFINES)
+
+################################################
+
+clean:
+	$(CD) $(BUILD_DIR)obj; $(RM) *
+	$(CD) $(LIB_OUTPUT_DIR); $(RM) *
+	$(CD) $(LIB_SO_OUTPUT_DIR); $(RM) *
+	$(CD) $(BUILD_DIR); $(RM) *~ *.bak core toto* tata* *LOG* *log *.diff
+	$(CD) $(BUILD_DIR); $(RM) $(ALL_TESTS) $(ALL_TESTS_PURE)
+
+src_clean:
+	$(CD) $(LIB_SRC_DIR); $(RM) *~ *.bak *_src$(SEP)*~ *_src$(SEP)*.bak
+	$(CD) $(LIB_INC_DIR); $(RM) *~ *.bak *$(SEP)*~ *$(SEP)*.bak
+	$(CD) $(ROOT_DIR)$(SEP)util$(SEP); $(RM) *~ *.bak
+
+mrproper: clean src_clean
+	$(RM) $(BUILD_DIR)bin$(SEP)*
+
+
+################################################
+
+pak:
+	cd $(ROOT_DIR); $(TAR_CF) skl.tar include src \
+	build$(SEP)*$(SEP)makefile \
+	doc$(SEP)makefile doc$(SEP)Doxyfile doc$(SEP)*.txt \
+	doc$(SEP)*.gif doc$(SEP)*.jpg doc$(SEP)html$(SEP)* \
+	build$(SEP)msvc$(SEP)*.dsp \
+	build$(SEP)msvc$(SEP)*.dsw \
+	build$(SEP)dot_net$(SEP)*.sln \
+	build$(SEP)dot_net$(SEP)*.vcproj \
+	util$(SEP)makefile.unix util$(SEP)makefile.head util$(SEP)makefile.tail \
+	util$(SEP)genmake.pl util$(SEP)PROJECT \
+	README LICENSE.TXT TODO INSTALL setup.sh; \
+	$(GZIP) skl.tar; \
+	$(MV) skl.tar.gz sklmp4.tgz
+
+doc:
+	make -C $(ROOT_DIR)$(SEP)doc doc
+
+################################################
+
+subdir:
+	cd $(BUILD_DIR)
+	$(MKDIR) obj
+	$(MKDIR) bin
+	$(MKDIR) lib
+	$(MKDIR) lib_so
+	$(MKDIR) test
+
+subdirmsvc:
+	cd $(BUILD_DIR)
+	$(MKDIR) bin
+	$(MKDIR) Debug
+	$(MKDIR) Release
+	$(MKDIR) skl_lib
+	$(MKDIR) test
+
+################################################

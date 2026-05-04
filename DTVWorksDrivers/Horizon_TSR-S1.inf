@@ -1,0 +1,77 @@
+; Installation INF for the Horizon USB interfaces
+
+[Version]
+Signature="$CHICAGO$"
+Class=USB
+ClassGUID={36FC9E60-C465-11CF-8056-444553540000}
+provider=%Horizon%
+;-------------------------------------------------------------;
+
+[SourceDisksNames]
+1=%Horizon_INSTALL%,,,
+
+[SourceDisksFiles]
+Horizon.sys = 1
+Horizon.spt = 1
+
+[Manufacturer]
+%MfgName%=Horizon
+
+[Horizon]
+%VID_14AC&PID_0010.DeviceDesc%=Horizon, USB\VID_14AC&PID_0010
+;[PreCopySection]
+;HKR,,NoSetupUI,,1
+
+[DestinationDirs]
+Horizon.Files.Ext = 10,System32\Drivers
+;------------------------------------------------------------;
+
+
+[Horizon.NT]
+CopyFiles=Horizon.Files.Ext
+;------------------------------------------------------------;
+AddReg=Horizon.AddReg
+
+[Horizon.NT.HW]
+AddReg=Horizon.AddReg.Guid
+
+[Horizon.NT.Services]
+Addservice = Horizon, 0x00000002, Horizon.AddService
+
+[Horizon.AddService]
+DisplayName    = %Horizon.SvcDesc%
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 3                  ; SERVICE_DEMAND_START
+ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %10%\System32\Drivers\Horizon_TSR-S1.sys
+LoadOrderGroup = Base
+ 
+[Horizon.AddReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,Horizon_TSR-S1.sys
+
+[Horizon.Files.Ext]
+Horizon_TSR-S1.sys
+
+;-----Uncomment below to support script file processing-----;
+;[Horizon.Files.Spt]
+;Horizon.spt
+;------------------------------------------------------------;
+
+[Horizon.AddReg.Guid]
+HKR,,DriverGUID,,%Horizon.GUID%
+;-----Uncomment below to support script file processing-----;
+;HKR,,DriverEXECSCRIPT,,%Horizon.EXECSCRIPT%
+;------------------------------------------------------------;
+
+
+;---------------------------------------------------------------;
+
+[Strings]
+Horizon="Horizon"
+MfgName="Horizon"
+Horizon_INSTALL="Horizon USB Driver Installation Disk"
+VID_14AC&PID_0010.DeviceDesc="Horizon TSR-S1"
+Horizon.SvcDesc="Horizon USB Driver"
+Horizon.GUID="{FA58C45D-5B19-428b-A2D1-2707856D7E19}"
+

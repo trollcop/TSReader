@@ -1,0 +1,9 @@
+SCC = This is a Source Code Control file
+
+[VP7045_Test.dsp]
+SCC_Aux_Path = "\\Vss\VSS_DB\"
+SCC_Project_Name = "$/7045/VP7045_Test", FDRAAAAA
+
+[VP7045_Test.dsw]
+SCC_Aux_Path = "\\Vss\VSS_DB\"
+SCC_Project_Name = "$/7045/VP7045_Test", FDRAAAAA

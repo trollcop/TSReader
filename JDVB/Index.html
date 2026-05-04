@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org./TR/html4/strict.dtd">
+<HTML>
+<HEAD>
+<title>JDVB Homepage</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+	<meta name="Author" content="JDVB Official HP">
+</HEAD>
+<BODY>
+<h1>Welcome to JDVB Official HP</h1>
+<p 
+<br>
+<br>
+</p>
+<P <B>What is JDVB ?</B> <br>
+JDVB is a programm for watching DVB Tv. It aims to allow you to play <br>
+record channels or to re-broadcast it in your own LAN.<br><br>
+</P>
+
+
+<P <B>What are the software requirements ?</B><br>
+Currently it has been tested only on Windows XP with DirectX 9 <br>
+(including all MS patches:-) ) However it should run on older versions <br>
+of Windows too (since it is not using unicode)<br><br></P>
+<P <B>Damn, I'm using linux !</B><br>
+Well, in that case, you are better off with VDR<br><br>
+</P>
+
+<P <B>What are the hardware requirements ?</B><br>
+This depends much on if you are watching DVB on your PC or just broadcasting. <br>
+The CPU usuage on my Tuatulin Celeron 1 Ghz (512 MB) while decoding is arround 60 %. <br>
+However, by using hardware acceleration, the cpu load drops below 15 % <br>
+(using Sigma Hollywood Plus) In addition you need of course <br>
+an Digital SAT Receiver card and / or an Network card (100mbps is recommended)<br><br>
+</P>
+
+<P <B>What DVB Sat Cards are supported ?</B><br>
+Currently only the TwinHan DST card is supported. However it should <br> 
+be easly portable due to JDVB hardware abstraction<br><br>
+</P>
+
+<P <B>Your Code is nice. Can i reuse it ?</B><br>
+The complete source code is released under GPL. If you dont agree to <br>
+this license, i'm sorry for you <br><br></P>
+<P <B>Which compilers &amp; software development do you use ?</B><br>
+I'm using MS Visual Studio .NET 2002 with MS DirectX SDK 9.0<br>
+</P>
+
+<P <B>JDVB is far from being complete. Today is the first pre-alpha release of JDVB. </B> <br>
+   <B>Currently the following features are supported:</B> <br> </P>
+<ul>
+<li>watching FTA(Free To Air) channels</li>
+<li>broadcasting TSStream to Multicast group with full TS Packet </li>
+</ul>
+
+<P> <br> <br> </P>
+
+<P <B> TODO's: </B> <br> 
+<B>.)Implement CSA decrypting (class CSAPidFilter) </B> <br>
+<B>.)Implement CAT parsing (class CATPidFilter) </B><br>
+<B>.)Implement PES Audio / Video stream writer (class MultipleStreamPidWriter) </B><br>
+<B>.)Integrate class MDPluginManager with class Programm(when Programm being scrambled)</B><br>
+<B>.)Implement Graphical Programm Management </B> <br>
+<B>.)Implement Multiple TSSource Management(using several TSSource classes) </B> <br> 
+<B>.)Implement Broadcasting with RTP Protocol (UDPPidFilter) </B><br> <br>
+</P>
+
+<h2> Development Setup </h2>
+
+<P <B>In order to compile JDVB, you need the following:</B> <br>
+1.) MS Visual Studio .NET 2002 <br>
+2.) MS DirectX 9 SDK <br>
+3.)TwinHan SDK (>= 2.5) <br><br>
+After having installed everything you have to compile the BaseClasses of DirectX <br>
+9, located at DirectX 9 IntallationPath \ Samples \ <br>
+C++\DirectShow\BaseClasses\ once for Debug and once for Retail. Then <br>
+you have to add the following paths to Visual Studio Settings: <br>
+LibraryPath: DirectX 9 InstallationPath \ Samples \ C++\DirectShow\BaseClasses\ <br>
+LibraryPath: DirectX 9 InstallationPath \ Samples \ C++\DirectShow\BaseClasses\Debug <br>
+LibraryPath: DirectX 9 InstallationPath \ Samples \ C++\DirectShow\BaseClasses\\Retail <br> <br>
+
+IncludePath: DirectX 9 InstallationPath\Include <br> 
+IncludePath: DirectX 9 InstallationPath \ Samples \ C++\DirectShow\BaseClasses\ <br> <br>
+
+Note: If you get Linker errors(eg strmbase.lib not found, then you have forgotten too compile the BaseClasses) <br> <br>
+
+If you have any question about the code, email me at <B>j_anderwATsboxDOTtugrazDOTat</B> <br> <br>
+Thank you for your attention, you can now download it here <A HREF="jdvb-0.0.1.zip" NAME="jdvb-0.01.zip">jdvb-0.0.1.zip</A>
+<br><br><br>
+</P>
+
+<h2>JDVB Architecture</h2>
+
+<P <I>The design of JDVB is very concentrated on being able to extend and add new features. There </I><br>
+<I>are three abstract base classes, from which concrete classes derrive from: </I><br> </P>
+<ul>
+	<li>TSSource class</li>
+	<li>TSPidFilter class</li> 
+	<li>TSTarget class </li>
+</ul>
+
+<P <B>TSSource class </B> <br>
+This class represents an MPEG-2 Transponder stream class. It is <br>
+responsible for delivering TSPackets to the registered TSPidFilters. <br> 
+</P>
+
+<P <B>TSPidFilter class </B> <br>
+This class receives TSPacket. It then can alter the contents / analyse it <br>
+and dispatch to other TSPidFilters or if the TSPacket is invalid discard it <br>
+</P>
+
+<P<B>TSTarget class </B> <br>
+This class represents an Audio / Video rendering device. It receives TSPackets, <br>
+decodes the MPEG-2 stream and shows them on the appropiate device. <br> 
+In order to receive TSPackets, it has to create TSPidFilter objects, <br> 
+which are then registered to the TSSource class by the Programm class. <br> <br>
+</P>
+<P <img src="tssource.gif" alt="JDVB Architecture" height="587" width="950">
+<a HREF="http://petition.eurolinux.org"><img src="http://aful.org/images/patent_square.gif" alt="Fight EU Software Patents"></a>
+<a href="http://validator.w3.org/check/referer"><img src="http://www.w3.org/Icons/valid-html401" alt="Valid HTML 4.01!" height="31" width="88"></a>
+<br>
+<I>Last Updated on: 29/10/2003 11:48 CET</I> <br></P>
+</BODY>
+</HTML>

@@ -1,0 +1,4 @@
+LIBRARY TSReader_H264
+
+EXPORTS
+	H264							@1

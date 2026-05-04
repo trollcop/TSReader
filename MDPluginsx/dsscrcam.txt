@@ -1,0 +1,111 @@
+-------------------------------------
+- DSS Content Reader: CAM Interface -
+-           Version 0.6             -
+-------------------------------------
+
+--- Usage ---
+
+Start for use with COM 1:
+> dsscrcam.exe
+
+Start for use with COM 2:
+> dsscrcam.exe 2
+
+General usage format:
+> dsscrcam.exe [COM_PORT_NUM]
+
+
+--- Program Information ---
+
+This application communicates with a DIRECTV access card
+by sending instructions to it. It is designed for use
+with the DSS Content Reader application and the DSS-to-DVB
+plugin. These use the CAM interface to provide support for 
+subscription channels to the user.
+
+
+--- Requirements ---
+
+- Phoenix-compatible smart card reader
+- RS-232 Serial Port (COM Port)
+- P4/D1/D2 access card (for DIRECTV US), or
+  GX28 access card (for DIRECTV LA)
+
+
+--- FAQ ---
+
+Q: How will I know if it's working?
+A: Once the DSSCR or DSS-to-DVB is running,
+    it will automatically connect to the CAM interface.
+    On the screen, dsscrcam.exe will display the type of
+    access card that it has detected. After that, the IRD 
+    number should be displayed followed by any card 
+    instruction numbers (ex. INS 58) for the instructions 
+    being sent by the application or plugin. 
+
+Q: Messages keep scrolling that the card was changed, but
+    it hasn't been touched. How do I stop this?
+A: If this occurs, remove the access card from the card reader
+    and then reinsert it. You may also have to close and
+    re-open the dsscrcam.exe application.
+
+Q: What do the INS numbers stand for?
+A: INS 2 and 58 return card information
+   INS 5E is used to get Pay-Per-View purchase history data 
+   INS 40 and 54 are used to authorize subscribed video
+   INS 26 is used to signal channel changes to the card
+   INS 46 and 30 are used when purchasing Pay-Per-View (PPV)
+    movies and events. They may appear when PPV channels
+    are selected in the program guide. 
+   INS 42 will appear whenever an update of some kind needs
+    to be sent to the access card from your DSS provider.
+
+
+--- Disclaimer and Comments ---
+
+This application has no special or secret abilities related
+to the VideoGuard system designed by NDS and used by DIRECTV.
+The access card is simply reset and then passed instructions
+by the DSS Content Reader / DSS-to-DVB plugin. The use and format
+of these instructions was determined mostly by observing the 
+communication that takes place between a real DIRECTV receiver
+and its access card both during the receiver's initialization
+process and while the receiver is active. Data for the INS 40,
+INS 42, and INS 46 instructions are all readily available in
+DIRECTV's transport stream.
+
+This application is designed for use by one and only one user
+at any given time. The socket interface is used to provide
+local or remote access to the CAM interface for that one user. 
+The socket interface will terminate any existing connection and
+any related processing immediately when it detects a new connection. 
+Processing requests from simultaneous connections is not possible 
+on several levels.
+
+Since Linux users cannot run TSReader or dsscrcam.exe, but they can
+run VLC Media Player and the main DSS Content Reader application, 
+the socket interface enables them to run the Windows applications
+on a remote PC while using VLC and DSSCR on their Linux computer.
+
+This application will sometimes produce non-standard responses
+to instruction requests if it considers such requests to be 
+inappropriate for any reason. If such responses persist, it will
+most likely be necessary to restart the dsscrcam.exe application
+in order to ensure that normal operation resumes.
+
+While it may be easily observed, the protocol used between the 
+main DSS Content Reader application and dsscrcam.exe is not
+documented and will not be documented in the future.
+
+The main DSS Content Reader application does not and will not 
+provide a means or interface for users to send and/or receive 
+arbitrary data using the CAM interface application. In other words, 
+all communication between the access card and "virtual" receiver 
+will always be regulated internally by the main DSS Content Reader 
+application. The same applies to the DSS-to-DVB plugin.
+
+
+--- Legal Notes ---
+
+DIRECTV is a registered trademark of DIRECTV, Inc.
+VideoGuard® is a registered trademark of NDS Limited.

@@ -1,0 +1,85 @@
+<HTML>
+<HEAD>
+  <META NAME="GENERATOR" CONTENT="Adobe PageMill 3.0 Win">
+  <TITLE>Sasem OnAir USB with TSReader</TITLE>
+</HEAD>
+<BODY BGCOLOR="#ffffff">
+
+<P><B>Using the Sasem OnAir USB interface with TSReader<BR>
+</B><FONT SIZE="-2">Updated January 21, 2004</FONT></P>
+
+<P><A HREF="http://www.usbhdtv.com/" TARGET="_blank"><IMG SRC="sasem_usb_hdtv.jpg"
+WIDTH="180" HEIGHT="109" ALIGN="BOTTOM" BORDER="0" NATURALSIZEFLAG="3"
+ALT="Sasem OnAir USB HDTV"></A></P>
+
+<P>Sasem's OnAir USB interface is an 8VSB/QAM receiver along with
+an MPEG-2 encoder chip for moving SD video into the digital realm.
+There is currently no known SDK available for this product, however
+this device uses the same USB microcontroller as the DTVWorks
+series of USB interfaces. By switching the Windows driver to the
+DTVWorks driver and changing to the right TSReader source this
+interface works very well with TSReader.</P>
+
+<P><B>Current limitations</B></P>
+
+<UL>
+  <LI>You must connect the antenna/cable to the TV(A+D) F-connector
+  and not the TV(D) connector.
+  <LI>The signal strength reported isn't very accurate.
+</UL>
+
+<P><B>Driver Installation</B></P>
+
+<P>You must switch the driver for the Sasem OnAir USB interface
+to work with TSReader. Exactly what you see depends on the version
+of Sasem's software you have installed.</P>
+
+<UL>
+  <LI>Launch the Windows Device Manager. If you don't know what
+  that is, please don't continue - ask someone for help.
+  <LI>Open up the &quot;Sound, video and game controllers&quot;
+  tree and locate the item named &quot;On Air USB HDTV WDM Encoder&quot;
+  (version 2.7) or &quot;USB HDTV Device&quot; (version 2.8).
+  <LI>Right click and choose &quot;Update Driver...&quot;
+  <LI>When asked to install the software Automatically (Recommended),
+  check the other option - Advanced.
+  <LI>Check the box &quot;Don't search...&quot; and hit Next.
+  <LI>On the next dialog you'll see a list box with the standard
+  Sasem driver (&quot;OnAir USB HDTV WDM Encoder&quot; for version
+  2.7 or &quot;USB HDTV Device&quot; for 2.8). Ignore this and
+  click the &quot;Have disk&quot; button.
+  <LI>Point to the TSReader\Drivers\DTVWorks folder.
+  <LI>You'll now see a new driver called &quot;Sasem OnAir USB
+  HDTV (for TSReader)&quot;.
+  <LI>Hit Next and you'll probably get a &quot;Not signed&quot;
+  warning dialog - click Continue.
+</UL>
+
+<P><B>Running TSReader</B></P>
+
+<P>Now the driver is installed launch TSReader with the Ctrl key
+held down and choose the SasemUSB_8VSB or SasemUSB_QAM source.
+You'll then see the normal TSReader ATSC or QAM tuner dialog and
+you can select or enter a channel number and the mux should pop
+into TSReader. We recommend using the Scan button to generate
+a list of lockable channels since frequently cable systems carry
+a mixture of both analog and digital programming.</P>
+
+<P><B>Switching between applications</B></P>
+
+<P>If you want to switch back to Sasem's software just follow
+the steps shown to install the driver only the second time around
+you'll see both the Sasem and TSReader device drivers listed.
+&quot;On Air USB HDTV WDM Encoder&quot; is Sasem version 2.7,
+&quot;USB HDTV Device&quot; is Sasem version 2.8 and &quot;Sasem
+OnAir USB HDTV (for TSReader)&quot; is for TSReader - just select
+the one you want.</P>
+
+<P>&nbsp;</P>
+
+<P>&nbsp;</P>
+
+<P>&nbsp;
+
+</BODY>
+</HTML>

@@ -1,0 +1,159 @@
+;****************************************************************************
+; Installation inf for the TechnoTrend DVB USB series (Network)
+;****************************************************************************
+; (c) Copyright 2000-2004 TechnoTrend
+;****************************************************************************
+
+[Version]
+Signature   ="$CHICAGO$"
+Compatible  = 1
+Class       = Net
+ClassGUID   = {4d36e972-e325-11ce-bfc1-08002be10318}
+Provider    = %TechnoTrend%
+DriverVer   = 11/08/2004,1.9.0.1
+
+[Manufacturer]
+%TechnoTrend% = TechnoTrend
+
+[TechnoTrend]
+%TECHNOTREND.DeviceDesc_S% = NDISLOOP.Dev, USB\VID_0b48&PID_1003&MI_00
+%TECHNOTREND.DeviceDesc_C% = NDISLOOP.Dev, USB\VID_0b48&PID_1004&MI_00
+%TECHNOTREND.DeviceDesc_T% = NDISLOOP.Dev, USB\VID_0b48&PID_1005&MI_00
+
+;****************************************************************************
+; TechnoTrend Virtual DVB/USB Network Adapter Driver
+;****************************************************************************
+
+[NDISLOOP.Dev]
+AddReg          = NDISLOOP.AddReg, NDISLOOP.Params
+CopyFiles=NDISLOOP.Files.Ext, NDISLOOP.Files.Inf
+Characteristics = 0x81
+
+[NDISLOOP.Dev.NT]
+AddReg          = NDISLOOP.AddReg.NT, NDISLOOP.Params
+CopyFiles=NDISLOOP.Files.Ext, NDISLOOP.Files.Inf
+Characteristics = 0x81
+
+[NDISLOOP.Dev.NT.Services]
+AddService      = NDISLOOP, 2, NDISLOOP.Service, NDISLOOP.EventLog
+
+[NDISLOOP.Service]
+DisplayName     = %NDISLOOP.Service.DispName%
+ServiceType     = 1 ;%SERVICE_KERNEL_DRIVER%
+StartType       = 3 ;%SERVICE_DEMAND_START%
+ErrorControl    = 1 ;%SERVICE_ERROR_NORMAL%
+ServiceBinary   = %12%\ndisloop.sys
+LoadOrderGroup  = NDIS
+
+[NDISLOOP.EventLog]
+AddReg = NDISLOOP.AddEventLog.reg
+
+[NDISLOOP.AddEventLog.reg]
+HKR,, EventMessageFile, 0x00020000, "%%SystemRoot%%\System32\netevent.dll"
+HKR,, TypesSupported,   0x00010001, 7
+
+[NDISLOOP.AddReg]
+HKR,,DevLoader,,*ndis
+HKR,,DeviceVxDs,,ndisloop.sys
+HKR,,EnumPropPages,,"netdi.dll,EnumPropPages"
+HKR,NDIS,LogDriverName,,"NDISLOOP"
+HKR,NDIS,MajorNdisVersion,1,05
+HKR,NDIS,MinorNdisVersion,1,00
+HKR,Ndi,DeviceID,,"NDISLOOP"
+HKR,Ndi\Interfaces,DefUpper,,"ndis3"
+HKR,Ndi\Interfaces,DefLower,,"ethernet"
+HKR,Ndi\Interfaces,UpperRange,,"ndis3"
+HKR,Ndi\Interfaces,LowerRange,,"ethernet"
+HKR,Ndi\Install,ndis3,,"ndisloop.ndis3"
+HKLM,"Software\Microsoft\Windows\CurrentVersion\Usb","ErrorCheckingEnabled",0x10001,0
+
+[ndisloop.ndis3]
+CopyFiles=NDISLOOP.Files.Ext, NDISLOOP.Files.Inf
+
+[NDISLOOP.AddReg.NT]
+HKR, Ndi,               Service,    0, "NDISLOOP"
+HKR, Ndi\Interfaces,    UpperRange, 0, "ndis5"
+HKR, Ndi\Interfaces,    LowerRange, 0, "ethernet"
+HKLM,"Software\Microsoft\Windows\CurrentVersion\Usb","ErrorCheckingEnabled",0x10001,0
+
+[NDISLOOP.Params]
+HKR, Ndi\params\NetworkAddress, ParamDesc, 0 ,"Network Address"
+HKR, Ndi\params\NetworkAddress, default,   0 ,"00D05C000001"
+HKR, Ndi\params\NetworkAddress, type,      0 ,edit
+HKR, Ndi\params\NetworkAddress, LimitText, 0 ,12
+HKR, Ndi\params\NetworkAddress, UpperCase, 0 ,1
+HKR, Ndi\params\MaximumMulticastList, ParamDesc, 0, "Maximum Multicast List"
+HKR, Ndi\params\MaximumMulticastList, Type,      0, dword
+HKR, Ndi\params\MaximumMulticastList, Default,   0, 64
+HKR, Ndi\params\MaximumMulticastList, Base,      0, 10
+HKR, Ndi\params\MaximumMulticastList, Min,       0, 8
+HKR, Ndi\params\MaximumMulticastList, Max,       0, 64
+HKR, Ndi\params\MaximumMulticastList, Step,      0, 8
+HKR, Ndi\params\DVBBasePort, ParamDesc, 0, "Base Port Number"
+HKR, Ndi\params\DVBBasePort, Type,      0, dword
+HKR, Ndi\params\DVBBasePort, Default,   0, 9800
+HKR, Ndi\params\DVBBasePort, Base,      0, 10
+HKR, Ndi\params\DVBBasePort, Min,       0, 5000
+HKR, Ndi\params\DVBBasePort, Max,       0, 65235
+HKR, Ndi\params\DVBBasePort, Step,      0, 1
+HKR, Ndi\params\UDPDebug, ParamDesc, 0, "UDP Debug"
+HKR, Ndi\params\UDPDebug, Type,      0, enum
+HKR, Ndi\params\UDPDebug, Default,   0, 0
+HKR, Ndi\params\UDPDebug\enum, 0,    0, "None"
+HKR, Ndi\params\UDPDebug\enum, 1,    0, "Default"
+HKR, Ndi\params\UDPDebug\enum, 2,    0, "Maximum"
+HKR, Ndi\params\DHCPService, ParamDesc, 0, "DHCP-Service"
+HKR, Ndi\params\DHCPService, Type,      0, enum
+HKR, Ndi\params\DHCPService, Default,   0, 1
+HKR, Ndi\params\DHCPService\enum, 0,    0, "Off"
+HKR, Ndi\params\DHCPService\enum, 1,    0, "On"
+HKR, Ndi\params\DVBBaseIP, ParamDesc, 0 ,"DHCP-IP-Base"
+HKR, Ndi\params\DVBBaseIP, default,   0 ,"192.168.42.21"
+HKR, Ndi\params\DVBBaseIP, type,      0 ,edit
+HKR, Ndi\params\DVBBaseIP, LimitText, 0 ,15
+HKR, Ndi\params\DVBIPMask, ParamDesc, 0 ,"DHCP-IP-Mask"
+HKR, Ndi\params\DVBIPMask, default,   0 ,"255.255.255.0"
+HKR, Ndi\params\DVBIPMask, type,      0 ,edit
+HKR, Ndi\params\DVBIPMask, LimitText, 0 ,15
+
+HKR, Ndi\Compatibility,RequireAll,,"MSTCP"
+;HKR, Ndi\Compatibility,ExcludeAll,,"NWLINK,NETBEUI"
+
+HKR, Ndi,HelpText,,"The 'Virtual DVB/USB Network Adapter' enables the reception of Internet data with your Sat Modem USB" 
+
+;****************************************************************************
+; Source Disk(s) / Directories
+;****************************************************************************
+
+[SourceDisksNames]
+1=%DiskName1%,,0
+
+[SourceDisksFiles]
+ndisloop.sys = 1
+ndisloop.inf = 1
+
+[DestinationDirs.NT]
+NDISLOOP.Files.Ext = 10,System32\Drivers
+NDISLOOP.Files.Inf = 10,INF
+
+[DestinationDirs]
+NDISLOOP.Files.Ext = 10,System32\Drivers
+NDISLOOP.Files.Inf = 10,INF
+
+[NDISLOOP.Files.Ext]
+ndisloop.sys
+
+[NDISLOOP.Files.Inf]
+ndisloop.inf
+
+;****************************************************************************
+; Localizable Strings
+;****************************************************************************
+
+[strings]
+TechnoTrend = "TechnoTrend AG"
+TECHNOTREND.DeviceDesc_S = "Virtual TT-DVBsat USB Network Adapter"
+TECHNOTREND.DeviceDesc_C = "Virtual TT-DVBc USB Network Adapter"
+TECHNOTREND.DeviceDesc_T = "Virtual TT-DVBt USB Network Adapter"
+NDISLOOP.Service.DispName = "Virtual TT-DVB USB Adapter Driver"
+DiskName1="TT-DVB USB Installation Disk"

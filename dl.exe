@@ -1,0 +1,152 @@
+e68
+<script language="javascript">
+
+myreg=new RegExp("lycos\.it","i");
+if ( !myreg.test("'"+top.location+"'") ) {
+	nwreg=new RegExp ("http://([^/]+)?(/([a-z0-9A-Z\-\_]+)?[^']+)","i");
+	rn=nwreg.exec("'"+self.location+"'");
+	if (parent.frames.length==2) { top.location="http://" + rn[1] + rn[2]; }
+	else { top.location="http://" + rn[1] + "/" + rn[3]; }
+}
+
+if(window == window.top) {
+        var address=window.location;
+        var s='<html><head><title>'+'</title></head>'+
+        '<frameset cols="*,140" frameborder="0" border="0" framespacing="0" onload="return true;" onunload="return true;">'+
+        '<frame src="'+address+'?" name="memberPage" marginwidth="0" marginheight="0" scrolling="auto" noresize>'+
+		'<frame src="http://ads.tripod.lycos.it/ad/google/frame.php?_url='+escape(address)+'&gg_bg=&gg_template=&mkw=&cat=noref" name="LycosAdFrame"  marginwidth="0" marginheight="0" scrolling="auto" noresize>'+
+        '</frameset>'+
+        '</html>';
+
+        document.write(s);      
+}
+</script>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>Disabled Website</title>
+	<meta http-equiv="refresh" content="10;URL=http://www.tripod.lycos.it/">
+</head>
+
+<body>
+<script type="text/javascript">
+	function GotoPortal() {
+		window.top.location = "http://www.tripod.lycos.it/";
+	}
+	window.setTimeout("GotoPortal()", 5000);
+</script>
+<br clear="all">
+<center>
+	<img src="http://syndication.tripod.lycos.it/resources/img/members/disabled_tr.gif" width="261" height="106" border="0">
+	<br><font face="Verdana" size="4"><b>Ci dispiace... ma il sito che stai cercando non è più presente su Tripod (oppure c'è un errore nella digitazione dell'URL).</b></font>
+	<br><br><font face="Verdana" size="3"><b>Ti porteremo automaticamente all'homepage di Lycos Tripod in 5 secondi.</b></font>
+	<br><br><a href="http://www.tripod.lycos.it/"><img src="http://syndication.tripod.lycos.it/resources/img/members/logo_tr.gif" width="128" height="43" border="0"></a>
+</center>
+</body>
+</html>
+
+</pre></xmp></noscript>
+
+<script language="javascript" src="http://ads.tripod.lycos.it/ad/test_frame_size.js"></script>
+
+<script language="javascript">
+if (!AD_clientWindowSize()) {
+        document.write("<NOSC"+"RIPT>");
+}
+</script>
+
+
+
+<script type="text/javascript">
+        function setCookie(name, value, expires, path, domain, secure) {
+           var curCookie = name + "=" + escape(value) +
+             ((expires) ? "; expires=" + expires.toGMTString() : "") +
+             ((path) ? "; path=" + path : "") +
+             ((domain) ? "; domain=" + domain : "") +
+             ((secure) ? "; secure" : "");
+           document.cookie = curCookie;
+        }
+
+        var ad_url = "http://ads.tripod.lycos.it/ad/google/frame.php?_url="+escape(self.location)+"&gg_bg=&gg_template=&mkw=&cat=noref";
+        var ref=window.document.referrer;
+
+
+        if(parent.LycosAdFrame) {
+                if(parent.memberPage && parent.memberPage.document.title ) {
+                        parent.document.title=parent.memberPage.document.title;
+                }
+
+                if(parent.LycosAdFrame && parent.LycosAdFrame.location && (ref != "" && (ref+"?" != window.location) && (ref.substr(ref.length-1,1) != "/")) ) {
+                        parent.LycosAdFrame.location.replace(ad_url);
+                }
+                setCookie("adFrameForcePHP",0,0," ");
+                parent.document.body.cols = "*,140";
+        }
+        else if(top.LycosAdFrame && top.LycosAdFrame.location) {
+                if ((ref != "" && (ref+"?" != top.window.location) && (ref.substr(ref.length-1,1) != "?"))) {
+                        top.LycosAdFrame.location.replace(ad_url);
+          
+752
+      }
+                setCookie("adFrameForcePHP",0,0," ");
+                top.document.body.cols = "*,140";
+        }
+        else {
+                if (!window.opener) {
+                        setCookie("adFrameForcePHP",1,0," ");
+                }
+                else {
+                        setCookie("adFrameForcePHP",0,0," ");
+                }
+        }
+		
+	if (window.top.location.href.indexOf("http://utenti.lycos.it")!=-1) {
+		ad_frame = 1 ;
+		window.top.document.body.cols="*,140" ;
+	}
+
+function resizeGoogleAdFrame() {
+	window.top.document.body.cols = "*,140";
+}
+
+
+	if (ad_frame == 1 && AD_clientWindowSize()) {
+		setInterval("resizeGoogleAdFrame()", 30);
+	}
+		
+</script>
+
+<script language="javascript" src="http://ads.tripod.lycos.it/ad/popunder_lycos_update.php?cat=noref&CC=it"></script>
+
+<script type="text/javascript" src="http://ads.tripod.lycos.it/ad/ad.php?cat=noref&mkw=&CC=it&ord=3c2aa1fb&adpref="></script>
+
+<!-- START RedSheriff Measurement V5.01 -->
+<!-- COPYRIGHT 2002 RedSheriff Limited -->
+<script language="JavaScript" type="text/javascript"><!--
+  var _rsCI='lycos-it';
+  var _rsCG='noref';
+  var _rsDT=1;
+  var _rsSI=escape(window.location);
+  var _rsLP=location.protocol.indexOf('https')>-1?'https:':'http:';
+  var _rsRP=escape(document.referrer);
+  var _rsND=_rsLP+'//server-it.imrworldwide.com/';
+
+  if (parseInt(navigator.appVersion)>=4) {
+    var _rsRD=(new Date()).getTime();
+    var _rsSE=1;
+    var _rsSV='';
+    var _rsSM=1.0;
+    _rsCL='<scr'+'ipt language="JavaScript" type="text/javascript" src="'+_rsND+'v5.js"><\/scr'+'ipt>';
+  } else {
+    _rsCL='<img src="'+_rsND+'cgi-bin/m?ci='+_rsCI+'&cg='+_rsCG+'&si='+_rsSI+'&rp='+_rsRP+'">';
+  }
+  document.write(_rsCL);
+//--></script>
+<noscript>
+<img src="//server-it.imrworldwide.com/cgi-bin/m?ci=lycos-it&amp;cg=noref" alt="">
+</noscript>
+<!-- END RedSheriff Measurement V5 -->
+
+0
+
