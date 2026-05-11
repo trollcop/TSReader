@@ -1,5 +1,0 @@
-quick procedure of firmware update:
-1) go to \windows\system32\CyUsb folder
-2) rename GP8PSK.spt into something you can use to restore later (if you need) - GP8PSK.BAK, for instance
-3) copy new GP8PSK.spt in this folder
-4) power cycle the adapter (spt file gets loaded only after full reset).
