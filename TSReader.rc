@@ -2350,146 +2350,146 @@ END
 // remains consistent on all systems.
 #if defined(APSTUDIO_INVOKED) || defined(ATSC_ICON)
 #if defined(APSTUDIO_INVOKED)
-IDD_DVB_LOGO$(ATSC_ICON) ICON    DISCARDABLE     "idd_atsc.ico"
+IDD_DVB_LOGO$(ATSC_ICON) ICON    DISCARDABLE     "res\\atsc.ico"
 #else
-IDD_DVB_LOGO            ICON    DISCARDABLE     "idd_atsc.ico"
+IDD_DVB_LOGO            ICON    DISCARDABLE     "res\\atsc.ico"
 #endif
 #endif
 #if defined(APSTUDIO_INVOKED) || defined(STANDARD_ICON)
 #if defined(APSTUDIO_INVOKED)
-IDD_DVB_LOGO$(STANDARD_ICON) ICON    DISCARDABLE     "dvb.ico"
+IDD_DVB_LOGO$(STANDARD_ICON) ICON    DISCARDABLE     "res\\dvb.ico"
 #else
-IDD_DVB_LOGO            ICON    DISCARDABLE     "dvb.ico"
+IDD_DVB_LOGO            ICON    DISCARDABLE     "res\\dvb.ico"
 #endif
 #endif
-IDI_SI_VIDEO_ES         ICON    DISCARDABLE     "si_video_es.ico"
-IDI_SI_CAT              ICON    DISCARDABLE     "si_cat.ico"
-IDI_SI_DESCRIPTOR       ICON    DISCARDABLE     "si_descriptor.ico"
-IDI_SI_EIT              ICON    DISCARDABLE     "si_eit.ico"
-IDI_SI_NIT              ICON    DISCARDABLE     "si_nit.ico"
-IDI_SI_PAT              ICON    DISCARDABLE     "si_pat.ico"
-IDI_SI_PCR              ICON    DISCARDABLE     "si_pcr.ico"
-IDI_SI_PMT              ICON    DISCARDABLE     "si_pmt.ico"
-IDI_SI_SDT              ICON    DISCARDABLE     "si_sdt.ico"
-IDI_SI_USER_ES          ICON    DISCARDABLE     "si_user.ico"
-IDI_SI_AUDIO_ES         ICON    DISCARDABLE     "si_audio_es.ico"
-IDI_SI_BASE             ICON    DISCARDABLE     "si_base.ico"
-IDI_SI_BASE2            ICON    DISCARDABLE     "si_base2.ico"
-IDI_SI_IP               ICON    DISCARDABLE     "si_ip.ico"
-IDI_SI_VCT              ICON    DISCARDABLE     "si_base1.ico"
-IDI_SI_TDT              ICON    DISCARDABLE     "si_tdt.ico"
-IDI_SI_SIT              ICON    DISCARDABLE     "ico00001.ico"
-IDI_SI_CDT              ICON    DISCARDABLE     "si_cdt.ico"
-IDI_SI_MMT              ICON    DISCARDABLE     "si_mmt.ico"
-IDI_INFO                ICON    DISCARDABLE     "Info.ico"
-IDI_RUN_1               ICON    DISCARDABLE     "icon1.ico"
-IDI_RUN_2               ICON    DISCARDABLE     "run_2.ico"
-IDI_RUN_3               ICON    DISCARDABLE     "run_3.ico"
-IDI_RUN_4               ICON    DISCARDABLE     "run_4.ico"
-IDI_RECORD              ICON    DISCARDABLE     "record.ico"
-IDI_BLANK               ICON    DISCARDABLE     "blank.ico"
-IDI_STREAM              ICON    DISCARDABLE     "stream.ico"
-IDI_SI_USER_VBI         ICON    DISCARDABLE     "si_vbi.ico"
-IDI_SI_DATA             ICON    DISCARDABLE     "si_data.ico"
-IDI_SI_MGT              ICON    DISCARDABLE     "si_mgt.ico"
-IDI_SI_USER_SUBTL       ICON    DISCARDABLE     "si_sub.ico"
-IDI_SI_IP_STREAMING     ICON    DISCARDABLE     "si_ip_st.ico"
-IDI_SI_IP_SAVING        ICON    DISCARDABLE     "si_ip_sa.ico"
+IDI_SI_VIDEO_ES         ICON    DISCARDABLE     "res\\si_video_es.ico"
+IDI_SI_CAT              ICON    DISCARDABLE     "res\\si_cat.ico"
+IDI_SI_DESCRIPTOR       ICON    DISCARDABLE     "res\\si_descriptor.ico"
+IDI_SI_EIT              ICON    DISCARDABLE     "res\\si_eit.ico"
+IDI_SI_NIT              ICON    DISCARDABLE     "res\\si_nit.ico"
+IDI_SI_PAT              ICON    DISCARDABLE     "res\\si_pat.ico"
+IDI_SI_PCR              ICON    DISCARDABLE     "res\\si_pcr.ico"
+IDI_SI_PMT              ICON    DISCARDABLE     "res\\si_pmt.ico"
+IDI_SI_SDT              ICON    DISCARDABLE     "res\\si_sdt.ico"
+IDI_SI_USER_ES          ICON    DISCARDABLE     "res\\si_user.ico"
+IDI_SI_AUDIO_ES         ICON    DISCARDABLE     "res\\si_audio_es.ico"
+IDI_SI_BASE             ICON    DISCARDABLE     "res\\si_base.ico"
+IDI_SI_BASE2            ICON    DISCARDABLE     "res\\si_base2.ico"
+IDI_SI_IP               ICON    DISCARDABLE     "res\\si_ip.ico"
+IDI_SI_VCT              ICON    DISCARDABLE     "res\\si_base1.ico"
+IDI_SI_TDT              ICON    DISCARDABLE     "res\\si_tdt.ico"
+IDI_SI_SIT              ICON    DISCARDABLE     "res\\si_sit.ico"
+IDI_SI_CDT              ICON    DISCARDABLE     "res\\si_cdt.ico"
+IDI_SI_MMT              ICON    DISCARDABLE     "res\\si_mmt.ico"
+IDI_INFO                ICON    DISCARDABLE     "res\\info.ico"
+IDI_RUN_1               ICON    DISCARDABLE     "res\\run_1.ico"
+IDI_RUN_2               ICON    DISCARDABLE     "res\\run_2.ico"
+IDI_RUN_3               ICON    DISCARDABLE     "res\\run_3.ico"
+IDI_RUN_4               ICON    DISCARDABLE     "res\\run_4.ico"
+IDI_RECORD              ICON    DISCARDABLE     "res\\record.ico"
+IDI_BLANK               ICON    DISCARDABLE     "res\\blank.ico"
+IDI_STREAM              ICON    DISCARDABLE     "res\\stream.ico"
+IDI_SI_USER_VBI         ICON    DISCARDABLE     "res\\si_vbi.ico"
+IDI_SI_DATA             ICON    DISCARDABLE     "res\\si_data.ico"
+IDI_SI_MGT              ICON    DISCARDABLE     "res\\si_mgt.ico"
+IDI_SI_USER_SUBTL       ICON    DISCARDABLE     "res\\si_sub.ico"
+IDI_SI_IP_STREAMING     ICON    DISCARDABLE     "res\\si_ip_st.ico"
+IDI_SI_IP_SAVING        ICON    DISCARDABLE     "res\\si_ip_sa.ico"
 #if defined(APSTUDIO_INVOKED) || defined(STANDARD_ICON)
 #if defined(APSTUDIO_INVOKED)
-IDI_DVBSMALL_LOGO$(STANDARD_ICON) ICON    DISCARDABLE     "dvbsmall.ico"
+IDI_DVBSMALL_LOGO$(STANDARD_ICON) ICON    DISCARDABLE     "res\\dvbsmall.ico"
 #else
-IDI_DVBSMALL_LOGO       ICON    DISCARDABLE     "dvbsmall.ico"
+IDI_DVBSMALL_LOGO       ICON    DISCARDABLE     "res\\dvbsmall.ico"
 #endif
 #endif
-IDI_SI_BAT              ICON    DISCARDABLE     "si_bat.ico"
-IDI_TV_Y                ICON    DISCARDABLE     "ico00002.ico"
-IDI_TV_Y7               ICON    DISCARDABLE     "ico00003.ico"
-IDI_TV_Y7FV             ICON    DISCARDABLE     "tv_y7fv.ico"
-IDI_TV_G                ICON    DISCARDABLE     "ico00004.ico"
-IDI_TV_PG               ICON    DISCARDABLE     "tv_pg.ico"
-IDI_TV_14               ICON    DISCARDABLE     "ico00005.ico"
-IDI_TV_MA               ICON    DISCARDABLE     "tv_ma.ico"
-IDI_CC                  ICON    DISCARDABLE     "ico00006.ico"
-IDI_SI_SDT_OTHER        ICON    DISCARDABLE     "si_sdt_o.ico"
-IDI_LOG_INFO            ICON    DISCARDABLE     "ico00007.ico"
-IDI_LOG_STOP            ICON    DISCARDABLE     "ico00008.ico"
-IDI_LOG_WARNING         ICON    DISCARDABLE     "log_warn.ico"
-IDI_DELETE              ICON    DISCARDABLE     "ico00009.ico"
-IDI_PLAY                ICON    DISCARDABLE     "ico00010.ico"
-IDI_SI_BAT_SELECTED     ICON    DISCARDABLE     "si_bat_s.ico"
+IDI_SI_BAT              ICON    DISCARDABLE     "res\\si_bat.ico"
+IDI_TV_Y                ICON    DISCARDABLE     "res\\tv_y.ico"
+IDI_TV_Y7               ICON    DISCARDABLE     "res\\tv_y7.ico"
+IDI_TV_Y7FV             ICON    DISCARDABLE     "res\\tv_y7fv.ico"
+IDI_TV_G                ICON    DISCARDABLE     "res\\tv_g.ico"
+IDI_TV_PG               ICON    DISCARDABLE     "res\\tv_pg.ico"
+IDI_TV_14               ICON    DISCARDABLE     "res\\tv_14.ico"
+IDI_TV_MA               ICON    DISCARDABLE     "res\\tv_ma.ico"
+IDI_CC                  ICON    DISCARDABLE     "res\\ccaption.ico"
+IDI_SI_SDT_OTHER        ICON    DISCARDABLE     "res\\si_sdt_o.ico"
+IDI_LOG_INFO            ICON    DISCARDABLE     "res\\info_small.ico"
+IDI_LOG_STOP            ICON    DISCARDABLE     "res\\stop.ico"
+IDI_LOG_WARNING         ICON    DISCARDABLE     "res\\log_warn.ico"
+IDI_DELETE              ICON    DISCARDABLE     "res\\delete.ico"
+IDI_PLAY                ICON    DISCARDABLE     "res\\play.ico"
+IDI_SI_BAT_SELECTED     ICON    DISCARDABLE     "res\\si_bat_s.ico"
 #if defined(APSTUDIO_INVOKED) || defined(STANDARD_ICON)
 #if defined(APSTUDIO_INVOKED)
-IDI_DVB_LOGO_SMALL_RED$(STANDARD_ICON) ICON    DISCARDABLE     "dvb_logo_small_red.ico"
+IDI_DVB_LOGO_SMALL_RED$(STANDARD_ICON) ICON    DISCARDABLE     "res\\dvb_logo_small_red.ico"
 #else
-IDI_DVB_LOGO_SMALL_RED  ICON    DISCARDABLE     "dvb_logo_small_red.ico"
+IDI_DVB_LOGO_SMALL_RED  ICON    DISCARDABLE     "res\\dvb_logo_small_red.ico"
 #endif
 #endif
 #if defined(APSTUDIO_INVOKED) || defined(STANDARD_ICON)
 #if defined(APSTUDIO_INVOKED)
-IDI_DVB_LOGO_SMALL_BLACK$(STANDARD_ICON) ICON    DISCARDABLE     "dvb_logo_small_black.ico"
+IDI_DVB_LOGO_SMALL_BLACK$(STANDARD_ICON) ICON    DISCARDABLE     "res\\dvb_logo_small_black.ico"
 #else
-IDI_DVB_LOGO_SMALL_BLACK ICON    DISCARDABLE     "dvb_logo_small_black.ico"
+IDI_DVB_LOGO_SMALL_BLACK ICON    DISCARDABLE     "res\\dvb_logo_small_black.ico"
 #endif
 #endif
-IDI_MONITOR_GREEN       ICON    DISCARDABLE     "monitor_green.ico"
-IDI_MONITOR_RED         ICON    DISCARDABLE     "monitor_red.ico"
-IDI_MONITOR_YELLOW      ICON    DISCARDABLE     "monitor_yellow.ico"
-IDI_MONITOR_GREY        ICON    DISCARDABLE     "monitor_grey.ico"
-IDI_SI_NIT_OTHER        ICON    DISCARDABLE     "si_nit_i.ico"
-IDI_SI_NIT_IGNORED      ICON    DISCARDABLE     "si_nit_o.ico"
-IDI_BOMB                ICON    DISCARDABLE     "bomb.ico"
+IDI_MONITOR_GREEN       ICON    DISCARDABLE     "res\\monitor_green.ico"
+IDI_MONITOR_RED         ICON    DISCARDABLE     "res\\monitor_red.ico"
+IDI_MONITOR_YELLOW      ICON    DISCARDABLE     "res\\monitor_yellow.ico"
+IDI_MONITOR_GREY        ICON    DISCARDABLE     "res\\monitor_grey.ico"
+IDI_SI_NIT_OTHER        ICON    DISCARDABLE     "res\\si_nit_i.ico"
+IDI_SI_NIT_IGNORED      ICON    DISCARDABLE     "res\\si_nit_o.ico"
+IDI_BOMB                ICON    DISCARDABLE     "res\\bomb.ico"
 #if defined(APSTUDIO_INVOKED) || defined(ATSC_ICON)
 #if defined(APSTUDIO_INVOKED)
-IDI_DVB_LOGO_SMALL_BLACK$(ATSC_ICON) ICON    DISCARDABLE     "dvba_logo.ico"
+IDI_DVB_LOGO_SMALL_BLACK$(ATSC_ICON) ICON    DISCARDABLE     "res\\dvba_logo.ico"
 #else
-IDI_DVB_LOGO_SMALL_BLACK ICON    DISCARDABLE     "dvba_logo.ico"
-#endif
-#endif
-#if defined(APSTUDIO_INVOKED) || defined(ATSC_ICON)
-#if defined(APSTUDIO_INVOKED)
-IDI_DVB_LOGO_SMALL_RED$(ATSC_ICON) ICON    DISCARDABLE     "dvbar_logo.ico"
-#else
-IDI_DVB_LOGO_SMALL_RED  ICON    DISCARDABLE     "dvbar_logo.ico"
+IDI_DVB_LOGO_SMALL_BLACK ICON    DISCARDABLE     "res\\dvba_logo.ico"
 #endif
 #endif
 #if defined(APSTUDIO_INVOKED) || defined(ATSC_ICON)
 #if defined(APSTUDIO_INVOKED)
-IDI_DVBSMALL_LOGO$(ATSC_ICON) ICON    DISCARDABLE     "ico00011.ico"
+IDI_DVB_LOGO_SMALL_RED$(ATSC_ICON) ICON    DISCARDABLE     "res\\dvbar_logo.ico"
 #else
-IDI_DVBSMALL_LOGO       ICON    DISCARDABLE     "ico00011.ico"
+IDI_DVB_LOGO_SMALL_RED  ICON    DISCARDABLE     "res\\dvbar_logo.ico"
 #endif
 #endif
-IDI_MONITOR_DISABLED    ICON    DISCARDABLE     "monitor_disabled.ico"
-IDI_UPDATE_GOOD         ICON    DISCARDABLE     "update_good.ico"
-IDI_UPDATE              ICON    DISCARDABLE     "update.ico"
-IDI_UPDATE_BAD          ICON    DISCARDABLE     "update_bad.ico"
+#if defined(APSTUDIO_INVOKED) || defined(ATSC_ICON)
+#if defined(APSTUDIO_INVOKED)
+IDI_DVBSMALL_LOGO$(ATSC_ICON) ICON    DISCARDABLE     "res\\atscsmall.ico"
+#else
+IDI_DVBSMALL_LOGO       ICON    DISCARDABLE     "res\\atscsmall.ico"
+#endif
+#endif
+IDI_MONITOR_DISABLED    ICON    DISCARDABLE     "res\\monitor_disabled.ico"
+IDI_UPDATE_GOOD         ICON    DISCARDABLE     "res\\update_good.ico"
+IDI_UPDATE              ICON    DISCARDABLE     "res\\update.ico"
+IDI_UPDATE_BAD          ICON    DISCARDABLE     "res\\update_bad.ico"
 #if defined(APSTUDIO_INVOKED) || defined(PRO)
 #if defined(APSTUDIO_INVOKED)
-IDI_FWD_1$(PRO)         ICON    DISCARDABLE     "fwd_1.ico"
+IDI_FWD_1$(PRO)         ICON    DISCARDABLE     "res\\fwd_1.ico"
 #else
-IDI_FWD_1               ICON    DISCARDABLE     "fwd_1.ico"
-#endif
-#endif
-#if defined(APSTUDIO_INVOKED) || defined(PRO)
-#if defined(APSTUDIO_INVOKED)
-IDI_FWD_2$(PRO)         ICON    DISCARDABLE     "fwd_2.ico"
-#else
-IDI_FWD_2               ICON    DISCARDABLE     "fwd_2.ico"
-#endif
-#endif
-#if defined(APSTUDIO_INVOKED) || defined(PRO)
-#if defined(APSTUDIO_INVOKED)
-IDI_FWD_3$(PRO)         ICON    DISCARDABLE     "fwd_3.ico"
-#else
-IDI_FWD_3               ICON    DISCARDABLE     "fwd_3.ico"
+IDI_FWD_1               ICON    DISCARDABLE     "res\\fwd_1.ico"
 #endif
 #endif
 #if defined(APSTUDIO_INVOKED) || defined(PRO)
 #if defined(APSTUDIO_INVOKED)
-IDI_FWD_4$(PRO)         ICON    DISCARDABLE     "fwd_4.ico"
+IDI_FWD_2$(PRO)         ICON    DISCARDABLE     "res\\fwd_2.ico"
 #else
-IDI_FWD_4               ICON    DISCARDABLE     "fwd_4.ico"
+IDI_FWD_2               ICON    DISCARDABLE     "res\\fwd_2.ico"
+#endif
+#endif
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDI_FWD_3$(PRO)         ICON    DISCARDABLE     "res\\fwd_3.ico"
+#else
+IDI_FWD_3               ICON    DISCARDABLE     "res\\fwd_3.ico"
+#endif
+#endif
+#if defined(APSTUDIO_INVOKED) || defined(PRO)
+#if defined(APSTUDIO_INVOKED)
+IDI_FWD_4$(PRO)         ICON    DISCARDABLE     "res\\fwd_4.ico"
+#else
+IDI_FWD_4               ICON    DISCARDABLE     "res\\fwd_4.ico"
 #endif
 #endif
 
@@ -4042,50 +4042,50 @@ END
 // Bitmap
 //
 
-IDB_TXT_TXT             BITMAP  DISCARDABLE     "txt_txt.bmp"
-IDB_TXT_SUB             BITMAP  DISCARDABLE     "txt_sub.bmp"
-IDB_TXT_CC              BITMAP  DISCARDABLE     "txt_cc.bmp"
-IDB_TXT_VPS             BITMAP  DISCARDABLE     "txt_vps.bmp"
-IDB_TXT_ITXT            BITMAP  DISCARDABLE     "txt_itxt.bmp"
-IDB_TXT_USER            BITMAP  DISCARDABLE     "txt_sub4.bmp"
-IDB_TXT_422             BITMAP  DISCARDABLE     "txt_422.bmp"
-IDB_TXT_WSS             BITMAP  DISCARDABLE     "txt_wss.bmp"
-IDB_ATSC_CC             BITMAP  DISCARDABLE     "atsc_cc.bmp"
-IDB_ASPECT_43           BITMAP  DISCARDABLE     "aspect43.bmp"
-IDB_ASPECT_149          BITMAP  DISCARDABLE     "aspect149.bmp"
-IDB_ASPECT_169          BITMAP  DISCARDABLE     "aspect169.bmp"
-IDB_ATSC_RC             BITMAP  DISCARDABLE     "atsc_rc.bmp"
-IDB_AUD_MPEG            BITMAP  DISCARDABLE     "aud_mpeg.bmp"
-IDB_AUD_AC3             BITMAP  DISCARDABLE     "aud_ac3.bmp"
-IDB_ASPECT_AFD          BITMAP  DISCARDABLE     "aspect_a.bmp"
-IDB_PROFILE_TOOLBAR     BITMAP  DISCARDABLE     "profile_.bmp"
-IDB_VID_MPEG2           BITMAP  DISCARDABLE     "vid_mp2.bmp"
-IDB_VID_MPEG4           BITMAP  DISCARDABLE     "vid_mpg4.bmp"
-IDB_VID_H264            BITMAP  DISCARDABLE     "vid_h264.bmp"
+IDB_TXT_TXT             BITMAP  DISCARDABLE     "res\\txt_txt.bmp"
+IDB_TXT_SUB             BITMAP  DISCARDABLE     "res\\txt_sub.bmp"
+IDB_TXT_CC              BITMAP  DISCARDABLE     "res\\txt_cc.bmp"
+IDB_TXT_VPS             BITMAP  DISCARDABLE     "res\\txt_vps.bmp"
+IDB_TXT_ITXT            BITMAP  DISCARDABLE     "res\\txt_itxt.bmp"
+IDB_TXT_USER            BITMAP  DISCARDABLE     "res\\txt_sub4.bmp"
+IDB_TXT_422             BITMAP  DISCARDABLE     "res\\txt_422.bmp"
+IDB_TXT_WSS             BITMAP  DISCARDABLE     "res\\txt_wss.bmp"
+IDB_ATSC_CC             BITMAP  DISCARDABLE     "res\\atsc_cc.bmp"
+IDB_ASPECT_43           BITMAP  DISCARDABLE     "res\\aspect43.bmp"
+IDB_ASPECT_149          BITMAP  DISCARDABLE     "res\\aspect149.bmp"
+IDB_ASPECT_169          BITMAP  DISCARDABLE     "res\\aspect169.bmp"
+IDB_ATSC_RC             BITMAP  DISCARDABLE     "res\\atsc_rc.bmp"
+IDB_AUD_MPEG            BITMAP  DISCARDABLE     "res\\aud_mpeg.bmp"
+IDB_AUD_AC3             BITMAP  DISCARDABLE     "res\\aud_ac3.bmp"
+IDB_ASPECT_AFD          BITMAP  DISCARDABLE     "res\\aspect_a.bmp"
+IDB_PROFILE_TOOLBAR     BITMAP  DISCARDABLE     "res\\profile.bmp"
+IDB_VID_MPEG2           BITMAP  DISCARDABLE     "res\\vid_mp2.bmp"
+IDB_VID_MPEG4           BITMAP  DISCARDABLE     "res\\vid_mpg4.bmp"
+IDB_VID_H264            BITMAP  DISCARDABLE     "res\\vid_h264.bmp"
 #if defined(APSTUDIO_INVOKED) || defined(PRO)
 #if defined(APSTUDIO_INVOKED)
-IDB_VID_VC1$(PRO)       BITMAP  DISCARDABLE     "vid_vc1.bmp"
+IDB_VID_VC1$(PRO)       BITMAP  DISCARDABLE     "res\\vid_vc1.bmp"
 #else
-IDB_VID_VC1             BITMAP  DISCARDABLE     "vid_vc1.bmp"
+IDB_VID_VC1             BITMAP  DISCARDABLE     "res\\vid_vc1.bmp"
 #endif
 #endif
-IDB_BVID_H264           BITMAP  DISCARDABLE     "bvid_h26.bmp"
-IDB_BVID_MPEG2          BITMAP  DISCARDABLE     "bvid_mp2.bmp"
-IDB_BVID_MPEG4          BITMAP  DISCARDABLE     "bvid_mp4.bmp"
+IDB_BVID_H264           BITMAP  DISCARDABLE     "res\\bvid_h26.bmp"
+IDB_BVID_MPEG2          BITMAP  DISCARDABLE     "res\\bvid_mp2.bmp"
+IDB_BVID_MPEG4          BITMAP  DISCARDABLE     "res\\bvid_mp4.bmp"
 #if defined(APSTUDIO_INVOKED) || defined(PRO)
 #if defined(APSTUDIO_INVOKED)
-IDB_BVID_VC1$(PRO)      BITMAP  DISCARDABLE     "bvid_vc1.bmp"
+IDB_BVID_VC1$(PRO)      BITMAP  DISCARDABLE     "res\\bvid_vc1.bmp"
 #else
-IDB_BVID_VC1            BITMAP  DISCARDABLE     "bvid_vc1.bmp"
+IDB_BVID_VC1            BITMAP  DISCARDABLE     "res\\bvid_vc1.bmp"
 #endif
 #endif
-IDB_BAUD_AC3            BITMAP  DISCARDABLE     "baud_ac3.bmp"
-IDB_BAUD_MPEG           BITMAP  DISCARDABLE     "baud_mpe.bmp"
-IDB_VID_DCII            BITMAP  DISCARDABLE     "vid_dcii.bmp"
-IDB_BVID_DCII           BITMAP  DISCARDABLE     "bvid_dcii.bmp"
-IDB_AUD_AAC             BITMAP  DISCARDABLE     "aud_aac.bmp"
-IDB_BAUD_AAC            BITMAP  DISCARDABLE     "baud_aac.bmp"
-IDB_BITMAP3             BITMAP  DISCARDABLE     "bitmap3.bmp"
+IDB_BAUD_AC3            BITMAP  DISCARDABLE     "res\\baud_ac3.bmp"
+IDB_BAUD_MPEG           BITMAP  DISCARDABLE     "res\\baud_mpe.bmp"
+IDB_VID_DCII            BITMAP  DISCARDABLE     "res\\vid_dcii.bmp"
+IDB_BVID_DCII           BITMAP  DISCARDABLE     "res\\bvid_dcii.bmp"
+IDB_AUD_AAC             BITMAP  DISCARDABLE     "res\\aud_aac.bmp"
+IDB_BAUD_AAC            BITMAP  DISCARDABLE     "res\\baud_aac.bmp"
+IDB_BITMAP3             BITMAP  DISCARDABLE     "res\\blank.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //

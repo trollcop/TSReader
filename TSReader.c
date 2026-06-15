@@ -4670,11 +4670,11 @@ void ForcePID(BYTE * pTSPacket, int nPID)
 	*(pTSPacket + 2) = nPID & 0xff;
 }
 
-BOOL WaitForNextTSBuffer()
+BOOL WaitForNextTSBuffer(void)
 {
 	BOOL fOKToContinue = FALSE;
 	BOOL fAbort = FALSE;
-	int nBuffers;
+	int nBuffers = 0;
 	do
 	{
 		EnterCriticalSection(&v->ss.csTSBuffersInUse);
@@ -5349,7 +5349,7 @@ void CheckForGeneralESParsing(int nPID, int nComparePID, BYTE * bESBuffer, int *
 					case 1:
 						InputMPEG2VideoCompositionESData(bESBuffer, nActualLength, nChartIndex);
 						break;
-#ifdef PRO
+#ifdef PRO_BROKEN
 					case 2:
 						/*{
 							DWORD dwWritten;
@@ -5357,7 +5357,7 @@ void CheckForGeneralESParsing(int nPID, int nComparePID, BYTE * bESBuffer, int *
 						}*/
 						InputH264VideoCompositionESData(bESBuffer, nActualLength, nChartIndex);
 						break;
-#endif PRO
+#endif PRO_BROKEN
 					}
 				}
 				*nESLength = 0;
@@ -22390,88 +22390,6 @@ void UnloadSerialReceiverDLLs()
 		FreeLibrary(v->hSerialReceiverControl[nIndex]);
 }
 
-#ifdef PRO
-BOOL CheckHASP()
-{
-	hasp_handle_t handle = 0;
-	hasp_status_t status;
-	const hasp_feature_t feature = HASP_PROGNUM_DEFAULT_FID | HASP_PROGNUM_OPT_NO_REMOTE;
-	unsigned char vendor_code[] =
-	"yndP2uWijYQMGG+hZCdCOXmTNSo7dJouB9ZIva4AVZj5pqY/F3iThD208T7zMp/l7hVXybbl/ujO2Xf/"
-	"0g6RX/2gJdUtQJFUDB0Ygx7ASLNQ1i/ISh6O88HoZqKGTDAmoRuRYOe16G03QQEsDQkY+BYeOLEqj+LF"
-	"Qx2m05v4zeWqvd+ReoW0XBgMih5vjCb+DplooTsMoXvgTkIag2EZTU6OIYkrZZ2p3EOHp3SwNbHgqZrl"
-	"k1MxZ/yJWCrCB26neFQx2QB23WoaDds+vKPMwrTAAxmCPkivKURRVL/LbDnegsIjqF+himXporeZ+FQK"
-	"OhN7r4VZSUFKu4dA4YTz18G9E+pemP7NUkBH5wcNXH7c6AqyKQmAynfmfwJju+dkdVz/XU342966UcQJ"
-	"aKR67ZGRk/uZHJbzLVchwNZE58sZZjKQEncpyBgTZ20yY4etFXjJtNgUZ8tOqp6ooJONKIN4VuQWl/YL"
-	"Rpvh6ow3EH5zUDF6WXOA59wxaRnXqjrGknJFHrUOUXSDfHFT1BkI9k02L1+MqDywHJh7a4vd7SfdbEY7"
-	"Q7hDOnKcMteAQyX1DRmIKllFGsNy25x+OL0PsiGp8GNovipQr0R2lOdVXM9lQ6N6+nmu2jeJceqVc34r"
-	"Cc1/AdvpZhL/RD4kfRaVZlQbSz7HWNsupp5tNG2mCaDGLK2pm5JXPhx5S92XV2AfFCIi9CBDyxoASB8P"
-	"6pfvAXklCaXH";
-
-	// login - if we're normal unprotected TSR this'll fail
-	// but if we're protected and the key isn't there we'll
-	// never run anyway
-	status = hasp_login(feature, vendor_code, &handle);
-	if (status == HASP_STATUS_OK)
-	{
-		hasp_status_t memSize = 0;
-
-		status = hasp_get_size(handle, HASP_FILEID_MAIN, &memSize);
-		if (status == HASP_STATUS_OK)
-		{
-			if (memSize != 0)
-			{	
-				// We have a time key - let's see if this has been inited
-				hasp_time_t time;
-				unsigned char data[16];
-
-				status = hasp_read(handle, HASP_FILEID_MAIN, 0, 16, data);
-				status = hasp_decrypt(handle, data, 16);
-				if (data[15] == 0xde)
-				{
-					// This key in virgin
-					status = hasp_get_rtc(handle, &time);
-					time += 28 * 24 * 60 * 60;
-					memcpy(&data[0], &time, sizeof(time));
-					data[15] = 0xdb;
-					status = hasp_encrypt(handle, data, 16);
-					status = hasp_write(handle, HASP_FILEID_MAIN, 0, 16, data);
-				}
-				else if (data[15] == 0xdb)
-				{
-					hasp_time_t expire_time;
-
-					memcpy(&expire_time, &data[0], sizeof(expire_time));
-					status = hasp_get_rtc(handle, &time);
-					if (time > expire_time)
-					{
-						char szError[256];
-
-						// Expired
-						hasp_logout(handle);
-						wsprintf(szError, "This demo version of %s has reached it's 28 day limit.\n\nPlease contact the organization you received the key from for instructions\non how to contuine. Do NOT discard the USB key - it must be returned.", gszAppName);
-						MessageBox(NULL, szError, gszAppName, MB_ICONSTOP);
-						return FALSE;
-					}
-				}
-				else
-				{
-					// Unknown data in the key - let's just quit
-					hasp_logout(handle);
-					return FALSE;
-				}
-			}
-		}
-
-		// All done with the key - logout
-		status = hasp_logout(handle);
-	}
-
-	return TRUE;
-}
-
-#endif PRO
-
 // Memorial splash screen for Rod Hewitt KG6TTD (G6TTD), defined in splash.c
 extern void ShowMemorialSplash(HINSTANCE hInstance);
 
@@ -22575,9 +22493,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 			lstrcat(gszMainClass, ".");
 			lstrcat(gszMainClass, v->szProfileName);
 		}
-
-		if (CheckHASP() == FALSE)
-			goto PreDeInitVariables;
 #endif PRO
 
 		if (v->fSingleInstance)

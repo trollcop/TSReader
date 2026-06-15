@@ -5,10 +5,10 @@
 #include "bcdmux.h"
 #include "util.h"
 
-#ifdef PRO
+#ifdef PRO_BROKEN
  #include "fvd_mp4.h"
  FVD_VIDEO_DEC * H264Dec = 0;
-#endif PRO
+#endif PRO_BROKEN
 
 // Stuff in TSReader.c
 extern PVARIABLES v;
@@ -1459,7 +1459,7 @@ LRESULT FAR PASCAL VideoCompositionChartWindowProc(HWND hWnd, UINT uMsg, WPARAM 
 			v->nTotalGOPLength[nChartIndex] = 0;
 			v->nGOPLengthSamples[nChartIndex] = 0;
 
-#ifdef PRO
+#ifdef PRO_BROKEN
 			if ((v->nChartParameters & 0xffff0000) == 0x00010000)
 			{
 				// H.264 - initialise the decoder
@@ -1469,7 +1469,7 @@ LRESULT FAR PASCAL VideoCompositionChartWindowProc(HWND hWnd, UINT uMsg, WPARAM 
 				//Fvd_Dec_Set_Param(H264Dec, FVD_CMD_CPU, FVD_CPU_DETECT, 0);
 				LeaveCriticalSection(&v->csH264VideoChart);
 			}
-#endif PRO
+#endif PRO_BROKEN
 			CheckCommonGraphMessages(hWnd, uMsg, wParam, lParam);
 		}
 		break;
@@ -1477,7 +1477,7 @@ LRESULT FAR PASCAL VideoCompositionChartWindowProc(HWND hWnd, UINT uMsg, WPARAM 
 		{
 			int nChartIndex = GetWindowLong(hWnd, GWL_USERDATA);
 			CheckCommonGraphMessages(hWnd, uMsg, wParam, lParam);
-#ifdef PRO
+#ifdef PRO_BROKEN
 			if ((v->nVideoCompositionPID[nChartIndex] & 0xffff0000) == 0x00010000)
 			{
 				EnterCriticalSection(&v->csH264VideoChart);
@@ -1485,7 +1485,7 @@ LRESULT FAR PASCAL VideoCompositionChartWindowProc(HWND hWnd, UINT uMsg, WPARAM 
 				H264Dec = 0;
 				LeaveCriticalSection(&v->csH264VideoChart);
 			}
-#endif PRO
+#endif PRO_BROKEN
 			v->nVideoCompositionPID[nChartIndex] = -1;
 		}
 		break;
@@ -1635,7 +1635,7 @@ void UpdateVideoCompositionChart(int nGOPLength, int nChartIndex, BOOL fH264)
 	InvalidateRect(v->hWndChart[nChartIndex], NULL, FALSE);
 }
 
-#ifdef PRO
+#ifdef PRO_BROKEN
 void InputH264VideoCompositionESData(BYTE * pPESPacket, int nPESLength, int nChartIndex)
 {
 	int nMaxPoints = v->nGraphHistoricalPoints;
@@ -1790,7 +1790,7 @@ void InputH264VideoCompositionESData(BYTE * pPESPacket, int nPESLength, int nCha
 	}
 	*/
 }
-#endif PRO
+#endif PRO_BROKEN
 
 void InputMPEG2VideoCompositionESData(BYTE * pPESPacket, int nPESLength, int nChartIndex)
 {
