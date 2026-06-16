@@ -52,11 +52,11 @@ DWORD WINAPI AACAudioDecoderThread(LPVOID lpv)
 	if (hAac != NULL)
 	{
 		int nReadLength;
-		long samplerate;
+		unsigned long samplerate;
 		long err;
 		int nWriteOffset = 0;
 		int nLoop = 0;
-		char channels;
+		unsigned char channels;
 
 		// Set to stereo downmix
 		conf =	NeAACDecGetCurrentConfiguration(hAac);
@@ -86,7 +86,6 @@ DWORD WINAPI AACAudioDecoderThread(LPVOID lpv)
 		{
 			NeAACDecFrameInfo hInfo;
 			signed short * samplebuffer;
-			int nReadLength;
 
 			if (BUFFER_SIZE - nWriteOffset > 0)
 			{
