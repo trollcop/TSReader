@@ -2492,6 +2492,8 @@ IDI_FWD_4$(PRO)         ICON    DISCARDABLE     "res\\fwd_4.ico"
 IDI_FWD_4               ICON    DISCARDABLE     "res\\fwd_4.ico"
 #endif
 #endif
+IDI_SI_BIT              ICON    DISCARDABLE     "res\\si_bit.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

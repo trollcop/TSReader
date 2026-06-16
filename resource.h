@@ -517,6 +517,7 @@
 #define IDC_ARCHIVE_SETUP_MEMORY        1181
 #define IDC_ARCHIVE_LOCAL_TIME          1181
 #define IDD_CC_DUMP_STREAMS_HOOK        1181
+#define IDI_SI_BIT                      1181
 #define IDC_ARCHIVE_RUN_DEBUG           1182
 #define IDD_AUTO_RECORD_NO_PROGRAM      1182
 #define IDC_ARCHIVE_EMAIL               1183

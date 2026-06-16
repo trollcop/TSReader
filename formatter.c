@@ -2,6 +2,8 @@
 #include <commctrl.h>
 #include <time.h>
 #include <winsock.h>
+#include <strsafe.h>
+#include <stdint.h>
 #include <shlobj.h>
 #include "tsreader.h"
 #include "bcdmux.h"
@@ -1333,6 +1335,96 @@ void DecodeDescriptorNames(char * szDescriptor, BYTE nDescriptorID)
 		else
 			goto DecodeDescriptorNames_ForceDefault;
 		break;
+	case 0xc1:
+		if (v->fISDB)
+			lstrcpy(szDescriptor, "ISDB Digital Copy Control");
+		else
+			goto DecodeDescriptorNames_ForceDefault;
+		break;
+	case 0xc4:
+		if (v->fISDB)
+			lstrcpy(szDescriptor, "ISDB Audio Component");
+		else
+			goto DecodeDescriptorNames_ForceDefault;
+		break;
+	case 0xc7:
+		if (v->fISDB)
+			lstrcpy(szDescriptor, "ISDB Data Content");
+		else
+			goto DecodeDescriptorNames_ForceDefault;
+		break;
+	case 0xc8:
+		if (v->fISDB)
+			lstrcpy(szDescriptor, "ISDB Video Decode Control");
+		else
+			goto DecodeDescriptorNames_ForceDefault;
+		break;
+	case 0xcd:
+		if (v->fISDB)
+			lstrcpy(szDescriptor, "ISDB TS Information");
+		else
+			goto DecodeDescriptorNames_ForceDefault;
+		break;
+	case 0xce:
+		if (v->fISDB)
+			lstrcpy(szDescriptor, "ISDB Extended Broadcaster");
+		else
+			goto DecodeDescriptorNames_ForceDefault;
+		break;
+	case 0xcf:
+		if (v->fISDB)
+			lstrcpy(szDescriptor, "ISDB Logo Transmission");
+		else
+			goto DecodeDescriptorNames_ForceDefault;
+		break;
+	case 0xd6:
+		if (v->fISDB)
+			lstrcpy(szDescriptor, "ISDB Event Group");
+		else
+			goto DecodeDescriptorNames_ForceDefault;
+		break;
+	case 0xd7:
+		if (v->fISDB)
+			lstrcpy(szDescriptor, "ISDB SI Parameter");
+		else
+			goto DecodeDescriptorNames_ForceDefault;
+		break;
+	case 0xde:
+		if (v->fISDB)
+			lstrcpy(szDescriptor, "ISDB Content Availability");
+		else
+			goto DecodeDescriptorNames_ForceDefault;
+		break;
+	case 0xf6:
+		if (v->fISDB)
+			lstrcpy(szDescriptor, "ISDB Access Control");
+		else
+			goto DecodeDescriptorNames_ForceDefault;
+		break;
+	case 0xfa:
+		if (v->fISDB)
+			lstrcpy(szDescriptor, "ISDB Terrestrial Delivery System");
+		else
+			goto DecodeDescriptorNames_ForceDefault;
+		break;
+	case 0xfb:
+		if (v->fISDB)
+			lstrcpy(szDescriptor, "ISDB Partial Reception");
+		else
+			goto DecodeDescriptorNames_ForceDefault;
+		break;
+	case 0xfd:
+		if (v->fISDB)
+			lstrcpy(szDescriptor, "ISDB Data Component");
+		else
+			goto DecodeDescriptorNames_ForceDefault;
+		break;
+	case 0xfe:
+		if (v->fISDB)
+			lstrcpy(szDescriptor, "ISDB System Management");
+		else
+			goto DecodeDescriptorNames_ForceDefault;
+		break;
 	default:
 DecodeDescriptorNames_ForceDefault:
 		if (nDescriptorID < 64)
@@ -1347,6 +1439,7 @@ DecodeDescriptorNames_ForceDefault:
 void FormatCASystemName(int nCASystemID, char * szCAName)
 {
 	if (nCASystemID == 0x1234)						lstrcat(szCAName, "Echostar/Nagravision");
+	else if (nCASystemID == 0x0005)					lstrcat(szCAName, "ARIB CAS");
 	else if ((nCASystemID & 0xff00) == 0x0000)		lstrcat(szCAName, "Standardized");
 	else if ((nCASystemID & 0xff00) == 0x0100)		lstrcat(szCAName, "Canal Plus");
 	else if ((nCASystemID & 0xff00) == 0x0200)		lstrcat(szCAName, "CCETT");
@@ -4338,6 +4431,155 @@ byte 8 uimsbf
 			lstrcat(v->szSIFormatBuffer, szTemp);
 		}
 		break;
+	case 0xc1:	// ISDB Digital Copy Control
+		if (!v->fISDB)
+			goto DecodeMPEG2Descriptor_Default;
+		set_buf(BM_USER_THREAD, pDescriptorData, 0, FALSE);
+		{
+			const char *cci_info[] = { "Copy can be made without control condition", "Defined by service provider", "Copy can be made for only one generation", "Copy is forbidden" };
+
+			int descriptor_tag = get_bits(BM_USER_THREAD, 8);
+			int descriptor_length = get_bits(BM_USER_THREAD, 8);
+			int digital_recording_control_data = (get_bits(BM_USER_THREAD, 2) & 3);
+			char maximum_bitrate_flag = get_bits(BM_USER_THREAD, 1);
+			char component_control_flag = get_bits(BM_USER_THREAD, 1);
+			int maximum_bitrate = 0;
+			int user_defined = get_bits(BM_USER_THREAD, 4) & 0xf;
+			if (maximum_bitrate_flag)
+				maximum_bitrate = get_bits(BM_USER_THREAD, 8);
+
+			wsprintf(szTemp, " Recording control: %d (%s)\r\n", digital_recording_control_data, cci_info[digital_recording_control_data]);
+			lstrcat(v->szSIFormatBuffer, szTemp);
+			wsprintf(szTemp, " User-defined: 0x%x (%d)\r\n", user_defined, user_defined);
+			lstrcat(v->szSIFormatBuffer, szTemp);
+			if (maximum_bitrate_flag) {
+				StringCchPrintf(szTemp, sizeof(szTemp), " Maximum bitrate: %2.2f Mbps\r\n", maximum_bitrate / 5.0f);
+				lstrcat(v->szSIFormatBuffer, szTemp);
+			}
+			/* TODO the rest of descriptor */
+		}
+		break;
+
+	case 0xcf:	// ISDB Logo Transmission
+		if (!v->fISDB)
+			goto DecodeMPEG2Descriptor_Default;
+		set_buf(BM_USER_THREAD, pDescriptorData, 0, FALSE);
+		{
+			int descriptor_tag = get_bits(BM_USER_THREAD, 8);
+			int descriptor_length = get_bits(BM_USER_THREAD, 8);
+
+			uint8_t logo_transmission_type = get_bits(BM_USER_THREAD, 8);
+			if (logo_transmission_type == 0x01) {
+				/* CDT transmission type 1 */
+				get_bits(BM_USER_THREAD, 7); /* reserved */
+				uint16_t logo_id = get_bits(BM_USER_THREAD, 9);
+				get_bits(BM_USER_THREAD, 4); /* reserved */
+				uint16_t logo_version = get_bits(BM_USER_THREAD, 12);
+				uint16_t download_data_id = get_bits(BM_USER_THREAD, 16);
+
+				wsprintf(szTemp, " Logo transmission type: %02x (CDT transmission type 1)\r\n"
+					" Logo id: 0x%03x (%d)\r\n"
+					" Logo version: 0x%03x (%d)\r\n"
+					" Download data id: 0x%04x (%d)\r\n",
+
+					logo_transmission_type,
+					logo_id, logo_id,
+					logo_version, logo_version,
+					download_data_id, download_data_id);
+
+			} else if (logo_transmission_type == 0x02) {
+				/* CDT transmission type 2 */
+				get_bits(BM_USER_THREAD, 7); /* reserved */
+				uint16_t logo_id = get_bits(BM_USER_THREAD, 9);
+
+				wsprintf(szTemp, " Logo transmission type: %02x (CDT transmission type 2)\r\n"
+					" Logo id: 0x%03x (%d)\r\n",
+					logo_transmission_type,
+					logo_id, logo_id);
+
+			} else if (logo_transmission_type == 0x03) {
+				/* Simple logo type */
+				int j, simple_logo_name_length = descriptor_length - 1;
+				char szLogoName[64] = { 0, };
+
+				for (j = 0; j < simple_logo_name_length; j++)
+					szLogoName[j] = get_bits(BM_USER_THREAD, 8);
+				szLogoName[j] = '\0';
+
+				wsprintf(szTemp, " Logo transmission type: %02x (Simple logo type)\r\n"
+					" Logo characters: \"%s\"\r\n",
+					logo_transmission_type,
+					szLogoName);
+
+			} else {
+				int j, reserved_length = descriptor_length - 1;
+				char *psz = szTemp;
+				psz += wsprintf(" Reserved transmission type %02x\r\n"
+								" Reserved bytes: ", logo_transmission_type);
+
+				for (j = 0; j < reserved_length; j++) {
+					uint8_t byte = get_bits(BM_USER_THREAD, 8);
+					wsprintf(psz, "%02x ", byte);
+					psz += 3;
+				}
+				wsprintf(psz, "\r\n");
+			}
+
+			lstrcat(v->szSIFormatBuffer, szTemp);
+		}
+		break;
+
+	case 0xde:	// ISDB Content Availability
+		if (!v->fISDB)
+			goto DecodeMPEG2Descriptor_Default;
+		set_buf(BM_USER_THREAD, pDescriptorData, 0, FALSE);
+		{
+			int descriptor_tag = get_bits(BM_USER_THREAD, 8);
+			int descriptor_length = get_bits(BM_USER_THREAD, 8);
+			get_bits(BM_USER_THREAD, 1); // reserved
+			uint8_t copy_restriction_mode = get_bits(BM_USER_THREAD, 1);
+			uint8_t image_constraint_token = get_bits(BM_USER_THREAD, 1);
+			uint8_t retention_mode = get_bits(BM_USER_THREAD, 1);
+			uint8_t retention_state = (get_bits(BM_USER_THREAD, 3) & 7);
+			uint8_t encryption_mode = get_bits(BM_USER_THREAD, 1);
+
+			wsprintf(szTemp, " Copy restriction mode: %s\r\n"
+				" Image constraint token: %s\r\n"
+				" Retention mode: %s\r\n"
+				" Retention state: %d (%s)\r\n"
+				" Encryption mode: %s\r\n",
+				TrueFalseString(copy_restriction_mode),
+				TrueFalseString(image_constraint_token),
+				TrueFalseString(retention_mode),
+				retention_state, retention_state == 7 ? "1 hour and half" : "Undefined",
+				TrueFalseString(encryption_mode));
+			lstrcat(v->szSIFormatBuffer, szTemp);
+		}
+		break;
+
+	case 0xf6:	// ISDB Access Control
+		if (!v->fISDB)
+			goto DecodeMPEG2Descriptor_Default;
+		set_buf(BM_USER_THREAD, pDescriptorData, 0, FALSE);
+		{
+			int descriptor_tag = get_bits(BM_USER_THREAD, 8);
+			int descriptor_length = get_bits(BM_USER_THREAD, 8);
+			uint16_t ca_system_id = get_bits(BM_USER_THREAD, 16);
+			uint8_t transmission_type = get_bits(BM_USER_THREAD, 3);
+			uint16_t ecm_pid = get_bits(BM_USER_THREAD, 13);
+
+			wsprintf(szTemp, " CA System Id: 0x%04x (%s)\r\n"
+							 " Transmission type: %d (%s)\r\n"
+							 " ECM PID: 0x%04x (%d)\r\n", 
+				ca_system_id, (ca_system_id == 0xe ? "ARIB Content Protection" : "Unknown"),
+				transmission_type, (transmission_type == 7 ? "Broadcast route" : "Undefined"),
+				ecm_pid, ecm_pid);
+			lstrcat(v->szSIFormatBuffer, szTemp);
+
+			/* TODO print private data byte if care */
+		}
+		break;
+
 /*	case 0xaa: // ?? what the hell is this?
 		if (v->nNetworkPID != 0x1ffb)
 		{
@@ -6913,7 +7155,7 @@ char * FormatSDTEntry(int nChannelNumber, BOOL fHTMLMode)
 					char szDescriptor[128];
 					char szTemp[256];
 					DecodeDescriptorNames(szDescriptor, v->pChannelData[nChannelNumber]->pExtraDescriptors[i][0]);
-					wsprintf(szTemp, "Descriptor: %s\r\n", szDescriptor);
+					wsprintf(szTemp, "\r\nDescriptor: %s\r\n", szDescriptor);
 					lstrcat(v->szSIFormatBuffer, szTemp);
 
 					DecodeMPEG2Descriptor(v->pChannelData[nChannelNumber]->pExtraDescriptors[i], fHTMLMode);

@@ -7526,6 +7526,7 @@ void InitSITreeViewImageLists(HWND hWndTV)
 					 IDI_SI_NIT_OTHER, //25
 					 IDI_SI_BAT_SELECTED, //26
 					 IDI_SI_NIT_IGNORED, //27
+					 IDI_SI_BIT, //28
 					 0};
 
 	v->hSIParserImageList = ImageList_Create(16, 16, ILC_MASK, 30, 50);
