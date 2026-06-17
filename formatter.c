@@ -333,6 +333,16 @@ void FormatDVBTTransmissionMode(char * szTransmissionMode, int nTransmissionMode
 	}
 }
 
+void FormatISDBTransmissionTypeInfo(char *szTransmissionType, size_t len, uint8_t transmission_type_info)
+{
+	const char *parameter_type[] = { "Type a", "Type b", "Type c", "Reserved" };
+	const char *modulation_system[] = { "64QAM", "16QAM", "QPSK", "Reserved" };
+
+	uint8_t parameter = (transmission_type_info >> 6) & 3;
+	uint8_t modulation = (transmission_type_info >> 4) & 3;
+	StringCchPrintf(szTransmissionType, len, "%s - %s", parameter_type[parameter], modulation_system[modulation]);
+}
+
 void FormatPolarity(char * szPolarity, int nPolarityIndicator, BOOL fLong)
 {
 	switch(nPolarityIndicator)
@@ -642,6 +652,9 @@ void DecodeServiceType(char * szServiceType, int nServiceType)
 		break;
 	case 0x1B:
 		lstrcpy(szServiceType, "advanced codec HD NVOD reference");
+		break;
+	case 0xC0:
+		lstrcpy(szServiceType, "data service");
 		break;
 	default:
 		if (nServiceType >= 0x80 && nServiceType <= 0xfe)
@@ -3042,7 +3055,7 @@ void DecodeMPEG2Descriptor(BYTE * pDescriptorData, BOOL fHTMLMode)
 			}
 		}
 		break;
-	case 0x40:	// network name descriptor -- already done for us
+	case 0x40:	// network name descriptor -- already done for us in parser.c ParseDVBNITPacket(...)
 		if (v->nNetworkPID != 0x0010)
 			goto DecodeMPEG2Descriptor_Default;
 		break;
@@ -3065,7 +3078,7 @@ void DecodeMPEG2Descriptor(BYTE * pDescriptorData, BOOL fHTMLMode)
 					wsprintf(szServiceID, "%d (%s)", nServiceID, v->pChannelData[nServiceID]->szShortName);
 				else
 					wsprintf(szServiceID, "%d", nServiceID);
-				wsprintf(szTemp, " Service: %s %s\r\n", szServiceID, szServiceType);
+				wsprintf(szTemp, " Service: %s %s (0x%02x)\r\n", szServiceID, szServiceType, nServiceType);
 				lstrcat(v->szSIFormatBuffer, szTemp);
 				pServiceListDescriptor += 3;
 				descriptor_length -= 3;
@@ -4431,32 +4444,94 @@ byte 8 uimsbf
 			lstrcat(v->szSIFormatBuffer, szTemp);
 		}
 		break;
+
 	case 0xc1:	// ISDB Digital Copy Control
 		if (!v->fISDB)
 			goto DecodeMPEG2Descriptor_Default;
 		set_buf(BM_USER_THREAD, pDescriptorData, 0, FALSE);
 		{
-			const char *cci_info[] = { "Copy can be made without control condition", "Defined by service provider", "Copy can be made for only one generation", "Copy is forbidden" };
+			const char *cci_info1[] = { "Copy can be made without control condition", "Copy forbidden", "Copy can be made for only one generation", "Copy is forbidden" };
+			const char *cci_info3[] = { "Copy can be made without control condition", "Not used", "Copy can be made for only one generation", "Copy is forbidden" };
+			const char *digital_cci_info[] = { "Undefined", "Output with encryption to serial interface", "Undefined", "Output without encryption to serial interface" };
+			const char *analog_cci_info[] = { "Can be copied without control condition", "With pseudo-sync pulse", "Pseudo-sync pulse + 2-line reversed division burst insertion", "Pseudo-sync pulse + 4-line reversed division burst insertion" };
 
 			int descriptor_tag = get_bits(BM_USER_THREAD, 8);
 			int descriptor_length = get_bits(BM_USER_THREAD, 8);
-			int digital_recording_control_data = (get_bits(BM_USER_THREAD, 2) & 3);
-			char maximum_bitrate_flag = get_bits(BM_USER_THREAD, 1);
-			char component_control_flag = get_bits(BM_USER_THREAD, 1);
-			int maximum_bitrate = 0;
-			int user_defined = get_bits(BM_USER_THREAD, 4) & 0xf;
+			uint8_t digital_recording_control_data = (get_bits(BM_USER_THREAD, 2) & 3);
+			uint8_t maximum_bitrate_flag = get_bits(BM_USER_THREAD, 1);
+			uint8_t component_control_flag = get_bits(BM_USER_THREAD, 1);
+			uint8_t copy_control_type = get_bits(BM_USER_THREAD, 2);
+			uint8_t aps_control_data = 0xff;
+			if (copy_control_type == 1)
+				aps_control_data = get_bits(BM_USER_THREAD, 2) & 3;
+			else
+				get_bits(BM_USER_THREAD, 2); /* reserved */
+
+			uint8_t maximum_bitrate = 0;
 			if (maximum_bitrate_flag)
 				maximum_bitrate = get_bits(BM_USER_THREAD, 8);
 
-			wsprintf(szTemp, " Recording control: %d (%s)\r\n", digital_recording_control_data, cci_info[digital_recording_control_data]);
+			if (copy_control_type == 1)
+				wsprintf(szTemp, " Recording control: %d (%s)\r\n", digital_recording_control_data, cci_info1[digital_recording_control_data]);
+			else
+				wsprintf(szTemp, " Recording control: %d (%s)\r\n", digital_recording_control_data, cci_info3[digital_recording_control_data]);
 			lstrcat(v->szSIFormatBuffer, szTemp);
-			wsprintf(szTemp, " User-defined: 0x%x (%d)\r\n", user_defined, user_defined);
+
+			wsprintf(szTemp, " Digital copy control type 0x%1x (%d) - %s\r\n", copy_control_type, copy_control_type, digital_cci_info[copy_control_type]);
 			lstrcat(v->szSIFormatBuffer, szTemp);
+
+			if (aps_control_data != 0xff) {
+				wsprintf(szTemp, " Analog copy control type 0x%1x (%d) - %s\r\n", aps_control_data, aps_control_data, analog_cci_info[aps_control_data]);
+				lstrcat(v->szSIFormatBuffer, szTemp);
+			}
+
 			if (maximum_bitrate_flag) {
 				StringCchPrintf(szTemp, sizeof(szTemp), " Maximum bitrate: %2.2f Mbps\r\n", maximum_bitrate / 5.0f);
 				lstrcat(v->szSIFormatBuffer, szTemp);
 			}
 			/* TODO the rest of descriptor */
+		}
+		break;
+
+	case 0xcd:	// ISDB TS Information
+		if (!v->fISDB)
+			goto DecodeMPEG2Descriptor_Default;
+		set_buf(BM_USER_THREAD, pDescriptorData, 0, FALSE);
+		{
+			int j, k;
+			int descriptor_tag = get_bits(BM_USER_THREAD, 8);
+			int descriptor_length = get_bits(BM_USER_THREAD, 8);
+
+			uint8_t remote_control_key_id = get_bits(BM_USER_THREAD, 8);
+			wsprintf(szTemp, " Remote control key id: 0x%02x (%d)\r\n", remote_control_key_id, remote_control_key_id);
+			lstrcat(v->szSIFormatBuffer, szTemp);
+
+			int length_of_ts_name = get_bits(BM_USER_THREAD, 6);
+			int transmission_type_count = get_bits(BM_USER_THREAD, 2);
+
+			/* get TS Name */
+			char szTsName[64] = { 0, };
+			for (j = 0; j < length_of_ts_name; j++)
+				szTsName[j] = get_bits(BM_USER_THREAD, 8);
+			szTsName[j] = '\0';
+			/* TODO: ARIB decoding */
+			wsprintf(szTemp, " TS name: \"%s\"\r\n", szTsName);
+			lstrcat(v->szSIFormatBuffer, szTemp);
+
+			/* list transmission type info */
+			for (j = 0; j < transmission_type_count; j++) {
+				uint8_t transmission_type_info = get_bits(BM_USER_THREAD, 8);
+				uint8_t num_of_service = get_bits(BM_USER_THREAD, 8);
+				char szTransmissionType[64] = { 0, };
+				FormatISDBTransmissionTypeInfo(szTransmissionType, sizeof(szTransmissionType), transmission_type_info);
+				wsprintf(szTemp, " - Transmission type info: 0x%02x (%d) - %s\r\n", transmission_type_info, transmission_type_info, szTransmissionType);
+				lstrcat(v->szSIFormatBuffer, szTemp);
+				for (k = 0; k < num_of_service; k++) {
+					uint16_t service_id = get_bits(BM_USER_THREAD, 16);
+					wsprintf(szTemp, "   Service id: %d (0x%04x)\r\n", service_id, service_id);
+					lstrcat(v->szSIFormatBuffer, szTemp);
+				}
+			}
 		}
 		break;
 
@@ -4579,6 +4654,92 @@ byte 8 uimsbf
 			/* TODO print private data byte if care */
 		}
 		break;
+
+	case 0xfa:	// ISDB Terrestrial Delivery System
+		if (!v->fISDB)
+			goto DecodeMPEG2Descriptor_Default;
+		set_buf(BM_USER_THREAD, pDescriptorData, 0, FALSE);
+		{
+			const char *isdb_transmission_mode[] = { "2k", "4k", "8k", "Undefined" };
+			const char *isdb_guard_interval[] = { "1/32", "1/16", "1/8", "1/4" };
+			int descriptor_tag = get_bits(BM_USER_THREAD, 8);
+			int descriptor_length = get_bits(BM_USER_THREAD, 8);
+
+			uint16_t area_code = get_bits(BM_USER_THREAD, 12);
+			uint8_t guard_interval = get_bits(BM_USER_THREAD, 2) & 3; /* FormatDVBTGuardInterval */
+			uint8_t transmission_mode = get_bits(BM_USER_THREAD, 2) & 3;
+
+			wsprintf(szTemp, " Area code: 0x%03x (%d)\r\n"
+				" Guard interval: %d (%s)\r\n"
+				" Transmission mode : %d (%s)\r\n",
+				area_code, area_code,
+				guard_interval, isdb_guard_interval[guard_interval],
+				transmission_mode, isdb_transmission_mode[transmission_mode]);
+			lstrcat(v->szSIFormatBuffer, szTemp);
+
+			int j, frequency_length = (descriptor_length - 2) / 2;
+
+			for (j = 0; j < frequency_length; j++) {
+				uint16_t frequency = get_bits(BM_USER_THREAD, 16);
+				StringCchPrintf(szTemp, sizeof(szTemp), " Frequency: %3.3f MHz\r\n", frequency * (1.0f/7.0f));
+				lstrcat(v->szSIFormatBuffer, szTemp);
+			}
+		}
+		break;
+
+	case 0xfb:	// ISDB Partial Reception
+		if (!v->fISDB)
+			goto DecodeMPEG2Descriptor_Default;
+		set_buf(BM_USER_THREAD, pDescriptorData, 0, FALSE);
+		{
+			int descriptor_tag = get_bits(BM_USER_THREAD, 8);
+			int descriptor_length = get_bits(BM_USER_THREAD, 8);
+
+			int j, service_length = (descriptor_length) / 2;
+
+			for (j = 0; j < service_length; j++) {
+				uint16_t service_id = get_bits(BM_USER_THREAD, 16);
+				wsprintf(szTemp, " Service id: %d (0x%04x)\r\n", service_id, service_id);
+				lstrcat(v->szSIFormatBuffer, szTemp);
+			}
+		}
+		break;
+
+	case 0xfe:	// ISDB System Management
+		if (!v->fISDB)
+			goto DecodeMPEG2Descriptor_Default;
+		set_buf(BM_USER_THREAD, pDescriptorData, 0, FALSE);
+		{
+			const char *isdb_broadcasting_flag[] = { "Broadcasting", "Non-broadcasting", "Non-broadcasting", "Undefined" };
+			const char *isdb_broadcasting_identifier[] = { "Undefined", "Satellite using 27 MHz bandwidth in 12.2 to 12.75 GHz band", "Satellite using 34.5 MHz bandwidth in 11.7 to 12.2 GHz band", "Terrestrial television",
+				"Satellite using 34.5 MHz bandwidth in 12.2 to 12.75 GHz band", "Terrestrial sound", "Satellites or broadcasting stations in 2630 to 2655 MHz band", "Satellite advanced narrow-band using 27 MHz bandwidth in 12.2 to 12.75 GHz band" };
+
+			int descriptor_tag = get_bits(BM_USER_THREAD, 8);
+			int descriptor_length = get_bits(BM_USER_THREAD, 8);
+
+			uint8_t broadcasting_flag = get_bits(BM_USER_THREAD, 2) & 3;
+			uint8_t broadcasting_identifier = get_bits(BM_USER_THREAD, 6) & 0x3f;
+			uint8_t additional_broadcasting_identification = get_bits(BM_USER_THREAD, 8);
+
+			wsprintf(szTemp, " Broadcasting flag: %d (%s)\r\n"
+				" Broadcasting identifier: %d (%s)\r\n"
+				" Additional broadcasting id: 0x%02x (%d)\r\n",
+
+				broadcasting_flag, isdb_broadcasting_flag[broadcasting_flag],
+				broadcasting_identifier, broadcasting_identifier <= 7 ? isdb_broadcasting_identifier[broadcasting_identifier] : isdb_broadcasting_identifier[0],
+				additional_broadcasting_identification, additional_broadcasting_identification);
+
+			lstrcat(v->szSIFormatBuffer, szTemp);
+
+			int j, additional_length = descriptor_length - 2;
+			for (j = 0; j < additional_length; j++) {
+				uint8_t additional_identification_info = get_bits(BM_USER_THREAD, 8);
+				wsprintf(szTemp, " Additional identification info: 0x%02x (%d)\r\n", additional_identification_info);
+				lstrcat(v->szSIFormatBuffer, szTemp);
+			}
+		}
+		break;
+
 
 /*	case 0xaa: // ?? what the hell is this?
 		if (v->nNetworkPID != 0x1ffb)
@@ -4975,7 +5136,7 @@ char * FormatNITEntry(int nTransportStreamID, BOOL fIncludeHTMLTags)
 			char szTemp[256];
 
 			DecodeDescriptorNames(szDescriptor, descriptor_tag);
-			wsprintf(szTemp, "Descriptor: %s\r\n", szDescriptor);
+			wsprintf(szTemp, "\r\nDescriptor: %s\r\n", szDescriptor);
 			lstrcat(v->szSIFormatBuffer, szTemp);
 			DecodeMPEG2Descriptor(pDescriptors, fIncludeHTMLTags);
 
@@ -5074,7 +5235,7 @@ char * FormatNITEntry(int nTransportStreamID, BOOL fIncludeHTMLTags)
 	}
 
 	if (v->pNITData[nTransportStreamID]->fThisTS == TRUE)
-		lstrcat(v->szSIFormatBuffer, "Current Network: True\r\n");
+		lstrcat(v->szSIFormatBuffer, "\r\nCurrent Network: True\r\n");
 
 	if (fIncludeHTMLTags)
 		lstrcat(v->szSIFormatBuffer, "<FONT SIZE=\"-1\">");
@@ -5096,7 +5257,7 @@ char * FormatNITEntry(int nTransportStreamID, BOOL fIncludeHTMLTags)
 				char szDescriptor[128];
 				char szTemp[256];
 				DecodeDescriptorNames(szDescriptor, v->pNITData[nTransportStreamID]->pExtraDescriptors[i][0]);
-				wsprintf(szTemp, "Descriptor: %s\r\n", szDescriptor);
+				wsprintf(szTemp, "\r\nDescriptor: %s\r\n", szDescriptor);
 				lstrcat(v->szSIFormatBuffer, szTemp);
 
 				DecodeMPEG2Descriptor(v->pNITData[nTransportStreamID]->pExtraDescriptors[i], fIncludeHTMLTags);
@@ -7103,7 +7264,7 @@ char * FormatSDTEntry(int nChannelNumber, BOOL fHTMLMode)
 				lstrcpy(szFromTableDescription, "current mux");
 			else
 				lstrcpy(szFromTableDescription, "another mux");
-			wsprintf(v->szSIFormatBuffer, "Channel %s\r\nOn Table_ID: 0x%02x (%s)\r\nService Name: %s\r\nProvider Name: %s\r\nTransport Stream ID: %d (0x%04x) %s\r\n\r\n",
+			wsprintf(v->szSIFormatBuffer, "Channel %s\r\nOn Table_ID: 0x%02x (%s)\r\nService Name: %s\r\nProvider Name: %s\r\nTransport Stream ID: %d (0x%04x) %s\r\n",
 					 szChannelString,
 					 v->pChannelData[nChannelNumber]->nFromTable,
 					 szFromTableDescription,
