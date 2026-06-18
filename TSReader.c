@@ -11,10 +11,6 @@
 #include <shlobj.h>
 #include <wininet.h>
 
-#ifdef PRO
-#include <hasp_hl.h>
-#endif PRO
-
 #include "resource.h"
 
 #include "setupapi.h"	// VC++ 5 one is out of date
@@ -161,7 +157,6 @@ tMDISTREAM * mdi;
 #define SOURCE_INFO_COLOR_2 RGB(7,141,44)
 
 extern char szProValue[];
-#ifdef NONOEM
  #ifdef LITE
  char gszAppName[] = TEXT("TSReader Lite");
  char szLiteWarning[] = {"This function is only available in registered versions of TSReader"};
@@ -180,11 +175,6 @@ extern char szProValue[];
    #endif ZANALYZER
   #endif PRO
  #endif LITE
-#else NONOEM
- #ifdef INEOQUEST
- char gszAppName[] = TEXT("TSReader IneoQuest OEM");
- #endif INEOQUEST
-#endif NONOEM
 char gszMainClass[256] = {TEXT("TSReaderMain")};
 char gszEPGGridClass[] = {"TSReaderEPGClass"};
 char gszChartClass[] = {"TSReaderChartClass"};
@@ -12056,17 +12046,11 @@ BOOL FAR PASCAL LicenseDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 		switch(LOWORD(wParam))
 		{
 		case IDCANCEL:
-#ifdef NONOEM
  #ifndef LITE
 			MessageBox(hDlg, "Please contact Digital River to obtain a refund of your license fees.\n\nYou are also required to remove this software from your computer since\nyou don't accept our license.\n\nTSReader will now close.", gszAppName, MB_ICONSTOP);
  #else LITE
 			MessageBox(hDlg, "Please remove this software from your computer since you don't accept our license.\n\nTSReader will now close.", gszAppName, MB_ICONSTOP);
  #endif LITE
-#else NONOEM
- #ifdef INEOQUEST
-			MessageBox(hDlg, "Please contact IneoQuest for further information. TSReader will now close.", gszAppName, MB_ICONSTOP);
- #endif INEOQUEST
-#endif NONOEM
 			EndDialog(hDlg, FALSE);
 			break;
 		case IDOK:
