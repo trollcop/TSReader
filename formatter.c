@@ -333,7 +333,7 @@ void FormatDVBTTransmissionMode(char * szTransmissionMode, int nTransmissionMode
 	}
 }
 
-void FormatISDBTransmissionTypeInfo(char *szTransmissionType, size_t len, uint8_t transmission_type_info)
+static void FormatISDBTransmissionTypeInfo(char *szTransmissionType, size_t len, uint8_t transmission_type_info)
 {
 	const char *parameter_type[] = { "Type a", "Type b", "Type c", "Reserved" };
 	const char *modulation_system[] = { "64QAM", "16QAM", "QPSK", "Reserved" };
@@ -341,6 +341,56 @@ void FormatISDBTransmissionTypeInfo(char *szTransmissionType, size_t len, uint8_
 	uint8_t parameter = (transmission_type_info >> 6) & 3;
 	uint8_t modulation = (transmission_type_info >> 4) & 3;
 	StringCchPrintf(szTransmissionType, len, "%s - %s", parameter_type[parameter], modulation_system[modulation]);
+}
+
+static const char *FormatISDBDataComponentId(uint16_t data_component_id)
+{
+	const char *isdb_data_component[] = {
+		"", "", "", "", "", "", "",
+		"ARIB-XML-base multimedia coding", /* 0x7 TR-B15 STD-B24 Sub-clause 9.3.2, Vol. 2; Appended specification C.1, Vol. 3*/
+		"ARIB-Subtitle & teletext coding", /* TR-B14, B15 STD-B24 Sub-clause 9.6.1, Part 3, Vol. 1 */
+		"ARIB-Data download", /* TR-B14, B15, B26 STD-B21 */
+		"G-guide (G-Guide Gold)",
+		"BML for 110E CS", /* TR-B15 Part 2 */
+		"Multimedia coding for digital terrestrial broadcasting (A profile)", /* TR-B14 STD-B24 Sub-clause 9.3.2, Vol. 2; Appended specification C.1, Vol. 3 */
+		"Multimedia coding for digital terrestrial broadcasting (C profile)", /* TR-B14 STD-B24 Sub-clause 9.3.2, Vol. 2; Appended specification C.1, Vol. 3 */
+		"Multimedia coding for digital terrestrial broadcasting (P profile)", /* TR-B13 STD-B24 Sub-clause 9.3.2, Vol. 2; Appended specification C.1, Vol. 3 */
+		"Multimedia coding for digital terrestrial broadcasting (E profile)", /* STD-B13 Sub-clause 5.3, Reference, Vol. 3 */
+		"Real-time data service (Mobile profile)", /* TR-B26 STD-B24 Sub-clause 9.3.2, Vol. 2; Appended specification C.1, Vol. 3 */
+		"Accumulation-type data service(Mobile profile)", /* TR-B26 STD-B24 Sub-clause 9.3.2, Vol. 2; Appended specification C.1, Vol. 3 */
+		"Subtitle coding for digital terrestrial broadcasting (C profile)", /* TR-B14 STD-B24 Sub-clause 9.6.1, Part 3, Vol. 1 */
+		"Multimedia coding for digital terrestrial broadcasting (P2 profile)",
+		"Data carousel scheme for TYPE2 content transmission", /* TR-B27 */
+		"DSM-CC section scheme for transmission of program start time information" /* 0x15 */,
+		"ARIB-Descriptive language type metadata coding" /* 0x16 */,
+		"Undefined" /* 0x17 */ };
+
+	if (data_component_id >= 7 && data_component_id <= 0x16)
+		return isdb_data_component[data_component_id];
+	else
+		return isdb_data_component[0x17];
+}
+
+static const char *FormatISDBDocumentResolution(uint8_t document_resolution)
+{
+	const char *isdb_document_resolution[] = {
+		"Different resolution", /* 0 */
+		"1920x1080 (16:9)",		/* 1 */
+		"1280x720 (16:9)",		/* 2 */
+		"960x540 (16:9)",		/* 3 */
+		"720x480 (16:9)",		/* 4 */
+		"720x480 (4:3)",		/* 5 */
+		"320x240 (4:3)",		/* 6 */
+		"Reserved",				/* 7+ */
+		"No resolution specified"
+	};
+
+	if (document_resolution <= 7)
+		return isdb_document_resolution[document_resolution];
+	else if (document_resolution == 0xf)
+		return isdb_document_resolution[8];
+	else
+		return isdb_document_resolution[7];
 }
 
 void FormatPolarity(char * szPolarity, int nPolarityIndicator, BOOL fLong)
@@ -1728,7 +1778,7 @@ BOOL QuickFormatNIT(char * szBuffer, int nTransportStreamID, BOOL fLongVersion)
 	return FALSE;
 }
 
-void DecodeCADescriptor(char * szBuffer, BYTE * pDescriptor)
+static void DecodeCADescriptor(char *szBuffer, BYTE *pDescriptor)
 {
 	set_buf(BM_USER_THREAD, pDescriptor, 0, FALSE);
 	{
@@ -1748,6 +1798,17 @@ void DecodeCADescriptor(char * szBuffer, BYTE * pDescriptor)
 			lstrcat(szBuffer, szTemp);
 		}
 	}
+}
+
+static void DecodeSIDescriptor(char *szBuffer, BYTE *pDescriptor)
+{
+	char szTemp[256];
+
+	set_buf(BM_USER_THREAD, pDescriptor, 0, FALSE);
+	uint8_t component_tag = get_bits(BM_USER_THREAD, 8);
+
+	wsprintf(szTemp, " Component tag: 0x%02x (%d)\r\n", component_tag, component_tag);
+	lstrcat(szBuffer, szTemp);
 }
 
 char * DecodeComponentAndStreamContent(int stream_content, int component_type)
@@ -2408,6 +2469,151 @@ void DecodeATSCCaptionServceDescriptor(char * szBuffer, BYTE * pDescriptor)
 				}
 			}
 		}
+	}
+}
+
+static void DecodeISDBAdditionalARIBBxmlInfo(char *szBuffer, BYTE *pInfo, uint8_t data_component_id)
+{
+	char szTemp[512];
+
+	set_buf(BM_USER_THREAD, pInfo, 0, FALSE);
+
+	uint8_t transmission_format = get_bits(BM_USER_THREAD, 2) & 3;
+	uint8_t entry_point_flag = get_bits(BM_USER_THREAD, 1) & 1;
+
+	wsprintf(szBuffer, "");
+	wsprintf(szTemp, " - Additional data component\r\n");
+	lstrcat(szBuffer, szTemp);
+
+	wsprintf(szTemp, "   Transmission format: %d (%s)\r\n"
+					 "   Entry point flag: %s\r\n", 
+		transmission_format, transmission_format == 0 ? "Data carousel and event message transmission methods" : "Reserved",
+		TrueFalseString(entry_point_flag));
+	lstrcat(szBuffer, szTemp);
+
+	if (entry_point_flag) {
+		uint8_t auto_start_flag = get_bits(BM_USER_THREAD, 1) & 1;
+		uint8_t document_resolution = get_bits(BM_USER_THREAD, 4) & 0xf;
+		uint8_t use_xml = get_bits(BM_USER_THREAD, 1) & 1;
+		uint8_t default_version_flag = get_bits(BM_USER_THREAD, 1) & 1;
+		uint8_t independent_flag = get_bits(BM_USER_THREAD, 1) & 1;
+		uint8_t style_for_tv_flag = get_bits(BM_USER_THREAD, 1) & 1;
+		wsprintf(szTemp,
+			"   Auto start flag: %s\r\n"
+			"   Document resolution: %s\r\n"
+			"   Use XML: %s\r\n"
+			"   Default version flag: %s\r\n"
+			"   Independent flag: %s\r\n"
+			"   Style for TV flag: %s\r\n",
+
+			TrueFalseString(auto_start_flag),
+			FormatISDBDocumentResolution(document_resolution),
+			TrueFalseString(use_xml),
+			TrueFalseString(default_version_flag),
+			TrueFalseString(independent_flag),
+			TrueFalseString(style_for_tv_flag));
+		lstrcat(szBuffer, szTemp);
+
+		/* reserved */
+		get_bits(BM_USER_THREAD, 4);
+		if (default_version_flag == 0) {
+			uint16_t bml_major_version = get_bits(BM_USER_THREAD, 16);
+			uint16_t bml_minor_version = get_bits(BM_USER_THREAD, 16);
+			wsprintf(szTemp,
+				"   BML version: %d.%d\r\n",
+				bml_major_version, bml_minor_version);
+
+			if (use_xml == 1) {
+				uint16_t bxml_major_version = get_bits(BM_USER_THREAD, 16);
+				uint16_t bxml_minor_version = get_bits(BM_USER_THREAD, 16);
+				wsprintf(szTemp,
+					"   XML version: %d.%d\r\n",
+					bxml_major_version, bxml_minor_version);
+			}
+			lstrcat(szBuffer, szTemp);
+		}
+	} else {
+		/* reserved */
+		get_bits(BM_USER_THREAD, 5);
+	}
+
+	if (transmission_format == 0) {
+		/* additional_arib_carousel_info() */
+		uint8_t data_event_id = get_bits(BM_USER_THREAD, 4) & 0xf;
+		uint8_t event_section_flag = get_bits(BM_USER_THREAD, 1) & 1;
+		/* reserved */
+		get_bits(BM_USER_THREAD, 3);
+
+		/* the rest */
+		uint8_t ondemand_retrieval_flag = get_bits(BM_USER_THREAD, 1) & 1;
+		uint8_t file_storable_flag = get_bits(BM_USER_THREAD, 1) & 1;
+		/* reserved */
+		get_bits(BM_USER_THREAD, 6);
+
+		wsprintf(szTemp,
+			"   Data event id: %d\r\n"
+			"   Event section flag: %s\r\n"
+			"   On-demand retrieval flag: %s\r\n"
+			"   File storable flag: %s\r\n",
+			data_event_id, TrueFalseString(event_section_flag),
+			TrueFalseString(ondemand_retrieval_flag), TrueFalseString(file_storable_flag));
+		lstrcat(szBuffer, szTemp);
+	}
+}
+
+static void DecodeISDBDataComponentDescriptor(char *szBuffer, BYTE *pDescriptor)
+{
+	char szTemp[512];
+	char szDataComponent[128];
+	char *ptr = szTemp;
+	uint8_t bytes[32] = { 0, };
+	int i;
+
+	set_buf(BM_USER_THREAD, pDescriptor, 0, FALSE);
+
+	int descriptor_tag = get_bits(BM_USER_THREAD, 8);
+	int descriptor_length = get_bits(BM_USER_THREAD, 8);
+
+	uint16_t data_component_id = get_bits(BM_USER_THREAD, 16);
+	descriptor_length -= 2;
+
+	for (i = 0; i < descriptor_length; i++)
+		bytes[i] = get_bits(BM_USER_THREAD, 8);
+
+	wsprintf(szTemp, " Data component id: 0x%04x (%s)\r\n", data_component_id, FormatISDBDataComponentId(data_component_id));
+	lstrcat(v->szSIFormatBuffer, szTemp);
+
+	/* decode the bytes */
+	set_buf(BM_USER_THREAD, bytes, 0, FALSE);
+
+	if (data_component_id == 0x0007) {
+		/* ARIB-XML-base multimedia coding */
+		DecodeISDBAdditionalARIBBxmlInfo(szTemp, bytes, data_component_id);
+		lstrcat(v->szSIFormatBuffer, szTemp);
+	} else if (data_component_id == 0x0008 || data_component_id == 0x0012) {
+		/* ARIB-Subtitle& teletext coding */
+		const char *isdb_timing[] = { "Asynchronous", "Program synchronous", "Time synchronous", "Undefined" };
+		uint8_t DMF = get_bits(BM_USER_THREAD, 4);
+		get_bits(BM_USER_THREAD, 2);
+		uint8_t Timing = get_bits(BM_USER_THREAD, 2);
+		wsprintf(szTemp, " - Additional data component of caption and superimpose\r\n"
+			"   Display mode flag: %d\r\n"
+			"   Timing: %d (%s)\r\n",
+			DMF,
+			Timing, isdb_timing[Timing]);
+		lstrcat(v->szSIFormatBuffer, szTemp);
+	} else if (data_component_id == 0x000c || data_component_id == 0x000d) {
+		DecodeISDBAdditionalARIBBxmlInfo(szTemp, bytes, data_component_id);
+		lstrcat(v->szSIFormatBuffer, szTemp);
+	} else {
+		/* undecoded bytes */
+		wsprintf(szTemp, " Additional data component info (%d bytes): ", descriptor_length);
+		lstrcat(v->szSIFormatBuffer, szTemp);
+
+		for (i = 0; i < descriptor_length; i++)
+			ptr += wsprintf(ptr, "%02X ", bytes[i]);
+		wsprintf(ptr, "\r\n");
+		lstrcat(v->szSIFormatBuffer, szTemp);
 	}
 }
 
@@ -3509,9 +3715,11 @@ void DecodeMPEG2Descriptor(BYTE * pDescriptorData, BOOL fHTMLMode)
 			}
 		}
 		break;
-	case 0x52:	// stream identifier descriptor -- todo
-		//if (v->nNetworkPID != 0x0010)
+	case 0x52:	// Stream Identifier Descriptor
+		if (v->nNetworkPID != 0x0010)
 			goto DecodeMPEG2Descriptor_Default;
+		DecodeSIDescriptor(szTemp, pDescriptorData);
+		lstrcat(v->szSIFormatBuffer, szTemp);
 		break;
 	case 0x53:	// CA descriptor
 		if (v->nNetworkPID != 0x0010)
@@ -4493,6 +4701,29 @@ byte 8 uimsbf
 		}
 		break;
 
+	case 0xc8:	// ISDB Video Decode Control
+		if (!v->fISDB)
+			goto DecodeMPEG2Descriptor_Default;
+		set_buf(BM_USER_THREAD, pDescriptorData, 0, FALSE);
+		{
+			const char *isdb_video_encode_format[] = { "1080p", "1080i", "720p", "480p", "480i", "240p", "120p", "Reserved", "For extension of video encode format" };
+
+			int descriptor_tag = get_bits(BM_USER_THREAD, 8);
+			int descriptor_length = get_bits(BM_USER_THREAD, 8);
+			uint8_t still_picture_flag = get_bits(BM_USER_THREAD, 1) & 1;
+			uint8_t sequence_end_code_flag = get_bits(BM_USER_THREAD, 1) & 1;
+			uint8_t video_encode_format = get_bits(BM_USER_THREAD, 4) & 0xf;
+
+			wsprintf(szTemp, " Still picture: %s\r\n"
+				" Sequence end code: %s\r\n"
+				" Video encode format: %d (%s)\r\n",
+				TrueFalseString(still_picture_flag),
+				TrueFalseString(sequence_end_code_flag),
+				video_encode_format, video_encode_format <= 7 ? isdb_video_encode_format[video_encode_format] : isdb_video_encode_format[8]);
+			lstrcat(v->szSIFormatBuffer, szTemp);
+		}
+		break;
+
 	case 0xcd:	// ISDB TS Information
 		if (!v->fISDB)
 			goto DecodeMPEG2Descriptor_Default;
@@ -4703,6 +4934,13 @@ byte 8 uimsbf
 				lstrcat(v->szSIFormatBuffer, szTemp);
 			}
 		}
+		break;
+
+	case 0xfd:	// ISDB Data Component
+		if (!v->fISDB)
+			goto DecodeMPEG2Descriptor_Default;
+		DecodeISDBDataComponentDescriptor(szTemp, pDescriptorData);
+		lstrcat(v->szSIFormatBuffer, szTemp);
 		break;
 
 	case 0xfe:	// ISDB System Management
@@ -5694,7 +5932,7 @@ char * FormatEITEntry(int nChannelNumber, int nEITFormat, BOOL fIncludeHTMLTags)
 								char szTemp[256];
 
 								DecodeDescriptorNames(szDescriptor, pSortList[nEITIndex].pExtraDescriptors[i][0]);
-								wsprintf(szTemp, "Descriptor: %s\r\n", szDescriptor);
+								wsprintf(szTemp, "\r\nDescriptor: %s\r\n", szDescriptor);
 								lstrcat(v->szSIFormatBuffer, szTemp);
 								DecodeMPEG2Descriptor(pSortList[nEITIndex].pExtraDescriptors[i], FALSE);
 							}
@@ -5750,7 +5988,7 @@ char * FormatCAT(BOOL fHTMLMode)
 			break;
 
 		DecodeDescriptorNames(szDescriptor, v->cat.pDescriptor[i][0]);
-		wsprintf(szTemp, "Descriptor: %s\r\n", szDescriptor);
+		wsprintf(szTemp, "\r\nDescriptor: %s\r\n", szDescriptor);
 		lstrcat(v->szSIFormatBuffer, szTemp);
 
 		DecodeMPEG2Descriptor(v->cat.pDescriptor[i], fHTMLMode);
@@ -5875,7 +6113,7 @@ char * FormatBAT(int nBATIndex)
 				char szDescriptor[128];
 
 				DecodeDescriptorNames(szDescriptor, nDescriptor);
-				wsprintf(szTemp, "Descriptor: %s\r\n", szDescriptor);
+				wsprintf(szTemp, "\r\nDescriptor: %s\r\n", szDescriptor);
 				lstrcat(v->szSIFormatBuffer, szTemp);
 
 				DecodeMPEG2Descriptor(&pDescriptors[0], FALSE);
@@ -5904,7 +6142,7 @@ char * FormatBAT(int nBATIndex)
 					char szDescriptor[128];
 
 					DecodeDescriptorNames(szDescriptor, nDescriptor);
-					wsprintf(szTemp, "Descriptor: %s\r\n", szDescriptor);
+					wsprintf(szTemp, "\r\nDescriptor: %s\r\n", szDescriptor);
 					lstrcat(v->szSIFormatBuffer, szTemp);
 
 					DecodeMPEG2Descriptor(&pDescriptors[0], FALSE);
@@ -7163,7 +7401,7 @@ char * FormatESEntry(int nESPID)
 						int nThisDescriptorLength = (BYTE)pDescriptorData[nCurrentIndex + 1];
 
 						DecodeDescriptorNames(szDescriptor, pDescriptorData[nCurrentIndex]);
-						wsprintf(szTemp, "Descriptor: %s\r\n", szDescriptor);
+						wsprintf(szTemp, "\r\nDescriptor: %s\r\n", szDescriptor);
 						lstrcat(v->szSIFormatBuffer, szTemp);
 
 						DecodeMPEG2Descriptor(&pDescriptorData[nCurrentIndex], FALSE);
