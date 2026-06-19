@@ -2,7 +2,6 @@
    Replaces the commercial ImgSource/Pegasus SDK.
    All image data is 24-bit BGR (bottom-up), matching Windows DIB format. */
 
-#define _CRT_SECURE_NO_WARNINGS
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -280,7 +279,6 @@ void _ISDrawTextOnRGB2(void * pImage, int nWidth, int nHeight,
     HFONT hFont, hOldFont;
     BITMAPINFO bmi;
     RECT rc;
-    int row, col;
     BYTE * pBits;
 
     if (!pImage || !szText || nWidth <= 0 || nHeight <= 0) return;

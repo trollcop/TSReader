@@ -356,7 +356,7 @@ BOOL SendTelnetString(char * szString)
 	return TRUE;
 }
 
-BOOL CALLBACK RokuTraceDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK RokuTraceDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -413,7 +413,7 @@ void AddTrace(char * szString)
 		*szLineTerm = '\0';
 	
 	SendDlgItemMessage(hWndTrace, IDC_TRACE_LIST, LB_ADDSTRING, 0, (LPARAM)szString);
-	nItemCount = SendDlgItemMessage(hWndTrace, IDC_TRACE_LIST, LB_GETCOUNT, 0, 0);
+	nItemCount = (int)SendDlgItemMessage(hWndTrace, IDC_TRACE_LIST, LB_GETCOUNT, 0, 0);
 	if (nItemCount == 1024)
 	{
 		SendDlgItemMessage(hWndTrace, IDC_TRACE_LIST, LB_DELETESTRING, 0, 0);

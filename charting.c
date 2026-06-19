@@ -43,7 +43,7 @@ BOOL CheckCommonGraphMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			LPCREATESTRUCT lpcs = (LPCREATESTRUCT)lParam;
 			int nChartIndex = *((int*)lpcs->lpCreateParams);
 
-			SetWindowLong(hWnd, GWL_USERDATA, nChartIndex);
+			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)nChartIndex);
 			if (v->fSaveChartDataEnabled)
 			{
 				SYSTEMTIME st;
@@ -66,7 +66,7 @@ BOOL CheckCommonGraphMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 #endif PRO
 	case WM_SIZE:
 		{
-			int nChartIndex = GetWindowLong(hWnd, GWL_USERDATA);
+			int nChartIndex = (int)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 			v->fChartMinimizedFlag = wParam == SIZE_MINIMIZED;
 			v->fChartMaximizedFlag = wParam == SIZE_MAXIMIZED;		
 			if (v->m_hPE[nChartIndex])
@@ -82,7 +82,7 @@ BOOL CheckCommonGraphMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 		break;
 	case WM_DESTROY:
 		{
-			int nChartIndex = GetWindowLong(hWnd, GWL_USERDATA);
+			int nChartIndex = (int)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 
 			if (!v->fChartMinimizedFlag && !v->fChartMaximizedFlag)
 			{
@@ -277,7 +277,7 @@ LRESULT FAR PASCAL PIDPieChartWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 		break;
 	case WM_TIMER:
 		{
-			int nChartIndex = GetWindowLong(hWnd, GWL_USERDATA);
+			int nChartIndex = (int)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 			SetupPIEGraphData(nChartIndex);
 			InvalidateRect(hWnd, NULL, FALSE);
 		}
@@ -496,7 +496,7 @@ LRESULT FAR PASCAL VideoBitrateChartWindowProc(HWND hWnd, UINT uMsg, WPARAM wPar
 		break;
 	case WM_TIMER:
 		{
-			int nChartIndex = GetWindowLong(hWnd, GWL_USERDATA);
+			int nChartIndex = (int)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 			AddVideoRateData(nChartIndex);
 			InvalidateRect(hWnd, NULL, FALSE);
 		}
@@ -696,10 +696,10 @@ LRESULT FAR PASCAL MuxrateChartWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
 			PEreinitialize(v->m_hPE[nChartIndex]);
 			PEresetimage(v->m_hPE[nChartIndex], 0, 0);
 
-			AddMuxRateData(lParam);
-			AddMuxRateData(lParam);
-			AddMuxRateData(lParam);
-			AddMuxRateData(lParam);
+			AddMuxRateData((int)lParam);
+			AddMuxRateData((int)lParam);
+			AddMuxRateData((int)lParam);
+			AddMuxRateData((int)lParam);
 
 			SetTimer(hWnd, 100 + nChartIndex, v->nGraphRefreshRate, NULL);
 			CheckCommonGraphMessages(hWnd, uMsg, wParam, lParam);
@@ -707,7 +707,7 @@ LRESULT FAR PASCAL MuxrateChartWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, L
 		break;
 	case WM_TIMER:
 		{
-			int nChartIndex = GetWindowLong(hWnd, GWL_USERDATA);
+			int nChartIndex = (int)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 			AddMuxRateData(nChartIndex);
 			InvalidateRect(hWnd, NULL, FALSE);
 		}
@@ -866,7 +866,7 @@ LRESULT FAR PASCAL ActivePIDsChartWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam
 		break;
 	case WM_TIMER:
 		{
-			int nChartIndex = GetWindowLong(hWnd, GWL_USERDATA);
+			int nChartIndex = (int)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 			SetupActivePIDData(nChartIndex);
 			InvalidateRect(hWnd, NULL, FALSE);
 		}
@@ -1184,7 +1184,7 @@ LRESULT FAR PASCAL ProgramUsageChartWindowProc(HWND hWnd, UINT uMsg, WPARAM wPar
 		break;
 	case WM_TIMER:
 		{
-			int nChartIndex = GetWindowLong(hWnd, GWL_USERDATA);
+			int nChartIndex = (int)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 			SetupProgramUsageData(nChartIndex);
 			InvalidateRect(hWnd, NULL, FALSE);
 		}
@@ -1357,7 +1357,7 @@ LRESULT FAR PASCAL SignalChartWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
 		break;
 	case WM_TIMER:
 		{
-			int nChartIndex = GetWindowLong(hWnd, GWL_USERDATA);
+			int nChartIndex = (int)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 			AddSignalChartData(nChartIndex);
 			InvalidateRect(hWnd, NULL, FALSE);
 		}
@@ -1475,7 +1475,7 @@ LRESULT FAR PASCAL VideoCompositionChartWindowProc(HWND hWnd, UINT uMsg, WPARAM 
 		break;
 	case WM_DESTROY:
 		{
-			int nChartIndex = GetWindowLong(hWnd, GWL_USERDATA);
+			int nChartIndex = (int)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 			CheckCommonGraphMessages(hWnd, uMsg, wParam, lParam);
 #ifdef PRO_BROKEN
 			if ((v->nVideoCompositionPID[nChartIndex] & 0xffff0000) == 0x00010000)

@@ -87,7 +87,7 @@ typedef struct TProgramm
 
     char Extern_Buffer[16];
 
-};
+} TProgramm;
 
 struct DVBTunerParameter 
 {
@@ -124,7 +124,7 @@ typedef struct TLNB {
 		 short BurstVal;
 		 unsigned char PosVal;
 		 unsigned char OptVal;
-};
+} TLNB;
 
 
 struct TTransponder {
@@ -529,12 +529,12 @@ typedef struct TVTPage {
 	BYTE Lang;
 	unsigned int CRC;
 	unsigned char crc_count;
-};
+} TVTPage;
 
 typedef struct TVT {
     unsigned short SubCount;
 	struct TVTPage *SubPage;
-};
+} TVT;
 
 
 

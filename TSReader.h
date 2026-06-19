@@ -442,12 +442,12 @@ typedef struct _tagMGT // ATSC MGT
 typedef struct _tagIPClicklParam
 {
 	int nType;
-	DWORD dwPtr;
+	LONG_PTR dwPtr;
 } IPCLICKLPARAM, *PIPCLICKLPARAM;
 
 typedef struct _tagIPEntry
 {
-	DWORD dwNext;				// gets cast!
+	LONG_PTR dwNext;				// gets cast!
 	DWORD dwDestinationAddress;
 	DWORD dwProtocol;
 	int nPacketCount;
@@ -464,7 +464,7 @@ typedef struct _tagIPEntry
 
 typedef struct _tagIPMACEntry
 {
-	DWORD dwNext;				// gets cast!
+	LONG_PTR dwNext;				// gets cast!
 	int nPacketCount;
 	__int64 nByteCount;
 	HTREEITEM hIPMacItem;
@@ -484,7 +484,7 @@ typedef struct _tagIPPIDEntry
 
 typedef struct _tagEITEvent
 {
-	DWORD dwNextEvent;			// gets heavily cast!
+	LONG_PTR dwNextEvent;			// gets heavily cast!
 	int nEventID;
 #define EIT_FLAG_SHORT_EVENT 0x01
 #define EIT_FLAG_LONG_EVENT 0x02

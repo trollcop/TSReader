@@ -27,7 +27,7 @@ typedef struct _tagProfileList
 PPROFILELIST pl;
 
 // Forward declarations
-BOOL CALLBACK AboutDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK AboutDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void CursorNormal();
 void CursorWait(HWND hWnd);
 int PopulateSourceList(HWND hDlg, HWND hWndLV);
@@ -36,10 +36,10 @@ void LoadSettings();
 void SaveSettings();
 
 // Stuff in settings.c
-BOOL CALLBACK SettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK SettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 // In TSReader.c
-BOOL CALLBACK CheckNewVersionDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK CheckNewVersionDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 // Code
 void LoadProfileSettings()
@@ -684,7 +684,7 @@ void EnableOrDisableOK(HWND hDlg)
 	EnableWindow(GetDlgItem(hDlg, IDOK), fEnabled);
 }
 
-BOOL CALLBACK NewProfileDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK NewProfileDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -1438,7 +1438,7 @@ LRESULT FAR PASCAL ProfileWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 					if (ListView_GetItem(v->hWndProfileLV, &lvItem) == TRUE)
 					{
 						int i;
-						int nIndex = lvItem.lParam;
+						int nIndex = (int)lvItem.lParam;
 						int nCount = ListView_GetItemCount(v->hWndProfileLV);
 						char szCheckProfileName[MAX_PATH];
 

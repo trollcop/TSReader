@@ -61,7 +61,8 @@ DWORD WINAPI MPEGAudioDecoderThread(LPVOID lpv)
 	int nDestWidth = 240;
 	int nDestHeight = 52;
 	int fTimeoutCounter = 0;
-	int nReadSize, nRemaining;
+	int nReadSize;
+	size_t nRemaining;
 	int nSampleWriteIndex = 0;
 	unsigned char * pReadStart;
 	BYTE * pThumbnail;
@@ -99,7 +100,7 @@ DWORD WINAPI MPEGAudioDecoderThread(LPVOID lpv)
 			nRemaining = Stream[esparserinfo->nES].bufend - Stream[esparserinfo->nES].next_frame;
 			memmove(InputBuffer, Stream[esparserinfo->nES].next_frame, nRemaining);
 			pReadStart = InputBuffer + nRemaining;
-			nReadSize = INPUT_BUFFER_SIZE - nRemaining;
+			nReadSize = (int)(INPUT_BUFFER_SIZE - nRemaining);
 			nReadLength = 0;
 		}
 		else
@@ -112,7 +113,7 @@ DWORD WINAPI MPEGAudioDecoderThread(LPVOID lpv)
 				break;
 		}
 		
-		mad_stream_buffer(&Stream[esparserinfo->nES], InputBuffer, nReadLength + nRemaining);
+		mad_stream_buffer(&Stream[esparserinfo->nES], InputBuffer, (unsigned long)(nReadLength + nRemaining));
 		Stream[esparserinfo->nES].error = 0;
 		if(mad_frame_decode(&Frame[esparserinfo->nES], &Stream[esparserinfo->nES]))
 		{

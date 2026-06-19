@@ -60,7 +60,7 @@ HTREEITEM SetupTreeView(HWND hDlg, char * lpszItem, LPARAM lParam, int nDialogRe
 	return hItem;
 }
 
-BOOL CALLBACK Settings_Threads(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK Settings_Threads(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -160,7 +160,7 @@ BOOL CALLBACK Settings_Threads(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 	return FALSE;
 }
 
-BOOL CALLBACK Settings_Thumbnails(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK Settings_Thumbnails(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -198,7 +198,7 @@ BOOL CALLBACK Settings_Thumbnails(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lP
 	return FALSE;
 }
 
-BOOL CALLBACK Settings_EIT(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK Settings_EIT(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -229,7 +229,7 @@ BOOL CALLBACK Settings_EIT(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
-BOOL CALLBACK Settings_IPDVB(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK Settings_IPDVB(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -253,7 +253,7 @@ BOOL CALLBACK Settings_IPDVB(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
-BOOL CALLBACK Settings_Parser(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK Settings_Parser(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -300,7 +300,7 @@ BOOL CALLBACK Settings_Parser(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 	return FALSE;
 }
 
-BOOL CALLBACK Settings_Chart(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK Settings_Chart(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -328,7 +328,7 @@ BOOL CALLBACK Settings_Chart(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SetDlgItemInt(hDlg, IDC_CHART_REFRESH_RATE, v->nGraphRefreshRate, FALSE);
 			while (szChartStyles[nChartStyleIndex][0] != '\0')
 			{
-				int nIndex = SendMessage(hCombo, CB_ADDSTRING, 0, (LPARAM)szChartStyles[nChartStyleIndex]);
+				int nIndex = (int)SendMessage(hCombo, CB_ADDSTRING, 0, (LPARAM)szChartStyles[nChartStyleIndex]);
 				if (nChartStyleIndex == v->nChartStyle)
 					SendMessage(hCombo, CB_SETCURSEL, nIndex, 0);
 				nChartStyleIndex++;
@@ -341,7 +341,7 @@ BOOL CALLBACK Settings_Chart(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		case IDOK:
 			v->fRealtimeCharting = IsDlgButtonChecked(hDlg, IDC_CHART_REALTIME);
 			v->nGraphRefreshRate = GetDlgItemInt(hDlg, IDC_CHART_REFRESH_RATE, NULL, FALSE);
-			v->nChartStyle = SendDlgItemMessage(hDlg, IDC_CHART_STYLE, CB_GETCURSEL, 0, 0);
+			v->nChartStyle = (int)SendDlgItemMessage(hDlg, IDC_CHART_STYLE, CB_GETCURSEL, 0, 0);
 			break;
 		default:
 			ProcessPIDColorButtonClicks(hDlg, wParam);
@@ -355,7 +355,7 @@ BOOL CALLBACK Settings_Chart(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
-BOOL CALLBACK Settings_UI(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK Settings_UI(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -382,7 +382,7 @@ BOOL CALLBACK Settings_UI(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
-BOOL CALLBACK Settings_SerialReceiver(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK Settings_SerialReceiver(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -394,12 +394,12 @@ BOOL CALLBACK Settings_SerialReceiver(HWND hDlg, UINT uMsg, WPARAM wParam, LPARA
 		{
 		case IDOK:
 			{
-				int nIndex = SendDlgItemMessage(hDlg, IDC_SERIAL_CONTROL_PORT, CB_GETCURSEL, 0, 0);
+				int nIndex = (int)SendDlgItemMessage(hDlg, IDC_SERIAL_CONTROL_PORT, CB_GETCURSEL, 0, 0);
 				if (nIndex == CB_ERR)
 					break;
 				SendDlgItemMessage(hDlg, IDC_SERIAL_CONTROL_PORT, CB_GETLBTEXT, nIndex, (LPARAM)v->szSerialReceiverPort);
 				v->ss.fSerialReceiverControlEnabled = IsDlgButtonChecked(hDlg, IDC_SERIAL_CONTROL_ENABLED);
-				nIndex = SendDlgItemMessage(hDlg, IDD_SERIAL_CONTROL_RX_TYPES, LB_GETCURSEL, 0, 0);
+				nIndex = (int)SendDlgItemMessage(hDlg, IDD_SERIAL_CONTROL_RX_TYPES, LB_GETCURSEL, 0, 0);
 				if (nIndex == LB_ERR)
 					break;
 //ppp				v->nSerialReceiverType = nIndex + 1;
@@ -412,7 +412,7 @@ BOOL CALLBACK Settings_SerialReceiver(HWND hDlg, UINT uMsg, WPARAM wParam, LPARA
 	return FALSE;
 }
 
-BOOL CALLBACK Settings_ControlServer(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK Settings_ControlServer(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -433,7 +433,7 @@ BOOL CALLBACK Settings_ControlServer(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 	return FALSE;
 }
 
-BOOL CALLBACK Settings_SplitFilenames(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK Settings_SplitFilenames(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -462,7 +462,7 @@ BOOL CALLBACK Settings_SplitFilenames(HWND hDlg, UINT uMsg, WPARAM wParam, LPARA
 	return FALSE;
 }
 
-BOOL CALLBACK Settings_DVHS(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK Settings_DVHS(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -485,7 +485,7 @@ BOOL CALLBACK Settings_DVHS(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
-BOOL CALLBACK Settings_Source(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK Settings_Source(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -568,7 +568,7 @@ BOOL CALLBACK Settings_Source(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 	return FALSE;
 }
 
-BOOL CALLBACK Settings_CA(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK Settings_CA(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -599,7 +599,7 @@ BOOL CALLBACK Settings_CA(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
-BOOL CALLBACK Settings_Roku(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK Settings_Roku(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -626,7 +626,7 @@ BOOL CALLBACK Settings_Roku(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
-BOOL CALLBACK Settings_Stradis(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK Settings_Stradis(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -645,7 +645,7 @@ BOOL CALLBACK Settings_Stradis(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 	return FALSE;
 }
 
-BOOL CALLBACK Settings_XNS(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK Settings_XNS(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -664,7 +664,7 @@ BOOL CALLBACK Settings_XNS(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
-BOOL CALLBACK Settings_VLC(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK Settings_VLC(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -683,7 +683,7 @@ BOOL CALLBACK Settings_VLC(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
-BOOL CALLBACK SettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK SettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{

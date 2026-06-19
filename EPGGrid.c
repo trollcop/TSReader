@@ -27,7 +27,7 @@ void DecodeATSCContentAdvisoryDescriptor(char * szBuffer, BYTE * pDescriptor, BO
 BOOL QuickFormatNIT(char * szBuffer, int nTransportStreamID, BOOL fLongVersion);
 void GetEITSource(char * szSource, PEITEVENT pEvent);
 void GetRetuneCommandLineParameters(char * szCommandLine, int nNITIndex);
-BOOL CALLBACK EPGGridSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK EPGGridSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 BOOL EventInPast(PEITEVENT pEvent, BOOL fAllowPastEITData);
 int GetLogicalChannelNumber(int nProgramNumber);
 
@@ -1299,7 +1299,7 @@ SearchNextEPGEntry_NextChannel:
 }
 
 
-BOOL CALLBACK EPGGotoDateDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK EPGGotoDateDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -1341,7 +1341,7 @@ BOOL CALLBACK EPGGotoDateDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	return FALSE;
 }
 
-BOOL CALLBACK EPGFindStringDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK EPGFindStringDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -1492,7 +1492,7 @@ void UpdateManualRecordingEndDateTime(HWND hDlg)
 	ShowWindow(GetDlgItem(hDlg, IDC_EPG_MANUAL_COMPLETE_CAPTION), SW_SHOW);
 }
 
-BOOL CALLBACK ManualEPGNoSourceParametersDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ManualEPGNoSourceParametersDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -1689,7 +1689,7 @@ BOOL ScheduleManualRecording(HWND hDlg)
 	return TRUE;
 }
 
-BOOL CALLBACK EPGManualScheduleDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK EPGManualScheduleDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -1875,7 +1875,7 @@ BOOL CALLBACK EPGManualScheduleDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
 	return FALSE;
 }
 
-BOOL CALLBACK EPGShowScheduleDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK EPGShowScheduleDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -1963,7 +1963,7 @@ BOOL CALLBACK EPGShowScheduleDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 	return FALSE;
 }
 
-BOOL CALLBACK EPGGotoChannelDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK EPGGotoChannelDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -2027,7 +2027,7 @@ BOOL CALLBACK EPGGotoChannelDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 	return FALSE;
 }
 
-BOOL CALLBACK EPGSchedulerWarningDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK EPGSchedulerWarningDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -2145,7 +2145,7 @@ BOOL CheckEPGRecordSettings(HWND hWnd)
 		if (lstrlen(v->szSchedulerDirectory) == 0 || lstrlen(v->szSchedulerUsername) == 0)
 		{
 			if (MessageBox(hWnd, "One or more settings required for scheduled recordings are not set.\n\nWould you like to set these now?", gszAppName, MB_ICONWARNING | MB_YESNO) == IDYES)
-				DialogBoxParam(v->hInstance, MAKEINTRESOURCE(IDD_EPG_GRID_SETTINGS), hWnd, EPGGridSettingsDlgProc, TRUE);				
+				DialogBoxParam(v->hInstance, MAKEINTRESOURCE(IDD_EPG_GRID_SETTINGS), hWnd, EPGGridSettingsDlgProc, TRUE);
 			else
 				return FALSE;
 		}
@@ -2479,7 +2479,7 @@ void DeletedSelectedScheduledRecording()
 	}
 }
 
-BOOL CALLBACK EPGScheduleSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK EPGScheduleSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{

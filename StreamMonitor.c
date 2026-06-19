@@ -733,7 +733,7 @@ void GetStreamMonitorDispInfo(LV_DISPINFO *pnmv)
 }
 
 
-BOOL CALLBACK StreamMonitorSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK StreamMonitorSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -770,7 +770,7 @@ BOOL CALLBACK StreamMonitorSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 BOOL fScrambleTest = FALSE;
 BOOL fStreamMonitorFirstActivate;
 
-BOOL CALLBACK StreamMonitorDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK StreamMonitorDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -1011,12 +1011,12 @@ BOOL CALLBACK StreamMonitorDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 		break;
 	case WM_USER + 1:
 		{
-			int nResource = IDC_MONITOR_1_1 + wParam;
+			int nResource = IDC_MONITOR_1_1 + (int)wParam;
 			SendDlgItemMessage(hDlg, nResource, STM_SETIMAGE, IMAGE_ICON, (LPARAM)v->hMonitorStatusIcon[lParam]);
 			if (lParam == 4)
 			{
 				// Switching off because unavailable
-				EnableWindow(GetDlgItem(hDlg, IDC_MONITOR_1_1_CAPTION + wParam), FALSE);
+				EnableWindow(GetDlgItem(hDlg, IDC_MONITOR_1_1_CAPTION + (int)wParam), FALSE);
 			}
 		}
 		break;

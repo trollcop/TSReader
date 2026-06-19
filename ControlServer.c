@@ -23,7 +23,7 @@ void GetSourceInfoLine(int nLine, char * szOutput);
 int __cdecl SortPIDsByPID(const void *elem1, const void *elem2);
 BOOL GetPIDTooltipInfo(int nPID, char * szString);
 void GetNextECMPID();
-HTREEITEM AddItemToSITree(HWND hwndTV, LPTSTR lpszItem, int nLevel, int lParam, int nIconIndex, HTREEITEM hParent, HTREEITEM hInsertAfter);
+HTREEITEM AddItemToSITree(HWND hwndTV, LPTSTR lpszItem, int nLevel, LPARAM lParam, int nIconIndex, HTREEITEM hParent, HTREEITEM hInsertAfter);
 
 // Global variables
 extern PVARIABLES v;

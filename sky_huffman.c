@@ -466,7 +466,7 @@ void sky_decode(unsigned char *src, unsigned char *dst, int max_input_length, in
 				{
 					strcpy(dst,&wdict[tmp].txt[0]);
 					dst=dst+strlen(&wdict[tmp].txt[0]);
-					dlen=dlen+strlen(&wdict[tmp].txt[0]);
+					dlen=dlen+(int)strlen(&wdict[tmp].txt[0]);
 				}
 			}
 			tmp = 0;

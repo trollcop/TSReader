@@ -264,7 +264,7 @@ void GetForwarderChannelListDispInfo(LV_DISPINFO *pnmv)
 	}
 }
 
-BOOL CALLBACK ForwarderSetupDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ForwarderSetupDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -344,7 +344,7 @@ BOOL CALLBACK ForwarderSetupDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 						(BYTE)pHost->h_addr_list[nAdapter][1],
 						(BYTE)pHost->h_addr_list[nAdapter][2],
 						(BYTE)pHost->h_addr_list[nAdapter][3]);
-					nItem = SendMessage(hCombo, CB_ADDSTRING, 0, (LPARAM)szTemp);
+					nItem = (int)SendMessage(hCombo, CB_ADDSTRING, 0, (LPARAM)szTemp);
 					if (lstrcmp(szTemp, forwarder->szInterfaceAddress) == 0)
 						SendMessage(hCombo, CB_SETCURSEL, nItem, 0);
 					nAdapter++;
@@ -402,7 +402,7 @@ BOOL CALLBACK ForwarderSetupDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 						}
 					}
 											
-					nItem = SendDlgItemMessage(hDlg, IDC_INTERFACE_ADDRESS, CB_GETCURSEL, 0, 0);
+					nItem = (int)SendDlgItemMessage(hDlg, IDC_INTERFACE_ADDRESS, CB_GETCURSEL, 0, 0);
 					if (nItem == CB_ERR)
 						forwarder->szInterfaceAddress[0] = '\0';
 					else
@@ -468,7 +468,7 @@ BOOL CALLBACK ForwarderSetupDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 						EnableWindow(GetDlgItem(hDlg, IDC_FORWARDER_CHANNEL_PORT), TRUE);
 					}
 					forwarder->nListSelectedProgram = pnmv->iItem;
-					forwarder->nListSelectedPMT = pnmv->lParam;
+					forwarder->nListSelectedPMT = (int)pnmv->lParam;
 					CheckDlgButton(hDlg, IDC_FORWARDER_CHANNEL_ENABLED, forwarder->fp[forwarder->nListSelectedPMT]->fEnabled);
 					SetDlgItemText(hDlg, IDC_FORWARDER_CHANNEL_DESTINATION, forwarder->fp[forwarder->nListSelectedPMT]->szDestination);
 				}
@@ -1227,7 +1227,7 @@ void DrawForwardingStream(int nPMTIndex, int nSocket, HDC hDC, int * nCurrentY, 
 	*nCurrentY += sizeText->cy + 3;
 }
 
-BOOL CALLBACK ForwarderRunDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ForwarderRunDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -1557,7 +1557,7 @@ void InterleavePacket(int nIndex, BYTE * pOutputPacket, BYTE * pInputPacket)
 
 DWORD WINAPI ForwarderModuleThread(LPVOID lpv)
 {
-	int nIndex = (int)lpv;
+	int nIndex = (int)(LONG_PTR)lpv;
 	BYTE packet_buffer[256];
 	BYTE * pPacket = &packet_buffer[51];
 
@@ -1688,7 +1688,7 @@ void ForwarderModuleStartStop(HWND hWnd, int nIndex)
 
 			InitializeCriticalSection(&v->fwd.csPipeBytes[nIndex]);
 			CreatePipe(&v->fwd.hReadPipe[nIndex], &v->fwd.hWritePipe[nIndex], NULL, 1024 * 1024 * 15);
-			hThread = CreateThread(NULL, 0, ForwarderModuleThread, (LPVOID)nIndex, 0, &dwThreadID);
+			hThread = CreateThread(NULL, 0, ForwarderModuleThread, (LPVOID)(LONG_PTR)nIndex, 0, &dwThreadID);
 			CloseHandle(hThread);
 
 			CheckMenuItem(GetMenu(hWnd), ID_FORWARD_DLL_BASE + nIndex, MF_BYCOMMAND | MF_CHECKED);

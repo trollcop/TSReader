@@ -210,7 +210,7 @@ BOOL CloseGPSSerialPort()
 
 BOOL OpenCurrentlySelectedGPSSerialPort(HWND hDlg)
 {
-	int nItem = SendDlgItemMessage(hDlg, IDC_GPS_PORT, CB_GETCURSEL, 0, 0);
+	int nItem = (int)SendDlgItemMessage(hDlg, IDC_GPS_PORT, CB_GETCURSEL, 0, 0);
 	if (nItem != CB_ERR)
 	{
 		SetDlgItemText(hDlg, IDC_GPS_DATA, "");
@@ -376,7 +376,7 @@ int LoadGPSPortList(HWND hDlg, BOOL fActuallyLoad)
 				if (fActuallyLoad)
 				{
 					int nItem;
-					nItem = SendDlgItemMessage(hDlg, IDC_GPS_PORT, CB_ADDSTRING, 0, (LPARAM)szValue);
+					nItem = (int)SendDlgItemMessage(hDlg, IDC_GPS_PORT, CB_ADDSTRING, 0, (LPARAM)szValue);
 					if (lstrcmp(szValue, v->szGPSSerialPort) == 0)
 					{
 						SendDlgItemMessage(hDlg, IDC_GPS_PORT, CB_SETCURSEL, nItem, 0);
@@ -465,7 +465,7 @@ void LogGPS(HWND hDlg, BOOL fManual)
 	GetLocalTime(&v->stLastGPSSample);
 }
 
-BOOL CALLBACK GPSSignalExportDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK GPSSignalExportDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -528,7 +528,7 @@ BOOL CALLBACK GPSSignalExportDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 					char szTemp[16];
 
 					wsprintf(szTemp, "%d", nBaudRates[i]);
-					nItem = SendDlgItemMessage(hDlg, IDC_GPS_RATE, CB_ADDSTRING, 0, (LPARAM)szTemp);
+					nItem = (int)SendDlgItemMessage(hDlg, IDC_GPS_RATE, CB_ADDSTRING, 0, (LPARAM)szTemp);
 					if (nBaudRates[i] == v->nGPSSerialBaudRate)
 						SendDlgItemMessage(hDlg, IDC_GPS_RATE, CB_SETCURSEL, nItem, 0);
 				}
@@ -666,7 +666,7 @@ BOOL CALLBACK GPSSignalExportDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				break;
 			case IDC_GPS_RATE:
 				{
-					int nItem = SendDlgItemMessage(hDlg, IDC_GPS_RATE, CB_GETCURSEL, 0, 0);
+					int nItem = (int)SendDlgItemMessage(hDlg, IDC_GPS_RATE, CB_GETCURSEL, 0, 0);
 					if (nItem != CB_ERR)
 					{
 						char szTemp[16];

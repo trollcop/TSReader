@@ -1533,7 +1533,7 @@ void HTMLExport(HANDLE hHTMFile, int nExportSITables, char * szOutputFilename)
 									HISDEST	hDestinationObject = _ISOpenFileDest(szJPGName);
 									if (hDestinationObject != NULL)
 									{
-										int j;
+										size_t j;
 										char * szHTMLJPGName = NULL;
 
 										_ISWriteRGBToJPG(hDestinationObject,
@@ -1887,7 +1887,7 @@ void HTMLExport(HANDLE hHTMFile, int nExportSITables, char * szOutputFilename)
 	WriteHTMLLine(hHTMFile, "</HTML>");
 }
 
-UINT FAR PASCAL ExportSIHookProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) 
+static UINT_PTR CALLBACK ExportSIHookProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 { 
 	switch(uMsg)
 	{ 

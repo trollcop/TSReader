@@ -47,8 +47,8 @@ DWORD WINAPI RokuTelnetControlThread(LPVOID lpv);
 
 #ifndef LITE
 // Stuff in ControlServer.c
-BOOL StartControlServer();
-BOOL TerminateControlServer();
+BOOL StartControlServer(void);
+BOOL TerminateControlServer(void);
 #endif LITE
 
 // Stuff in MPEG2Decoder.c
@@ -79,9 +79,9 @@ void XMLTVExport(HWND hDlg, HANDLE hXMLFile);
 
 #ifdef PRO
 // Stuff in EITServer.c
-BOOL StartEITServer();
-BOOL TerminateEITServer();
-int GetEITConnectionCount();
+BOOL StartEITServer(void);
+BOOL TerminateEITServer(void);
+int GetEITConnectionCount(void);
 
 // Stuff in CCDecoder.c
 void ClosedCaptionDecoderToggle(HWND hWnd);
@@ -95,7 +95,7 @@ BOOL StartArchivePrograms(HWND hWnd);
 void StopArchivePrograms(HWND hWnd);
 void ArchiveProgramData(BYTE * pBuffer, int nLength);
 void ViewArchivedFiles(HWND hWnd);
-BOOL CALLBACK SaveEPGDataDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK SaveEPGDataDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 // Stuff in Forwarder.c
 BOOL StartUDPForwarder(HWND hWnd);
@@ -107,24 +107,24 @@ void ForwarderModuleStartStop(HWND hWnd, int nIndex);
 void MonitorProgramData(BYTE * pBuffer, int nLength);
 
 // Stuff in ProfileBrowser.c
-BOOL ShowProfileBrowser();
+BOOL ShowProfileBrowser(void);
 
 // Stuff in mosaic.c
 void ShowVideoMosaic(HWND hWnd);
 
 // Stuff in StreamMonitor.c
-BOOL CALLBACK StreamMonitorDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK StreamMonitorDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 // Stuff in GPSSignal.c
-BOOL CALLBACK GPSSignalExportDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK GPSSignalExportDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 // Stuff in TitleThumbnails.c
-BOOL CALLBACK AudioThumbnailSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK AudioThumbnailSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 BOOL DecodeAudioTitleData(BYTE * pPESPacket, int nPacketLength, int nES);
 #endif PRO
 
 // Stuff in CI-CAM.C
-BOOL CALLBACK CAMMenuDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK CAMMenuDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int GenerateCAPMT(BYTE * pCAPMTBuffer, int nBufferLength, int nPMTIndex);
 typedef BOOL (* td_SendCAPMT) (BYTE * pBuffer, int nLength);
 BOOL (* SendCAPMT) (BYTE * pBuffer, int nLength);
@@ -136,7 +136,7 @@ void UpdateSkyEPGMap(int nBATID);
 #endif LITE
 
 // Stuff in settings.c
-BOOL CALLBACK SettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR SettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 // Completion routine for parser
 #ifndef LITE
@@ -2209,7 +2209,7 @@ void WritePATandPMTandSDT()
 	}
 }
 
-BOOL CALLBACK PSWarningDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK PSWarningDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -2249,7 +2249,7 @@ void UpdateFilenameFormatPreview(HWND hDlg)
 	SetDlgItemText(hDlg, IDC_FORMAT_SAMPLE, szPreview);
 }
 
-BOOL CALLBACK FileNameFormatDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK FileNameFormatDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -2298,7 +2298,7 @@ BOOL CALLBACK FileNameFormatDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 BOOL LoadPIDList(HWND hDlg, char * szInputFile)
 {
-	int nItemCount = SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_GETCOUNT, 0, 0);
+	int nItemCount = (int)SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_GETCOUNT, 0, 0);
 	HANDLE hInputFile = CreateFile(szInputFile, GENERIC_READ, 0, (LPSECURITY_ATTRIBUTES)NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, (HANDLE)NULL);
 	if (hInputFile == INVALID_HANDLE_VALUE)
 		return FALSE;
@@ -2364,7 +2364,7 @@ BOOL SavePIDList(HWND hDlg, char * szOutputFile)
 	if (hOutputFile == INVALID_HANDLE_VALUE)
 		return FALSE;
 
-	nRetVal = SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_GETSELITEMS, (WPARAM)sizeof(nItemList) / sizeof(int), (LPARAM)&nItemList[0]);
+	nRetVal = (int)SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_GETSELITEMS, (WPARAM)sizeof(nItemList) / sizeof(int), (LPARAM)&nItemList[0]);
 	for (i = 0; i < nRetVal; i++)
 	{
 		int nPID;
@@ -2540,7 +2540,7 @@ void SaveTableListDialog(HWND hDlg)
 	}
 }
 
-BOOL CALLBACK RecordAdvancedFileDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK RecordAdvancedFileDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -2581,7 +2581,7 @@ BOOL CALLBACK RecordAdvancedFileDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
 	return FALSE;
 }
 
-BOOL CALLBACK RecordAdvancedMuxDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK RecordAdvancedMuxDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -2600,7 +2600,7 @@ BOOL CALLBACK RecordAdvancedMuxDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
 					char szPID[64];
 
 					wsprintf(szPID, "%s", FormatTooltipPID(v->pc[i].nPID));			
-					nIndex = SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_ADDSTRING, 0, (LPARAM)szPID);
+					nIndex = (int)SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_ADDSTRING, 0, (LPARAM)szPID);
 					if (v->bAdvancedDropPID[v->pc[i].nPID])
 						SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_SETSEL, TRUE, nIndex);
 				}
@@ -2624,7 +2624,7 @@ BOOL CALLBACK RecordAdvancedMuxDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
 				for (i = 0; i < 8192; i++)
 					v->bAdvancedDropPID[i] = FALSE;
 
-				nRetVal = SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_GETSELITEMS, (WPARAM)sizeof(nItemList) / sizeof(int), (LPARAM)&nItemList[0]);
+				nRetVal = (int)SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_GETSELITEMS, (WPARAM)sizeof(nItemList) / sizeof(int), (LPARAM)&nItemList[0]);
 				if (nRetVal)
 				{
 					for (i = 0; i < nRetVal; i++)
@@ -2659,7 +2659,7 @@ BOOL CALLBACK RecordAdvancedMuxDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
 }
 #endif PRO
 
-BOOL CALLBACK RecordDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK RecordDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -2780,7 +2780,7 @@ BOOL CALLBACK RecordDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 								goto Record_BuildESListDefault;
 							wsprintf(szMask, "PID %s - %%s", v->szOutputPIDFlags);
 							wsprintf(szTemp, szMask, v->pat.pmt[v->nSelectedProgram].es[i].nESPID, szStreamTypeEnglish);
-							nItem = SendDlgItemMessage(hDlg, IDC_RECORD_VIDEO_ES, LB_ADDSTRING, 0, (LPARAM)szTemp);
+							nItem = (int)SendDlgItemMessage(hDlg, IDC_RECORD_VIDEO_ES, LB_ADDSTRING, 0, (LPARAM)szTemp);
 							SendDlgItemMessage(hDlg, IDC_RECORD_VIDEO_ES, LB_SETITEMDATA, nItem, i);
 							nVideoStreams++;
 							break;
@@ -2823,7 +2823,7 @@ BOOL CALLBACK RecordDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 									wsprintf(szTemp2, " (%s)", szLanguage);
 									lstrcat(szTemp, szTemp2);
 								}
-								nItem = SendDlgItemMessage(hDlg, IDC_RECORD_AUDIO_ES, LB_ADDSTRING, 0, (LPARAM)szTemp);
+								nItem = (int)SendDlgItemMessage(hDlg, IDC_RECORD_AUDIO_ES, LB_ADDSTRING, 0, (LPARAM)szTemp);
 								SendDlgItemMessage(hDlg, IDC_RECORD_AUDIO_ES, LB_SETITEMDATA, nItem, i);
 								if (v->nAutoRecord != AUTO_RECORD_NONE)
 								{
@@ -2837,7 +2837,7 @@ BOOL CALLBACK RecordDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 Record_BuildESListDefault:
 							wsprintf(szMask, "PID %s - %%s", v->szOutputPIDFlags);
 							wsprintf(szTemp, szMask, v->pat.pmt[v->nSelectedProgram].es[i].nESPID, szStreamTypeEnglish);
-							nItem = SendDlgItemMessage(hDlg, IDC_RECORD_OTHER_ES, LB_ADDSTRING, 0, (LPARAM)szTemp);
+							nItem = (int)SendDlgItemMessage(hDlg, IDC_RECORD_OTHER_ES, LB_ADDSTRING, 0, (LPARAM)szTemp);
 							SendDlgItemMessage(hDlg, IDC_RECORD_OTHER_ES, LB_SETITEMDATA, nItem, i);
 							v->nOtherStreams++;
 							if (v->fAutoRecordSubtitles == TRUE)
@@ -2975,10 +2975,10 @@ Record_BuildESListDefault:
 						i = 0;
 						for (nItemIndex = 0; nItemIndex < v->nAudioStreams; nItemIndex++)
 						{
-							int nChecked = SendDlgItemMessage(hDlg, IDC_RECORD_AUDIO_ES, LB_GETSEL, nItemIndex, 0);
+							int nChecked = (int)SendDlgItemMessage(hDlg, IDC_RECORD_AUDIO_ES, LB_GETSEL, nItemIndex, 0);
 							if (nChecked)
 							{
-								v->nRecordAudioESIndex[i++] = SendDlgItemMessage(hDlg,
+								v->nRecordAudioESIndex[i++] = (int)SendDlgItemMessage(hDlg,
 																		IDC_RECORD_AUDIO_ES,
 																		LB_GETITEMDATA,
 																		nItemIndex,
@@ -2993,10 +2993,10 @@ Record_BuildESListDefault:
 						i = 0;
 						for (nItemIndex = 0; nItemIndex < v->nOtherStreams; nItemIndex++)
 						{
-							int nChecked = SendDlgItemMessage(hDlg, IDC_RECORD_OTHER_ES, LB_GETSEL, nItemIndex, 0);
+							int nChecked = (int)SendDlgItemMessage(hDlg, IDC_RECORD_OTHER_ES, LB_GETSEL, nItemIndex, 0);
 							if (nChecked)
 							{
-								v->nRecordOtherESIndex[i++] = SendDlgItemMessage(hDlg,
+								v->nRecordOtherESIndex[i++] = (int)SendDlgItemMessage(hDlg,
 																		IDC_RECORD_OTHER_ES,
 																		LB_GETITEMDATA,
 																		nItemIndex,
@@ -3007,7 +3007,7 @@ Record_BuildESListDefault:
 						}
 
 						v->nRecordVideoESIndex = -1;
-						v->nRecordVideoESIndex = SendDlgItemMessage(hDlg,
+						v->nRecordVideoESIndex = (int)SendDlgItemMessage(hDlg,
 																IDC_RECORD_VIDEO_ES,
 																LB_GETITEMDATA,
 																SendDlgItemMessage(hDlg, IDC_RECORD_VIDEO_ES, LB_GETCURSEL, 0, 0),
@@ -3926,7 +3926,7 @@ void EnableOrDisableStreamMenuItems(HWND hDlg, BOOL fEnable)
 		EnableMenuItem(hMenu, ID_PLAYBACK_ROKUHD1000, uOptions);
 }
 
-BOOL CALLBACK VLCConnectionDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK VLCConnectionDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -3964,7 +3964,7 @@ DWORD WINAPI LaunchVLCThread(LPVOID lpv)
 	return 0;
 }
 
-BOOL CALLBACK EITLanguageSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK EITLanguageSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -4005,7 +4005,7 @@ BOOL CALLBACK EITLanguageSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LP
 	return FALSE;
 }
 
-BOOL CALLBACK StradisSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK StradisSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -7128,7 +7128,7 @@ void ReadPersistantEPG()
 			else
 			{
 				pCurrent = LocalAlloc(LMEM_FIXED, sizeof(EITEVENT));
-				pPrior->dwNextEvent = (DWORD)pCurrent;
+				pPrior->dwNextEvent = (LONG_PTR)pCurrent;
 			}
 			pPrior = pCurrent;
 			ReadFile(hEITFile, pCurrent, sizeof(EITEVENT), &dwRead, NULL);
@@ -7538,7 +7538,7 @@ void InitSITreeViewImageLists(HWND hWndTV)
 // hwndTV - handle of the tree-view control 
 // lpszItem - text of the item to add 
 // nLevel - level at which to add the item 
-HTREEITEM AddItemToSITree(HWND hwndTV, LPTSTR lpszItem, int nLevel, int lParam, int nIconIndex, HTREEITEM hParent, HTREEITEM hInsertAfter) 
+HTREEITEM AddItemToSITree(HWND hwndTV, LPTSTR lpszItem, int nLevel, LPARAM lParam, int nIconIndex, HTREEITEM hParent, HTREEITEM hInsertAfter) 
 { 
 	TV_INSERTSTRUCT tvins; 
 	LPTV_ITEM tvi = &tvins.item; 
@@ -7554,7 +7554,7 @@ HTREEITEM AddItemToSITree(HWND hwndTV, LPTSTR lpszItem, int nLevel, int lParam, 
   
     // Save the heading level in the item's application-defined 
     // data area. 
-    tvi->lParam = (LPARAM)lParam; 
+    tvi->lParam = lParam;
     tvi->cChildren = 0;
     if (hInsertAfter == NULL)
 		tvins.hInsertAfter = hPrev; 
@@ -8526,7 +8526,7 @@ int __cdecl SortMACsByPacketsCompareFunction(const void *elem1, const void *elem
 
 void DecodeIPParserPID(HWND hDlg, PIPCLICKLPARAM ipclicklParam)
 {
-	int nIndex = ipclicklParam->dwPtr;
+	int nIndex = (int)ipclicklParam->dwPtr;
 	int nMACCount = 0;
 	char szOutput[2048];
 	char szOutput2[1024];
@@ -8698,7 +8698,7 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 	switch(tvi.lParam & 0xf0000000)
 	{
 	case SI_PARSER_CVCT:
-		nItemIndex = tvi.lParam - SI_PARSER_CVCT;
+		nItemIndex = (int)tvi.lParam - SI_PARSER_CVCT;
 		SetDlgItemText(hDlg, IDC_SI_TEXT, FormatCVCT(nItemIndex));
 		memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
 		v->nHighlightPIDs[0] = 0x1ffb;
@@ -8706,7 +8706,7 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 		ForcePIDChartRepaint(hDlg);
 		break;
 	case SI_PARSER_BAT:
-		nItemIndex = tvi.lParam - SI_PARSER_BAT;
+		nItemIndex = (int)tvi.lParam - SI_PARSER_BAT;
 		SetDlgItemText(hDlg, IDC_SI_TEXT, FormatBAT(nItemIndex));
 		memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
 		v->nHighlightPIDs[0] = 0x0011;
@@ -8724,7 +8724,7 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 		switch(v->nNetworkPID)
 		{
 		default:
-			nItemIndex = tvi.lParam - SI_PARSER_CDT;
+			nItemIndex = (int)tvi.lParam - SI_PARSER_CDT;
 			SetDlgItemText(hDlg, IDC_SI_TEXT, FormatCDTEntry(nItemIndex));
 			memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
 			v->nHighlightPIDs[0] = v->nNetworkPID;
@@ -8732,7 +8732,7 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 			ForcePIDChartRepaint(hDlg);
 			break;
 		case 0x1ffb:
-			nItemIndex = tvi.lParam - SI_PARSER_RRT;
+			nItemIndex = (int)tvi.lParam - SI_PARSER_RRT;
 			SetDlgItemText(hDlg, IDC_SI_TEXT, FormatRRTEntry(nItemIndex));
 			memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
 			v->nHighlightPIDs[0] = 0x1ffb;
@@ -8745,7 +8745,7 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 		switch(v->nNetworkPID)
 		{
 		default:
-			nItemIndex = tvi.lParam - SI_PARSER_TDT;
+			nItemIndex = (int)tvi.lParam - SI_PARSER_TDT;
 			SetDlgItemText(hDlg, IDC_SI_TEXT, FormatTDTEntry(nItemIndex));
 			memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
 			v->nHighlightPIDs[0] = v->nNetworkPID;
@@ -8813,7 +8813,7 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 		}
 		break;
 	case SI_PARSER_SIT:
-		nItemIndex = tvi.lParam - SI_PARSER_SIT;
+		nItemIndex = (int)tvi.lParam - SI_PARSER_SIT;
 		SetDlgItemText(hDlg, IDC_SI_TEXT, FormatSITEntry(nItemIndex));
 		memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
 		v->nHighlightPIDs[0] = v->nNetworkPID;
@@ -8821,7 +8821,7 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 		ForcePIDChartRepaint(hDlg);
 		break;
 	case SI_PARSER_MMT:
-		nItemIndex = tvi.lParam - SI_PARSER_MMT;
+		nItemIndex = (int)tvi.lParam - SI_PARSER_MMT;
 		SetDlgItemText(hDlg, IDC_SI_TEXT, FormatMMTEntry(nItemIndex));
 		memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
 		v->nHighlightPIDs[0] = v->nNetworkPID;
@@ -8829,7 +8829,7 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 		ForcePIDChartRepaint(hDlg);
 		break;
 	case SI_PARSER_NIT:
-		nItemIndex = tvi.lParam - SI_PARSER_NIT;
+		nItemIndex = (int)tvi.lParam - SI_PARSER_NIT;
 		if (nItemIndex != 0x0fffffff)
 		{
 			SetDlgItemText(hDlg, IDC_SI_TEXT, FormatNITEntry(nItemIndex, FALSE));
@@ -8878,7 +8878,7 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 					PIDManagement(FALSE, v->nProgramPIDs[i], TRUE);
 			}
 
-			nItemIndex = tvi.lParam - SI_PARSER_PMT;
+			nItemIndex = (int)tvi.lParam - SI_PARSER_PMT;
 			SetDlgItemText(hDlg, IDC_SI_TEXT, FormatPMTEntry(nItemIndex, FALSE));
 			memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
 			v->nHighlightPIDs[nHighlightIndex++] = v->pat.pmt[nItemIndex].nPMTPID;
@@ -9087,7 +9087,7 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 		break;
 	case SI_PARSER_ES:
 		{
-			nItemIndex = tvi.lParam - SI_PARSER_ES;	// this isn't the index, it's the ES PID
+			nItemIndex = (int)tvi.lParam - SI_PARSER_ES;	// this isn't the index, it's the ES PID
 			SetDlgItemText(hDlg, IDC_SI_TEXT, FormatESEntry(nItemIndex));
 			memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
 			v->nHighlightPIDs[0] = nItemIndex;
@@ -9096,7 +9096,7 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 		break;
 	case SI_PARSER_SDT:
 	case SI_PARSER_VCT:		
-		nItemIndex = tvi.lParam - SI_PARSER_SDT;
+		nItemIndex = (int)tvi.lParam - SI_PARSER_SDT;
 		if (nItemIndex != 0x0fffffff)
 			SetDlgItemText(hDlg, IDC_SI_TEXT, FormatSDTEntry(nItemIndex, FALSE));
 		else
@@ -9123,7 +9123,7 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 		break;
 	case SI_PARSER_EIT:
 		CursorWait(hDlg);
-		nItemIndex = tvi.lParam - SI_PARSER_EIT;
+		nItemIndex = (int)tvi.lParam - SI_PARSER_EIT;
 		if (nItemIndex != 0x0fffffff)
 			SetDlgItemText(hDlg, IDC_SI_TEXT, FormatEITEntry(nItemIndex, EIT_FORMAT_PLAIN, FALSE));
 		else
@@ -10687,9 +10687,9 @@ void HandleWMUSER2IPMode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 			wsprintf(szMask, "PID %s", v->szOutputPIDFlags);
 			wsprintf(szTemp, szMask, v->ippid[nIndex].nPID);
 			ipclicklParam = LocalAlloc(LPTR, sizeof(IPCLICKLPARAM));
-			ipclicklParam->dwPtr = nIndex;
+			ipclicklParam->dwPtr = (LONG_PTR)nIndex;
 			ipclicklParam->nType = SI_PARSER_IP_PID;
-			v->ippid[nIndex].hIPPIDRootItem = AddItemToSITree(hWndTV, szTemp, 1, (int)ipclicklParam, 11, NULL, TVI_FIRST);
+			v->ippid[nIndex].hIPPIDRootItem = AddItemToSITree(hWndTV, szTemp, 1, (LPARAM)ipclicklParam, 11, NULL, TVI_FIRST);
 		}
 		break;
 	case SI_PARSER_IP_MAC:
@@ -10702,9 +10702,9 @@ void HandleWMUSER2IPMode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 				     pCurrentMac->bMAC[0], pCurrentMac->bMAC[1], pCurrentMac->bMAC[2],
 					 pCurrentMac->bMAC[3], pCurrentMac->bMAC[4], pCurrentMac->bMAC[5]);
 			ipclicklParam = LocalAlloc(LPTR, sizeof(IPCLICKLPARAM));
-			ipclicklParam->dwPtr = (DWORD)pCurrentMac;
+			ipclicklParam->dwPtr = (LONG_PTR)pCurrentMac;
 			ipclicklParam->nType = SI_PARSER_IP_MAC;
-			pCurrentMac->hIPMacItem = AddItemToSITree(hWndTV, szTemp, 2, (int)ipclicklParam, 11, pCurrentMac->hIPPIDRootItem, NULL);
+			pCurrentMac->hIPMacItem = AddItemToSITree(hWndTV, szTemp, 2, (LPARAM)ipclicklParam, 11, pCurrentMac->hIPPIDRootItem, NULL);
 			TreeView_Expand(hWndTV, pCurrentMac->hIPPIDRootItem, TVE_EXPAND);
 		}
 		break;
@@ -10741,9 +10741,9 @@ void HandleWMUSER2IPMode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 				FormatIPv6Address(szTemp, pCurrentIP->bDestinationAddressIPv6);
 			}
 			ipclicklParam = LocalAlloc(LPTR, sizeof(IPCLICKLPARAM));
-			ipclicklParam->dwPtr = (DWORD)pCurrentIP;
+			ipclicklParam->dwPtr = (LONG_PTR)pCurrentIP;
 			ipclicklParam->nType = SI_PARSER_IP_IP;
-			pCurrentIP->hIPItem = AddItemToSITree(hWndTV, szTemp, 3, (int)ipclicklParam, 11, pCurrentIP->hIPMacItem, NULL);
+			pCurrentIP->hIPItem = AddItemToSITree(hWndTV, szTemp, 3, (LPARAM)ipclicklParam, 11, pCurrentIP->hIPMacItem, NULL);
 			if (v->fAutoExpandIPs)
 				TreeView_Expand(hWndTV, pCurrentIP->hIPMacItem, TVE_EXPAND);
 		}
@@ -11550,7 +11550,7 @@ void UpdateRecordPIDsOneFileOptions(HWND hDlg)
 		SetDlgItemText(hDlg, IDC_OUTPUT_FOLDER_CAPTION, "Output Folder");
 }
 
-BOOL CALLBACK IPDVBPIDSelectDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK IPDVBPIDSelectDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -11570,7 +11570,7 @@ BOOL CALLBACK IPDVBPIDSelectDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 						int j = 0;
 
 						wsprintf(szPID, "%s", FormatTooltipPID(v->pc[i].nPID));			
-						nIndex = SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_ADDSTRING, 0, (LPARAM)szPID);
+						nIndex = (int)SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_ADDSTRING, 0, (LPARAM)szPID);
 #ifndef LITE
 						for (j = 0; j < MAX_RECORD_BUFFERS; j++)
 						{
@@ -11645,7 +11645,7 @@ BOOL CALLBACK IPDVBPIDSelectDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 					BOOL fPIDClash = FALSE;
 
 					v->nRecordPIDsPCRPID = 0x1ffe;
-					nRetVal = SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_GETSELITEMS, (WPARAM)sizeof(nItemList) / sizeof(int), (LPARAM)&nItemList[0]);
+					nRetVal = (int)SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_GETSELITEMS, (WPARAM)sizeof(nItemList) / sizeof(int), (LPARAM)&nItemList[0]);
 					if (nRetVal)
 					{
 						int i;
@@ -11787,7 +11787,7 @@ BOOL CALLBACK IPDVBPIDSelectDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 	return FALSE;
 }
 
-BOOL CALLBACK AboutDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK AboutDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -11944,7 +11944,7 @@ unsigned short crc16(int count, char *buf)
 	return (crc);
 }
 
-BOOL FAR PASCAL LicenseDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK LicenseDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
@@ -12659,7 +12659,7 @@ void AddMemoryItem(char * szTags, char * szUsage, char * szTitle, int nDataItem,
 	lstrcat(szUsage, szTemp);
 }
 */
-BOOL CALLBACK ThumbnailRefreshRateDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ThumbnailRefreshRateDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -12716,7 +12716,7 @@ BOOL CALLBACK ThumbnailRefreshRateDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 	return FALSE;
 }
 
-BOOL CALLBACK AutoRestartDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK AutoRestartDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -12851,7 +12851,7 @@ void BrowseIPSaveFolder(HWND hDlg)
 	}
 }
 
-BOOL CALLBACK IPSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK IPSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -12885,7 +12885,7 @@ BOOL CALLBACK IPSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 }
 #endif LITE
 
-BOOL CALLBACK PIDListDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK PIDListDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -12940,7 +12940,7 @@ BOOL CALLBACK PIDListDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 }
 
 #ifndef LITE
-BOOL CALLBACK ControlServerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ControlServerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -12985,7 +12985,7 @@ BOOL CALLBACK ControlServerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 }
 #endif LITE
 
-BOOL CALLBACK BufferSizesDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK BufferSizesDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -13095,7 +13095,7 @@ int PopulateSourceList(HWND hDlg, HWND hWndLV)
 	return nModuleIndex;
 }
 
-BOOL CALLBACK SourceDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK SourceDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -13270,7 +13270,7 @@ void GetManualChannelDisplayInfo(LV_DISPINFO *pnmv)
 	}
 }
 
-BOOL CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -13483,7 +13483,7 @@ BOOL CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			{
 				int nSelected;
 
-				nSelected = SendDlgItemMessage(hDlg, IDC_MANUAL_ES_LIST, LB_GETCURSEL, 0, 0);
+				nSelected = (int)SendDlgItemMessage(hDlg, IDC_MANUAL_ES_LIST, LB_GETCURSEL, 0, 0);
 				if (nSelected == LB_ERR)
 					MessageBox(hDlg, "Select an ES entry to delete first", gszAppName, MB_ICONSTOP);
 				else
@@ -13528,14 +13528,14 @@ int GetManualChannelListSelected(HWND hWndManualChannelList, int * nPMTIndex)
 		ListView_GetItem(hWndManualChannelList, &lvItem);
 		if ((lvItem.state & LVIS_SELECTED) > 0)
 		{
-			*nPMTIndex = lvItem.lParam;
+			*nPMTIndex = (int)lvItem.lParam;
 			return i;
 		}
 	}
 	return LB_ERR;
 }
 
-BOOL CALLBACK ManualChannelsDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ManualChannelsDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -13828,7 +13828,7 @@ void LoadSerialPortCombo(HWND hDlg)
 				break;
 			else
 			{
-				int nIndex = SendMessage(hCombo, CB_ADDSTRING, 0, (LPARAM)szValue);
+				int nIndex = (int)SendMessage(hCombo, CB_ADDSTRING, 0, (LPARAM)szValue);
 				if (lstrcmp(szValue, v->szSerialReceiverPort) == 0)
 					SendMessage(hCombo, CB_SETCURSEL, nIndex, 0);
 			}
@@ -13856,14 +13856,14 @@ void InitSerialControlDialog(HWND hDlg)
 		if (GetReceiverName != NULL)
 		{
 			szReceiverName = GetReceiverName();
-			nItem = SendDlgItemMessage(hDlg, IDD_SERIAL_CONTROL_RX_TYPES, LB_ADDSTRING, 0, (LPARAM)szReceiverName);
+			nItem = (int)SendDlgItemMessage(hDlg, IDD_SERIAL_CONTROL_RX_TYPES, LB_ADDSTRING, 0, (LPARAM)szReceiverName);
 			if (lstrcmp(v->szSerialReceiverType, szReceiverName) == 0)
 				SendDlgItemMessage(hDlg, IDD_SERIAL_CONTROL_RX_TYPES, LB_SETCURSEL, nItem, 0);
 		}
 	}
 }
 
-BOOL CALLBACK SerialControlDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK SerialControlDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -13881,7 +13881,7 @@ BOOL CALLBACK SerialControlDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 		{
 		case IDOK:
 			{
-				int nIndex = SendDlgItemMessage(hDlg, IDC_SERIAL_CONTROL_PORT, CB_GETCURSEL, 0, 0);
+				int nIndex = (int)SendDlgItemMessage(hDlg, IDC_SERIAL_CONTROL_PORT, CB_GETCURSEL, 0, 0);
 				if (nIndex == CB_ERR)
 				{
 					MessageBox(hDlg, "Please select a serial port to use", gszAppName, MB_ICONSTOP);
@@ -13891,7 +13891,7 @@ BOOL CALLBACK SerialControlDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 				if ((v->ss.fSerialReceiverControlEnabled == FALSE) && (IsDlgButtonChecked(hDlg, IDC_SERIAL_CONTROL_ENABLED)))
 					MessageBox(hDlg, "You need to close and restart TSReader for this change to take effect.", gszAppName, MB_ICONINFORMATION);
 				v->ss.fSerialReceiverControlEnabled = IsDlgButtonChecked(hDlg, IDC_SERIAL_CONTROL_ENABLED);
-				nIndex = SendDlgItemMessage(hDlg, IDD_SERIAL_CONTROL_RX_TYPES, LB_GETCURSEL, 0, 0);
+				nIndex = (int)SendDlgItemMessage(hDlg, IDD_SERIAL_CONTROL_RX_TYPES, LB_GETCURSEL, 0, 0);
 				if (nIndex == LB_ERR)
 				{
 					MessageBox(hDlg, "Please select a receiver to use", gszAppName, MB_ICONSTOP);
@@ -13993,7 +13993,7 @@ void VLCSettings_WM_COMMAND(HWND hDlg, WPARAM wParam, LPARAM lParam, BOOL fFromP
 	}
 }
 
-BOOL CALLBACK VLCSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK VLCSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -14021,7 +14021,7 @@ BOOL CALLBACK VLCSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 }
 
 
-BOOL CALLBACK XNSServerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK XNSServerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -14050,7 +14050,7 @@ BOOL CALLBACK XNSServerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 	return FALSE;
 }
 
-BOOL CALLBACK VLCWarningDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK VLCWarningDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -14080,7 +14080,7 @@ BOOL CALLBACK VLCWarningDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 	return FALSE;
 }
 
-BOOL CALLBACK PIDWarningDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK PIDWarningDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -14229,7 +14229,7 @@ void DeleteStatusBar(HWND hWnd)
 }
 
 #ifdef PRO
-BOOL CALLBACK FwdSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK FwdSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -14287,7 +14287,7 @@ BOOL CALLBACK FwdSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 }
 #endif PRO
 
-BOOL CALLBACK RokuHD1000Settings(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK RokuHD1000Settings(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -14392,7 +14392,7 @@ void GetDescriptorListDispInfo(LV_DISPINFO *pnmv)
 	}
 }
 
-BOOL CALLBACK DescriptorUsageDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK DescriptorUsageDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -14886,11 +14886,11 @@ void ResizeDialogWindow(HWND hDlg, WPARAM wParam, LPARAM lParam)
 #endif LITE
 }
 
-void SetupProcessorAffinity()
+static void SetupProcessorAffinity(void)
 {
 	// If source has CAPABILITIES_UNIPROCESSOR then we need to set our affinity
 	// to one processor - otherwise all CPUs are OK
-	DWORD dwProcessAffinityMask, dwSystemAffinityMask;
+	DWORD_PTR dwProcessAffinityMask, dwSystemAffinityMask;
 	BOOL fRetVal;
 	HANDLE hMyProcess;
 
@@ -14995,7 +14995,7 @@ BOOL LoadSource(HWND hWnd)
 
 			return TRUE;
 		}
-		fSourceDialogOK = DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_SOURCE), hWnd, SourceDlgProc);
+		fSourceDialogOK = (BOOL)DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_SOURCE), hWnd, SourceDlgProc);
 		if (fSourceDialogOK == FALSE)
 			return FALSE;
 	} while (TRUE);
@@ -15041,7 +15041,7 @@ void EnableDisableSourceMenuItems(HWND hWnd)
 
 #ifndef LITE
 
-BOOL CALLBACK IPDeviceDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK IPDeviceDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -15064,7 +15064,7 @@ BOOL CALLBACK IPDeviceDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 				szAbreviated = strstr(szDeviceDescription, "'");
 				if (szAbreviated == NULL)
 					szAbreviated = szDeviceDescription;
-				nIndex = SendDlgItemMessage(hDlg, IDC_IP_DEVICE_LIST, LB_ADDSTRING, 0, (LPARAM)szAbreviated);
+				nIndex = (int)SendDlgItemMessage(hDlg, IDC_IP_DEVICE_LIST, LB_ADDSTRING, 0, (LPARAM)szAbreviated);
 				szFullNamePtr = LocalAlloc(LPTR, lstrlen(szDeviceName) + 1);
 				lstrcpy(szFullNamePtr, szDeviceName);
 				SendDlgItemMessage(hDlg, IDC_IP_DEVICE_LIST, LB_SETITEMDATA, nIndex, (LPARAM)szFullNamePtr);
@@ -15085,7 +15085,7 @@ BOOL CALLBACK IPDeviceDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 	case WM_DESTROY:
 		{
 			int i;
-			int nCount = SendDlgItemMessage(hDlg, IDC_IP_DEVICE_LIST, LB_GETCOUNT, 0, 0);
+			int nCount = (int)SendDlgItemMessage(hDlg, IDC_IP_DEVICE_LIST, LB_GETCOUNT, 0, 0);
 			for (i = 0; i < nCount; i++)
 			{
 				char * szFullNamePtr;
@@ -15105,7 +15105,7 @@ BOOL CALLBACK IPDeviceDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 			{
 			case IDOK:
 				{
-					int nSelected = SendDlgItemMessage(hDlg, IDC_IP_DEVICE_LIST, LB_GETCURSEL, 0, 0);
+					int nSelected = (int)SendDlgItemMessage(hDlg, IDC_IP_DEVICE_LIST, LB_GETCURSEL, 0, 0);
 					if (nSelected != LB_ERR)
 					{
 						char * szFullNamePtr = (char *)SendDlgItemMessage(hDlg, IDC_IP_DEVICE_LIST, LB_GETITEMDATA, nSelected, 0);
@@ -15837,7 +15837,7 @@ void PaintPIDChartColorBoxes(HWND hDlg, int nTopOffset, int nLeftOffset)
 	EndPaint(hDlg, &ps);
 }
 
-BOOL CALLBACK PIDChartColorsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK PIDChartColorsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static DWORD dwScrambledPIDColor, dwUnscrambledPIDColor;
 	static DWORD dwScrambledInactivePIDColor, dwUnscrambledInactivePIDColor;
@@ -15880,7 +15880,7 @@ BOOL CALLBACK PIDChartColorsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 	return FALSE;
 }
 
-BOOL CALLBACK GraphRefreshRateDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK GraphRefreshRateDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static int SavednEPGHalfHourWidth;
 	static int SavednEPGChannelHeight;
@@ -16007,7 +16007,7 @@ void ProcessEPGScrollbarMessages(HWND hDlg, WPARAM wParam, LPARAM lParam)
 	}
 }
 
-BOOL CALLBACK EPGGridSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK EPGGridSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {	
 	switch(uMsg)
 	{
@@ -16441,7 +16441,7 @@ void GetTableMonitorDispInfo(LV_DISPINFO *pnmv)
 #ifdef PRO
 void AddRecordTable(HWND hDlg)
 {
-	int nPIDIndex = SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_GETCURSEL, 0, 0);
+	int nPIDIndex = (int)SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_GETCURSEL, 0, 0);
 	int nPID;
 	int nStartTable, nEndTable;
 	int nTableIndex;
@@ -16596,7 +16596,7 @@ void GetRecordTableListDispInfo(LV_DISPINFO *pnmv)
 	}
 }
 
-BOOL CALLBACK RecordTablesDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK RecordTablesDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -16625,7 +16625,7 @@ BOOL CALLBACK RecordTablesDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lP
 					char szPID[64];
 
 					wsprintf(szPID, "%s", FormatTooltipPID(v->pc[i].nPID));			
-					nIndex = SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_ADDSTRING, 0, (LPARAM)szPID);
+					nIndex = (int)SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_ADDSTRING, 0, (LPARAM)szPID);
 				}
 			}
 
@@ -16804,7 +16804,7 @@ BOOL CALLBACK RecordTablesDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lP
 }
 #endif PRO
 
-BOOL CALLBACK PluginSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK PluginSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -16850,7 +16850,7 @@ BOOL CALLBACK PluginSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 }
 
 
-BOOL CALLBACK EmailSetupDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK EmailSetupDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -16903,7 +16903,7 @@ BOOL CALLBACK EmailSetupDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 }
 
 
-BOOL CALLBACK EITServerSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK EITServerSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -16977,7 +16977,7 @@ BOOL CALLBACK EITServerSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
 }
 
 #ifndef LITE
-BOOL CALLBACK TableViewerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK TableViewerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -17145,7 +17145,7 @@ BOOL CALLBACK TableViewerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				LPNMLISTVIEW pnmv = (LPNMLISTVIEW)lParam;
 				if (pnmv->uNewState & LVIS_SELECTED)
 				{
-					v->nTableMonitorSectionTable = pnmv->lParam;
+					v->nTableMonitorSectionTable = (int)pnmv->lParam;
 				}
 			}
 			break;
@@ -17227,7 +17227,7 @@ LRESULT APIENTRY MainDlgSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 }
 
 #ifdef PRO
-BOOL CALLBACK ChartSaveDataDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ChartSaveDataDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -17257,7 +17257,7 @@ BOOL CALLBACK ChartSaveDataDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 	return FALSE;
 }
 
-BOOL CALLBACK MDIIndexDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK MDIIndexDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static __int64 nTotalBitrate;
 	static int nTotalBitrateSamples;
@@ -17566,7 +17566,7 @@ int ExportNITAsINIFiles(HWND hWnd)
 	return nTotalMuxesWritten;
 }
 
-BOOL CALLBACK ExportNITAsINIDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ExportNITAsINIDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -17758,7 +17758,7 @@ void ToggleNetworkIgnore(HWND hWnd)
 }
 #endif LITE
 
-BOOL CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static BOOL fFirstTime;
 
@@ -17877,7 +17877,7 @@ BOOL CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 			for (i = 0; nSubclassItemList[i] != 0; i++)
 			{				
 				v->hWndMainDlgSubclass[i] = GetDlgItem(hDlg, nSubclassItemList[i]);
-				v->wpSubclassOrigProc[i] = (WNDPROC)SetWindowLong(v->hWndMainDlgSubclass[i], GWL_WNDPROC, (LONG)MainDlgSubclassProc); 
+				v->wpSubclassOrigProc[i] = (WNDPROC)SetWindowLongPtr(v->hWndMainDlgSubclass[i], GWLP_WNDPROC, (LONG_PTR)MainDlgSubclassProc);
 			}	
 		}
 		break;
@@ -17886,7 +17886,7 @@ BOOL CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 			int j;
 
 			for (j = 0; v->hWndMainDlgSubclass[j] != NULL; j++)
-				SetWindowLong(v->hWndMainDlgSubclass[j], GWL_WNDPROC, (LONG)v->wpSubclassOrigProc[j]); 
+				SetWindowLongPtr(v->hWndMainDlgSubclass[j], GWLP_WNDPROC, (LONG_PTR)v->wpSubclassOrigProc[j]); 
 
 			KillTimer(hDlg, 1);
 			KillTimer(hDlg, 2);
@@ -19174,7 +19174,7 @@ CheckNewVersionThread_Exit4:
 	return 0;
 }
 
-BOOL CALLBACK CheckNewVersionDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK CheckNewVersionDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -19288,7 +19288,7 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	{
 	default:
 		if ( (wParam >= 40000) && (wParam < 50000) )
-			MD__Send_External_DLL_Menu_Cmd(wParam);
+			MD__Send_External_DLL_Menu_Cmd((unsigned int)wParam);
 		break;
 #ifdef PRO
 	case ID_RECORD_RECORDTABLES:
@@ -20298,7 +20298,7 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 }
 
 #ifndef LITE
-BOOL CALLBACK AutoRecordNoProgramDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK AutoRecordNoProgramDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -20544,7 +20544,7 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		break;
 	case WM_USER:
 		if (wParam && v->fMDPluginsLoaded == TRUE)
-			MD__ExternCommandDispatch(hWnd, uMsg, wParam, lParam);
+			MD__ExternCommandDispatch(hWnd, uMsg, (UINT)wParam, (LONG)lParam);
 		break;
 	case WM_USER + 5:
 		{
@@ -20786,7 +20786,7 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		{
 		case 0:
 			{
-				int nChartIndex = lParam;
+				int nChartIndex = (int)lParam;
 				char szClassName[64];
 
 				SetupChartClassName(szClassName, nChartIndex);
@@ -22034,7 +22034,7 @@ void LoadOtherModules()
 
 		v->pFFKeySpaceBase = LocalAlloc(LPTR, (get_keyset_size() * 2) + 4);
 		v->pFFKeySpace = v->pFFKeySpaceBase;
-		while (((int)v->pFFKeySpace & 3) != 0)
+		while (((int)v->pFFKeySpace[0] & 3) != 0)
 			v->pFFKeySpace++;
 		nTemp = get_internal_parallelism();
 		v->nFFCSAPackets = nTemp + (nTemp / 10);

@@ -39,7 +39,7 @@ void CopyListControlToClipboard(HWND hListControl, BOOL fAddCR)
 	}
 	{
 		char * szBuffer = GlobalAlloc(GMEM_DDESHARE, 1024 * 1024);
-		int nItemCount = SendMessage(hListControl, LB_GETCOUNT, 0, 0);
+		int nItemCount = (int)SendMessage(hListControl, LB_GETCOUNT, 0, 0);
 		int i;
 
 		EmptyClipboard(); 
@@ -643,7 +643,7 @@ void ExpireOldEITData(int nServiceID)
 						// Last event
 						ExpireOldEIT_debug(pCurrent, nServiceID, 3);
 						LocalFree(pCurrent);
-						pPrior->dwNextEvent = (DWORD)NULL;
+						pPrior->dwNextEvent = (LONG_PTR)NULL;
 						pCurrent = NULL;
 					}
 					else
@@ -651,7 +651,7 @@ void ExpireOldEITData(int nServiceID)
 						// Normal event with next and prior
 						ExpireOldEIT_debug(pCurrent, nServiceID, 4);
 						LocalFree(pCurrent);
-						pPrior->dwNextEvent = (DWORD)pNext;
+						pPrior->dwNextEvent = (LONG_PTR)pNext;
 						pCurrent = pNext;
 					}
 				}
@@ -777,7 +777,7 @@ void SaveExistingEPGData()
 
 BOOL myGetSaveFileName(LPOPENFILENAME lpofn)
 {
-	int i;
+	size_t i;
 	char * szFileName = lpofn->lpstrFile;
 	char * szInitialDir = (char *)lpofn->lpstrInitialDir;
 

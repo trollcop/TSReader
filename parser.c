@@ -283,7 +283,7 @@ void ParseATSCEITPacket(BYTE * pSectionPointer, int nPacketLength, int nEITNumbe
 										memcpy(pNewEvent, &thiseitevent, sizeof(EITEVENT));
 										pNewEIT = pNewEvent;
 										fUsedThisEITEvent = TRUE;
-										pCurrent->dwNextEvent = (DWORD)pNewEvent;
+										pCurrent->dwNextEvent = (LONG_PTR)pNewEvent;
 
 										// Copy over the descriptors
 										for (i = 0; i < MAX_EIT_EXTRA_DESCRIPTORS; i++)
@@ -883,7 +883,7 @@ LogDefaultEITDescriptor:
 												break;
 										}
 										fUsedThisEITEvent = TRUE;
-										pCurrent->dwNextEvent = (DWORD)pNewEvent;
+										pCurrent->dwNextEvent = (LONG_PTR)pNewEvent;
 										v->nEITEvents++;
 #ifndef LITE
 										if (v->fEPGSaveEnabled)
@@ -1941,7 +1941,7 @@ void ParseIPPacket(BYTE * pSectionPointer, int nPacketLength, int nPID, int nBuf
 			{
 				// Didn't find it - so allocate a new one and link it to the previous
 				pCurrentMac = LocalAlloc(LPTR, sizeof(IPMACENTRY) + 4);
-				pPreviousMac->dwNext = (DWORD)pCurrentMac;
+				pPreviousMac->dwNext = (LONG_PTR)pCurrentMac;
 			}
 		}
 
@@ -2112,7 +2112,7 @@ void ParseIPPacket(BYTE * pSectionPointer, int nPacketLength, int nPID, int nBuf
 			if (fAddit)
 			{
 				pCurrentIP = LocalAlloc(LPTR, sizeof(IPENTRY) + 4);
-				pPreviousIP->dwNext = (DWORD)pCurrentIP;
+				pPreviousIP->dwNext = (LONG_PTR)pCurrentIP;
 			}
 		}
 

@@ -2472,7 +2472,7 @@ void DecodeATSCCaptionServceDescriptor(char * szBuffer, BYTE * pDescriptor)
 	}
 }
 
-static void DecodeISDBAdditionalARIBBxmlInfo(char *szBuffer, BYTE *pInfo, uint8_t data_component_id)
+static void DecodeISDBAdditionalARIBBxmlInfo(char *szBuffer, BYTE *pInfo, uint16_t data_component_id)
 {
 	char szTemp[512];
 
@@ -2564,7 +2564,6 @@ static void DecodeISDBAdditionalARIBBxmlInfo(char *szBuffer, BYTE *pInfo, uint8_
 static void DecodeISDBDataComponentDescriptor(char *szBuffer, BYTE *pDescriptor)
 {
 	char szTemp[512];
-	char szDataComponent[128];
 	char *ptr = szTemp;
 	uint8_t bytes[32] = { 0, };
 	int i;
@@ -4820,8 +4819,8 @@ byte 8 uimsbf
 			} else {
 				int j, reserved_length = descriptor_length - 1;
 				char *psz = szTemp;
-				psz += wsprintf(" Reserved transmission type %02x\r\n"
-								" Reserved bytes: ", logo_transmission_type);
+				psz += wsprintf(szTemp, " Reserved transmission type %02x\r\n"
+										" Reserved bytes: ", logo_transmission_type);
 
 				for (j = 0; j < reserved_length; j++) {
 					uint8_t byte = get_bits(BM_USER_THREAD, 8);

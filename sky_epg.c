@@ -212,7 +212,7 @@ unsigned int dump_table_b5(unsigned char *b, unsigned char len)
 							memset(thiseitevent.szEventName, 0, sizeof(thiseitevent.szEventName));
 							sky_decode(&b[9], thiseitevent.szEventName, b[1] - 7, sizeof(thiseitevent.szEventName));
 							memcpy(pNewEvent, &thiseitevent, sizeof(EITEVENT));
-							pCurrent->dwNextEvent = (DWORD)pNewEvent;
+							pCurrent->dwNextEvent = (LONG_PTR)pNewEvent;
 							pNewEIT = pNewEvent;
 							fAddedNewEvent = TRUE;
 							v->nEITEvents++;

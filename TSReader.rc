@@ -763,7 +763,6 @@ BEGIN
     CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,5,32,205,1
 END
 
-#if defined(APSTUDIO_INVOKED)
 IDD_ARCHIVE_SETUP DIALOG DISCARDABLE  0, 0, 324, 325
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Record All Programs"
@@ -824,9 +823,7 @@ BEGIN
     CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,13,243,295,1
     CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,13,278,295,1
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_ARCHIVE_RUN DIALOGEX 0, 0, 271, 268
 STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_TOOLWINDOW
@@ -841,9 +838,7 @@ BEGIN
     CONTROL         "Show Local Times",IDC_ARCHIVE_LOCAL_TIME,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,147,3,70,8
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_ARCHIVE_VIEW DIALOG DISCARDABLE  0, 0, 326, 252
 STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "View Archived Recordings"
@@ -867,9 +862,7 @@ BEGIN
                     IDC_VIEW_ARCHIVE_DESCRIPTION,74,139,157,25
     PUSHBUTTON      "Copy",IDC_ARCHIVE_VIEW_COPY_FILENAME,234,139,32,18
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_EIT_SERVER DIALOG DISCARDABLE  0, 0, 214, 151
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "EIT Server Settings"
@@ -889,7 +882,6 @@ BEGIN
     GROUPBOX        "Options",IDC_STATIC,6,1,203,33
     GROUPBOX        "Active Connections",IDC_STATIC,6,38,203,89
 END
-#endif
 
 IDD_SAVE_EPG DIALOG DISCARDABLE  0, 0, 208, 50
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
@@ -966,7 +958,6 @@ BEGIN
                     IDC_STATIC,7,33,195,10
 END
 
-#if defined(APSTUDIO_INVOKED)
 IDD_SETTINGS DIALOG DISCARDABLE  0, 0, 432, 239
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Settings"
@@ -978,9 +969,7 @@ BEGIN
                     WS_TABSTOP,7,7,91,204
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,7,215,417,1
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_SETTINGS_THREADS DIALOG DISCARDABLE  0, 0, 321, 162
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
@@ -1028,9 +1017,7 @@ BEGIN
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,69,305,1
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,95,305,1
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_SETTINGS_EIT DIALOG DISCARDABLE  0, 0, 321, 162
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
@@ -1056,9 +1043,7 @@ BEGIN
     LTEXT           "Short",IDC_STATIC,84,74,19,8
     LTEXT           "Tall",IDC_STATIC,240,76,19,8
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_SETTINGS_THUMBNAILS DIALOG DISCARDABLE  0, 0, 321, 162
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
@@ -1089,9 +1074,7 @@ BEGIN
     CONTROL         "Wait for CA before picture",IDC_THUMBNAIL_WAIT_CA,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,105,209,8
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_SETTINGS_IPDVB DIALOG DISCARDABLE  0, 0, 321, 162
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
@@ -1103,9 +1086,7 @@ BEGIN
     EDITTEXT        IDC_IP_SAVE_FOLDER,69,40,208,12,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_IP_SAVE_FOLDER_ELIPSES,281,40,13,12
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_SETTINGS_PARSER DIALOG DISCARDABLE  0, 0, 321, 190
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
@@ -1152,9 +1133,7 @@ BEGIN
                     ES_NUMBER
     LTEXT           "seconds",IDC_STATIC,164,119,28,8
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_SETTINGS_CHART DIALOG DISCARDABLE  0, 0, 321, 162
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
@@ -1181,9 +1160,7 @@ BEGIN
     COMBOBOX        IDC_CHART_STYLE,61,122,139,38,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_SETTINGS_UI DIALOG DISCARDABLE  0, 0, 321, 162
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
@@ -1200,9 +1177,7 @@ BEGIN
     CONTROL         "Show non-video PCR icons",IDC_UI_SHOW_NON_VIDEO_PCR,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,66,108,8
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_SETTINGS_RECEIVER DIALOG DISCARDABLE  0, 0, 321, 162
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
@@ -1218,9 +1193,7 @@ BEGIN
                     WS_TABSTOP,0,26,169,9
     LTEXT           "Receiver Type",IDC_STATIC,0,40,61,8
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_SETTINGS_CONTROL_SERVER DIALOG DISCARDABLE  0, 0, 321, 162
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
@@ -1232,9 +1205,7 @@ BEGIN
                     ES_NUMBER
     RTEXT           "Server on TCP Port",IDC_STATIC,0,40,62,8
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_SETTINGS_SPLIT_FILENAMES DIALOG DISCARDABLE  0, 0, 321, 191
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
@@ -1257,9 +1228,7 @@ BEGIN
     EDITTEXT        IDC_FORMAT_SAMPLE,62,153,160,12,ES_AUTOHSCROLL | 
                     ES_READONLY
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_SETTINGS_DVHS DIALOG DISCARDABLE  0, 0, 321, 162
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
@@ -1272,7 +1241,6 @@ BEGIN
     CONTROL         "Force PIDs to be ATSC compatible",IDC_DVHS_ATSC_PIDS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,47,143,8
 END
-#endif
 
 IDD_SETTINGS_SOURCE DIALOG DISCARDABLE  0, 0, 321, 208
 STYLE WS_CHILD
@@ -1304,7 +1272,6 @@ BEGIN
     EDITTEXT        IDC_PLUGINS_PREFERED_CA_ID,78,24,39,12,ES_AUTOHSCROLL
 END
 
-#if defined(APSTUDIO_INVOKED)
 IDD_FORWARDER_SETUP DIALOG DISCARDABLE  0, 0, 327, 317
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Forward to UDP"
@@ -1347,9 +1314,7 @@ BEGIN
                     IDC_STATIC,5,300,196,8
     RTEXT           "Multicast IP Time to Live",IDC_STATIC,35,276,102,9
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_FORWARDER_RUN DIALOGEX 0, 0, 382, 244
 STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_TOOLWINDOW
@@ -1357,7 +1322,6 @@ CAPTION "Forwarder Status"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
 END
-#endif
 
 IDD_EPG_GOTO_CHANNEL DIALOG DISCARDABLE  0, 0, 186, 45
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
@@ -1387,7 +1351,6 @@ BEGIN
                     123,8
 END
 
-#if defined(APSTUDIO_INVOKED)
 IDD_SETTINGS_ROKU DIALOG DISCARDABLE  0, 0, 321, 162
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
@@ -1405,9 +1368,7 @@ BEGIN
     RTEXT           "CinemaSix Location",IDC_ROKU_PLAYBACK_CAPTION,0,73,77,8
     RTEXT           "Trace Window",IDC_STATIC,0,87,77,8
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_SETTINGS_STRADIS DIALOG DISCARDABLE  0, 0, 321, 162
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
@@ -1416,9 +1377,7 @@ BEGIN
     CONTROL         "Force output to PAL mode",IDC_STRADIS_FORCE_PAL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,1,27,110,8
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_SETTINGS_VLC DIALOG DISCARDABLE  0, 0, 334, 162
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
@@ -1447,9 +1406,7 @@ BEGIN
                     IDC_STATIC,89,142,235,16
     RTEXT           "Send data length",IDC_STATIC,0,73,75,8
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_SETTINGS_CA DIALOG DISCARDABLE  0, 0, 321, 162
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
@@ -1461,9 +1418,7 @@ BEGIN
     LTEXT           "Prefered CA ID (hex)",IDC_STATIC,0,42,68,8
     EDITTEXT        IDC_PLUGINS_PREFERED_CA_ID,71,40,39,12,ES_AUTOHSCROLL
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_SETTINGS_XNS DIALOG DISCARDABLE  0, 0, 321, 162
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
@@ -1472,7 +1427,6 @@ BEGIN
     LTEXT           "XNS Server Port",IDC_STATIC,3,26,62,9
     EDITTEXT        IDC_XNS_SERVER_PORT,74,24,36,12,ES_AUTOHSCROLL
 END
-#endif
 
 IDD_MDI_INDEX DIALOG DISCARDABLE  0, 0, 324, 242
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
@@ -1488,7 +1442,6 @@ BEGIN
                     9
 END
 
-#if defined(APSTUDIO_INVOKED)
 IDD_DESCRIPTOR_USAGE DIALOG DISCARDABLE  0, 0, 367, 172
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Descriptor Usage"
@@ -1499,9 +1452,7 @@ BEGIN
                     LVS_SINGLESEL | LVS_NOSORTHEADER | WS_BORDER | 
                     WS_TABSTOP,2,2,363,146
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_STREAM_MONITOR DIALOG DISCARDABLE  0, 0, 356, 335
 STYLE DS_MODALFRAME | WS_MINIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Stream Monitor"
@@ -1594,7 +1545,6 @@ BEGIN
     LTEXT           "3.10 Data delay error",IDC_MONITOR_3_10_CAPTION,117,308,
                     49,18
 END
-#endif
 
 IDD_EPG_DATE DIALOG DISCARDABLE  0, 0, 133, 114
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
@@ -1607,7 +1557,6 @@ BEGIN
                     MCS_NOTODAY | WS_TABSTOP,2,2,128,86
 END
 
-#if defined(APSTUDIO_INVOKED)
 IDD_CHART_SAVE_DATA DIALOG DISCARDABLE  0, 0, 265, 69
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Save Chart Data"
@@ -1620,7 +1569,6 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,208,46,50,14
     RTEXT           "Files written to",IDC_STATIC,9,27,50,8
 END
-#endif
 
 IDD_STRADIS_SETTINGS DIALOG DISCARDABLE  0, 0, 241, 98
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
@@ -1703,7 +1651,6 @@ BEGIN
     CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,96,51,198,1
 END
 
-#if defined(APSTUDIO_INVOKED)
 IDD_RECORD_ADVANCED_FILE DIALOG DISCARDABLE  0, 0, 255, 68
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Advanced Record Options"
@@ -1721,9 +1668,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,201,48,50,14
     LTEXT           "GB or less free",IDC_STATIC,190,6,48,8
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_RECORD_ADVANCED_MUX DIALOG DISCARDABLE  0, 0, 186, 242
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Advanced Record Options"
@@ -1739,9 +1684,7 @@ BEGIN
     PUSHBUTTON      "Load PID List",IDC_RECORD_PID_LOAD,117,62,50,14
     PUSHBUTTON      "Save PID List",IDC_RECORD_PID_SAVE,117,80,50,14
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_EMAIL_SETUP DIALOG DISCARDABLE  0, 0, 228, 149
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Email Setup"
@@ -1767,9 +1710,7 @@ BEGIN
     RTEXT           "SMTP Username",IDC_STATIC,4,66,75,8
     RTEXT           "SMTP Password",IDC_STATIC,4,78,75,8
 END
-#endif
 
-#if defined(APSTUDIO_INVOKED)
 IDD_STREAM_MONITOR_SETTINGS DIALOG DISCARDABLE  0, 0, 186, 92
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Stream Monitor Settings"
@@ -1790,7 +1731,6 @@ BEGIN
     RTEXT           "Clock Reference",IDC_STATIC,0,23,70,8
     RTEXT           "Email Alarms",IDC_STATIC,0,46,70,8
 END
-#endif
 
 IDD_SCHEDULER_WARNING DIALOG DISCARDABLE  0, 0, 177, 74
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
@@ -2952,7 +2892,6 @@ END
 // Menu
 //
 
-#if defined(APSTUDIO_INVOKED)
 IDR_MAIN MENU DISCARDABLE 
 BEGIN
     POPUP "File"
@@ -3324,7 +3263,6 @@ BEGIN
         MENUITEM "Reset TEI Counters",          ID_HELP_RESETTEICOUNTERS
     END
 END
-#endif
 
 IDR_IP_POPUP MENU DISCARDABLE 
 BEGIN
@@ -3398,300 +3336,6 @@ BEGIN
 
         MENUITEM "Stop transmitting",           ID_IDRIPPOPUP_STOPTRANSMITTING_MAC
 
-    END
-END
-
-#if defined(APSTUDIO_INVOKED) || defined(INEOQUEST)
-#if defined(APSTUDIO_INVOKED)
-IDR_MAIN$(INEOQUEST) MENU DISCARDABLE 
-#else
-IDR_MAIN MENU DISCARDABLE 
-#endif
-BEGIN
-    POPUP "File"
-    BEGIN
-        MENUITEM "Define manual channels...\tAlt+M", 
-                                                ID_FILE_DEFINEMANUALCHANNELS
-        MENUITEM "Load manual channels...",     ID_FILE_LOADMANUALCHANNELS
-        MENUITEM "Save manual channels...",     ID_FILE_SAVEMANUALCHANNELS
-        MENUITEM SEPARATOR
-        MENUITEM "E&xit",                       ID_FILE_EXIT
-    END
-    POPUP "Export"
-    BEGIN
-        MENUITEM "HTML Export...\tCtrl+H",      IDC_SI_PARSER_EXPORT
-        MENUITEM "HTML Export via NIT...",      IDC_SI_PARSER_EXPORT_NIT
-        MENUITEM "XML Export...",               IDC_SI_PARSER_EXPORT_EIT
-        MENUITEM "XMLTV Export...",             ID_EXPORT_XMLTVEXPORT
-        MENUITEM SEPARATOR
-        MENUITEM "Save thumbnails...",          ID_EXPORT_SAVETHUMBNAILS
-        MENUITEM "Save all thumbnails...",      ID_EXPORT_SAVEALLTHUMBNAILS
-    END
-    POPUP "View"
-    BEGIN
-        MENUITEM "Always on Top",               ID_VIEW_ALWAYSONTOP
-        POPUP "Chart"
-        BEGIN
-            MENUITEM "Active PIDs by rate...",      ID_VIEW_ACTIVEPIDSBYRATE
-            MENUITEM "Active PIDs by PID...",       ID_VIEW_ACTIVEPIDSBYPID
-            MENUITEM SEPARATOR
-            MENUITEM "PID usage 2D pie chart...",   ID_VIEW_PIDUSAGE2DPIECHART
-
-            MENUITEM "PID usage 3D pie chart...",   ID_VIEW_PIDPIECHART
-            MENUITEM SEPARATOR
-            MENUITEM "Mux usage stacked area chart...", 
-                                                    ID_VIEW_MUXUSAGEAREACHART
-
-            MENUITEM "Mux usage line chart...",     ID_VIEW_MUXUSAGELINECHART
-
-            MENUITEM SEPARATOR
-            MENUITEM "Program usage stacked bar chart...", 
-                                                    ID_VIEW_CHART_PROGRAMUSAGESTACKEDBARCHART
-
-            MENUITEM SEPARATOR
-            POPUP "Settings"
-            BEGIN
-                MENUITEM "PID Chart Colors...",         ID_VIEW_CHART_SETTINGS_PIDCHARTCOLORS
-
-                MENUITEM "Real-time Charting",          ID_SETTINGS_REALTIMECHARTING
-
-                MENUITEM "Refresh Rate...",             ID_VIEW_CHART_SETTINGS_REFRESHRATE
-
-                POPUP "Style"
-                BEGIN
-                    MENUITEM "No Style",                    ID_VIEW_CHARTSETTINGS_STYLE_NOSTYLE
-
-                    MENUITEM "Light Colors with Inset Border", 
-                                                            ID_VIEW_CHARTSETTINGS_STYLE_LIGHTCOLORSWITHINSETBORDER
-
-                    MENUITEM "Light Colors with Shadow Border", 
-                                                            ID_VIEW_CHARTSETTINGS_STYLE_LIGHTCOLORSWITHSHADOWBORDER
-
-                    MENUITEM "Light Colors with Line Border", 
-                                                            ID_VIEW_CHARTSETTINGS_STYLE_LIGHTCOLORSWITHLINEBORDER
-
-                    MENUITEM "Light Colors with No Border", ID_VIEW_CHARTSETTINGS_STYLE_LIGHTCOLORSWITHNOBORDER
-
-                    MENUITEM "Medium Colors with Inset Border", 
-                                                            ID_VIEW_CHARTSETTINGS_STYLE_MEDIUMCOLORSWITHINSETBORDER
-
-                    MENUITEM "Medium Colors with Shadow Border", 
-                                                            ID_VIEW_CHARTSETTINGS_STYLE_MEDIUMCOLORSWITHSHADOWBORDER
-
-                    MENUITEM "Medium Colors with Line Border", 
-                                                            ID_VIEW_CHARTSETTINGS_STYLE_MEDIUMCOLORSWITHLINEBORDER
-
-                    MENUITEM "Medium Colors with No Border", 
-                                                            ID_VIEW_CHARTSETTINGS_STYLE_MEDIUMCOLORSWITHNOBORDER
-
-                    MENUITEM "Dark Colors with Inset Border", 
-                                                            ID_VIEW_CHARTSETTINGS_STYLE_DARKCOLORSWITHINSETBORDER
-
-                    MENUITEM "Dark Colors with Shadow Border", 
-                                                            ID_VIEW_CHARTSETTINGS_STYLE_DARKCOLORSWITHSHADOWBORDER
-
-                    MENUITEM "Dark Colors with Line Border", 
-                                                            ID_VIEW_CHARTSETTINGS_STYLE_DARKCOLORSWITHLINEBORDER
-
-                    MENUITEM "Dark Colors with No Border",  ID_VIEW_CHARTSETTINGS_STYLE_DARKCOLORSWITHNOBORDER
-
-                END
-            END
-            MENUITEM SEPARATOR
-            MENUITEM "Video bit rate area chart...", 
-                                                    ID_VIEW_VIDEOBITRATEAREACHART
-
-            MENUITEM "Video bit-rate line chart...", 
-                                                    ID_VIEW_VIDEOBITRATECHART
-
-            MENUITEM SEPARATOR
-            MENUITEM "Video composition chart...",  ID_VIEW_CHART_VIDEOCOMPOSITIONCHART
-
-        END
-        MENUITEM "PID List...\tAlt+P",          ID_HELP_SHOWPIDLIST
-        POPUP "PMT Tree"
-        BEGIN
-            MENUITEM "Expand all PMTs\tAlt+X",      ID_VIEW_PMTTREE_EXPANDALLPMTS
-
-            MENUITEM "Collapse all PMTs\tAlt+C",    ID_VIEW_PMTTREE_CONTRACTALLPMTS
-
-        END
-        MENUITEM "Table List...\tAlt+L",        ID_VIEW_TABLELIST
-    END
-    POPUP "Record"
-    BEGIN
-        MENUITEM "Record All...\tCtrl+A",       IDC_SI_PARSER_RECORD_ALL
-        MENUITEM "Record PIDs...\tCtrl+P",      IDC_SI_PARSER_RECORD_PID
-        MENUITEM SEPARATOR
-        MENUITEM "Record Program...\tCtrl+R",   IDC_SI_PARSER_RECORD
-        MENUITEM "Record Program to D-VHS...\tCtrl+D", 
-                                                ID_RECORD_RECORDPROGRAMTODVHS
-
-    END
-    POPUP "Playback"
-    BEGIN
-        POPUP "Roku HD1000"
-        BEGIN
-            MENUITEM "Play",                        ID_PLAYBACK_ROKUHD1000
-            MENUITEM SEPARATOR
-            MENUITEM "Settings...",                 ID_SETTINGS_ROKUHD1000
-        END
-        POPUP "Stradis MPEG-2 Decoder..."
-        BEGIN
-            MENUITEM "Play",                        IDC_SI_PARSER_TO_STRADIS
-            MENUITEM SEPARATOR
-            MENUITEM "Settings...",                 ID_PLAYBACK_STRADISMPEG2DECODER_SETTINGS
-
-        END
-        POPUP "VLC"
-        BEGIN
-            MENUITEM "VLC1",                        ID_PLAYBACK_VLC_1
-            MENUITEM "VLC2",                        ID_PLAYBACK_VLC_2
-            MENUITEM "VLC3",                        ID_PLAYBACK_VLC_3
-            MENUITEM "VLC4",                        ID_PLAYBACK_VLC_4
-            MENUITEM "VLC5",                        ID_PLAYBACK_VLC_5
-            MENUITEM "VLC6",                        ID_PLAYBACK_VLC_6
-            MENUITEM "VLC7",                        ID_PLAYBACK_VLC_7
-            MENUITEM "VLC8",                        ID_PLAYBACK_VLC_8
-            MENUITEM "VLC9",                        ID_PLAYBACK_VLC_9
-            MENUITEM "VLC10",                       ID_PLAYBACK_VLC_10
-            MENUITEM "VLC11",                       ID_PLAYBACK_VLC_11
-            MENUITEM "VLC12",                       ID_PLAYBACK_VLC_12
-            MENUITEM "VLC13",                       ID_PLAYBACK_VLC_13
-            MENUITEM "VLC14",                       ID_PLAYBACK_VLC_14
-            MENUITEM "VLC15",                       ID_PLAYBACK_VLC_15
-            MENUITEM "VLC16",                       ID_PLAYBACK_VLC_16
-            MENUITEM SEPARATOR
-            MENUITEM "Settings...\tAlt+V",          ID_SETTINGS_VLC
-        END
-    END
-    POPUP "Plugins"
-    BEGIN
-        MENUITEM "Something",                   ID_PLUGINS_SOMETHING
-    END
-    POPUP "Settings"
-    BEGIN
-        POPUP "Thumbnails"
-        BEGIN
-            MENUITEM "Animated",                    ID_SETTINGS_THUMBNAILTHREADPRIORITY_ANIMATED
-
-            MENUITEM "Display full thumbnails only", 
-                                                    ID_SETTINGS_THUMBNAILTHREAD_DISPLAYFULLTHUMBNAILSONLY
-
-            POPUP "Display Order"
-            BEGIN
-                MENUITEM "Top Down",                    ID_SETTINGS_THUMBNAILTHREAD_DISPLAYORDER_TOPDOWN
-
-                MENUITEM "Right to Left",               ID_SETTINGS_THUMBNAILTHREAD_DISPLAYORDER_RIGHTTOLEFT
-
-            END
-            MENUITEM "Enable audio thumbnails",     ID_SETTINGS_THUMBNAILTHREAD_ENABLEAUDIOTHUMBNAILS
-
-            MENUITEM "Full-size saved thumbnails",  ID_SETTINGS_THUMBNAILTHREAD_FULLSIZESAVEDTHUMBNAILS
-
-            MENUITEM "Hide thumbnail icons",        ID_SETTINGS_THUMBNAILTHREAD_HIDETHUMBNAILICONS
-
-            MENUITEM "Refresh rate/Maximum pictures...", 
-                                                    ID_SETTINGS_THUMBNAILTHREADPRIORITY_REFRESHRATE
-
-            MENUITEM "Refresh now\tF5",             ID_SETTINGS_THUMBNAILTHREAD_REFRESHNOW
-
-            MENUITEM "Save All uses same name",     ID_SETTINGS_THUMBNAILTHREAD_SAVEALLUSESSAMENAME
-
-            MENUITEM "Show scrambled channels",     ID_SETTINGS_THUMBNAILTHREAD_SHOWSCRAMBLEDCHANNELS
-
-            POPUP "Thumbnail Size"
-            BEGIN
-                MENUITEM "Small",                       ID_SETTINGS_THUMBNAILTHREAD_THUMBNAILSIZE_SMALL
-
-                MENUITEM "Normal",                      ID_SETTINGS_THUMBNAILTHREAD_THUMBNAILSIZE_NORMAL
-
-                MENUITEM "Large",                       ID_SETTINGS_THUMBNAILTHREAD_THUMBNAILSIZE_LARGE
-
-            END
-        END
-        MENUITEM SEPARATOR
-        MENUITEM "Auto restart...",             ID_SETTINGS_AUTORESTART
-        MENUITEM "Auto Expand PMTs",            ID_SETTINGS_AUTOEXPANDPMTS
-        MENUITEM "Auto Expand IPs",             ID_SETTINGS_AUTOEXPANDIPS
-        MENUITEM "Control Server Settings...",  ID_SETTINGS_CONTROLSERVERSETTINGS
-
-        MENUITEM "Count Continuity Errors",     ID_SETTINGS_COUNTCONTINUITYERRORS
-
-        POPUP "D-VHS"
-        BEGIN
-            MENUITEM "Auto REC/STOP",               ID_SETTINGS_CONTROLDVHSDECK
-
-            MENUITEM "Auto Power On/Off",           ID_SETTINGS_DVHSCONTROL_AUTOPOWERONOFF
-
-            MENUITEM "Force PIDs to be ATSC compatible", 
-                                                    ID_SETTINGS_DVHS_FORCEPIDSTOBEATSCCOMPATIBLE
-
-        END
-        MENUITEM "Decimal PIDs",                ID_SETTINGS_DECIMALPIDS
-        MENUITEM "Hide when minimized",         ID_SETTINGS_HIDEWHENMINIMIZED
-
-        MENUITEM "Keep special XML characters", ID_SETTINGS_KEEPSPECIALXMLCHARACTERS
-
-        MENUITEM "Ignore Table CRC Errors",     ID_SETTINGS_IGNORETABLECRCERRORS
-
-        MENUITEM "Ignore DCII PMT ch. 80",      ID_SETTINGS_IGNOREDCIIPMTCH80
-
-        MENUITEM "Ignore PMTs above ch. 65500", ID_SETTINGS_IGNOREPMTSABOVECH65500
-
-        MENUITEM "Show non-video PCR icons",    ID_SETTINGS_SHOWNONVIDEOPCRICONS
-
-        MENUITEM "Split Record Filenames...",   ID_SETTINGS_SPLITRECORDFILENAMES
-
-        MENUITEM "Timestamp Packets",           ID_SETTINGS_TIMESTAMPPACKETS
-    END
-    POPUP "Help"
-    BEGIN
-        MENUITEM "About...",                    IDC_SI_PARSER_ABOUT
-        MENUITEM "Technical Support...\tF1",    IDC_SUPPORT
-        MENUITEM SEPARATOR
-        MENUITEM "Reset All",                   ID_HELP_RESETALL
-        MENUITEM "Reset Continuity Counters",   ID_HELP_RESETCONTINUITYCOUNTERS
-
-        MENUITEM "Reset CRC Counters",          ID_HELP_RESETCRCCOUNTERS
-        MENUITEM "Reset Section Counters",      ID_HELP_RESETSECTIONCOUNTERS
-        MENUITEM "Reset TEI Counters",          ID_HELP_RESETTEICOUNTERS
-    END
-END
-#endif
-
-IDR_PROFILES MENU DISCARDABLE 
-BEGIN
-    POPUP "File"
-    BEGIN
-        MENUITEM "New...\tIns",                 ID_FILE_NEW_PROFILE
-        MENUITEM "Edit\tAlt+Enter",             ID_FILE_EDIT
-        MENUITEM "Delete\tDel",                 ID_FILE_DELETE
-        MENUITEM "Launch Profile...\tEnter",    ID_FILE_LAUNCHPROFILE
-        MENUITEM SEPARATOR
-        MENUITEM "Create Desktop Shortcut",     ID_FILE_CREATEDESKTOPSHORTCUT
-
-        MENUITEM SEPARATOR
-        MENUITEM "Exit",                        ID_FILE_EXIT
-    END
-    POPUP "Edit"
-    BEGIN
-        MENUITEM "Copy\tCtrl+C",                IDC_EDIT_COPY
-        MENUITEM "Paste\tCtrl+V",               IDC_EDIT_PASTE
-    END
-    POPUP "View"
-    BEGIN
-        MENUITEM "Large Icons",                 ID_VIEW_LARGEICONS
-        MENUITEM "Small Icons",                 ID_VIEW_SMALLICONS
-        MENUITEM "List",                        ID_VIEW_PROFILE_LIST
-        MENUITEM "Details",                     ID_VIEW_PROFILE_DETAILS
-        MENUITEM SEPARATOR
-        MENUITEM "Refresh\tF5",                 ID_VIEW_REFRESH
-    END
-    POPUP "Help"
-    BEGIN
-        MENUITEM "About...",                    ID_HELP_ABOUT
-        MENUITEM "Check for New Version...",    ID_HELP_CHECKFORNEWVERSION
     END
 END
 
@@ -3856,7 +3500,6 @@ IDB_BITMAP3             BITMAP  DISCARDABLE     "res\\blank.bmp"
 // Accelerator
 //
 
-#if defined(APSTUDIO_INVOKED)
 IDR_ACCELERATOR_TOP ACCELERATORS DISCARDABLE 
 BEGIN
     "0",            ID_PLAYBACK_VLC_1,      VIRTKEY, CONTROL, NOINVERT
@@ -3895,7 +3538,6 @@ BEGIN
     VK_F6,          ID_HELP_RESETALL,       VIRTKEY, NOINVERT
     "X",            ID_VIEW_PMTTREE_EXPANDALLPMTS, VIRTKEY, ALT, NOINVERT
 END
-#endif
 
 IDR_PROFILES ACCELERATORS DISCARDABLE 
 BEGIN

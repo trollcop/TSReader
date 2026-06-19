@@ -695,7 +695,7 @@ LRESULT APIENTRY ListViewSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 	case WM_SYSDEADCHAR:
 		break;
 	case WM_CHAR:
-		m_strEnterCode[0] = wParam;
+		m_strEnterCode[0] = (char)wParam;
 		m_strEnterCode[1] = 0;
 		m_nAnswerType = 1;
 		EntryNextCI(GetParent(hWnd));
@@ -707,13 +707,13 @@ LRESULT APIENTRY ListViewSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 	return FALSE;
 }
 
-BOOL CALLBACK CAMMenuDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK CAMMenuDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
 	case WM_INITDIALOG:
 		{
-            wpOrigListProc = (WNDPROC)SetWindowLong(GetDlgItem(hDlg, IDC_CAM_LIST), GWL_WNDPROC, (LONG)ListViewSubclassProc); 
+            wpOrigListProc = (WNDPROC)SetWindowLongPtr(GetDlgItem(hDlg, IDC_CAM_LIST), GWLP_WNDPROC, (LONG_PTR)ListViewSubclassProc);
 			if (initMMI == NULL)
 			{
 				initMMI = (td_initMMI)GetProcAddress(v->hSource, "TSReader_InitMMI");
@@ -751,7 +751,7 @@ BOOL CALLBACK CAMMenuDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_DESTROY:
 		if (closeMMI != NULL)
 			closeMMI();
-		SetWindowLong(GetDlgItem(hDlg, IDC_CAM_LIST), GWL_WNDPROC, (LONG) wpOrigListProc); 
+		SetWindowLongPtr(GetDlgItem(hDlg, IDC_CAM_LIST), GWLP_WNDPROC, (LONG_PTR)wpOrigListProc);
 		break;
 	case WM_CLOSE:
 		EndDialog(hDlg, FALSE);
@@ -772,7 +772,7 @@ BOOL CALLBACK CAMMenuDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 		case LBN_DBLCLK:
 			{
-				int nItem = SendDlgItemMessage(hDlg, IDC_CAM_LIST, LB_GETCURSEL, 0, 0);
+				int nItem = (int)SendDlgItemMessage(hDlg, IDC_CAM_LIST, LB_GETCURSEL, 0, 0);
 				m_strEnterCode[0] = nItem + 1 + '0';
 				m_strEnterCode[1] = 0;
 				m_nAnswerType = 1;

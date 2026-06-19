@@ -885,7 +885,7 @@ BOOL ReadEITSocket(SOCKET socket, char * szBuffer, int nSize)
 }
 DWORD WINAPI ReceiveRemoteEPGDataThread(LPVOID pvarg)
 {
-	int nPMTIndex = (int)pvarg;
+	int nPMTIndex = (int)(LONG_PTR)pvarg;
 	char szChannelName[128];
 	char szStartDateTime[128];
 	char szDuration[128];
@@ -921,18 +921,18 @@ DWORD WINAPI ReceiveRemoteEPGDataThread(LPVOID pvarg)
 		// 0123456789012345678
 		memset(&archive->ap[nPMTIndex]->stNextStart, 0, sizeof(archive->ap[nPMTIndex]->stNextStart));
 		szStartDateTime[4] = '\0';
-		sscanf(szStartDateTime, "%d", &archive->ap[nPMTIndex]->stNextStart.wYear);
+		sscanf(szStartDateTime, "%d", (int *)&archive->ap[nPMTIndex]->stNextStart.wYear);
 		szStartDateTime[7] = '\0';
-		sscanf(&szStartDateTime[5], "%d", &archive->ap[nPMTIndex]->stNextStart.wMonth);
+		sscanf(&szStartDateTime[5], "%d", (int *)&archive->ap[nPMTIndex]->stNextStart.wMonth);
 		szStartDateTime[10] = '\0';
-		sscanf(&szStartDateTime[8], "%d", &archive->ap[nPMTIndex]->stNextStart.wDay);
+		sscanf(&szStartDateTime[8], "%d", (int *)&archive->ap[nPMTIndex]->stNextStart.wDay);
 
 		szStartDateTime[13] = '\0';
-		sscanf(&szStartDateTime[11], "%d", &archive->ap[nPMTIndex]->stNextStart.wHour);
+		sscanf(&szStartDateTime[11], "%d", (int *)&archive->ap[nPMTIndex]->stNextStart.wHour);
 		szStartDateTime[16] = '\0';
-		sscanf(&szStartDateTime[14], "%d", &archive->ap[nPMTIndex]->stNextStart.wMinute);
+		sscanf(&szStartDateTime[14], "%d", (int *)&archive->ap[nPMTIndex]->stNextStart.wMinute);
 		if (!archive->ap[nPMTIndex]->fOldArchiveEPGServer)
-			sscanf(&szStartDateTime[17], "%d", &archive->ap[nPMTIndex]->stNextStart.wSecond);
+			sscanf(&szStartDateTime[17], "%d", (int *)&archive->ap[nPMTIndex]->stNextStart.wSecond);
 		else
 			archive->ap[nPMTIndex]->stNextStart.wSecond = 0;
 
@@ -940,11 +940,11 @@ DWORD WINAPI ReceiveRemoteEPGDataThread(LPVOID pvarg)
 		// 01234567
 		memset(&archive->ap[nPMTIndex]->stNextDuration, 0, sizeof(archive->ap[nPMTIndex]->stNextDuration));
 		szDuration[2] = '\0';
-		sscanf(szDuration, "%d", &archive->ap[nPMTIndex]->stNextDuration.wHour);
+		sscanf(szDuration, "%d", (int *)&archive->ap[nPMTIndex]->stNextDuration.wHour);
 		szDuration[5] = '\0';
-		sscanf(&szDuration[3], "%d", &archive->ap[nPMTIndex]->stNextDuration.wMinute);
+		sscanf(&szDuration[3], "%d", (int *)&archive->ap[nPMTIndex]->stNextDuration.wMinute);
 		if (!archive->ap[nPMTIndex]->fOldArchiveEPGServer)
-			sscanf(&szDuration[6], "%d", &archive->ap[nPMTIndex]->stNextDuration.wSecond);
+			sscanf(&szDuration[6], "%d", (int *)&archive->ap[nPMTIndex]->stNextDuration.wSecond);
 		else
 			archive->ap[nPMTIndex]->stNextDuration.wSecond = 0;
 
@@ -961,7 +961,7 @@ void SetupNewRemoteEPGProgramDetails(int nPMTIndex)
 	lstrcpy(archive->ap[nPMTIndex]->szCurrentProgram, archive->ap[nPMTIndex]->szNextProgram);
 	lstrcpy(archive->ap[nPMTIndex]->szCurrentDescription, archive->ap[nPMTIndex]->szNextDescription);
 	memcpy(&archive->ap[nPMTIndex]->stCurrentStart, &archive->ap[nPMTIndex]->stNextStart, sizeof(SYSTEMTIME));
-	memcpy(&archive->ap[nPMTIndex]->stCurrentDuration, &archive->ap[nPMTIndex]->stNextDuration, sizeof(SYSTEMTIME));																		
+	memcpy(&archive->ap[nPMTIndex]->stCurrentDuration, &archive->ap[nPMTIndex]->stNextDuration, sizeof(SYSTEMTIME));
 }
 
 BOOL OpenRemoteEPGConnection(int nPMTIndex)
@@ -1009,7 +1009,7 @@ BOOL OpenRemoteEPGConnection(int nPMTIndex)
 		wsprintf(szTemp, "%04d", nEPGChannel);
 	send(archive->ap[nPMTIndex]->EPGSocket, szTemp, lstrlen(szTemp), 0);
 
-	hThread = CreateThread(NULL, 0, ReceiveRemoteEPGDataThread, (LPVOID)nPMTIndex, 0, &dwThreadID);
+	hThread = CreateThread(NULL, 0, ReceiveRemoteEPGDataThread, (LPVOID)(LONG_PTR)nPMTIndex, 0, &dwThreadID);
 	CloseHandle(hThread);
 	
 	return TRUE;
@@ -1240,12 +1240,12 @@ void SetCalculatedMemory(HWND hDlg)
 	SetDlgItemText(hDlg, IDC_ARCHIVE_SETUP_MEMORY, szTemp);
 }
 
-BOOL CALLBACK ArchiveWaitEPGDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ArchiveWaitEPGDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	return FALSE;
 }
 
-BOOL CALLBACK ArchiveSetupDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ArchiveSetupDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static BOOL fFirstTime;
 	static HWND hWaitingForEPGDialog;
@@ -1606,7 +1606,7 @@ BOOL CALLBACK ArchiveSetupDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lP
 						EnableWindow(GetDlgItem(hDlg, IDC_ARCHIVE_CHANNEL_HALFHOUR), TRUE);
 					}
 					archive->nListSelectedProgram = pnmv->iItem;
-					archive->nListSelectedPMT = pnmv->lParam;
+					archive->nListSelectedPMT = (int)pnmv->lParam;
 					CheckDlgButton(hDlg, IDC_ARCHIVE_CHANNEL_ENABLED, archive->ap[archive->nListSelectedPMT]->fEnabled);
 					SetDlgItemText(hDlg, IDC_ARCHIVE_CHANNEL_OUTPUT_LOCATION, archive->ap[archive->nListSelectedPMT]->szOutputLocation);
 					SetDlgItemText(hDlg, IDC_ARCHIVE_CHANNEL_OUTPUT_NAME, archive->ap[archive->nListSelectedPMT]->szChannelName);
@@ -1644,7 +1644,7 @@ BOOL CALLBACK ArchiveSetupDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lP
 
 void CALLBACK FileIOCompletionRoutine(DWORD dwErrorCode, DWORD dwNumberOfBytesTransfered, LPOVERLAPPED lpOverlapped)
 {
-	int nPMTIndex = (int)lpOverlapped->hEvent;
+	int nPMTIndex = (int)(LONG_PTR)lpOverlapped->hEvent;
 	int nAyncBufferIndex;
 	char szTemp[128];
 
@@ -1667,7 +1667,7 @@ BOOL FlushBufferData(int nPMTIndex)
 	archive->ap[nPMTIndex]->overlappedWrites[archive->ap[nPMTIndex]->nCurrentAsyncIO].Offset = archive->ap[nPMTIndex]->lnCurrentFileWritePtr.LowPart;
 	archive->ap[nPMTIndex]->overlappedWrites[archive->ap[nPMTIndex]->nCurrentAsyncIO].OffsetHigh = archive->ap[nPMTIndex]->lnCurrentFileWritePtr.HighPart;
 
-	archive->ap[nPMTIndex]->overlappedWrites[archive->ap[nPMTIndex]->nCurrentAsyncIO].hEvent = (HANDLE)nPMTIndex;
+	archive->ap[nPMTIndex]->overlappedWrites[archive->ap[nPMTIndex]->nCurrentAsyncIO].hEvent = (HANDLE)(LONG_PTR)nPMTIndex;
 	archive->ap[nPMTIndex]->hAsyncOutputFile[archive->ap[nPMTIndex]->nCurrentAsyncIO] = archive->ap[nPMTIndex]->hOutputFile;
 	if (WriteFileEx(archive->ap[nPMTIndex]->hOutputFile,
 					archive->ap[nPMTIndex]->pBlockBuffer[archive->ap[nPMTIndex]->nCurrentAsyncIO],
@@ -1871,7 +1871,7 @@ BOOL LocateXMLTag(char * szXMLBuffer, char * szTag, char * szDestination, int nD
 	if (szEndTagPtr == NULL)
 		return FALSE;
 	szStartTagPtr += lstrlen(szStartTag);
-	nOutputSize = szEndTagPtr - szStartTagPtr;
+	nOutputSize = (int)(szEndTagPtr - szStartTagPtr);
 	if (nOutputSize > nDestinationSize - 1)
 		nOutputSize = nDestinationSize - 1;
 	memcpy(szDestination, szStartTagPtr, nOutputSize);
@@ -2230,7 +2230,7 @@ int ArchiveThumbnailCount()
 	return nArchiveThumbnailCount;
 }
 
-BOOL CALLBACK ArchiveRunDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ArchiveRunDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -4676,17 +4676,17 @@ void GetArchiveFileListDispInfo(LV_DISPINFO *pnmv)
 
 				lstrcpy(szTemp, arcprogs[nArchiveItemIndex].szStartDate);
 				szTemp[4] = '\0';
-				sscanf(szTemp, "%d", &stUTC.wYear);
+				sscanf(szTemp, "%d", (int *)&stUTC.wYear);
 				szTemp[7] = '\0';
-				sscanf(&szTemp[5], "%d", &stUTC.wMonth);
-				sscanf(&szTemp[8], "%d", &stUTC.wDay);
+				sscanf(&szTemp[5], "%d", (int *)&stUTC.wMonth);
+				sscanf(&szTemp[8], "%d", (int *)&stUTC.wDay);
 				
 				lstrcpy(szTemp, arcprogs[nArchiveItemIndex].szStartTime);
 				szTemp[2] = '\0';
-				sscanf(szTemp, "%d", &stUTC.wHour);
+				sscanf(szTemp, "%d", (int *)&stUTC.wHour);
 				szTemp[5] = '\0';
-				sscanf(&szTemp[3], "%d", &stUTC.wMinute);
-				sscanf(&szTemp[6], "%d", &stUTC.wSecond);
+				sscanf(&szTemp[3], "%d", (int *)&stUTC.wMinute);
+				sscanf(&szTemp[6], "%d", (int *)&stUTC.wSecond);
 				SystemTimeToTzSpecificLocalTime(NULL, &stUTC, &stLocal);
 
 				wsprintf(pnmv->item.pszText, "%04d/%02d/%02d %02d:%02d:%02d",
@@ -4827,7 +4827,7 @@ DWORD WINAPI LoadArchiveXMLThread(LPVOID pvarg)
 	return 0;
 }
 
-BOOL CALLBACK ViewArchiveDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ViewArchiveDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
@@ -4908,7 +4908,7 @@ BOOL CALLBACK ViewArchiveDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 					HANDLE hThread;
 
 					TerminateThumbnailPreviewThread();
-					v->nSelectedArchiveProgram = pnmv->lParam;
+					v->nSelectedArchiveProgram = (int)pnmv->lParam;
 					InvalidateRect(hDlg, NULL, TRUE);
 					if (DeletedArchiveItem() == TRUE)
 					{
@@ -5105,7 +5105,7 @@ void ViewArchivedFiles(HWND hWnd)
 	DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_ARCHIVE_VIEW), hWnd, ViewArchiveDlgProc);
 }
 
-BOOL CALLBACK SaveEPGDataDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK SaveEPGDataDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
