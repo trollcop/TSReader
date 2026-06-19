@@ -1,3 +1,5 @@
+#pragma once
+
 void MD__Unload_External_Dll(int Nummer);
 void MD__Send_External_DLL_Menu_Cmd(unsigned int MessageId);
 int MD__Load_External_Dll(HINSTANCE hInstance);
@@ -8,7 +10,7 @@ void MD__ChannelChange(int nProgramNumber,
 					   int nPMTPID, int nECMPID, TCA_System *CA,
 					   char * szChannelName);
 void MD__DataToFilters(BYTE * pData, int * nSize, int * nPacketLength);
-void MD__Shutdown();
+void MD__Shutdown(void);
 void MD__IPDataToFilters(int nPID, BYTE * pData, PMPEIPPACKET pmpeippacket);
 
 

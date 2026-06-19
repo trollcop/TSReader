@@ -3,9 +3,9 @@
 void CopyListControlToClipboard(HWND hListControl, BOOL fAddCR);
 void UpdateMainStatusText(char * szText);
 void UpdateSecondaryStatusText(char * szText);
-BOOL ATSCPIDs();
+BOOL ATSCPIDs(void);
 __int64 DecodeMPEG2PCR(BYTE * bAB);
-int GetTotalPMTChannels();
+int GetTotalPMTChannels(void);
 BOOL IsDuplicateDescriptor(BYTE * pDescriptor1, BYTE * pDescriptor2);
 char * GetExtensionPtr(char * szInputString);
 BOOL FillAddr(PSOCKADDR_IN psin, TCHAR * szHostName, unsigned short usPort);
@@ -23,7 +23,7 @@ BOOL IsSubtitleStream(int nPMTProgramIndex, int nESIndex);
 void GetATSCMultipleString(int nBitBufferIndex, char * szOutputString, int nLength);
 void GetExtendedChannelName(BYTE * pSectionPointer, char * szLongName);
 
-void CursorNormal();
+void CursorNormal(void);
 void CursorWait(HWND hWnd);
 void ConvertDVBBCDTimeOffsets(DWORD dwInput, int * nHour, int * nMinute);
 DWORD ConvertBCD(DWORD nInput);
@@ -35,7 +35,7 @@ void LogDescriptor(int nDescriptorIndex, int nDescriptorTag);
 void ExpireOldEITData(int nServiceID);
 
 void SaveEPGData(PEITEVENT pEITItem, int nChannelNumber);
-void SaveExistingEPGData();
+void SaveExistingEPGData(void);
 
 BOOL myGetSaveFileName(LPOPENFILENAME lpofn);
 void GetLanguageFromDescriptor(char * szLanguage, int nPMTIndex, int nESIndex);
@@ -58,7 +58,7 @@ void SetupScrambledChannelThumbnail(int nESParsePMTIndex, int nESParseESIndex);
 #define CHARTTIMES 6
 #define SAMPLES_REQUIRED CHARTX * CHARTTIMES * 2
 
-void InvalidateThumbnails();
+void InvalidateThumbnails(void);
 void GetVideoArea(int * xStart, int * yStart, int * xWidth, int * yHeight);
 int ReadFromMPEG2ESPipe(BYTE * pBuffer, int nLength, int nES);
 void SaveArchiveThumbnail(char * szStatus, int nES);

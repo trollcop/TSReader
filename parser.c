@@ -12,11 +12,11 @@ extern PVARIABLES v;
 extern BOOL (* PIDManagement) (BOOL fAdd, int nPID, BOOL fTemporary);
 
 void MD__IPDataToFilters(int nPID, BYTE * pData, PMPEIPPACKET pmpeippacket);
-void GetNextECMPID();
+void GetNextECMPID(void);
 void UpdateSkyEPGMap(int nBATID);
 
 // From StreamMonitor.c
-double GetStreamMonitorTime();
+double GetStreamMonitorTime(void);
 
 void ParseATSCCETT(BYTE * pSectionPointer, int nPacketLength)
 {
@@ -82,7 +82,7 @@ void ParseATSCEITPacket(BYTE * pSectionPointer, int nPacketLength, int nEITNumbe
 	int nServiceID;
 	BOOL fUsedThisEITEvent;
 	EITEVENT thiseitevent;
-	PEITEVENT pNewEIT;
+	PEITEVENT pNewEIT = NULL;
 
 	// Ignore all EITs until we have seen the STT and therefore know the GPS offset
 	if (!v->dvbtdt.fSTTSeen)
@@ -151,11 +151,11 @@ void ParseATSCEITPacket(BYTE * pSectionPointer, int nPacketLength, int nEITNumbe
 				thiseitevent.nEventID = event_id;
 				start_time -= v->dvbtdt.nGPSOffset;
 				ConvertATSCDateTime(start_time, &thiseitevent.stStartTime);
-				thiseitevent.stRunTime.wHour = length_in_seconds / 3600;
+				thiseitevent.stRunTime.wHour = (WORD)(length_in_seconds / 3600);
 				length_in_seconds -= thiseitevent.stRunTime.wHour * 3600;
-				thiseitevent.stRunTime.wMinute = length_in_seconds / 60;
+				thiseitevent.stRunTime.wMinute = (WORD)(length_in_seconds / 60);
 				length_in_seconds -= thiseitevent.stRunTime.wMinute * 60;
-				thiseitevent.stRunTime.wSecond = length_in_seconds;
+				thiseitevent.stRunTime.wSecond = (WORD)length_in_seconds;
 				thiseitevent.nSource = nEITNumber;
 
 				{
@@ -164,8 +164,8 @@ void ParseATSCEITPacket(BYTE * pSectionPointer, int nPacketLength, int nEITNumbe
 					while (descriptors_length > 0)
 					{
 						int i;
-						int descriptor_tag = get_bits(BM_PARSER_THREAD, 8);
-						int descriptor_length = get_bits(BM_PARSER_THREAD, 8); 
+						uint8_t descriptor_tag = get_bits(BM_PARSER_THREAD, 8) & 0xff;
+						uint8_t descriptor_length = get_bits(BM_PARSER_THREAD, 8) & 0xff;
 						int k;
 						BYTE bDescriptorBuffer[256];
 
@@ -174,7 +174,8 @@ void ParseATSCEITPacket(BYTE * pSectionPointer, int nPacketLength, int nEITNumbe
 						descriptors_length--; descriptors_length--;
 						for (k = 0; k < descriptor_length; k++)
 						{
-							bDescriptorBuffer[k] = get_bits(BM_PARSER_THREAD, 8); descriptors_length--;
+							bDescriptorBuffer[k] = get_bits(BM_PARSER_THREAD, 8) & 0xff;
+							descriptors_length--;
 						}
 						
 						for (i = 0; i < MAX_EIT_EXTRA_DESCRIPTORS; i++)
@@ -449,7 +450,7 @@ void ParseDVBEITPacket(BYTE * pSectionPointer, int nPacketLength)
 	int nDescriptorsLoopLength;
 	int nVersionNumber;
 	EITEVENT thiseitevent;
-	PEITEVENT pNewEIT;
+	PEITEVENT pNewEIT = NULL;
 
 	if (v->fEPGSaveEnabled == FALSE)
 	{
@@ -576,16 +577,16 @@ void ParseDVBEITPacket(BYTE * pSectionPointer, int nPacketLength)
 
 			ConvertDVBDate(nMJD, &nYear, &nMonth, &nDay);
 			ConvertDVBTime(nStartTime, &nHour, &nMinute, &nSecond);
-			thiseitevent.stStartTime.wYear = nYear;
-			thiseitevent.stStartTime.wMonth = nMonth;
-			thiseitevent.stStartTime.wDay = nDay;
-			thiseitevent.stStartTime.wHour = nHour;
-			thiseitevent.stStartTime.wMinute = nMinute;
-			thiseitevent.stStartTime.wSecond = nSecond;
+			thiseitevent.stStartTime.wYear = (WORD)nYear;
+			thiseitevent.stStartTime.wMonth = (WORD)nMonth;
+			thiseitevent.stStartTime.wDay = (WORD)nDay;
+			thiseitevent.stStartTime.wHour = (WORD)nHour;
+			thiseitevent.stStartTime.wMinute = (WORD)nMinute;
+			thiseitevent.stStartTime.wSecond = (WORD)nSecond;
 			ConvertDVBTime(nDuration, &nHours, &nMinutes, &nSeconds);
-			thiseitevent.stRunTime.wHour = nHours;
-			thiseitevent.stRunTime.wMinute = nMinutes;
-			thiseitevent.stRunTime.wSecond = nSeconds;
+			thiseitevent.stRunTime.wHour = (WORD)nHours;
+			thiseitevent.stRunTime.wMinute = (WORD)nMinutes;
+			thiseitevent.stRunTime.wSecond = (WORD)nSeconds;
 
 			thiseitevent.fFreeCAMode = (pSectionPointer[10] >> 4) & 1;
 			thiseitevent.nRunningStatus = (pSectionPointer[10] >> 5) & 7;
@@ -977,7 +978,7 @@ int ParseDVBBAT(BYTE * pSectionPointer, int nSectionLength)
 			v->bat[nBATIndex].bouquet_descriptors_length = bouquet_descriptors_length;
 			v->bat[nBATIndex].bouquet_descriptors = LocalAlloc(LPTR, bouquet_descriptors_length + 4);
 			for (i = 0; i < bouquet_descriptors_length; i++)
-				v->bat[nBATIndex].bouquet_descriptors[i] = get_bits(BM_PARSER_THREAD, 8);
+				v->bat[nBATIndex].bouquet_descriptors[i] = get_bits(BM_PARSER_THREAD, 8) & 0xff;
 			i = 0;
 			while (i < bouquet_descriptors_length)
 			{
@@ -1032,7 +1033,7 @@ int ParseDVBBAT(BYTE * pSectionPointer, int nSectionLength)
 					v->bat[nBATIndex].batts[nTransportIndex].transport_descriptors_length = transport_descriptors_length;
 					v->bat[nBATIndex].batts[nTransportIndex].transport_descriptors = LocalAlloc(LPTR, v->bat[nBATIndex].batts[nTransportIndex].transport_descriptors_length + 4);
 					for (j = 0; j < transport_descriptors_length; j++)
-						v->bat[nBATIndex].batts[nTransportIndex].transport_descriptors[j] = get_bits(BM_PARSER_THREAD, 8);
+						v->bat[nBATIndex].batts[nTransportIndex].transport_descriptors[j] = get_bits(BM_PARSER_THREAD, 8) & 0xff;
 					j = 0;
 					while (j < transport_descriptors_length)
 					{
@@ -1306,8 +1307,8 @@ void ParseDVBSDTPacket(BYTE * pSectionPointer, int nPacketLength)
 BOOL ParseDCIIPMTTypeThing(BYTE * pSectionPointer, int nPacketLength, int nCurrentProgramNumber)
 {
 	int i;
-	int nPMTIndex;
-	int nProgramInfoLength = 0;
+	int nPMTIndex = 0;
+	uint16_t nProgramInfoLength = 0;
 	BOOL fRetVal = FALSE;
 	BYTE pProgramInfo[256];
 
@@ -1340,26 +1341,26 @@ BOOL ParseDCIIPMTTypeThing(BYTE * pSectionPointer, int nPacketLength, int nCurre
 			int unknown = get_bits(BM_PARSER_THREAD, 8);
 		}
 		{
-			int unknown1 = get_bits(BM_PARSER_THREAD, 3);
-			int PCR_PID = get_bits(BM_PARSER_THREAD, 13);
-			int unknown2 = get_bits(BM_PARSER_THREAD, 8);
-			int descriptor_length = get_bits(BM_PARSER_THREAD, 8);
+			get_bits(BM_PARSER_THREAD, 3); /* unknown1 */
+			uint16_t PCR_PID = get_bits(BM_PARSER_THREAD, 13) & 0x1fff;
+			get_bits(BM_PARSER_THREAD, 8); /* unknown2 */
+			uint8_t descriptor_length = get_bits(BM_PARSER_THREAD, 8) & 0xff;
 			nProgramInfoLength = descriptor_length;
 			for (i = 0; i < descriptor_length; i++)
 			{
-				pProgramInfo[i] = get_bits(BM_PARSER_THREAD, 8);
+				pProgramInfo[i] = get_bits(BM_PARSER_THREAD, 8) & 0xff;
 			}
 			do
 			{
-				int stream_type = get_bits(BM_PARSER_THREAD, 8);
+				uint8_t stream_type = get_bits(BM_PARSER_THREAD, 8) & 0xff;
 				if (   stream_type != 0x02 && stream_type != 0x80
 					&& stream_type != 0x81 && stream_type != 0x86)
 					break;
 				{
-					int unknown1 = get_bits(BM_PARSER_THREAD, 3);
-					int stream_PID = get_bits(BM_PARSER_THREAD, 13);
-					int unknown2 = get_bits(BM_PARSER_THREAD, 8);
-					int descriptors_loop_length = get_bits(BM_PARSER_THREAD, 8);
+					get_bits(BM_PARSER_THREAD, 3); /* unknown1 */
+					uint16_t stream_PID = get_bits(BM_PARSER_THREAD, 13) & 0x1fff;
+					get_bits(BM_PARSER_THREAD, 8); /* unknown2 */
+					uint8_t descriptors_loop_length = get_bits(BM_PARSER_THREAD, 8) & 0xff;
 
 					// find out offset in the list of channels in the pat structure
 					nPMTIndex = -1;
@@ -1396,7 +1397,7 @@ BOOL ParseDCIIPMTTypeThing(BYTE * pSectionPointer, int nPacketLength, int nCurre
 										int j;
 
 										for (j = 0; j < descriptors_loop_length; j++)
-											v->pat.pmt[nPMTIndex].es[i].pDescriptors[j] = get_bits(BM_PARSER_THREAD, 8);
+											v->pat.pmt[nPMTIndex].es[i].pDescriptors[j] = get_bits(BM_PARSER_THREAD, 8) & 0xff;
 									}
 								}
 								break;
@@ -1446,11 +1447,11 @@ BOOL ParseDCIIProgramNameMessage(BYTE * pSectionPointer, int nPacketLength, int 
 		int program_name_length = get_bits(BM_PARSER_THREAD, 8);
 
 		for (i = 0; i < program_name_length; i++)
-			program_name[i] = get_bits(BM_PARSER_THREAD, 8);
+			program_name[i] = get_bits(BM_PARSER_THREAD, 8) & 0xff;
 		{
 			int alternate_program_name_length = get_bits(BM_PARSER_THREAD, 8);
 			for (i = 0; i < alternate_program_name_length; i++)
-				alternate_program_name[i] = get_bits(BM_PARSER_THREAD, 8);
+				alternate_program_name[i] = get_bits(BM_PARSER_THREAD, 8) & 0xff;
 		}
 	}
 
@@ -1459,12 +1460,13 @@ BOOL ParseDCIIProgramNameMessage(BYTE * pSectionPointer, int nPacketLength, int 
 
 BOOL ParsePMTPacket(BYTE * pSectionPointer, int nPacketLength, int nCurrentProgramNumber, int nPMTListenIndex)
 {
-	int nTableID, nSectionLength;
-	int nProgramNumber;
-	int nPCRPID;
+	uint8_t nTableID;
+	uint16_t nSectionLength;
+	uint16_t nProgramNumber;
+	uint16_t nPCRPID;
 	BOOL fRetVal = FALSE;
-	BYTE * pProgramInfo;
-	BYTE * pCIBase;
+	BYTE *pProgramInfo = NULL;
+	BYTE *pCIBase = NULL;
 	int nCILength;
 
 #ifdef DEBUG_MESSAGES
@@ -1543,8 +1545,8 @@ BOOL ParsePMTPacket(BYTE * pSectionPointer, int nPacketLength, int nCurrentProgr
 	}
 	do
 	{
-		int nProgramInfoLength;
-		int nVersionNumber;
+		uint16_t nProgramInfoLength;
+		uint8_t nVersionNumber;
 		int nPMTIndex = -1;
 
 		nSectionLength = ((pSectionPointer[1] << 8) + pSectionPointer[2]) & 0xfff;
@@ -1582,11 +1584,11 @@ BOOL ParsePMTPacket(BYTE * pSectionPointer, int nPacketLength, int nCurrentProgr
 		// we can now process the ES stream pointers
 		do
 		{
-			int nDescriptorTag;
-			int nDescriptorTagLength;
-			int nStreamType = pSectionPointer[0];
-			int nESPID = ((pSectionPointer[1] << 8) + pSectionPointer[2]) & 0x1fff;
-			int nESInfoLength = ((pSectionPointer[3] << 8) + pSectionPointer[4]) & 0xff;
+			uint8_t nDescriptorTag;
+			uint8_t nDescriptorTagLength;
+			uint8_t nStreamType = pSectionPointer[0];
+			uint16_t nESPID = ((pSectionPointer[1] << 8) + pSectionPointer[2]) & 0x1fff;
+			uint16_t nESInfoLength = ((pSectionPointer[3] << 8) + pSectionPointer[4]) & 0xff;
 
 			nSectionLength -= 5;
 			nPacketLength -= 5;
@@ -1765,19 +1767,19 @@ void ParseIPPacket(BYTE * pSectionPointer, int nPacketLength, int nPID, int nBuf
 			return;
 
 		// MPE header - 9 or 17 bytes
-		mpe.MAC_Address[6 - 1] = get_bits(BM_PARSER_THREAD, 8);
-		mpe.MAC_Address[5 - 1] = get_bits(BM_PARSER_THREAD, 8);
-		reserved = get_bits(BM_PARSER_THREAD, 2);
-		mpe.payload_scrambling_control = get_bits(BM_PARSER_THREAD, 2);
-		mpe.address_scrambling_control = get_bits(BM_PARSER_THREAD, 2);
-		mpe.LLC_SNAP_flag = get_bits(BM_PARSER_THREAD, 1);
-		mpe.current_next_indicator = get_bits(BM_PARSER_THREAD, 1);
-		mpe.section_number = get_bits(BM_PARSER_THREAD, 8);
-		mpe.last_section_number = get_bits(BM_PARSER_THREAD, 8);
-		mpe.MAC_Address[4 - 1] = get_bits(BM_PARSER_THREAD, 8);
-		mpe.MAC_Address[3 - 1] = get_bits(BM_PARSER_THREAD, 8);
-		mpe.MAC_Address[2 - 1] = get_bits(BM_PARSER_THREAD, 8);
-		mpe.MAC_Address[1 - 1] = get_bits(BM_PARSER_THREAD, 8);
+		mpe.MAC_Address[6 - 1] = get_bits(BM_PARSER_THREAD, 8) & 0xff;
+		mpe.MAC_Address[5 - 1] = get_bits(BM_PARSER_THREAD, 8) & 0xff;
+		reserved = get_bits(BM_PARSER_THREAD, 2) & 3;
+		mpe.payload_scrambling_control = get_bits(BM_PARSER_THREAD, 2) & 3;
+		mpe.address_scrambling_control = get_bits(BM_PARSER_THREAD, 2) & 3;
+		mpe.LLC_SNAP_flag = get_bits(BM_PARSER_THREAD, 1) & 1;
+		mpe.current_next_indicator = get_bits(BM_PARSER_THREAD, 1) & 1;
+		mpe.section_number = get_bits(BM_PARSER_THREAD, 8) & 0xff;
+		mpe.last_section_number = get_bits(BM_PARSER_THREAD, 8) & 0xff;
+		mpe.MAC_Address[4 - 1] = get_bits(BM_PARSER_THREAD, 8) & 0xff;
+		mpe.MAC_Address[3 - 1] = get_bits(BM_PARSER_THREAD, 8) & 0xff;
+		mpe.MAC_Address[2 - 1] = get_bits(BM_PARSER_THREAD, 8) & 0xff;
+		mpe.MAC_Address[1 - 1] = get_bits(BM_PARSER_THREAD, 8) & 0xff;
 		if (mpe.LLC_SNAP_flag == 1)
 		{
 			llc_snap_offset = 8;
@@ -1816,9 +1818,9 @@ void ParseIPPacket(BYTE * pSectionPointer, int nPacketLength, int nPID, int nBuf
 			mpe.IPv6Header_NextHeader = get_bits(BM_PARSER_THREAD, 8);
 			mpe.IPv6Header_HopLimit= get_bits(BM_PARSER_THREAD, 8);
 			for (i = 0; i < 16; i++)
-				mpe.IPv6Header_SourceAddress[i] = get_bits(BM_PARSER_THREAD, 8);
+				mpe.IPv6Header_SourceAddress[i] = get_bits(BM_PARSER_THREAD, 8) & 0xff;
 			for (i = 0; i < 16; i++)
-				mpe.IPv6Header_DestinationAddress[i] = get_bits(BM_PARSER_THREAD, 8);
+				mpe.IPv6Header_DestinationAddress[i] = get_bits(BM_PARSER_THREAD, 8) & 0xff;
 			if (mpe.IPv6Header_PayloadLength == 0)
 				goto ParseIPPacket_NextSection;		// can't do much with that now
 			break;
@@ -2106,10 +2108,11 @@ ParseIPPacket_NextSection:
 
 BOOL ParsePATPacket(BYTE * pSectionPointer, int nPacketLength)
 {
-	int nTableID, nSectionLength;
-	int nSectionNumber, nLastSectionNumber;
-	int nVersionNumber;
-	int nTransportStreamID;
+	uint8_t nTableID;
+	uint16_t nSectionLength;
+	uint8_t nSectionNumber, nLastSectionNumber;
+	uint8_t nVersionNumber;
+	uint16_t nTransportStreamID;
 	BOOL fRetVal = TRUE;
 
 #ifdef DEBUG_MESSAGES
@@ -2223,7 +2226,7 @@ BOOL ParsePATPacket(BYTE * pSectionPointer, int nPacketLength)
 	pSectionPointer += 8;
 	do
 	{
-		int nProgramNumber, nPMTPID;
+		uint16_t nProgramNumber, nPMTPID;
 		int i;
 
 		nProgramNumber = (pSectionPointer[0] << 8) + pSectionPointer[1];
@@ -2311,7 +2314,7 @@ BOOL ParsePSIPPacket(BYTE * pSectionPointer, int nPacketLength)
 					//nPacketLength -= 11;
 					for (table = 0; table < tables_defined; table++)
 					{
-						BYTE * pDescriptorsPtr;
+						BYTE *pDescriptorsPtr = NULL;
 						int table_type = pSectionPointer[0] << 8 | pSectionPointer[1];
 						int table_type_PID = (pSectionPointer[2] << 8 | pSectionPointer[3]) & 0x1fff;
 						int table_type_descriptors_length = (pSectionPointer[9] << 8 | pSectionPointer[10]) & 0xfff;
@@ -2622,7 +2625,7 @@ BOOL ParsePSIPPacket(BYTE * pSectionPointer, int nPacketLength)
 							for (k = 0; k < descriptors_length; k++)
 							{
 								if (!fAlreadyGotThisOne)
-									v->cvct[nCVCTIndex].CVCTEntry[j].pDescriptors[k] = get_bits(BM_PARSER_THREAD, 8);
+									v->cvct[nCVCTIndex].CVCTEntry[j].pDescriptors[k] = get_bits(BM_PARSER_THREAD, 8) & 0xff;
 								else
 									get_bits(BM_PARSER_THREAD, 8);
 							}
@@ -2644,7 +2647,7 @@ BOOL ParsePSIPPacket(BYTE * pSectionPointer, int nPacketLength)
 						v->cvct[nCVCTIndex].additional_descriptors_length = additional_descriptors_length;
 						v->cvct[nCVCTIndex].pAdditionalDescriptors = LocalAlloc(LPTR, additional_descriptors_length + 4);
 						for(j = 0; j < additional_descriptors_length; j++)
-							v->cvct[nCVCTIndex].pAdditionalDescriptors[j] = get_bits(BM_PARSER_THREAD, 8);
+							v->cvct[nCVCTIndex].pAdditionalDescriptors[j] = get_bits(BM_PARSER_THREAD, 8) & 0xff;
 						j = 0;
 						while (j < additional_descriptors_length)
 						{
@@ -2771,9 +2774,10 @@ BOOL ParsePSIPPacket(BYTE * pSectionPointer, int nPacketLength)
 
 BOOL ParseCATPacket(BYTE * pSectionPointer, int nPacketLength)
 {
-	int nTableID, nSectionLength;
-	int nSectionNumber, nLastSectionNumber;
-	int nVersionNumber;
+	uint8_t nTableID;
+	uint16_t nSectionLength;
+	uint8_t nSectionNumber, nLastSectionNumber;
+	uint8_t nVersionNumber;
 
 	nTableID = pSectionPointer[0];
 	if (nTableID != 1)
@@ -2807,7 +2811,7 @@ BOOL ParseCATPacket(BYTE * pSectionPointer, int nPacketLength)
 	while (nSectionLength > 0)
 	{
 		// Get data from each descriptor
-		int nDescriptorLength, nDescriptorTag;
+		uint8_t nDescriptorLength, nDescriptorTag;
 		int i;
 
 		nDescriptorTag = pSectionPointer[0];
@@ -2822,7 +2826,7 @@ BOOL ParseCATPacket(BYTE * pSectionPointer, int nPacketLength)
 				memcpy(v->cat.pDescriptor[i], pSectionPointer, nDescriptorLength);
 				if (*pSectionPointer == 9)	// CA descriptor
 				{
-					int nEMMPID = (*(pSectionPointer + 4) << 8 | *(pSectionPointer + 5) ) & 0x1fff;
+					uint16_t nEMMPID = (*(pSectionPointer + 4) << 8 | *(pSectionPointer + 5) ) & 0x1fff;
 					PIDManagement(TRUE, nEMMPID, FALSE);					
 				}
 				break;
@@ -2878,7 +2882,7 @@ void ParseDCIINetworkPacket(BYTE * pSectionPointer, int nPacketLength)
 				int number_of_records = pSectionPointer[5];
 				int transmission_medium = pSectionPointer[6] >> 4;
 				int table_type = pSectionPointer[6] & 0x0f;
-				int satellite_ID;
+				int satellite_ID = 0;
 				int i;
 				
 				pSectionPointer += 7;		// point to satellite ID or the record
@@ -3222,7 +3226,7 @@ void ParseDCIINetworkPacket(BYTE * pSectionPointer, int nPacketLength)
 		case 0xc4:		// Virtual Channel
 			set_buf(BM_PARSER_THREAD, pSectionPointer, 0, FALSE);
 			{
-				int message_type_version;
+				int message_type_version = 0;
 
 				int message_type = get_bits(BM_PARSER_THREAD, 8);
 				int MPEG_table_format = get_bits(BM_PARSER_THREAD, 1);
@@ -3350,7 +3354,7 @@ void ParseDVBRSTPacket(BYTE * pSectionPointer, int nPacketLength)
 		int reserved_future_use1 = get_bits(BM_PARSER_THREAD, 1);
 		int reserved = get_bits(BM_PARSER_THREAD, 2);
 		int section_length = get_bits(BM_PARSER_THREAD, 12);
-		if (table_id != 0x71 || table_id != 0x72)
+		if (table_id != 0x71 && table_id != 0x72)
 		{
 			v->nSIParserTableErrors[SI_PARSER_STATS_RST]++;
 			return;
@@ -3544,7 +3548,7 @@ void ParseDVBTDTPacket(BYTE * pSectionPointer, int nPacketLength)
 						v->dvbtot.pDescriptors = LocalAlloc(LPTR, descriptor_loop_length + 4);
 						v->dvbtot.nDescriptorsLength = descriptor_loop_length;
 						for (i = 0; i < descriptor_loop_length; i++)
-							v->dvbtot.pDescriptors[i] = get_bits(BM_PARSER_THREAD, 8);
+							v->dvbtot.pDescriptors[i] = get_bits(BM_PARSER_THREAD, 8) & 0xff;
 						i = 0;
 						while (i < descriptor_loop_length)
 						{
@@ -3573,12 +3577,13 @@ void ParseDVBTDTPacket(BYTE * pSectionPointer, int nPacketLength)
 	
 void ParseDVBNITPacket(BYTE * pSectionPointer, int nPacketLength)
 {
-	int nSectionLength, nTableID;
-	int nDescriptorsLoopLength;
-	int nTransportStreamLoopLength;
-	int nNetworkID;
-	int nNetworkDescriptorsLength;
-	int nVersionNumber;
+	uint8_t nTableID;
+	uint16_t nSectionLength;
+	uint16_t nDescriptorsLoopLength;
+	uint16_t nTransportStreamLoopLength;
+	uint16_t nNetworkID;
+	uint16_t nNetworkDescriptorsLength;
+	uint8_t nVersionNumber;
 	BYTE * pNetworkDescriptorPtr;
 	char szNetworkName[256];
 
@@ -3660,7 +3665,7 @@ void ParseDVBNITPacket(BYTE * pSectionPointer, int nPacketLength)
 			do
 			{
 				// Get data from each descriptor
-				int nDescriptorLength, nDescriptorTag;
+				uint8_t nDescriptorLength, nDescriptorTag;
 
 				nDescriptorTag = pSectionPointer[0];
 				nDescriptorLength = pSectionPointer[1] + 2;
@@ -3671,12 +3676,12 @@ void ParseDVBNITPacket(BYTE * pSectionPointer, int nPacketLength)
 				case 0x40: // network name descriptor
 					{
 						int k;
-						char * pText;
+						BYTE *pText;
 
 						memset(szNetworkName, 0, sizeof(szNetworkName));
 						pText = &pSectionPointer[2];
 						for (k = 0; k < nDescriptorLength - 2; k++)
-							szNetworkName[k] = *pText++;
+							szNetworkName[k] = (char)(*pText++);
 						break;
 					}
 				case 0x4a:
@@ -3738,9 +3743,9 @@ void ParseDVBNITPacket(BYTE * pSectionPointer, int nPacketLength)
 			{
 				do
 				{
-					int nTransportStreamID = pSectionPointer[0] << 8 | pSectionPointer[1];
-					int nOriginalNetworkID = pSectionPointer[2] << 8 | pSectionPointer[3];
-					int nTransportDescriptorsLength = (pSectionPointer[4] << 8 | pSectionPointer[5]) & 0xfff;
+					uint16_t nTransportStreamID = pSectionPointer[0] << 8 | pSectionPointer[1];
+					uint16_t nOriginalNetworkID = pSectionPointer[2] << 8 | pSectionPointer[3];
+					uint16_t nTransportDescriptorsLength = (pSectionPointer[4] << 8 | pSectionPointer[5]) & 0xfff;
 					int nNITIndex;
 					BOOL fAddThisOne = FALSE;
 
@@ -3799,7 +3804,7 @@ void ParseDVBNITPacket(BYTE * pSectionPointer, int nPacketLength)
 						do
 						{
 							// Get data from each descriptor
-							int nDescriptorLength, nDescriptorTag;
+							uint8_t nDescriptorLength, nDescriptorTag;
 
 							nDescriptorTag = pSectionPointer[0];
 							nDescriptorLength = pSectionPointer[1] + 2;
@@ -3845,6 +3850,14 @@ void ParseDVBNITPacket(BYTE * pSectionPointer, int nPacketLength)
 									v->pNITData[nNITIndex]->dvbt.nGuardInterval = (pSectionPointer[8] >> 3) & 3;
 									v->pNITData[nNITIndex]->dvbt.nTransmissionMode = (pSectionPointer[8] >> 1) & 3;
 									v->pNITData[nNITIndex]->dvbt.nOtherFrequencyFlag = pSectionPointer[8] & 1;
+									goto ParseDVBNIT_AddDescriptor;
+									break;
+								case 0xfa: /* ISDB Terrestrial Delivery System */
+									v->pNITData[nNITIndex]->nType = NIT_ISDBT;
+									v->pNITData[nNITIndex]->isdbt.nAreaCode = (uint16_t)(pSectionPointer[2] << 4) | (pSectionPointer[3] >> 4) & 0xf;
+									v->pNITData[nNITIndex]->isdbt.nGuardInterval = (pSectionPointer[3] >> 2) & 3;
+									v->pNITData[nNITIndex]->isdbt.nTransmissionMode = (pSectionPointer[3]) & 3;
+									v->pNITData[nNITIndex]->nFrequency = (int)((pSectionPointer[4] << 8 | pSectionPointer[5]) * (1.0f / 7.0f) * 100000.0f);
 									goto ParseDVBNIT_AddDescriptor;
 									break;
 								case 0x83:	// logical channel number
@@ -3957,7 +3970,7 @@ void ParseDCIIECMPacket(BYTE * pSection, int nLength)
 					int i;
 					int junk = get_bits(BM_PARSER_THREAD, 16);
 					for (i = 0; i < program_name_length - 2; i++)
-						szProgramName[i] = get_bits(BM_PARSER_THREAD, 8);
+						szProgramName[i] = get_bits(BM_PARSER_THREAD, 8) & 0xff;
 					szProgramName[i] = '\0';
 					if (lstrlen(szProgramName))
 					{
@@ -4031,13 +4044,13 @@ void QuickParseUserData(BYTE * pData, int user_data_len, int nESParsePMTIndex, i
 		{
 			case 0x47413934:	// ATSC
 			{
-				BYTE user_data_type_code = get_bits(BM_MPEG2_THREAD + nES, 8);
+				uint8_t user_data_type_code = get_bits(BM_MPEG2_THREAD + nES, 8) & 0xff;
 				user_data_len -= 1;
 				if (user_data_type_code == 0x03)
 				{
-					BOOL process_em_data_flag = get_bits(BM_MPEG2_THREAD + nES, 1);
-					BOOL process_cc_data_flag = get_bits(BM_MPEG2_THREAD + nES, 1);
-					BOOL additional_data_flag = get_bits(BM_MPEG2_THREAD + nES, 1);
+					BOOL process_em_data_flag = get_bits(BM_MPEG2_THREAD + nES, 1) & 1;
+					BOOL process_cc_data_flag = get_bits(BM_MPEG2_THREAD + nES, 1) & 1;
+					BOOL additional_data_flag = get_bits(BM_MPEG2_THREAD + nES, 1) & 1;
 					int cc_count = get_bits(BM_MPEG2_THREAD + nES, 5);
 					int em_data = get_bits(BM_MPEG2_THREAD + nES, 8);
 					user_data_len -= 2;

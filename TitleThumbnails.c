@@ -85,7 +85,7 @@ void GetTitleString(char * szItem, int nBufferIndex, int nLength)
 {
 	while (nLength)
 	{
-		*szItem++ = get_bits(nBufferIndex, 8);
+		*szItem++ = get_bits(nBufferIndex, 8) & 0xff;
 		nLength--;
 	};
 	*szItem = '\0';

@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <stdint.h>
 
 #include "ATSC_huffman.h"
 #include "bcdmux.h"
@@ -8,7 +9,7 @@ void ATSCHuffmanDecode(int nBitBufferIndex, int type, int bytes, char * outtext)
 	int root = 0;
 	int offset = 0;
 	int position = 0;
-	int value = 1;
+	uint8_t value = 1;
 	int bits = bytes * 8;
 	unsigned char previous_byte = 0;
 	unsigned char string[4096];
@@ -57,7 +58,7 @@ void ATSCHuffmanDecode(int nBitBufferIndex, int type, int bytes, char * outtext)
 		if (value == 27)
 		{
 			//field int fullByte:8;			
-			value = get_bits(nBitBufferIndex, 8);
+			value = get_bits(nBitBufferIndex, 8) & 0xff;
 			bits -= 8;
 		}
 		previous_byte = string[position++] = value;

@@ -55,7 +55,7 @@ typedef enum
 
 #define MAX_BUFFERED_PICTURE_DATA 512
 
-void InitCCDecoder();
+void InitCCDecoder(void);
 int GetCCDataType(int code);
 
 typedef struct tag_ClosedCaptionVariables

@@ -570,18 +570,35 @@ typedef struct _tagNITDVBCEntry
 	int nFECInner;
 } NITDVBCENTRY, *PNITDVBCENTRY;
 
+typedef struct _tagNITISDBTEntry {
+	uint16_t nAreaCode;
+	uint8_t nGuardInterval;
+	uint8_t nTransmissionMode;
+} NITISDBTENTRY, *PNITISDBTENTRY;
+
+typedef struct _tagNITISDBSEntry {
+	/* TODO */
+	uint8_t nGuardInterval;
+	uint8_t nTransmissionMode;
+} NITISDBSENTRY, *PNITISDBSENTRY;
+
+typedef enum _tagNITType {
+	NIT_DVBS = 1,
+	NIT_DVBT,
+	NIT_DVBC,
+	NIT_ISDBT,
+	NIT_ISDBS,
+} NITType;
+
 typedef struct _tagNITEntry
 {
-#define NIT_DVBS 1
-#define NIT_DVBT 2
-#define NIT_DVBC 3
-	int nType;
+	NITType nType;
 	int nNetworkID;
-	int nTransportStreamID;
-	int nOriginalNetworkID;
+	uint16_t nTransportStreamID;
+	uint16_t nOriginalNetworkID;
 	int nFrequency;
 	int nNetworkDescriptorsLength;
-	int nVersionNumber;
+	uint8_t nVersionNumber;
 	BOOL fThisTS;
 	HTREEITEM hNITTreeItem;
 	BYTE * pExtraDescriptors[MAX_NIT_EXTRA_DESCRIPTORS];
@@ -589,7 +606,9 @@ typedef struct _tagNITEntry
 	NITDVBSENTRY dvbs;
 	NITDVBTENTRY dvbt;
 	NITDVBCENTRY dvbc;
-	char szNetworkName[128];	
+	NITISDBTENTRY isdbt;
+	NITISDBSENTRY isdbs;
+	char szNetworkName[256];
 } NITENTRY, *PNITENTRY;
 
 typedef struct _tagParsedMPEGVideo
@@ -692,9 +711,9 @@ typedef struct _tagAudioSamples
 
 typedef struct _tagESLIST
 {
-	int nStreamType;
-	int nESPID;
-	int nDescriptorsLength;
+	uint8_t nStreamType;
+	uint16_t nESPID;
+	uint16_t nDescriptorsLength;
 	int nParseType;
 	int nVideoWidth, nVideoHeight;
 	int nTeletextServices;
@@ -711,12 +730,12 @@ typedef struct _tagESLIST
 
 typedef struct _tagPMT
 {
-	int nProgramNumber;
-	int nPMTPID;
-	int nPCRPID;
+	uint16_t nProgramNumber;
+	uint16_t nPMTPID;
+	uint16_t nPCRPID;
 	int nPMTPollCounter;
-	int nProgramInfoLength;	
-	int nVersionNumber;
+	uint16_t nProgramInfoLength;	
+	uint8_t nVersionNumber;
 	BOOL fSetupSDTName;
 	BOOL fCompleted;
 	BOOL fPostTreeAddSelect;
@@ -728,8 +747,8 @@ typedef struct _tagPMT
 
 typedef struct _tagPAT
 {
-	int nTransportStreamID;
-	int nVersionNumber;
+	uint16_t nTransportStreamID;
+	uint8_t nVersionNumber;
 	PMT pmt[MAX_PAT_ENTRIES];
 	HTREEITEM hPATTreeItem;
 	BYTE * pRawPAT;
@@ -739,8 +758,8 @@ typedef struct _tagPMTListen
 {
 	BOOL fOutstanding;
 	int nPMTPointerKludge;
-	int nPID;
-	int nProgramNumber;
+	uint16_t nPID;
+	uint16_t nProgramNumber;
 	int nFillPtr;
 	DWORD dwStartTickCount;
 	BYTE bSectionBuffer[1024];
@@ -748,7 +767,7 @@ typedef struct _tagPMTListen
 
 typedef struct _tagCAT
 {
-	int nVersionNumber;
+	uint8_t nVersionNumber;
 	BYTE * pDescriptor[MAX_CAT_DESCRIPTORS];
 	HTREEITEM hCATTreeItem;
 } CAT, *PCAT;
@@ -1137,7 +1156,7 @@ typedef struct _tagESParserInfo
 typedef struct _tagFwdFunctions
 {
 	BOOL (* Fwd_Init) (HWND hWnd, int nPacketLength, int nBitRate);
-	BOOL (* Fwd_DeInit) ();
+	BOOL (* Fwd_DeInit) (void);
 	BOOL (* Fwd_Data) (BYTE * pBuffer, int nLength);
 	BOOL (* Fwd_GetDescription) (char * szDeviceNameBuffer);
 } FWDFUNCTIONS, *PFWDFUNCTIONS;
@@ -2011,10 +2030,10 @@ extern "C" {
 void __cdecl SourceHelper_Init(PVARIABLES pv);
 void __cdecl SourceHelper_CheckContinuity(BYTE * pBuffer, int nLength);
 int __cdecl  SourceHelper_ReadLine(HANDLE hFile, char * szBuffer, int nMaxLength);
-BOOL __cdecl SourceHelper_InitSerialControl();
-BOOL __cdecl SourceHelper_DeInitSerialControl();
+BOOL __cdecl SourceHelper_InitSerialControl(void);
+BOOL __cdecl SourceHelper_DeInitSerialControl(void);
 BOOL __cdecl SourceHelper_SetChannelSerialControl(int nSID, int nTSID, int nNID);
-void __cdecl SourceHelper_ResetFirstTimeFlag();
+void __cdecl SourceHelper_ResetFirstTimeFlag(void);
 BOOL __cdecl SourceHelper_DiSEqCPositionerDialog(HWND hDlg);
 void __cdecl SourceHelper_ImportSatelliteList(HWND hDlg, int nImportFormat);
 void __cdecl SourceHelper_CalculateSwitchParameters(int nFrequency, int nPolarity, int nDiSEqCInput, int * nLOF, BOOL * f22KHz, int * nVoltage);
@@ -2022,7 +2041,7 @@ void __cdecl SourceHelper_CalculateSwitchParameters(int nFrequency, int nPolarit
 BOOL __cdecl TSReader_SendDiSEqC(BYTE * bCommand, int nLength);
 
 BOOL __cdecl SourceHelper_CRC_Check(BYTE * pU8section, DWORD U16length);
-void __cdecl SourceHelper_CRC_Init();
+void __cdecl SourceHelper_CRC_Init(void);
 DWORD __cdecl SourceHelper_CRC_Calc(BYTE * pU8section, DWORD U16length);
 
 void __cdecl SourceHelper_GetTSReaderEXEDirectory(HINSTANCE hInstance, char * szCurrentDir, int nCurrentDirLength);
@@ -2033,19 +2052,19 @@ void __cdecl SourceHelper_GetTSReaderEXEDirectory(HINSTANCE hInstance, char * sz
 
 typedef int (* td_UDPSender_GetDevices) (int nIndex, char * szName, char * szDescription);
 typedef int (* td_UDPSender_OpenDevice) (char * szName);
-typedef int (* td_UDPSender_CloseDevice) ();
+typedef int (* td_UDPSender_CloseDevice) (void);
 typedef int (* td_UDPSender_SendPacket) (BYTE * pData, int nLength);
 extern int (*UDPSender_GetDevices) (int nIndex, char * szName, char * szDescription);
 extern int (*UDPSender_OpenDevice) (char * szName);
-extern int (*UDPSender_CloseDevice) ();
+extern int (*UDPSender_CloseDevice) (void);
 extern int (*UDPSender_SendPacket) (BYTE * pData, int nLength);
 
 typedef BOOL (* td_Init) (PSOURCESTRUCT pss);
-typedef BOOL (* td_DeInit) ();
-typedef BOOL (* td_Start) ();
-typedef BOOL (* td_Stop) ();
+typedef BOOL (* td_DeInit) (void);
+typedef BOOL (* td_Start) (void);
+typedef BOOL (* td_Stop) (void);
 typedef BOOL (* td_TuneDialog) (HWND hWnd);
-typedef BOOL (* td_Tune) ();
+typedef BOOL (* td_Tune) (void);
 typedef BOOL (* td_GetDescription) (char * szDescription, char * szCommandLineParameters, BOOL * fCanBeStopped, int * nMaxPIDs, DWORD * dwCapabilities);
 typedef BOOL (* td_ParseCommandLine) (PSOURCESTRUCT pss, char * szCommandLine, BOOL fQuiet);
 typedef BOOL (* td_PIDManagement) (BOOL fAdd, int nPID, BOOL fTemporary);
@@ -2055,7 +2074,10 @@ typedef BOOL (* td_GetSignalString) (char * szString);
 typedef int  (* td_GetSyncLossCount) (BOOL fReset);
 typedef int  (* td_GetRetuneCount) (BOOL fReset);
 typedef BOOL (* td_SendDiSEqC) (BYTE * bCommand, int nLength);
+typedef BOOL (* td_GetMiscString) (char *szString);
 
+/* serial receiver control typedef */
+typedef char *(*td_GetReceiverName) (void);
 
 
 //////

@@ -144,20 +144,20 @@ BOOL __cdecl SourceHelper_TCPTuneDialog(HWND hWnd);
 
 // Misc functions
 BOOL __cdecl SourceHelper_TuneSerialControl(char * szTunerString);
-void __cdecl SourceHelper_SerialControlStart();
-void __cdecl SourceHelper_SerialControlStop();
+void __cdecl SourceHelper_SerialControlStart(void);
+void __cdecl SourceHelper_SerialControlStop(void);
 BOOL __cdecl SourceHelper_SerialControlGetSignal(char * szSignalString);
 BYTE __cdecl SourceHelper_ReceiveReceiverSerial(int * nTimeout);
 int  __cdecl SourceHelper_SendReceiverSerial(unsigned char * lpByte, DWORD dwBytesToWrite);
 
-BOOL __cdecl SourceHelper_GetQAMHRCStatus();
+BOOL __cdecl SourceHelper_GetQAMHRCStatus(void);
 BOOL __cdecl SourceHelper_myGetOpenFileName(LPOPENFILENAME lpofn);
 BOOL __cdecl SourceHelper_GetTSReaderVersion(int * nMajor, int * nMinor, int * nBuild);
 BOOL __cdecl SourceHelper_GetProfileName(char * szBuffer);
 
 // Sync functions
 BOOL __cdecl SourceHelper_StartSyncThread(PSOURCESTRUCT pss, BOOL fDSSMode);
-BOOL __cdecl SourceHelper_StopSyncThread();
+BOOL __cdecl SourceHelper_StopSyncThread(void);
 BOOL __cdecl SourceHelper_SyncData(BYTE * pData, int nLength);
 int  __cdecl SourceHelper_GetSyncLossCount(BOOL fReset);
 

@@ -19,7 +19,7 @@
 #endif
 
 extern PVARIABLES v;
-extern BOOL CheckForFileSplit();
+extern BOOL CheckForFileSplit(void);
 
 // ------------------------------------------------------------------------------------
 
@@ -243,9 +243,9 @@ int write_system(int videostream, int vidbscl, int vidbsize, int audiostream, in
 	return (int)dwWritten;
 }
 
-BOOL pad_buffer(int pad)
+static BOOL pad_buffer(size_t pad)
 {
-	int i;
+	size_t i;
 	DWORD dwWritten;
 	unsigned char padbyte = 0xff;
 	char buf[6];
@@ -253,13 +253,13 @@ BOOL pad_buffer(int pad)
 	pad -= 6;
 
 	buf[0] = '\x0'; buf[1] = '\x0'; buf[2] = '\x1'; buf[3] = '\xbe';
-	buf[4] = pad >> 8; buf[5] = pad & 0xff;
+	buf[4] = (pad >> 8) & 0xff;
+	buf[5] = pad & 0xff;
 
 	if (WriteFileAndUpdateCounters(v->hRecordFile, buf, 6, &dwWritten, NULL) == FALSE)
 		return FALSE;
 
-	for (i = 0; i < pad; i++)
-	{
+	for (i = 0; i < pad; i++) {
 		if (WriteFileAndUpdateCounters(v->hRecordFile, &padbyte, 1, &dwWritten, NULL) == FALSE)
 			return FALSE;
 	}
@@ -374,7 +374,7 @@ BOOL write_file_header(int vidstreamid, int audstreamid)
 unsigned char * packetbuf[2];
 BOOL foundfirst[2];
 BOOL skipbad[2];
-int streamid[2];
+BYTE streamid[2];
 int packetpos[2];
 BYTE audiosync[2];
 BYTE audiosyncmask[2];
@@ -384,7 +384,7 @@ __int64 PCR;
 __int64 first_video_PCR;
 BOOL doing_iframe;
 
-int PS__StartWriting()
+int PS__StartWriting(void)
 {
 	//if (v->nRecordVideoPID != v->nRecordPCRPID)
 	//{
@@ -429,7 +429,7 @@ int PS__StartWriting()
 	return 0;	
 }
 
-int PS__StopWriting()
+int PS__StopWriting(void)
 {
 	DWORD dwWritten;
 
@@ -484,7 +484,7 @@ int PS__TranslateToProgramStream(BYTE * pPacketData, int nLength)
 		start = (buf[1] & 0x40) != 0;
 		if (start && curstream == 1)
 		{
-			int a=1;
+			;
 		}
 		if (!start && skipbad[curstream])
 			continue;
@@ -729,10 +729,10 @@ int PS__TranslateToProgramStream(BYTE * pPacketData, int nLength)
 				int len = min(14 + ac3len + packetpos[curstream] - pos, PACKETSIZE);
 
 				// Figure out stuffing (if we have less than 16 bytes left)
-				int stuffing = 0;
+				BYTE stuffing = 0;
 				if (len < PACKETSIZE && PACKETSIZE - len < 16)
 				{
-					stuffing = PACKETSIZE - len;
+					stuffing = (BYTE)(PACKETSIZE - len);
 					len += stuffing;
 				}
 
@@ -757,7 +757,7 @@ int PS__TranslateToProgramStream(BYTE * pPacketData, int nLength)
 
 				// Packet length..
 				// Subtract pack size (14) and pes id and len (6) from lenth
-				packetbuf[curstream][pos + 4] = (len - 6 - 14) >> 8; 
+				packetbuf[curstream][pos + 4] = ((len - 6 - 14) >> 8) & 0xFF; 
 				packetbuf[curstream][pos + 5] = (len - 6 - 14) & 0xFF;
 
 				// Add any stuffing bytes to header extra len

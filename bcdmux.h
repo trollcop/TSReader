@@ -1,5 +1,7 @@
-int PS__StartWriting();
-int PS__StopWriting();
+#pragma once
+
+int PS__StartWriting(void);
+int PS__StopWriting(void);
 int PS__TranslateToProgramStream(BYTE * pPacketData, int nLength);
 
 // Bit manipulation prototypes

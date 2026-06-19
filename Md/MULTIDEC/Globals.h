@@ -583,16 +583,16 @@ struct TTiming {
 	 DWORD Debi_done_PSR;
 };
     typedef VOID (*Extern_INIT_DLL)(HINSTANCE , HWND , BOOL , INT , unsigned char *HotKey, unsigned char *Vers, int *ReturnValue );	
-	typedef VOID (*Extern_EXIT_DLL)();
+	typedef VOID (*Extern_EXIT_DLL)(void);
 	typedef VOID (*Extern_Channel_Change_DLL)(struct TProgramm TP );
-	typedef VOID (*Extern_Hot_Key_DLL)();
+	typedef VOID (*Extern_Hot_Key_DLL)(void);
 	typedef VOID (*Extern_OSD_Key_DLL)( unsigned char Osd_Key);
 	typedef VOID (*Extern_Menu_Cmd_DLL)( int MenuID );
 	typedef int  (*Extern_Stream_DLL)( int Id, int Laenge, unsigned char *Daten );
 	typedef VOID (*Extern_Send_Dll_ID_Name_DLL)(char *Name );
 	typedef VOID (*Extern_Filter_Close_DLL)( int FilterId );
 	typedef VOID (*Extern_Extern_RecPlay_DLL)( int Command );
-	typedef VOID (*Extern_Src_Restart)();
+	typedef VOID (*Extern_Src_Restart)(void);
 
 
 struct External_Stream_Dll {

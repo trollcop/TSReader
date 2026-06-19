@@ -16,7 +16,7 @@ extern char gszKeyName[];
 int BuildTSSection(BYTE * pInput, int nInputLength, BYTE * pOutput, int nMaxOutput, int nPID);
 BOOL LocateCurrentProgram(int nPMTIndex, char * szCurrentProgram, char * szDescription,
 						  SYSTEMTIME * stStart, SYSTEMTIME * stDuration, BOOL fForDisplay);
-void CursorNormal();
+void CursorNormal(void);
 void CursorWait(HWND hWnd);
 DWORD WINAPI LaunchVLCThread(LPVOID lpv);
 DWORD WINAPI EmailThread(LPVOID pPtr);
@@ -275,14 +275,13 @@ void ArchiveEventListWrite(int nIcon, char * szShortStatus, char * szLongStatus)
 	}
 }
 
-void LoadArchiveSettings()
+void LoadArchiveSettings(void)
 {
 	DWORD dwDisposition;
 	DWORD dwDataSize;
 	DWORD dwType;
 	LONG lKey;
 	HKEY hkMainReg;
-	char szTemp[128] = {0};
 	char szKeyName[MAX_PATH];
 
 	lstrcpy(szKeyName, gszKeyName);
@@ -388,7 +387,7 @@ void LoadArchiveSettings()
 	}
 }
 
-void SaveArchiveSettings()
+void SaveArchiveSettings(void)
 {
 	LONG lKey;
 	HKEY hkMainReg;
@@ -507,14 +506,14 @@ void AddPMTEntryToArchivePIDList(int nPID, int nPMTIndex)
 	{
 		if (archive->nArchivePIDs[nPID][i] == 0)
 		{
-			archive->nArchivePIDs[nPID][i] = nPMTIndex + 1;
+			archive->nArchivePIDs[nPID][i] = (BYTE)(nPMTIndex + 1);
 			return;
 		}
 	}
 	MessageBox(v->hWndMainWindow, "OUT OF ROOM in AddPMTEntryToArchivePIDList - tell support@tsreader.co.uk", gszAppName, MB_ICONSTOP);
 }
 
-void BuildArchivePIDList()
+void BuildArchivePIDList(void)
 {
 	// This initializes the nArchivePIDs[] list
 	// Each nArchivePIDs entry that's being recorded
@@ -659,7 +658,7 @@ void BuildOutputPMT(BYTE * pmt, int nPMTMaxLength, int nPMTIndex)
 	archive->ap[nPMTIndex]->nPMTOutputContinuityCounter = 0;
 }
 
-void GenerateArchivePATs()
+void GenerateArchivePATs(void)
 {
 	int nPMTIndex;
 
@@ -995,7 +994,7 @@ BOOL OpenRemoteEPGConnection(int nPMTIndex)
 	archive->ap[nPMTIndex]->EPGSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (archive->ap[nPMTIndex]->EPGSocket == INVALID_SOCKET)
 		return FALSE;
-	if (FillAddr(&sin, szEPGServer, nEPGPort) == FALSE)
+	if (FillAddr(&sin, szEPGServer, (unsigned short)nEPGPort) == FALSE)
 		return FALSE;
 	nStat = connect(archive->ap[nPMTIndex]->EPGSocket, (PSOCKADDR)&sin, sizeof(sin));
 	if (nStat == SOCKET_ERROR)
@@ -1013,7 +1012,7 @@ BOOL OpenRemoteEPGConnection(int nPMTIndex)
 	return TRUE;
 }
 
-void GenerateInitialArchiveFiles()
+void GenerateInitialArchiveFiles(void)
 {
 	int nPMTIndex;
 
@@ -1240,6 +1239,11 @@ void SetCalculatedMemory(HWND hDlg)
 
 INT_PTR CALLBACK ArchiveWaitEPGDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	(void)lParam;
+	(void)wParam;
+	(void)uMsg;
+	(void)hDlg;
+
 	return FALSE;
 }
 
@@ -1582,10 +1586,7 @@ INT_PTR CALLBACK ArchiveSetupDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		switch (((LPNMHDR) lParam)->code)
 		{ 
 		case LVN_GETDISPINFO:
-			{
-				NMLVDISPINFO * pnmv = (NMLVDISPINFO *)lParam;
-				GetArchiveChannelListDispInfo((LV_DISPINFO *) lParam);
-			}
+			GetArchiveChannelListDispInfo((LV_DISPINFO *)lParam);
 			break;
 		case LVN_ITEMCHANGED:
 			{
@@ -1645,6 +1646,8 @@ void CALLBACK FileIOCompletionRoutine(DWORD dwErrorCode, DWORD dwNumberOfBytesTr
 	int nPMTIndex = (int)(LONG_PTR)lpOverlapped->hEvent;
 	int nAyncBufferIndex;
 	char szTemp[128];
+	(void)dwNumberOfBytesTransfered;
+	(void)dwErrorCode;
 
 	for (nAyncBufferIndex = 0; nAyncBufferIndex < MAX_ASYNC_IO; nAyncBufferIndex++)
 	{
@@ -1782,6 +1785,7 @@ DWORD WINAPI BeepThread(LPVOID pvarg)
 	int nErrorBit;
 	DWORD i;
 	DWORD dwLastErrorTime[sizeof(archive->nErrorBeep) * 8];
+	(void)pvarg;
 	
 	archive->fBeepThreadRunning = TRUE;
 	
@@ -1878,10 +1882,10 @@ BOOL LocateXMLTag(char * szXMLBuffer, char * szTag, char * szDestination, int nD
 	return TRUE;
 }
  
-BOOL ParseArchiveXML(HANDLE hInputXMLFile, PARCHIVEDPROGRAMS thisarcprog)
+static BOOL ParseArchiveXML(HANDLE hInputXMLFile, PARCHIVEDPROGRAMS thisarcprog)
 {
 	BOOL fRetVal = TRUE;
-	BYTE * pXML;
+	char *pXML;
 	DWORD dwInputFileSize = GetFileSize(hInputXMLFile, NULL);
 	HANDLE hMap;
 
@@ -1889,7 +1893,7 @@ BOOL ParseArchiveXML(HANDLE hInputXMLFile, PARCHIVEDPROGRAMS thisarcprog)
 	if (hMap == NULL)
 		return FALSE;
 
-	pXML = (BYTE *)MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, (DWORD)dwInputFileSize);
+	pXML = (char *)MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, (DWORD)dwInputFileSize);
 	if (pXML == NULL)
 	{
 		CloseHandle(hMap);
@@ -1939,7 +1943,7 @@ BOOL ParseArchiveXML(HANDLE hInputXMLFile, PARCHIVEDPROGRAMS thisarcprog)
 	return fRetVal;
 }
 
-BOOL MoveArchiveFile(char * szKillFilename)
+static BOOL MoveArchiveFile(char * szKillFilename)
 {
 	BOOL fRetVal;
 	int nIndex;
@@ -1980,7 +1984,7 @@ BOOL MoveArchiveFile(char * szKillFilename)
 	return fRetVal;
 }
 
-DWORD WINAPI RemoveOldestFilesThread(LPVOID lpv)
+static DWORD WINAPI RemoveOldestFilesThread(LPVOID lpv)
 {
 	int nDriveIndex;
 	HANDLE hFind;
@@ -1991,7 +1995,7 @@ DWORD WINAPI RemoveOldestFilesThread(LPVOID lpv)
 	char szOldestXMLFile[MAX_PATH] = {0};
 
 	lstrcpy(szOutputLocation, (char *)lpv);
-	ulOldestFile.QuadPart = -1;
+	ulOldestFile.QuadPart = ULLONG_MAX;
 
 	lstrcpy(szSearchPath, szOutputLocation);
 	if (szSearchPath[lstrlen(szSearchPath) - 1] != '\\')
@@ -2119,6 +2123,8 @@ void UpdateOutputFreeSpace(HWND hWnd)
 	int nPMTIndex;
 	char szTemp[128];
 
+	(void)hWnd;
+
 	for (i = 0; i < 26; i++)
 		archive->bActiveDrive[i] = FALSE;
 
@@ -2192,7 +2198,7 @@ void UpdateOutputFreeSpace(HWND hWnd)
 
 }
 
-int ArchiveThumbnailCount()
+int ArchiveThumbnailCount(void)
 {
 	int nArchiveThumbnailCount = 0;
 	int nPMTIndex;
@@ -2230,6 +2236,8 @@ int ArchiveThumbnailCount()
 
 INT_PTR CALLBACK ArchiveRunDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	(void)lParam;
+
 	switch(uMsg)
 	{
 	case WM_INITDIALOG:
@@ -2974,7 +2982,7 @@ void WriteCaptionFileTime(int nPMTIndex, int cc_type)
 	WriteFile(archive->ap[nPMTIndex]->hCaptionOutputFile[archive->ap[nPMTIndex]->nCaptionCurrentOutputFileIndex[cc_type]], szTemp, lstrlen(szTemp), &dwWritten, NULL);
 }
 
-void WriteCCCharacter(int nPMTIndex, int cc_type, BYTE cc_byte)
+static void WriteCCCharacter(int nPMTIndex, int cc_type, BYTE cc_byte)
 {
 	DWORD dwWritten;
 	BYTE new_cc_byte = cc_byte;
@@ -2982,31 +2990,31 @@ void WriteCCCharacter(int nPMTIndex, int cc_type, BYTE cc_byte)
 	switch(new_cc_byte)
 	{
 	case '*':
-		new_cc_byte = 'á';
+		new_cc_byte = (BYTE)'á';
 		break;
 	case '\\':
-		new_cc_byte = 'é';
+		new_cc_byte = (BYTE)'é';
 		break;
 	case '^':
-		new_cc_byte = 'í';
+		new_cc_byte = (BYTE)'í';
 		break;
 	case '_':
-		new_cc_byte = 'ó';
+		new_cc_byte = (BYTE)'ó';
 		break;
 	case '`':
-		new_cc_byte = 'ú';
+		new_cc_byte = (BYTE)'ú';
 		break;
 	case '{':
-		new_cc_byte = 'ç';
+		new_cc_byte = (BYTE)'ç';
 		break;
 	case '|':
-		new_cc_byte = '÷';
+		new_cc_byte = (BYTE)'÷';
 		break;
 	case '}':
-		new_cc_byte = 'Ñ';
+		new_cc_byte = (BYTE)'Ñ';
 		break;
 	case '~':
-		new_cc_byte = 'ñ';
+		new_cc_byte = (BYTE)'ñ';
 		break;
 	case 0x7f:
 		return;		// don't output that
@@ -3015,12 +3023,12 @@ void WriteCCCharacter(int nPMTIndex, int cc_type, BYTE cc_byte)
 	WriteFile(archive->ap[nPMTIndex]->hCaptionOutputFile[archive->ap[nPMTIndex]->nCaptionCurrentOutputFileIndex[cc_type]], &new_cc_byte, 1, &dwWritten, NULL);
 }
 
-void WriteCCData(int nPMTIndex, int cc_valid, int cc_type, BYTE cc_data_1, BYTE cc_data_2)
+static void WriteCCData(int nPMTIndex, BOOL cc_valid, BYTE cc_type, BYTE cc_data_1, BYTE cc_data_2)
 {
 	DWORD dwWritten;
 	BYTE bCCBuffer[4];
 	
-	bCCBuffer[0] = cc_valid;
+	bCCBuffer[0] = (BYTE)cc_valid;
 	bCCBuffer[1] = cc_type;
 	bCCBuffer[2] = cc_data_1;
 	bCCBuffer[3] = cc_data_2;
@@ -3160,22 +3168,22 @@ void OutputPendingUserData(int nPMTIndex)
 			set_buf(BM_ARCHIVE_THREAD, archive->ap[nPMTIndex]->gopbuffer[archive->ap[nPMTIndex]->nGOPOutputPos].bUserData, 0, FALSE);
 			{
 				DWORD ATSC_identifier = get_bits(BM_ARCHIVE_THREAD, 32);
-				BYTE user_data_type_code = get_bits(BM_ARCHIVE_THREAD, 8);
+				BYTE user_data_type_code = get_bits(BM_ARCHIVE_THREAD, 8) & 0xff;
 				if (user_data_type_code == 0x03 && ATSC_identifier == 0x47413934)
 				{
 					// ATSC format
-					BOOL process_em_data_flag = get_bits(BM_ARCHIVE_THREAD, 1);
-					BOOL process_cc_data_flag = get_bits(BM_ARCHIVE_THREAD, 1);
-					BOOL additional_data_flag = get_bits(BM_ARCHIVE_THREAD, 1);
-					int cc_count = get_bits(BM_ARCHIVE_THREAD, 5);
-					int em_data = get_bits(BM_ARCHIVE_THREAD, 8);
+					get_bits(BM_ARCHIVE_THREAD, 1); /* process_em_data_flag */
+					get_bits(BM_ARCHIVE_THREAD, 1); /* process_cc_data_flag */
+					get_bits(BM_ARCHIVE_THREAD, 1); /* additional data flag */
+					BYTE cc_count = get_bits(BM_ARCHIVE_THREAD, 5) & 0x1f;
+					get_bits(BM_ARCHIVE_THREAD, 8); /* em_data */
 					int i;
 
 					for (i = 0; i < cc_count; i++ )
 					{
-						int marker_bits = get_bits(BM_ARCHIVE_THREAD, 5);
-						BOOL cc_valid = get_bits(BM_ARCHIVE_THREAD, 1);
-						int cc_type = get_bits(BM_ARCHIVE_THREAD, 2);
+						get_bits(BM_ARCHIVE_THREAD, 5); /* marker_bits */
+						BOOL cc_valid = get_bits(BM_ARCHIVE_THREAD, 1) & 1;
+						BYTE cc_type = get_bits(BM_ARCHIVE_THREAD, 2) & 3;
 						BYTE cc_data_1 = get_bits(BM_ARCHIVE_THREAD, 8) & 0x7f;
 						BYTE cc_data_2 = get_bits(BM_ARCHIVE_THREAD, 8) & 0x7f;
 
@@ -3196,12 +3204,12 @@ void OutputPendingUserData(int nPMTIndex)
 
 							for (i = 0; i < cc_count; i++)
 							{
-								int cc_priority = get_bits(BM_ARCHIVE_THREAD, 2);
-								int field_number = get_bits(BM_ARCHIVE_THREAD, 2);
-								int line_offset = get_bits(BM_ARCHIVE_THREAD, 5);
-								int cc1 = get_bits(BM_ARCHIVE_THREAD, 8);
-								int cc2 = get_bits(BM_ARCHIVE_THREAD, 8);
-								int marker_bit = get_bits(BM_ARCHIVE_THREAD, 1);
+								get_bits(BM_ARCHIVE_THREAD, 2); /* cc_priority */
+								BYTE field_number = get_bits(BM_ARCHIVE_THREAD, 2) & 3;
+								BYTE line_offset = get_bits(BM_ARCHIVE_THREAD, 5) & 0x1f;
+								BYTE cc1 = get_bits(BM_ARCHIVE_THREAD, 8) & 0xff;
+								BYTE cc2 = get_bits(BM_ARCHIVE_THREAD, 8) & 0xff;
+								get_bits(BM_ARCHIVE_THREAD, 1); /* marker_bit */
 
 								if (line_offset == 11)
 								{
@@ -3217,13 +3225,13 @@ void OutputPendingUserData(int nPMTIndex)
 						if (get_bits(BM_ARCHIVE_THREAD, 32) == 0x53415544)
 						{
 							// Sci. Atl. format
-							int reserved_04 = get_bits(BM_ARCHIVE_THREAD, 8);
-							int reserved_e2 = get_bits(BM_ARCHIVE_THREAD, 8);
-							int reserved_b1 = get_bits(BM_ARCHIVE_THREAD, 8);
-							int cc1 = get_bits(BM_ARCHIVE_THREAD, 8);
-							int cc2 = get_bits(BM_ARCHIVE_THREAD, 8);
+							get_bits(BM_ARCHIVE_THREAD, 8); /* reserved_04 */
+							get_bits(BM_ARCHIVE_THREAD, 8); /* reserved_e2 */
+							get_bits(BM_ARCHIVE_THREAD, 8); /* reserved_b1 */
+							BYTE cc1 = get_bits(BM_ARCHIVE_THREAD, 8) & 0x7f;
+							BYTE cc2 = get_bits(BM_ARCHIVE_THREAD, 8) & 0x7f;
 
-							WriteCCData(nPMTIndex, 1, 0, cc1 & 0x7f, cc2 & 0x7f);
+							WriteCCData(nPMTIndex, 1, 0, cc1, cc2);
 						}
 						else
 						{
@@ -3231,17 +3239,17 @@ void OutputPendingUserData(int nPMTIndex)
 							if (get_bits(BM_ARCHIVE_THREAD, 16) == 0x0502)
 							{
 								// Dish Network format
-								int junk = get_bits(BM_ARCHIVE_THREAD, 5 * 8);		// 5 bytes of junk
-								int type = get_bits(BM_ARCHIVE_THREAD, 8);
+								get_bits(BM_ARCHIVE_THREAD, 5 * 8);		// 5 bytes of junk
+								BYTE type = get_bits(BM_ARCHIVE_THREAD, 8) & 0xff;
 
 								switch(type)
 								{
 								case 0x02:		// 2 byte caption - can be repeated
 									{
-										BYTE junk = get_bits(BM_ARCHIVE_THREAD, 8);
+										get_bits(BM_ARCHIVE_THREAD, 8);
 										BYTE cc_data_1 = get_bits(BM_ARCHIVE_THREAD, 8) & 0x7f;
 										BYTE cc_data_2 = get_bits(BM_ARCHIVE_THREAD, 8) & 0x7f;
-										BYTE repeater = get_bits(BM_ARCHIVE_THREAD, 8);
+										BYTE repeater = get_bits(BM_ARCHIVE_THREAD, 8) & 0xff;
 										WriteCCData(nPMTIndex, 1, 0, cc_data_1, cc_data_2);
 										if (repeater == 0x04 && cc_data_1 < 0x20)
 											WriteCCData(nPMTIndex, 1, 0, cc_data_1, cc_data_2);
@@ -3249,7 +3257,7 @@ void OutputPendingUserData(int nPMTIndex)
 									break;
 								case 0x04:		// 4 byte caption - not repeated
 									{
-										BYTE junk = get_bits(BM_ARCHIVE_THREAD, 8);
+										get_bits(BM_ARCHIVE_THREAD, 8);
 										BYTE cc_data_1 = get_bits(BM_ARCHIVE_THREAD, 8) & 0x7f;
 										BYTE cc_data_2 = get_bits(BM_ARCHIVE_THREAD, 8) & 0x7f;
 										WriteCCData(nPMTIndex, 1, 0, cc_data_1, cc_data_2);
@@ -3262,18 +3270,17 @@ void OutputPendingUserData(int nPMTIndex)
 												// the pictures into display order, so no need to hold data
 									{
 										int i;
-										for (i = 0; i < 6; i++)
-										{
-											BYTE junk = get_bits(BM_ARCHIVE_THREAD, 8);
+										for (i = 0; i < 6; i++) {
+											get_bits(BM_ARCHIVE_THREAD, 8);
 										}
 										{
-											BYTE type = get_bits(BM_ARCHIVE_THREAD, 8);
-											BYTE junk2 = get_bits(BM_ARCHIVE_THREAD, 8);
+											BYTE type2 = get_bits(BM_ARCHIVE_THREAD, 8) & 0xff;
+											get_bits(BM_ARCHIVE_THREAD, 8);
 											BYTE cc_data_1 = get_bits(BM_ARCHIVE_THREAD, 8) & 0x7f;
 											BYTE cc_data_2 = get_bits(BM_ARCHIVE_THREAD, 8) & 0x7f;
 											WriteCCData(nPMTIndex, 1, 0, cc_data_1, cc_data_2);
 
-											switch(type)
+											switch(type2)
 											{
 											case 0x02:
 												break;
@@ -3331,6 +3338,8 @@ void BufferAndWriteUserData(int nPMTIndex, BYTE * pUserData, int nUserDataLength
 
 void ExtractSubtitleData(int nPMTIndex, BYTE * pPESPacket, int nPESLength)
 {
+	(void)nPMTIndex;
+
 	set_buf(BM_ARCHIVE_THREAD, pPESPacket, 0, FALSE);
 	{
 		int data_identifier = get_bits(BM_ARCHIVE_THREAD, 8);
@@ -3357,19 +3366,19 @@ void ExtractSubtitleData(int nPMTIndex, BYTE * pPESPacket, int nPESLength)
 			{
 			case 0x10:		// Page Composition Segment
 				{
-					int page_time_out = get_bits(BM_ARCHIVE_THREAD, 8);
-					int page_version_number = get_bits(BM_ARCHIVE_THREAD, 4);
-					int page_state = get_bits(BM_ARCHIVE_THREAD, 2);
-					int reserved = get_bits(BM_ARCHIVE_THREAD, 2);
-					int processed_length = 0;					
+					get_bits(BM_ARCHIVE_THREAD, 8); /* page_time_out */
+					get_bits(BM_ARCHIVE_THREAD, 4); /* page_version_number */
+					get_bits(BM_ARCHIVE_THREAD, 2); /* page_state */
+					get_bits(BM_ARCHIVE_THREAD, 2); /* reserved */
+					int processed_length = 0;
 					nPESLength -= 2;
 					segment_length -= 2;
 					while (processed_length < segment_length)
 					{	
-						int region_id = get_bits(BM_ARCHIVE_THREAD, 8);
-						int reserved = get_bits(BM_ARCHIVE_THREAD, 8);
-						int region_horizontal_address = get_bits(BM_ARCHIVE_THREAD, 16);
-						int region_vertical_address = get_bits(BM_ARCHIVE_THREAD, 16);
+						get_bits(BM_ARCHIVE_THREAD, 8); /* region_id */
+						get_bits(BM_ARCHIVE_THREAD, 8); /* reserved */
+						get_bits(BM_ARCHIVE_THREAD, 16); /* region_horizontal_address */
+						get_bits(BM_ARCHIVE_THREAD, 16); /* region_vertical_address */
 						nPESLength -= 6;
 						processed_length += 6;
 					}
@@ -3377,37 +3386,37 @@ void ExtractSubtitleData(int nPMTIndex, BYTE * pPESPacket, int nPESLength)
 				break;
 			case 0x11:		// Region Composition Segment
 				{
-					int region_id = get_bits(BM_ARCHIVE_THREAD, 8);
-					int region_version_number = get_bits(BM_ARCHIVE_THREAD, 4);
-					int region_fill_flag = get_bits(BM_ARCHIVE_THREAD, 1);
-					int reserved1 = get_bits(BM_ARCHIVE_THREAD, 3);
-					int region_width = get_bits(BM_ARCHIVE_THREAD, 16);
-					int region_height = get_bits(BM_ARCHIVE_THREAD, 16);
-					int region_level_of_compatibility = get_bits(BM_ARCHIVE_THREAD, 3);
-					int region_depth = get_bits(BM_ARCHIVE_THREAD, 3);
-					int reserved2 = get_bits(BM_ARCHIVE_THREAD, 2);
-					int CLUT_id = get_bits(BM_ARCHIVE_THREAD, 8);
-					int region_8_bit_pixel_code = get_bits(BM_ARCHIVE_THREAD, 8);
-					int region_4_bit_pixel_code = get_bits(BM_ARCHIVE_THREAD, 4);
-					int region_2_bit_pixel_code = get_bits(BM_ARCHIVE_THREAD, 2);
-					int reserved3 = get_bits(BM_ARCHIVE_THREAD, 2);
+					get_bits(BM_ARCHIVE_THREAD, 8); /* region_id */
+					get_bits(BM_ARCHIVE_THREAD, 4); /* region_version_number */
+					get_bits(BM_ARCHIVE_THREAD, 1); /* region_fill_flag */
+					get_bits(BM_ARCHIVE_THREAD, 3); /* reserved1 */
+					get_bits(BM_ARCHIVE_THREAD, 16); /* region_width */
+					get_bits(BM_ARCHIVE_THREAD, 16); /* region_height */
+					get_bits(BM_ARCHIVE_THREAD, 3); /* region_level_of_compatibility */
+					get_bits(BM_ARCHIVE_THREAD, 3); /* region_depth */
+					get_bits(BM_ARCHIVE_THREAD, 2); /* reserved2 */
+					get_bits(BM_ARCHIVE_THREAD, 8); /* CLUT_id */
+					get_bits(BM_ARCHIVE_THREAD, 8); /* region_8_bit_pixel_code */
+					get_bits(BM_ARCHIVE_THREAD, 4); /* region_4_bit_pixel_code */
+					get_bits(BM_ARCHIVE_THREAD, 2); /* region_2_bit_pixel_code */
+					get_bits(BM_ARCHIVE_THREAD, 2); /* reserved3 */
 					int processed_length = 0;
 					nPESLength -= 10;
 					segment_length -= 10;
 					while (processed_length < segment_length)
 					{	
-						int object_id = get_bits(BM_ARCHIVE_THREAD, 16);
-						int object_type = get_bits(BM_ARCHIVE_THREAD, 2);
-						int object_provider_flag = get_bits(BM_ARCHIVE_THREAD, 2);
-						int object_horizontal_position = get_bits(BM_ARCHIVE_THREAD, 12);
-						int reserved4 = get_bits(BM_ARCHIVE_THREAD, 4);
-						int object_vertical_position = get_bits(BM_ARCHIVE_THREAD, 12);
+						get_bits(BM_ARCHIVE_THREAD, 16); /* object_id */
+						uint8_t object_type = get_bits(BM_ARCHIVE_THREAD, 2) & 3;
+						get_bits(BM_ARCHIVE_THREAD, 2); /* object_provider_flag */
+						get_bits(BM_ARCHIVE_THREAD, 12); /* object_horizontal_position */
+						get_bits(BM_ARCHIVE_THREAD, 4); /* reserved4 */
+						get_bits(BM_ARCHIVE_THREAD, 12); /* object_vertical_position */
 						nPESLength -= 6;
 						processed_length += 6;
 						if (object_type == 0x01 || object_type == 0x02)
 						{	
-							int foreground_pixel_code = get_bits(BM_ARCHIVE_THREAD, 8);
-							int background_pixel_code = get_bits(BM_ARCHIVE_THREAD, 8);
+							get_bits(BM_ARCHIVE_THREAD, 8); /* foreground_pixel_code */
+							get_bits(BM_ARCHIVE_THREAD, 8); /* background_pixel_code */
 							nPESLength -= 2;
 							processed_length += 2;
 						}	
@@ -3416,37 +3425,37 @@ void ExtractSubtitleData(int nPMTIndex, BYTE * pPESPacket, int nPESLength)
 				break;
 			case 0x12:		// CLUT Definition Segment
 				{
-					int CLUT_id = get_bits(BM_ARCHIVE_THREAD, 8);
-					int CLUT_version_number = get_bits(BM_ARCHIVE_THREAD, 4);
-					int reserved1 = get_bits(BM_ARCHIVE_THREAD, 4);
+					get_bits(BM_ARCHIVE_THREAD, 8); /* CLUT_id */
+					get_bits(BM_ARCHIVE_THREAD, 4); /* CLUT_version_number */
+					get_bits(BM_ARCHIVE_THREAD, 4); /* reserved1 */
 					int processed_length = 0;
 					nPESLength -= 2;
 					segment_length -= 2;
 					while (processed_length < segment_length)
 					{	
-						int CLUT_entry_id = get_bits(BM_ARCHIVE_THREAD, 8);
-						int CLUT2_bit_entry_CLUT_flag = get_bits(BM_ARCHIVE_THREAD, 1);
-						int CLUT4_bit_entry_CLUT_flag = get_bits(BM_ARCHIVE_THREAD, 1);
-						int CLUT8_bit_entry_CLUT_flag = get_bits(BM_ARCHIVE_THREAD, 1);
-						int reserved2 = get_bits(BM_ARCHIVE_THREAD, 4);
-						int full_range_flag = get_bits(BM_ARCHIVE_THREAD, 1);
+						get_bits(BM_ARCHIVE_THREAD, 8); /* CLUT_entry_id */
+						get_bits(BM_ARCHIVE_THREAD, 1); /* CLUT2_bit_entry_CLUT_flag */
+						get_bits(BM_ARCHIVE_THREAD, 1); /* CLUT4_bit_entry_CLUT_flag */
+						get_bits(BM_ARCHIVE_THREAD, 1); /* CLUT8_bit_entry_CLUT_flag */
+						get_bits(BM_ARCHIVE_THREAD, 4); /* reserved2 */
+						BOOL full_range_flag = get_bits(BM_ARCHIVE_THREAD, 1);
 						nPESLength -= 2;
 						processed_length += 2;
 						if (full_range_flag == 1)
 						{	
-							int Y_value = get_bits(BM_ARCHIVE_THREAD, 8);
-							int Cr_value = get_bits(BM_ARCHIVE_THREAD, 8);
-							int Cb_value = get_bits(BM_ARCHIVE_THREAD, 8);
-							int T_value = get_bits(BM_ARCHIVE_THREAD, 8);
+							get_bits(BM_ARCHIVE_THREAD, 8); /* Y_value */
+							get_bits(BM_ARCHIVE_THREAD, 8); /* Cr_value */
+							get_bits(BM_ARCHIVE_THREAD, 8); /* Cb_value */
+							get_bits(BM_ARCHIVE_THREAD, 8); /* T_value */
 							nPESLength -= 4;
 							processed_length += 4;
 						}
 						else
 						{	
-							int Y_value = get_bits(BM_ARCHIVE_THREAD, 6);
-							int Cr_value = get_bits(BM_ARCHIVE_THREAD, 4);
-							int Cb_value = get_bits(BM_ARCHIVE_THREAD, 4);
-							int T_value = get_bits(BM_ARCHIVE_THREAD, 2);
+							get_bits(BM_ARCHIVE_THREAD, 6); /* Y_value */
+							get_bits(BM_ARCHIVE_THREAD, 4); /* Cr_value */
+							get_bits(BM_ARCHIVE_THREAD, 4); /* Cb_value */
+							get_bits(BM_ARCHIVE_THREAD, 2); /* T_value */
 							nPESLength -= 2;
 							processed_length += 2;
 						}
@@ -3455,17 +3464,19 @@ void ExtractSubtitleData(int nPMTIndex, BYTE * pPESPacket, int nPESLength)
 				break;
 			case 0x13:		// Object Data Segment
 				{
-					int object_id = get_bits(BM_ARCHIVE_THREAD, 16);
-					int object_version_number = get_bits(BM_ARCHIVE_THREAD, 4);
-					int object_coding_method = get_bits(BM_ARCHIVE_THREAD, 2);
-					int non_modifying_colour_flag = get_bits(BM_ARCHIVE_THREAD, 1);
-					int reserved = get_bits(BM_ARCHIVE_THREAD, 1);
+					get_bits(BM_ARCHIVE_THREAD, 16); /* object_id */
+					get_bits(BM_ARCHIVE_THREAD, 4); /* object_version_number */
+					uint8_t object_coding_method = get_bits(BM_ARCHIVE_THREAD, 2) & 3;
+					get_bits(BM_ARCHIVE_THREAD, 1); /* non_modifying_colour_flag */
+					get_bits(BM_ARCHIVE_THREAD, 1); /* reserved */
+#if 0
 					int processed_length = 0;
+#endif
 					nPESLength -= 3;
 					if (object_coding_method == 0)
 					{	
-						int top_field_data_block_length = get_bits(BM_ARCHIVE_THREAD, 16);
-						int bottom_field_data_block_length = get_bits(BM_ARCHIVE_THREAD, 16);
+						get_bits(BM_ARCHIVE_THREAD, 16); /* top_field_data_block_length */
+						get_bits(BM_ARCHIVE_THREAD, 16); /* bottom_field_data_block_length */
 						nPESLength -= 4;
 						
 						{
@@ -3474,28 +3485,28 @@ void ExtractSubtitleData(int nPMTIndex, BYTE * pPESPacket, int nPESLength)
 							{
 							case 0x11:
 								{
-									int two_bit_pixel_code = get_bits(BM_ARCHIVE_THREAD, 2);
-									int switch_1 = get_bits(BM_ARCHIVE_THREAD, 1);
+									get_bits(BM_ARCHIVE_THREAD, 2); /* two_bit_pixel_code */
+									BOOL switch_1 = get_bits(BM_ARCHIVE_THREAD, 1) & 1;
 									if (switch_1 == 1)
 									{	
-										int run_length_3_10 = get_bits(BM_ARCHIVE_THREAD, 3);
-										int two_bit_pixel_code2 = get_bits(BM_ARCHIVE_THREAD, 2);
+										get_bits(BM_ARCHIVE_THREAD, 3); /* run_length_3_10 */
+										get_bits(BM_ARCHIVE_THREAD, 2); /* two_bit_pixel_code2 */
 									}
 									else
 									{	
-										int switch_2 = get_bits(BM_ARCHIVE_THREAD, 1);
+										BOOL switch_2 = get_bits(BM_ARCHIVE_THREAD, 1) & 1;
 										if (switch_2 == 0)
 										{	
-											int switch_3 = get_bits(BM_ARCHIVE_THREAD, 2);
+											uint8_t switch_3 = get_bits(BM_ARCHIVE_THREAD, 2) & 3;
 											if (switch_3 == 2)
 											{	
-												int run_length_12_27 = get_bits(BM_ARCHIVE_THREAD, 4);
-												int two_bit_pixel_code3 = get_bits(BM_ARCHIVE_THREAD, 2);
+												get_bits(BM_ARCHIVE_THREAD, 4); /* run_length_12_27 */
+												get_bits(BM_ARCHIVE_THREAD, 2); /* two_bit_pixel_code3 */
 											}	
 											if (switch_3 == 3)
 											{	
-												int run_length_29_284 = get_bits(BM_ARCHIVE_THREAD, 8);
-												int two_bit_pixel_code4 = get_bits(BM_ARCHIVE_THREAD, 2);
+												get_bits(BM_ARCHIVE_THREAD, 8); /* run_length_29_284 */
+												get_bits(BM_ARCHIVE_THREAD, 2); /* two_bit_pixel_code4 */
 											}	
 										}	
 									}	
@@ -3503,7 +3514,8 @@ void ExtractSubtitleData(int nPMTIndex, BYTE * pPESPacket, int nPESLength)
 								break;
 							}
 						}
-						/*while (processed_length < top_field_data_block_length)	
+#if 0
+						while (processed_length < top_field_data_block_length)	
 						{
 							pixel_data_sub-block()	
 						}
@@ -3515,7 +3527,8 @@ void ExtractSubtitleData(int nPMTIndex, BYTE * pPESPacket, int nPESLength)
 						{
 							int object8_stuff_bits = get_bits(BM_ARCHIVE_THREAD, 8);
 							nPESLength -= 1;
-						}*/
+						}
+#endif
 					}	
 					if (object_coding_method == 1)
 					{	
@@ -3523,7 +3536,7 @@ void ExtractSubtitleData(int nPMTIndex, BYTE * pPESPacket, int nPESLength)
 						int i;
 						for (i = 1; i <= number_of_codes; i++)	
 						{
-							int character_code = get_bits(BM_ARCHIVE_THREAD, 16);
+							get_bits(BM_ARCHIVE_THREAD, 16); /* character_code */
 						}
 						nPESLength -= 1 + (2 * number_of_codes);
 					}	
@@ -3590,7 +3603,7 @@ void ExtractVideoUserData(int nPMTIndex, BYTE * pPESPacket, int nPESLength)
 void BufferSubtitlePESData(int nPMTIndex, BYTE * pPacket)
 {
 	int nAdaptation = (pPacket[3] >> 4) & 0x03;
-	BYTE * pWritePtr;
+	BYTE * pWritePtr = NULL;
 	int nWriteLen = 0;
 
 	switch(nAdaptation)
@@ -3619,8 +3632,6 @@ void BufferSubtitlePESData(int nPMTIndex, BYTE * pPacket)
 
 	if ((pPacket[1] & 0x40) == 0x40)		// PES start?
 	{
-		BOOL fRetVal = FALSE;
-
 		// If we have data from the last packet, finish that one
 		if (archive->ap[nPMTIndex]->nSubtitleESFillPtr)
 		{
@@ -3664,7 +3675,7 @@ void BufferSubtitlePESData(int nPMTIndex, BYTE * pPacket)
 void BufferVideoPESData(int nPMTIndex, BYTE * pPacket)
 {
 	int nAdaptation = (pPacket[3] >> 4) & 0x03;
-	BYTE * pWritePtr;
+	BYTE *pWritePtr = NULL;
 	int nWriteLen = 0;
 
 	switch(nAdaptation)
@@ -3693,8 +3704,6 @@ void BufferVideoPESData(int nPMTIndex, BYTE * pPacket)
 
 	if ((pPacket[1] & 0x40) == 0x40)		// PES start?
 	{
-		BOOL fRetVal = FALSE;
-
 		// If we have data from the last packet, finish that one
 		if (archive->ap[nPMTIndex]->nVideoESFillPtr)
 		{
@@ -3735,16 +3744,19 @@ void BufferVideoPESData(int nPMTIndex, BYTE * pPacket)
 	}
 }
 
-int ReadFromArchivePipe(BYTE * pBuffer, int nLength)
+int ReadFromArchivePipe(BYTE *pBuffer, int nLength)
 {
 	int nRequestedLength = nLength;
 	DWORD dwRead;
 
 	while (nLength)
 	{
-		ReadFile(v->hArchiveReadPipe, pBuffer, nLength, &dwRead, NULL);
+		if (!ReadFile(v->hArchiveReadPipe, pBuffer, nLength, &dwRead, NULL))
+			return 0;
+
 		if (dwRead == 0)
 			return 0;
+
 		pBuffer += dwRead;
 		nLength -= dwRead;
 	}
@@ -3779,8 +3791,7 @@ void ArchivePIDData(BYTE * pPacket, int nPID)
 					if (v->pat.pmt[nPMTIndex].fCompleted)
 					{
 						archive->ap[nPMTIndex]->pmt[(188 * archive->ap[nPMTIndex]->nPMTPacketOutputCounter) + 3] = 
-							archive->ap[nPMTIndex]->pmt[(188 * archive->ap[nPMTIndex]->nPMTPacketOutputCounter) + 3] & 0xf0 |
-							archive->ap[nPMTIndex]->nPMTOutputContinuityCounter;
+							archive->ap[nPMTIndex]->pmt[(188 * archive->ap[nPMTIndex]->nPMTPacketOutputCounter) + 3] & 0xf0 | (archive->ap[nPMTIndex]->nPMTOutputContinuityCounter & 0xf);
 						archive->ap[nPMTIndex]->nPMTOutputContinuityCounter++;
 						archive->ap[nPMTIndex]->nPMTOutputContinuityCounter &= 0x0f;
 						WriteArchiveBlockBuffer(nPMTIndex, &archive->ap[nPMTIndex]->pmt[188 * archive->ap[nPMTIndex]->nPMTPacketOutputCounter], 188);
@@ -4022,7 +4033,7 @@ BOOL EPGDataWithin15SecondsPresent(int nPMTIndex)
 				OutputDebugString(szTemp);
 			}
 			
-			if (lnDifference >= 0 && lnDifference <= 15)
+			if (lnDifference <= 15)
 			{
 				fRetVal = TRUE;
 				break;
@@ -4034,7 +4045,7 @@ BOOL EPGDataWithin15SecondsPresent(int nPMTIndex)
 	return fRetVal;
 }
 
-void CheckEPG()
+void CheckEPG(void)
 {
 	SYSTEMTIME stNow;
 	__int64 ftNow, ftTimeCheck;
@@ -4186,7 +4197,7 @@ ReCheckEPG:
 	}
 }
 
-void CheckOutstandingFileCloses()
+void CheckOutstandingFileCloses(void)
 {
 	int nPMTIndex;
 
@@ -4258,7 +4269,7 @@ void AllocateOrDeAllocateThumbnailBuffers(BOOL fAllocate)
 	}
 }
 
-void UpdateGraphData()
+void UpdateGraphData(void)
 {
 	int nPMTIndex;
 
@@ -4302,6 +4313,8 @@ void UpdateGraphData()
 
 DWORD WINAPI ArchiveGraphThread(LPVOID lpv)
 {
+	(void)lpv;
+
 	DWORD dwTickCount = GetTickCount();
 	while (!archive->fTerminateGraphThread)
 	{
@@ -4322,6 +4335,7 @@ DWORD WINAPI ArchiveThread(LPVOID lpv)
 	DWORD dwThreadID;
 	BYTE tspacket[188];
 
+	(void)lpv;
 	archive->fTerminateGraphThread = FALSE;
 	hThread = CreateThread(NULL, 0, ArchiveGraphThread, (LPVOID)0, 0, &dwThreadID);
 	CloseHandle(hThread);
@@ -4493,6 +4507,8 @@ BOOL StartArchivePrograms(HWND hWnd)
 
 void StopArchivePrograms(HWND hWnd)
 {
+	(void)hWnd;
+
 	v->fArchiveRunning = FALSE;
 
 	CloseHandle(v->hArchiveWritePipe);
@@ -4794,7 +4810,7 @@ DWORD WINAPI ShowArchiveThumbnails(LPVOID lpv)
 	return 0;
 }
 
-void TerminateThumbnailPreviewThread()
+void TerminateThumbnailPreviewThread(void)
 {
 	if (v->fArchiveViewThumbnailThreadRunning == TRUE)
 	{
@@ -4805,7 +4821,7 @@ void TerminateThumbnailPreviewThread()
 	}
 }
 
-BOOL DeletedArchiveItem()
+BOOL DeletedArchiveItem(void)
 {
 	if (lstrcmp(arcprogs[v->nSelectedArchiveProgram].szChannel, "---") == 0)
 		return TRUE;
@@ -4892,10 +4908,7 @@ INT_PTR CALLBACK ViewArchiveDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 		switch (((LPNMHDR) lParam)->code)
 		{ 
 		case LVN_GETDISPINFO:
-			{
-				NMLVDISPINFO * pnmv = (NMLVDISPINFO *)lParam;
-				GetArchiveFileListDispInfo((LV_DISPINFO *) lParam);
-			}
+			GetArchiveFileListDispInfo((LV_DISPINFO *) lParam);
 			break;
 		case LVN_ITEMCHANGED:
 			{
@@ -5105,6 +5118,8 @@ void ViewArchivedFiles(HWND hWnd)
 
 INT_PTR CALLBACK SaveEPGDataDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	(void)lParam;
+
 	switch(uMsg)
 	{
 	case WM_INITDIALOG:

@@ -541,10 +541,7 @@ INT_PTR CALLBACK Settings_Source(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		switch (((LPNMHDR) lParam)->code)
 		{ 
 		case LVN_GETDISPINFO:
-			{
-				NMLVDISPINFO * pnmv = (NMLVDISPINFO *)lParam;
-				GetSourceDispInfo((LV_DISPINFO *) lParam);
-			}
+			GetSourceDispInfo((LV_DISPINFO *)lParam);
 			break;
 		case LVN_ITEMCHANGED:
 			{

@@ -109,7 +109,7 @@ void Write_Log(char * szMessage)
 	OutputDebugString(szNewMessage);
 }
 
-void MD__Shutdown()
+void MD__Shutdown(void)
 {
 	// Do any left over cleanup
 	int i;
@@ -212,7 +212,7 @@ int MD__Load_External_Dll(HINSTANCE hInstance)
 	External_Dll_Count = 0;
 	while ( External_Dll_Count < 5 )
 	{
-		wsprintf(Ext_Dll[External_Dll_Count].Name,"%s\\MDPlugins\\%s", CurrentDir, fd.cFileName);
+		wsprintf(Ext_Dll[External_Dll_Count].Name, "%s\\MDPlugins\\%s", CurrentDir, fd.cFileName);
 		
 		wsprintf(szTemp,"MDAPI Scanne DLL %s",Ext_Dll[External_Dll_Count].Name);
 		Write_Log(szTemp);
@@ -740,7 +740,7 @@ void MD__ChannelChange(int nProgramNumber,
 	memset(&csaCurrent.even_ck[0], 0, 8);
 
 	memset(&Programm[0], 0, sizeof(Programm[0]));
-	Programm[0].Link_SID = Programm[0].SID_pid = nProgramNumber;
+	Programm[0].Link_SID = Programm[0].SID_pid = (unsigned short)nProgramNumber;
 	Programm[0].tp_id = v->pat.nTransportStreamID;
 	Programm[0].freq = v->ss.nFrequency;
 	Programm[0].Link_TP = 0x00;

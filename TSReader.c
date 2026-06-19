@@ -10,6 +10,7 @@
 #include <winsock.h>
 #include <shlobj.h>
 #include <wininet.h>
+#include <strsafe.h>
 
 #include "resource.h"
 
@@ -113,7 +114,7 @@ BOOL DecodeAudioTitleData(BYTE * pPESPacket, int nPacketLength, int nES);
 INT_PTR CALLBACK CAMMenuDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int GenerateCAPMT(BYTE * pCAPMTBuffer, int nBufferLength, int nPMTIndex);
 typedef BOOL (* td_SendCAPMT) (BYTE * pBuffer, int nLength);
-BOOL (* SendCAPMT) (BYTE * pBuffer, int nLength);
+td_SendCAPMT SendCAPMT = NULL;
 
 // Stuff in sky_epg.c
 void ParseSkyEPG(BYTE * pPacket, int nLength, BOOL fPrimaryEPGPID);
@@ -160,20 +161,21 @@ char gszKeyName[64] = TEXT("Software\\TSReaderPro");
 char gszVideoMosaicClass[] = {"TSReaderVideoMosaicClass"};
 
 // Source DLL functions
-BOOL (* Init) (PSOURCESTRUCT pss);
-BOOL (* DeInit) ();
-BOOL (* Start) ();
-BOOL (* Stop) ();
-BOOL (* TuneDialog) (HWND hWnd);
-BOOL (* Tune) ();
-BOOL (* GetDescription) (char * szDescription, char * szCommandLineParameters, BOOL * fCanBeStopped, int * nMaxPIDs, DWORD * dwCapabilities);
-BOOL (* ParseSourceModuleCommandLine) (PSOURCESTRUCT pss, char * szCommandLine, BOOL fQuiet);
-BOOL (* PIDManagement) (BOOL fAdd, int nPID, BOOL fTemporary);
-BOOL (* IsPIDActive) (int nPID);
-BOOL (* GetTunerString) (char * szString);
-BOOL (* GetSignalString) (char * szString);
-int  (* GetSyncLossCount) (BOOL fReset);
-int  (* GetRetuneCount) (BOOL fReset);
+td_Init Init = NULL;
+td_DeInit DeInit = NULL;
+td_Start Start = NULL;
+td_Stop Stop = NULL;
+td_TuneDialog TuneDialog = NULL;
+td_Tune Tune = NULL;
+td_GetDescription GetDescription = NULL;
+td_ParseCommandLine ParseSourceModuleCommandLine = NULL;
+td_PIDManagement PIDManagement = NULL;
+td_IsPIDActive IsPIDActive = NULL;
+td_GetTunerString GetTunerString = NULL;
+td_GetSignalString GetSignalString = NULL;
+td_GetSyncLossCount GetSyncLossCount = NULL;
+td_GetRetuneCount GetRetuneCount = NULL;
+td_GetMiscString GetMiscString = NULL;
 
 // forward declarations
 DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv);
@@ -183,7 +185,7 @@ char gszDecimalString[] = {"(decimal)"};
 char gszHexString[] = {"(hex)"};
 
 // Code
-void StartIncomingTSDataThread()
+void StartIncomingTSDataThread(void)
 {
 	DWORD dwThreadID;
 	int j;
@@ -678,10 +680,11 @@ char *GetTSRVersion(char *szOutput)
 	if (szOutput == NULL)
 		szOutput = v->szVersionBuffer;
 
-	if (VERSION_SUB_EDIT != '\0')
+#ifdef VERSION_SUB_EDIT
 		wsprintf(szOutput, "%d.%d.%d%c", VERSION_MAJOR, VERSION_MINOR, VERSION_EDIT, VERSION_SUB_EDIT);
-	else
+#else
 		wsprintf(szOutput, "%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_EDIT);
+#endif
 
 	return szOutput;
 }
@@ -2037,7 +2040,7 @@ void GenerateSplitFilename(char * szInputFileName, char * szOutputFileName, char
 	LeaveCriticalSection(&v->csActualRecordFilename);
 }
 
-void UpdateSDTContinuity()
+void UpdateSDTContinuity(void)
 {
 	int nCurrentContinuity = v->out_sdt[3] & 0x0f;
 	nCurrentContinuity++;
@@ -2046,7 +2049,7 @@ void UpdateSDTContinuity()
 	v->out_sdt[3] |= nCurrentContinuity;
 }
 
-void UpdatePATContinuity()
+void UpdatePATContinuity(void)
 {
 	int nCurrentContinuity = v->out_pat[3] & 0x0f;
 	nCurrentContinuity++;
@@ -2055,7 +2058,7 @@ void UpdatePATContinuity()
 	v->out_pat[3] |= nCurrentContinuity;
 }
 
-void UpdatePMTContinuity()
+void UpdatePMTContinuity(void)
 {
 	int nPacketCount;
 
@@ -2069,7 +2072,7 @@ void UpdatePMTContinuity()
 	}
 }
 
-void WritePATandPMTandSDT()
+void WritePATandPMTandSDT(void)
 {
 	DWORD dwWritten;
 	DWORD dwTotalWritten = 0;
@@ -3277,7 +3280,7 @@ void SetupCAESInfo(int nPID, int nExtraLength)
 		set_bits(BM_USER_THREAD, nExtraLength, 12);	// ES info Length
 }
 
-void SetupPriorToProgramRecording()
+void SetupPriorToProgramRecording(void)
 {
 	int nSectionLength;
 	DWORD dwCRC;
@@ -4137,7 +4140,7 @@ void StreamDecoder(HWND hWnd)
 	}
 }
 
-void GetRecordStartTime()
+void GetRecordStartTime(void)
 {
 	SYSTEMTIME stSystemTime;
 	FILETIME ftNow;
@@ -4196,7 +4199,7 @@ DWORD WINAPI AdvancedRecordFreeSpaceMonitorThread(LPVOID lpv)
 					}
 				}
 
-				ulOldestFile.QuadPart = -1;
+				ulOldestFile.QuadPart = ULLONG_MAX;
 
 				lstrcpy(szSearchPath, szOutputFolder);
 				lstrcat(szSearchPath, "\\*");
@@ -4340,7 +4343,7 @@ void RecordStream(HWND hWnd, BOOL fEntireTS, int nPID)
 	}
 }
 
-BOOL CheckForFileSplit()
+BOOL CheckForFileSplit(void)
 {
 	if (v->fSplitRecord == TRUE)
 	{
@@ -4532,7 +4535,7 @@ BOOL WaitForNextTSBuffer(void)
 	return fAbort;
 }
 
-void RecordOutstandingTSBuffers()
+void RecordOutstandingTSBuffers(void)
 {
 	int i;
 
@@ -5669,7 +5672,7 @@ void PMTParsingComplete(void)
 	}
 }
 
-void SetupForNextPMTEntry()
+void SetupForNextPMTEntry(void)
 {
 	if (v->nPMTPID == 0x0000)
 	{
@@ -5717,7 +5720,7 @@ retry_pmt:
 	}
 }
 
-void PostPATProcessing()
+void PostPATProcessing(void)
 {
 	int nCount;
 	char szTemp[128];
@@ -5804,8 +5807,9 @@ void PostPATProcessing()
 
 BOOL CheckPATVersionNumber(BYTE * pSectionPointer, int nPacketLength)
 {
-	int nTableID, nSectionLength;
-	int nVersionNumber;
+	uint8_t nTableID;
+	uint16_t nSectionLength;
+	uint8_t nVersionNumber;
 
 	nTableID = pSectionPointer[0];
 	if (nTableID != 0)
@@ -6269,7 +6273,12 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 {
 	int i;
 
+	(void)lpv;
+
 	tv = LocalAlloc(LPTR, sizeof(TSPARSERVARIABLES));
+	if (!tv)
+		return 0;
+
 	for (i = 0; i < MAX_ES_PARSERS; i++)
 	{
 		tv->bESBuffer[i] = LocalAlloc(LPTR, ES_BUFFER_SIZE);
@@ -7358,7 +7367,7 @@ int __cdecl SortPIDsByPID(const void *elem1, const void *elem2)
 	return 0;
 }
 
-int GetPMTOffsetFromThumbnailScrollOffset()
+int GetPMTOffsetFromThumbnailScrollOffset(void)
 {
 	int nRetVal = 0;
 	int nCounter = v->nThumbnailScrollOffset;
@@ -8089,18 +8098,18 @@ void UpdatePIDChart(HWND hDlg)
 #endif _DEBUG_MESSAGES
 			if (dRate > 1000.0 * 1000.0)
 			{
-				wsprintf(szMask, "%s (%%.2f%%%% - %%.2f Mbps)", v->szOutputPIDFlags);
-				sprintf(szPID, szMask, v->pc[i].nPID, dPercent, dRate / 1000.0 / 1000.0);
+				StringCchPrintf(szMask, sizeof(szMask), "%s (%%.2f%%%% - %%.2f Mbps)", v->szOutputPIDFlags);
+				StringCchPrintf(szPID, sizeof(szPID), szMask, v->pc[i].nPID, dPercent, dRate / 1000.0 / 1000.0);
 			}
 			else if (dRate > 1000.0)
 			{
-				wsprintf(szMask, "%s (%%.2f%%%% - %%.2f Kbps)", v->szOutputPIDFlags);
-				sprintf(szPID, szMask, v->pc[i].nPID, dPercent, dRate / 1000.0);
+				StringCchPrintf(szMask, sizeof(szMask), "%s (%%.2f%%%% - %%.2f Kbps)", v->szOutputPIDFlags);
+				StringCchPrintf(szPID, sizeof(szPID), szMask, v->pc[i].nPID, dPercent, dRate / 1000.0);
 			}
 			else
 			{
-				wsprintf(szMask, "%s (%%.2f%%%% - %%.0f bps)", v->szOutputPIDFlags);
-				sprintf(szPID, szMask, v->pc[i].nPID, dPercent, dRate);
+				StringCchPrintf(szMask, sizeof(szMask), "%s (%%.2f%%%% - %%.0f bps)", v->szOutputPIDFlags);
+				StringCchPrintf(szPID, sizeof(szPID), szMask, v->pc[i].nPID, dPercent, dRate);
 			}
 		}
 		else
@@ -8114,24 +8123,24 @@ void UpdatePIDChart(HWND hDlg)
 #endif _DEBUG_MESSAGES
 				if (dRate > (1000.0 * 1000.0))
 				{
-					wsprintf(szMask, "%s (%%.2f%%%% ~ %%.2f Mbps)", v->szOutputPIDFlags);
-					sprintf(szPID, szMask, v->pc[i].nPID, dPercent, dRate / 1000.0 / 1000.0);
+					StringCchPrintf(szMask, sizeof(szMask), "%s (%%.2f%%%% ~ %%.2f Mbps)", v->szOutputPIDFlags);
+					StringCchPrintf(szPID, sizeof(szPID), szMask, v->pc[i].nPID, dPercent, dRate / 1000.0 / 1000.0);
 				}
 				else if (dRate > 1000.0)
 				{
-					wsprintf(szMask, "%s (%%.2f%%%% ~ %%.2f Kbps)", v->szOutputPIDFlags);
-					sprintf(szPID, szMask, v->pc[i].nPID, dPercent, dRate / 1000.0);
+					StringCchPrintf(szMask, sizeof(szMask), "%s (%%.2f%%%% ~ %%.2f Kbps)", v->szOutputPIDFlags);
+					StringCchPrintf(szPID, sizeof(szPID), szMask, v->pc[i].nPID, dPercent, dRate / 1000.0);
 				}
 				else
 				{
-					wsprintf(szMask, "%s (%%.2f%%%% ~ %%.0f bps)", v->szOutputPIDFlags);
-					sprintf(szPID, szMask, v->pc[i].nPID, dPercent, dRate);
+					StringCchPrintf(szMask, sizeof(szMask), "%s (%%.2f%%%% ~ %%.0f bps)", v->szOutputPIDFlags);
+					StringCchPrintf(szPID, sizeof(szPID), szMask, v->pc[i].nPID, dPercent, dRate);
 				}
 			}
 			else
 			{
-				wsprintf(szMask, "%s (%%.3f%%%%)", v->szOutputPIDFlags);
-				sprintf(szPID, szMask, v->pc[i].nPID, dPercent);
+				StringCchPrintf(szMask, sizeof(szMask), "%s (%%.3f%%%%)", v->szOutputPIDFlags);
+				StringCchPrintf(szPID, sizeof(szPID), szMask, v->pc[i].nPID, dPercent);
 			}
 		}
 		dTotalPercent += dPercent;
@@ -8522,12 +8531,12 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 					SystemTimeToFileTime(&stSystemTime, (FILETIME *)&nSystemTime);
 					
 					memset(&stStreamTime, 0, sizeof(stStreamTime));
-					stStreamTime.wYear = v->dvbtdt.nYear;
-					stStreamTime.wMonth = v->dvbtdt.nMonth;
-					stStreamTime.wDay = v->dvbtdt.nDay;
-					stStreamTime.wHour = v->dvbtdt.nHour;
-					stStreamTime.wMinute = v->dvbtdt.nMinute;
-					stStreamTime.wSecond = v->dvbtdt.nSecond;
+					stStreamTime.wYear = (WORD)v->dvbtdt.nYear;
+					stStreamTime.wMonth = (WORD)v->dvbtdt.nMonth;
+					stStreamTime.wDay = (WORD)v->dvbtdt.nDay;
+					stStreamTime.wHour = (WORD)v->dvbtdt.nHour;
+					stStreamTime.wMinute = (WORD)v->dvbtdt.nMinute;
+					stStreamTime.wSecond = (WORD)v->dvbtdt.nSecond;
 					SystemTimeToFileTime(&stStreamTime, (FILETIME *)&nStream);
 
 					nDifference = nStream - nSystemTime;
@@ -8728,8 +8737,8 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 							{
 								BOOL fAddThisOne = TRUE;
 
-								int nCASystemID = (pDescriptorData[2] << 8) + pDescriptorData[3];
-								int nCAPID = ((pDescriptorData[4] << 8) + pDescriptorData[5]) & 0x1fff;
+								uint16_t nCASystemID = (pDescriptorData[2] << 8) + pDescriptorData[3];
+								uint16_t nCAPID = ((pDescriptorData[4] << 8) + pDescriptorData[5]) & 0x1fff;
 								
 								if (v->fUsePreferedCAID && nCASystemID != v->nPrefereredCAID)
 									fAddThisOne = FALSE;
@@ -8738,7 +8747,7 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 								{
 									CA[nCAIndex].CA_Typ = nCASystemID;
 									CA[nCAIndex].EMM = nCAPID;
-									CA[nCAIndex].ECM = GetECMPID(nItemIndex, TRUE, nCASystemID);
+									CA[nCAIndex].ECM = (uint16_t)GetECMPID(nItemIndex, TRUE, nCASystemID);
 									CA[nCAIndex].Provider_Id = 1;
 									nCAIndex++;
 								}
@@ -9404,26 +9413,24 @@ void ShowStatistics(HDC hDC, int xStart, int yStart, int nTable, char * szDescri
 	TextOut(hDC, xStart + xOffset, yStart, szDescription, lstrlen(szDescription));
 	
 	if (v->nSIParserPackets[nTable] > 1000 * 1000)
-		sprintf(szTemp, "%.1fm", (double)v->nSIParserPackets[nTable] / 1000.0 / 1000.0);
+		StringCchPrintf(szTemp, sizeof(szTemp), "%.1fm", (double)v->nSIParserPackets[nTable] / 1000.0 / 1000.0);
 	else if (v->nSIParserPackets[nTable] > 1000)
-		sprintf(szTemp, "%.1fk", (double)v->nSIParserPackets[nTable] / 1000.0);
+		StringCchPrintf(szTemp, sizeof(szTemp), "%.1fk", (double)v->nSIParserPackets[nTable] / 1000.0);
 	else
-		wsprintf(szTemp, "%d", v->nSIParserPackets[nTable]);
+		StringCchPrintf(szTemp, sizeof(szTemp), "%I64d", v->nSIParserPackets[nTable]);
 	TextOut(hDC, xStart + xOffset, yStart + textsize.cy, szTemp, lstrlen(szTemp));
 	
 	if (v->nSIParserCRCs[nTable] > 1000 * 1000)
-		sprintf(szTemp, "%.1fm", (double)v->nSIParserCRCs[nTable] / 1000.0 / 1000.0);
+		StringCchPrintf(szTemp, sizeof(szTemp), "%.1fm", (double)v->nSIParserCRCs[nTable] / 1000.0 / 1000.0);
 	else if (v->nSIParserCRCs[nTable] > 1000)
-		sprintf(szTemp, "%.1fk", (double)v->nSIParserCRCs[nTable] / 1000.0);
+		StringCchPrintf(szTemp, sizeof(szTemp), "%.1fk", (double)v->nSIParserCRCs[nTable] / 1000.0);
 	else
-		wsprintf(szTemp, "%d", v->nSIParserCRCs[nTable]);
+		StringCchPrintf(szTemp, sizeof(szTemp), "%I64d", v->nSIParserCRCs[nTable]);
 	TextOut(hDC, xStart + xOffset, yStart + textsize.cy + textsize.cy, szTemp, lstrlen(szTemp));
 }
 
 void UpdateStatistics(HWND hDlg, BOOL fFromTimer)
 {
-//		EnableDisableSDTEITTotals(hWnd, !v->fIgnoreEIT);
-
 	__int64 nTotalBytes = 0;
 	int nActiveByteSamples = 0;
 	int xWidth, xStart, yStart, yEnd;
@@ -9733,7 +9740,7 @@ void ResetPIDChart(HWND hWnd)
 	UpdateStatistics(v->hDlgSIParser, FALSE);
 }
 
-int ThumbnailThreadsRunning()
+int ThumbnailThreadsRunning(void)
 {
 	int nRetVal = 0;
 	int nES;
@@ -10716,6 +10723,12 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 				break;
 			case NIT_DVBC:
 				sprintf(szTemp, "%.1f MHz", (double)v->pNITData[nTransportStreamID]->nFrequency / 10000.0);
+				break;
+			case NIT_ISDBT:
+				StringCchPrintf(szTemp, sizeof(szTemp), "%.3f MHz - %s", (double)v->pNITData[nTransportStreamID]->nFrequency / 100000.0, v->pNITData[nTransportStreamID]->szNetworkName);
+				break;
+			case NIT_ISDBS:
+				/* TODO */
 				break;
 			}
 			if (v->pNITData[nTransportStreamID]->fThisTS != TRUE)
@@ -12611,7 +12624,7 @@ int PopulateSourceList(HWND hDlg, HWND hWndLV)
 				hSource = LoadLibrary(szCurrentFile);
 				if (hSource != NULL)
 				{
-					BOOL (* myGetDescription) (char * szDescription, char * szCommandLineParameters, BOOL * fCanBeStopped, int * nMaxPIDs, DWORD * dwCapabilities);
+					td_GetDescription myGetDescription;
 					myGetDescription = (td_GetDescription)GetProcAddress(hSource, "TSReader_GetDescription");
 					if (myGetDescription != NULL)
 					{
@@ -12714,10 +12727,7 @@ INT_PTR CALLBACK SourceDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 		switch (((LPNMHDR) lParam)->code)
 		{ 
 		case LVN_GETDISPINFO:
-			{
-				NMLVDISPINFO * pnmv = (NMLVDISPINFO *)lParam;
-				GetSourceDispInfo((LV_DISPINFO *) lParam);
-			}
+			GetSourceDispInfo((LV_DISPINFO *) lParam);
 			break;
 		case LVN_ITEMCHANGED:
 			{
@@ -12734,6 +12744,7 @@ INT_PTR CALLBACK SourceDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 		case NM_DBLCLK:
 			{
 				NMLVDISPINFO * pnmv = (NMLVDISPINFO *)lParam;
+				(void)pnmv; /* TODO why */
 				PostMessage(hDlg, WM_COMMAND, IDOK, 0);
 			}
 			break;
@@ -12884,7 +12895,7 @@ INT_PTR CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam
 			break;
 		case IDOK:
 			{
-				int nProgramNumber = GetDlgItemInt(hDlg, IDC_MANUAL_PROGRAM_NUMBER, NULL, FALSE);
+				uint16_t nProgramNumber = (uint16_t)GetDlgItemInt(hDlg, IDC_MANUAL_PROGRAM_NUMBER, NULL, FALSE);
 				int nPCRPID = 0;
 				int nPMTIndex;
 				char szTemp[64];
@@ -12900,7 +12911,7 @@ INT_PTR CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam
 					SetFocus(GetDlgItem(hDlg, IDC_MANUAL_PCR_PID));
 					return FALSE;
 				}
-				v->editpmt.nPCRPID = nPCRPID;
+				v->editpmt.nPCRPID = nPCRPID & 0x1fff;
 
 				if (v->editpmt.nProgramNumber == 0)
 				{
@@ -13015,8 +13026,8 @@ INT_PTR CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam
 						char szTemp[32];
 						char szMask[32];
 
-						v->editpmt.es[nESIndex].nStreamType = nESType;
-						v->editpmt.es[nESIndex].nESPID = nESPID;
+						v->editpmt.es[nESIndex].nStreamType = nESType & 0xff;
+						v->editpmt.es[nESIndex].nESPID = nESPID & 0x1fff;
 						if (v->fDecimalPIDs)
 							lstrcpy(szMask, "%02x: %d");
 						else
@@ -13123,10 +13134,7 @@ INT_PTR CALLBACK ManualChannelsDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 		switch (((LPNMHDR) lParam)->code)
 		{ 
 		case LVN_GETDISPINFO:
-			{
-				NMLVDISPINFO * pnmv = (NMLVDISPINFO *)lParam;
-				GetManualChannelDisplayInfo((LV_DISPINFO *) lParam);
-			}
+			GetManualChannelDisplayInfo((LV_DISPINFO *) lParam);
 			break;
 		case NM_DBLCLK:
 			PostMessage(hDlg, WM_COMMAND, IDC_EDIT_MANUAL_CHANNEL, 0);
@@ -13221,7 +13229,10 @@ BOOL LoadManualChannels(HWND hWnd, char * szInputFile)
 
 			if (SourceHelper_ReadLine(hInputFile, szInputLine, sizeof(szInputLine)) == 0)
 				break;
-			sscanf(szInputLine, "%d,%d", &newpmt.nProgramNumber, &newpmt.nPCRPID);
+			int nProgramNumber, nPCRPID;
+			sscanf(szInputLine, "%d,%d", &nProgramNumber, &nPCRPID);
+			newpmt.nProgramNumber = nProgramNumber & 0xffff;
+			newpmt.nPCRPID = nPCRPID & 0x1fff;
 			nESIndex = 0;
 			do
 			{
@@ -13229,7 +13240,11 @@ BOOL LoadManualChannels(HWND hWnd, char * szInputFile)
 					break;
 				if (szInputLine[0] == '-')
 					break;
-				sscanf(szInputLine, "%d,%d", &newpmt.es[nESIndex].nStreamType, &newpmt.es[nESIndex].nESPID);
+
+				int nStreamType, nESPID;
+				sscanf(szInputLine, "%d,%d", &nStreamType, &nESPID);
+				newpmt.es[nESIndex].nStreamType = nStreamType & 0xff;
+				newpmt.es[nESIndex].nESPID = nESPID & 0x1fff;
 				nESIndex++;
 			} while (TRUE);
 
@@ -13390,8 +13405,7 @@ void InitSerialControlDialog(HWND hDlg)
 	{
 		int nItem;
 		char * szReceiverName;
-		typedef char * (* td_GetReceiverName) ();
-		char * (* GetReceiverName) ();
+		td_GetReceiverName GetReceiverName;
 	
 		GetReceiverName = (td_GetReceiverName)GetProcAddress(v->hSerialReceiverControl[nIndex], "GetReceiverName");
 		if (GetReceiverName != NULL)
@@ -13980,10 +13994,7 @@ INT_PTR CALLBACK DescriptorUsageDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
 		switch (((LPNMHDR) lParam)->code)
 		{ 
 		case LVN_GETDISPINFO:
-			{
-				NMLVDISPINFO * pnmv = (NMLVDISPINFO *)lParam;
-				GetDescriptorListDispInfo((LV_DISPINFO *) lParam);
-			}
+			GetDescriptorListDispInfo((LV_DISPINFO *) lParam);
 			break;
 		case LVN_ITEMCHANGED:
 			{
@@ -14493,7 +14504,8 @@ BOOL LoadSource(HWND hWnd)
 			GetSignalString = (td_GetSignalString)GetProcAddress(v->hSource, "TSReader_GetSignalString");
 			GetSyncLossCount = (td_GetSyncLossCount)GetProcAddress(v->hSource, "TSReader_GetSyncLossCount");
 			GetRetuneCount = (td_GetRetuneCount)GetProcAddress(v->hSource, "TSReader_GetRetuneCount");
-			
+			GetMiscString = (td_GetMiscString)GetProcAddress(v->hSource, "TSReader_GetMiscString");
+
 			GetDescription(v->szSourceModuleDescription, NULL, &v->fSourceCanBeStopped, &v->nMaxSourcePIDs, &v->dwSourceCapabilities);
 			SetupProcessorAffinity();
 			{
@@ -16228,10 +16240,7 @@ INT_PTR CALLBACK RecordTablesDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 		switch (((LPNMHDR) lParam)->code)
 		{ 
 		case LVN_GETDISPINFO:
-			{
-				NMLVDISPINFO * pnmv = (NMLVDISPINFO *)lParam;
-				GetRecordTableListDispInfo((LV_DISPINFO *) lParam);
-			}
+			GetRecordTableListDispInfo((LV_DISPINFO *) lParam);
 			break;
 		}
 		break;
@@ -16565,10 +16574,7 @@ INT_PTR CALLBACK TableViewerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 		switch (((LPNMHDR) lParam)->code)
 		{ 
 		case LVN_GETDISPINFO:
-			{
-				NMLVDISPINFO * pnmv = (NMLVDISPINFO *)lParam;
-				GetTableMonitorDispInfo((LV_DISPINFO *) lParam);
-			}
+			GetTableMonitorDispInfo((LV_DISPINFO *) lParam);
 			break;
 		case LVN_ITEMCHANGED:
 			{
@@ -18133,13 +18139,13 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	return FALSE;
 }
 
-void SetProcessPriority()
+void SetProcessPriority(void)
 {
 	BOOL fRetVal = SetPriorityClass(GetCurrentProcess(), v->nProcessPriority);
 }
 
 #ifdef _DEBUG
-void DecodeSkyLCN()
+void DecodeSkyLCN(void)
 {
 	int nBATIndex;
 	HANDLE hDebug;
@@ -18180,7 +18186,7 @@ void DecodeSkyLCN()
 
 						while (descriptor_length)
 						{
-							szBouquetName[nOutIndex++] = get_bits(BM_USER_THREAD, 8);
+							szBouquetName[nOutIndex++] = get_bits(BM_USER_THREAD, 8) & 0xff;
 							descriptor_length--;
 						}
 						szBouquetName[nOutIndex] = '\0';
@@ -20388,8 +20394,7 @@ char * ParseTSReaderCommandLine(char * szCmdLinePtr, BOOL * fResult)
 				// Check receiver type
 				for (nIndex = 0; nIndex < v->nSerialReceiverControlIndex; nIndex++)
 				{
-					typedef char * (* td_GetReceiverName) ();
-					char * (* GetReceiverName) ();
+					td_GetReceiverName GetReceiverName;
 				
 					GetReceiverName = (td_GetReceiverName)GetProcAddress(v->hSerialReceiverControl[nIndex], "GetReceiverName");
 					if (GetReceiverName != NULL)
@@ -21084,7 +21089,7 @@ void LoadOutputModules(void)
 	}
 }
 
-void LoadOtherModules()
+void LoadOtherModules(void)
 {
 	WSADATA WSAData;
 	
@@ -21107,6 +21112,8 @@ void LoadOtherModules()
 		ptr_set_cws = (td_ptr_set_cws)GetProcAddress(v->hCSA, "set_cws");
 		ptr_decrypt = (td_ptr_decrypt)GetProcAddress(v->hCSA, "decrypt");
 	}
+	
+	/* at this point csa.dll is loaded or not */
 
 	// Load FFDecsa_64_MMX.dll if there
 	get_keyset_size = NULL;
@@ -21133,13 +21140,15 @@ void LoadOtherModules()
 		decrypt_packets = (td_decrypt_packets)GetProcAddress(v->hFFCSA, "decrypt_packets");
 
 		v->pFFKeySpaceBase = LocalAlloc(LPTR, (get_keyset_size() * 2) + 4);
-		v->pFFKeySpace = v->pFFKeySpaceBase;
-		while (((int)v->pFFKeySpace[0] & 3) != 0)
-			v->pFFKeySpace++;
-		nTemp = get_internal_parallelism();
-		v->nFFCSAPackets = nTemp + (nTemp / 10);
-		if (v->nFFCSAPackets < nTemp + 5)
-			v->nFFCSAPackets = nTemp + 5;
+		if (v->pFFKeySpaceBase) {
+			v->pFFKeySpace = v->pFFKeySpaceBase;
+			while (((int)v->pFFKeySpace[0] & 3) != 0)
+				v->pFFKeySpace++;
+			nTemp = get_internal_parallelism();
+			v->nFFCSAPackets = nTemp + (nTemp / 10);
+			if (v->nFFCSAPackets < nTemp + 5)
+				v->nFFCSAPackets = nTemp + 5;
+		}
 	}
 
 	if (v->hCSA == NULL && v->hFFCSA == NULL)
@@ -21166,7 +21175,7 @@ void LoadOtherModules()
 	}
 }
 
-VOID UnloadOtherModules()
+VOID UnloadOtherModules(void)
 {
 	if (v->hXNSInterface != NULL)
 	{
@@ -21199,7 +21208,7 @@ VOID UnloadOtherModules()
 	}
 }
 
-BOOL NEAR InitApplication()
+BOOL NEAR InitApplication(void)
 {
 	WNDCLASS wndclass;
 
@@ -21396,7 +21405,7 @@ void DoNormalTSReaderWindow(char * szCmdLinePtr)
 	}
 }
 
-void LoadSerialReceiverDLLs()
+void LoadSerialReceiverDLLs(void)
 {
 	HANDLE hFind;
 	char szCurrentDir[MAX_PATH];
@@ -21426,7 +21435,7 @@ void LoadSerialReceiverDLLs()
 	}
 }
 
-void UnloadSerialReceiverDLLs()
+void UnloadSerialReceiverDLLs(void)
 {
 	int nIndex;
 

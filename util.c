@@ -16,8 +16,9 @@ void GetSourceInfoLine(int nLine, char * szOutput);
 void ATSCHuffmanDecode(int nBitBufferIndex, int type, int bytes, char * outtext);
 
 extern PVARIABLES v;
-extern BOOL (* GetTunerString) (char * szString);
-extern BOOL (* GetSignalString) (char * szString);
+extern td_GetTunerString GetTunerString;
+extern td_GetSignalString GetSignalString;
+extern td_GetMiscString GetMiscString;
 
 char * GetExtensionPtr(char * szInputString)
 {
@@ -51,7 +52,7 @@ void CopyListControlToClipboard(HWND hListControl, BOOL fAddCR)
 			if (fAddCR)
 				lstrcat(szBuffer, "\r\n");
 		}
-		GlobalUnlock(szBuffer);  
+		GlobalUnlock(szBuffer);
 		SetClipboardData(CF_TEXT, szBuffer);
 		CloseClipboard();
 		GlobalFree(szBuffer);
@@ -1905,11 +1906,7 @@ void GetSourceInfoLine(int nLine, char * szOutput)
 	switch(nLine)
 	{
 	case 0:
-#ifndef DTVSENTINEL
 		wsprintf(szOutput, "Source: %s", v->szSourceModuleDescription);
-#else DTVSENTINEL
-		szOutput[0] = '\0';
-#endif DTVSENTINEL
 		break;
 	case 1:
 		{
@@ -1927,6 +1924,13 @@ void GetSourceInfoLine(int nLine, char * szOutput)
 			wsprintf(szOutput, "Signal: %s", szSignalString);
 		}
 		break;
+	case 3:
+		{
+			char szMiscString[64] = { "" };
+			if (GetMiscString != NULL)
+				GetMiscString(szMiscString);
+			wsprintf(szOutput, "%s", szMiscString);
+		}
 	case 5:
 		{
 			if (v->fEPGSaveEnabled == TRUE)

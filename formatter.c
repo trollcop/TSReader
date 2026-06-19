@@ -1720,6 +1720,7 @@ BOOL QuickFormatNIT(char * szBuffer, int nTransportStreamID, BOOL fLongVersion)
 				switch(v->pNITData[nNITIndex]->nType)
 				{
 				case NIT_DVBT:
+				case NIT_ISDBT:
 					{
 						if (fLongVersion)
 							lstrcpy(szFormatBuffer, "NIT: %.1f MHz\r\n");
@@ -1767,6 +1768,9 @@ BOOL QuickFormatNIT(char * szBuffer, int nTransportStreamID, BOOL fLongVersion)
 								szFEC,
 								szModulation);
 					}
+					break;
+				case NIT_ISDBS:
+					/* TODO */
 					break;
 				}
 				return TRUE;
@@ -6034,8 +6038,8 @@ char * FormatCVCT(int nCVCTIndex)
 
 				while (nDescriptorsLength)
 				{
-					int nDescriptor = pAdditionalDescriptors[0];
-					int nDescriptorLength = pAdditionalDescriptors[1];
+					BYTE nDescriptor = pAdditionalDescriptors[0];
+					BYTE nDescriptorLength = pAdditionalDescriptors[1];
 					char szDescriptor[128];
 
 					DecodeDescriptorNames(szDescriptor, nDescriptor);
@@ -6141,7 +6145,7 @@ char * FormatBAT(int nBATIndex)
 	return v->szSIFormatBuffer;
 }
 
-char * FormatMGT()
+char * FormatMGT(void)
 {
 	int i;
 
