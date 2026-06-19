@@ -21501,16 +21501,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	else
 		lstrcpy(v->szOutputPIDFlags, "0x%04x");
 
-	// OEM versions need to check for the correct command-line parameters
-#ifdef INEOQUEST
-	{
-		char szGUID[] = "{C0F5E3B4-5CF2-4275-8938-DDE7381812EF}";
-		if (memcmp(lpszCmdLine, szGUID, sizeof(szGUID) - 1) != 0)
-			return 0;
-		szCmdLinePtr += sizeof(szGUID) - 1;
-	}
-#endif INEOQUEST
-
 	szCmdLinePtr = ParseTSReaderCommandLine(szCmdLinePtr, &fOK);
 	if (lstrlen(v->szProfileName))
 	{

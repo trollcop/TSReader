@@ -5588,23 +5588,11 @@ BOOL SourceHelper_ValidateSourceContainer(PSOURCESTRUCT pss)
 	}
 
 	strlwr(szExecutableName);
-	if (lstrcmp(szExecutableName, "tsreader.exe") == 0)
-		return TRUE;
-	if (lstrcmp(szExecutableName, "tsreaderlite.exe") == 0)
-		return TRUE;
 	if (lstrcmp(szExecutableName, "dvbapps.viewer.exe") == 0)
-		return TRUE;
-	if (lstrcmp(szExecutableName, "tsreaderineoquest.exe") == 0)
 		return TRUE;
 	if (lstrcmp(szExecutableName, "tsreaderpro.exe") == 0)
 		return TRUE;
-	if (lstrcmp(szExecutableName, "tsreaderpro-protected.exe") == 0)
-		return TRUE;
-	if (lstrcmp(szExecutableName, "zanalyzer.exe") == 0)
-		return TRUE;
 	if (lstrcmp(szExecutableName, "mpeg2output.exe") == 0)
-		return TRUE;
-	if (lstrcmp(szExecutableName, "dtvsentinel.exe") == 0)
 		return TRUE;
 
 	return FALSE;
