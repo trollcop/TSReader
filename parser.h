@@ -1,3 +1,5 @@
+#pragma once
+
 void ParseATSCEITPacket(BYTE * pSectionPointer, int nPacketLength, int nEITNumber);
 void ParseATSCETTPacket(BYTE * pSectionPointer, int nPacketLength);
 void ParseDVBEITPacket(BYTE * pSectionPointer, int nPacketLength);
@@ -15,9 +17,7 @@ void ParseDVBRSTPacket(BYTE * pSectionPointer, int nPacketLength);
 void ParseDVBTDTPacket(BYTE * pSectionPointer, int nPacketLength);
 void ParseDVBNITPacket(BYTE * pSectionPointer, int nPacketLength);
 void ParseDCIIECMPacket(BYTE * pSection, int nLength);
-#ifdef PRO
 void ParseDVBINTPacket(BYTE * pSection, int nLength);
-#endif PRO
 typedef void (* td_QuickParseUserData) (BYTE * pData, int user_data_len, int nESParsePMTIndex, int nESParseESIndex, int nES);
 void QuickParseUserData(BYTE * pData, int user_data_len, int nESParsePMTIndex, int nESParseESIndex, int nES);
 void ParseISDBBITPacket(BYTE * pSectionPointer, int nPacketLength);

@@ -1,5 +1,3 @@
-#ifndef LITE
-#ifndef INEOQUEST
 #include <windows.h>
 #include <commctrl.h>
 #include <limits.h>
@@ -22,10 +20,10 @@ extern PVARIABLES v;
 
 static a52_state_t * state[REAL_MAX_ES_PARSERS];
 static ao_instance_t * output[REAL_MAX_ES_PARSERS];
-signed short * pSamples[REAL_MAX_ES_PARSERS];
-int nSampleWriteIndex[REAL_MAX_ES_PARSERS];
-int count[REAL_MAX_ES_PARSERS];
-BYTE * pThumbnail[REAL_MAX_ES_PARSERS];
+static signed short *pSamples[REAL_MAX_ES_PARSERS];
+static int nSampleWriteIndex[REAL_MAX_ES_PARSERS];
+static int count[REAL_MAX_ES_PARSERS];
+static BYTE *pThumbnail[REAL_MAX_ES_PARSERS];
 static uint8_t buf[REAL_MAX_ES_PARSERS][3840];
 static uint8_t * bufptr[REAL_MAX_ES_PARSERS];
 static uint8_t * bufpos[REAL_MAX_ES_PARSERS];
@@ -114,13 +112,9 @@ BOOL a52_decode_data(uint8_t * start, uint8_t * end, int nES, int nDestWidth, in
 
 				if (ao_setup (output[nES], sample_rate[nES], &flags[nES], &level, &bias))
 					goto error;
-				//if (!disable_adjust)
-					flags[nES] |= A52_ADJUST_LEVEL;
-				//level *= 1;//gain;
+				flags[nES] |= A52_ADJUST_LEVEL;
 				if (a52_frame (state[nES], buf[nES], &flags[nES], &level, bias))
 					goto error;
-				//if (disable_dynrng)
-				//	a52_dynrng (state[nES], NULL, NULL);
 				for (i = 0; i < 1; i++)
 				{
 					sample_t * samples;
@@ -151,14 +145,12 @@ BOOL a52_decode_data(uint8_t * start, uint8_t * end, int nES, int nDestWidth, in
 								int nAudioChannels = 2;
 								GenerateAudioThumbnail(pSamples[nES], nAudioChannels, nDestWidth, nDestHeight, pThumbnail[nES],
 									                   v->nESParsePMTIndex[nES], v->nESParseESIndex[nES]);
-#ifdef PRO
 								{
 									char szTemp[128];
 									wsprintf(szTemp, "TSReader: Completed AC-3 parser for program %d ES thread %d\n",
 										     v->pat.pmt[v->nESParsePMTIndex[nES]].nProgramNumber, nES);
 									OutputDebugString(szTemp);
 								}
-#endif PRO
 								return TRUE;
 							}
 						}
@@ -248,5 +240,3 @@ DWORD WINAPI AC3AudioDecoderThread(LPVOID lpv)
 	}
 	return 0;
 }
-#endif INEOQUEST
-#endif LITE

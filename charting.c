@@ -28,16 +28,13 @@ void GetSourceInfoLine(int nLine, char * szOutput);
 void bs_init(bs_t* b, uint8_t* buf, int size);
 uint32_t bs_read_ue(bs_t* b);
 
-#ifdef PRO
 LARGE_INTEGER rate, priorcount;
 double dMaxRate;
-#endif PRO
 // Stuff in here
 BOOL CheckCommonGraphMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
 	{
-#ifdef PRO
 	case WM_CREATE:
 		{
 			LPCREATESTRUCT lpcs = (LPCREATESTRUCT)lParam;
@@ -63,7 +60,6 @@ BOOL CheckCommonGraphMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			}
 		}
 		break;
-#endif PRO
 	case WM_SIZE:
 		{
 			int nChartIndex = (int)GetWindowLongPtr(hWnd, GWLP_USERDATA);
@@ -101,10 +97,8 @@ BOOL CheckCommonGraphMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			}
 			KillTimer(hWnd, 100 + nChartIndex);
 			SetForegroundWindow(v->hWndMainWindow);
-#ifdef PRO
 			if (v->fSaveChartDataEnabled)
 				CloseHandle(v->hSaveDataFile[nChartIndex]);
-#endif PRO
 			PostMessage(v->hWndMainWindow, WM_USER + 9, 0, nChartIndex);
 		}
 		break;
@@ -126,7 +120,6 @@ BOOL CheckCommonGraphMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 	return TRUE;
 }
 
-#ifdef PRO
 void SaveChartData(int nChartIndex, char * szSaveData)
 {
 	DWORD dwWritten;
@@ -140,7 +133,6 @@ void SaveChartData(int nChartIndex, char * szSaveData)
 			 szSaveData);
 	WriteFile(v->hSaveDataFile[nChartIndex], szTemp, lstrlen(szTemp), &dwWritten, NULL);
 }
-#endif PRO
 
 void Charting__UpdateQuickStyle(int nChartIndex)
 {
@@ -154,9 +146,7 @@ void SetupPIEGraphData(int nChartIndex)
 	int i;
 	int nChartPoints = 0;
 	PIDCOUNTER pc[8192];
-#ifdef PRO
 	char szSaveData[1024];
-#endif PRO
 
 	EnterCriticalSection(&v->ss.csPIDCounter);
 	memcpy(&pc, &v->pc, sizeof(PIDCOUNTER) * 8192);
@@ -183,14 +173,12 @@ void SetupPIEGraphData(int nChartIndex)
 		PEvsetcellEx(v->m_hPE[nChartIndex], PEP_faXDATA, 0, i, &f);
 		GetPIDTooltipInfo(pc[i].nPID, szPointLabel);
 		PEvsetcell(v->m_hPE[nChartIndex], PEP_szaPOINTLABELS, i, szPointLabel);
-#ifdef PRO
 		if (v->fSaveChartDataEnabled)
 		{
 			sprintf(szSaveData, "PID=%04x,Packets=%d",
 				    pc[i].nPID, (int)f);
 			SaveChartData(nChartIndex, szSaveData);
 		}
-#endif PRO
 	}
 }
 
@@ -298,9 +286,7 @@ void AddVideoRateData(int nChartIndex)
 	float * fNewValues = LocalAlloc(LPTR, sizeof(float) * GetVideoStreamCount());
 	SYSTEMTIME stLocal;
 	char szTemp[128];
-#ifdef PRO
 	char szSaveData[1024];
-#endif PRO
 
 	for (nPMTIndex = 0; nPMTIndex < MAX_PAT_ENTRIES; nPMTIndex++)
 	{
@@ -339,14 +325,12 @@ void AddVideoRateData(int nChartIndex)
 					dPIDRate  = ((dPIDRate / 100.0) * dPercent);
 				}
 				fNewValues[nPointIndex++] = (float)dPIDRate;
-#ifdef PRO
 				if (v->fSaveChartDataEnabled)
 				{
 					sprintf(szSaveData, "Program=%d,Rate=%.3f",
 							 v->pat.pmt[nPMTIndex].nProgramNumber, dPIDRate);
 					SaveChartData(nChartIndex, szSaveData);
 				}
-#endif PRO
 				break;
 			}
 		}
@@ -521,9 +505,7 @@ void AddMuxRateData(int nChartIndex)
 	SYSTEMTIME stLocal;
 	PIDCOUNTER pc[8192];
 	char szTemp[128];
-#ifdef PRO
 	char szSaveData[1024];
-#endif PRO
 
 	// Copy over the PID stats
 	memset(&pc, 0, sizeof(PIDCOUNTER) * 8192);
@@ -559,14 +541,12 @@ void AddMuxRateData(int nChartIndex)
 			}
 		}
 		fNewValues[nPointIndex++] = fPercent;
-#ifdef PRO
 		if (v->fSaveChartDataEnabled)
 		{
 			sprintf(szSaveData, "Program=%d,Percentage=%.3f",
 					 v->pat.pmt[nPMTIndex].nProgramNumber, fPercent);
 			SaveChartData(nChartIndex, szSaveData);
 		}
-#endif PRO
 	}
 
 	// Now look for other usage - anything left over other than nulls
@@ -580,28 +560,24 @@ void AddMuxRateData(int nChartIndex)
 		}
 	}
 	fNewValues[nPointIndex++] = fPercent;
-#ifdef PRO
 	if (v->fSaveChartDataEnabled)
 	{
 		sprintf(szSaveData, "Other,Percentage=%.3f",
 				 (double)fPercent);
 		SaveChartData(nChartIndex, szSaveData);
 	}
-#endif PRO
 
 	// Now NULL packets
 	fPercent = 0.00000001f;
 	if (pc[0x1fff].lnPackets)
 		fPercent = ((float)pc[0x1fff].lnPackets / (float)lnTotalTSPackets) * 100.0f;
 	fNewValues[nPointIndex++] = fPercent;
-#ifdef PRO
 	if (v->fSaveChartDataEnabled)
 	{
 		sprintf(szSaveData, "Null,Percentage=%.3f",
 				 fPercent);
 		SaveChartData(nChartIndex, szSaveData);
 	}
-#endif PRO	
 	PEvset(v->m_hPE[nChartIndex], PEP_faAPPENDYDATA, fNewValues, 1);
 
 	GetLocalTime(&stLocal);
@@ -728,9 +704,7 @@ void SetupActivePIDData(int nChartIndex)
 	int nChartPoints = 0;
 	PIDCOUNTER pc[8192];
 	DWORD * pdwPointColors;
-#ifdef PRO
 	char szSaveData[1024];
-#endif PRO
 
 	EnterCriticalSection(&v->ss.csPIDCounter);
 	memcpy(&pc, &v->pc, sizeof(PIDCOUNTER) * 8192);
@@ -761,14 +735,12 @@ void SetupActivePIDData(int nChartIndex)
 				pdwPointColors[i] = v->dwScrambledPIDColor;
 			else
 				pdwPointColors[i] = v->dwUnscrambledPIDColor;
-#ifdef PRO
 			if (v->fSaveChartDataEnabled)
 			{
 				sprintf(szSaveData, "PID=%04x,Scrambled=%d,Percentage=%.3f",
 					     pc[i].nPID, pc[i].fScrambled, f);
 				SaveChartData(nChartIndex, szSaveData);
 			}
-#endif PRO
 		}
 	}
 	else
@@ -787,14 +759,12 @@ void SetupActivePIDData(int nChartIndex)
 				else
 					pdwPointColors[nXAxisIndex] = v->dwUnscrambledPIDColor;
 				nXAxisIndex++;
-#ifdef PRO
 				if (v->fSaveChartDataEnabled)
 				{
 					sprintf(szSaveData, "PID=%04x,Scrambled=%d,Percentage=%.3f",
 							 pc[i].nPID, pc[i].fScrambled, f);
 					SaveChartData(nChartIndex, szSaveData);
 				}
-#endif PRO
 			}
 		}
 	}
@@ -880,7 +850,6 @@ LRESULT FAR PASCAL ActivePIDsChartWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam
 	return FALSE;
 }
 
-#ifndef LITE
 void ProgramUsageCheckMaxRate(int nChartIndex, float * fBandwidth)
 {
 	float fAllBandwidth = fBandwidth[0] + fBandwidth[1] + fBandwidth[2] + fBandwidth[3] + fBandwidth[4];
@@ -908,9 +877,7 @@ void SetupProgramUsageData(int nChartIndex)
 	float fPercent;
 	float fPIDRate;
 	float fBandwidth[6];
-#ifdef PRO
 	char szSaveData[1024];
-#endif PRO
 	BYTE bPIDList[8192];
 
 	memset(bPIDList, 0, sizeof(bPIDList));
@@ -981,7 +948,6 @@ void SetupProgramUsageData(int nChartIndex)
 		PEvsetcellEx(v->m_hPE[nChartIndex], PEP_faYDATA, 3, s, &fBandwidth[3]);
 		PEvsetcellEx(v->m_hPE[nChartIndex], PEP_faYDATA, 4, s, &fBandwidth[4]);
 		s++;
-#ifdef PRO
 		if (v->fSaveChartDataEnabled)
 		{
 			sprintf(szSaveData, "Program=%d,Video=%.3f,Audio=%.3f,Virt-Video=%.3f,Virt-Audio=%.3f,Other=%.3f",
@@ -989,7 +955,6 @@ void SetupProgramUsageData(int nChartIndex)
 					 fBandwidth[0], fBandwidth[1], fBandwidth[2], fBandwidth[3], fBandwidth[4]);
 			SaveChartData(nChartIndex, szSaveData);
 		}
-#endif PRO
 	}
 
 	// SI/Other PIDs
@@ -1023,13 +988,11 @@ void SetupProgramUsageData(int nChartIndex)
 		PEvsetcellEx(v->m_hPE[nChartIndex], PEP_faYDATA, 3, s, &fBandwidth[3]);
 		PEvsetcellEx(v->m_hPE[nChartIndex], PEP_faYDATA, 4, s, &fBandwidth[4]);
 		s++;
-#ifdef PRO
 		if (v->fSaveChartDataEnabled)
 		{
 			sprintf(szSaveData, "SI,Other=%.3f", fBandwidth[4]);
 			SaveChartData(nChartIndex, szSaveData);
 		}
-#endif PRO
 		ProgramUsageCheckMaxRate(nChartIndex, fGhostBandwidth);
 		PEvsetcellEx(v->m_hPE[nChartIndex], PEP_faYDATA, 0, s, &fGhostBandwidth[0]);
 		PEvsetcellEx(v->m_hPE[nChartIndex], PEP_faYDATA, 1, s, &fGhostBandwidth[1]);
@@ -1037,13 +1000,11 @@ void SetupProgramUsageData(int nChartIndex)
 		PEvsetcellEx(v->m_hPE[nChartIndex], PEP_faYDATA, 3, s, &fGhostBandwidth[3]);
 		PEvsetcellEx(v->m_hPE[nChartIndex], PEP_faYDATA, 4, s, &fGhostBandwidth[4]);
 		s++;
-#ifdef PRO
 		if (v->fSaveChartDataEnabled)
 		{
 			sprintf(szSaveData, "Ghost,Other=%.3f", fBandwidth[4]);
 			SaveChartData(nChartIndex, szSaveData);
 		}
-#endif PRO
 	}
 
 	// NULL PID
@@ -1057,13 +1018,11 @@ void SetupProgramUsageData(int nChartIndex)
 	PEvsetcellEx(v->m_hPE[nChartIndex], PEP_faYDATA, 2, s, &fBandwidth[2]);
 	PEvsetcellEx(v->m_hPE[nChartIndex], PEP_faYDATA, 3, s, &fBandwidth[3]);
 	PEvsetcellEx(v->m_hPE[nChartIndex], PEP_faYDATA, 4, s, &fBandwidth[4]);
-#ifdef PRO
 	if (v->fSaveChartDataEnabled)
 	{
 		sprintf(szSaveData, "Null,Other=%.3f", fBandwidth[4]);
 		SaveChartData(nChartIndex, szSaveData);
 	}
-#endif PRO
 }
 
 LRESULT FAR PASCAL ProgramUsageChartWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -1203,12 +1162,9 @@ void AddSignalChartData(int nChartIndex)
 	float fNewValues[2];
 	SYSTEMTIME stLocal;
 	char szTemp[128];
-#ifdef PRO
 	char szSaveData[128] = {""};
-#endif PRO
 
 	ExtractSignalData(v->nSignalChartMode[nChartIndex], &fNewValues[0], &fNewValues[1]);
-#ifdef PRO
 	switch(v->nSignalChartMode[nChartIndex])
 	{
 	case SIGNAL_CHART_MODE_SNR:
@@ -1228,7 +1184,6 @@ void AddSignalChartData(int nChartIndex)
 			sprintf(szSaveData, "Quality=%d,dBm=%.3f", (int)fNewValues[0], fNewValues[1]);
 		break;
 	}
-#endif PRO
 
 	PEvset(v->m_hPE[nChartIndex], PEP_faAPPENDYDATA, fNewValues, 1);
 
@@ -1239,10 +1194,8 @@ void AddSignalChartData(int nChartIndex)
 	PEreinitialize(v->m_hPE[nChartIndex]);
 	PEresetimage(v->m_hPE[nChartIndex], 0, 0);
 
-#ifdef PRO
 	if (v->fSaveChartDataEnabled)
 		SaveChartData(nChartIndex, szSaveData);
-#endif PRO
 }
 
 LRESULT FAR PASCAL SignalChartWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -1385,7 +1338,6 @@ LRESULT FAR PASCAL VideoCompositionChartWindowProc(HWND hWnd, UINT uMsg, WPARAM 
 			memset(v->nPictureType[nChartIndex], 0, sizeof(int) * MAX_CHART_GOP_LENGTH);
 			v->nPictureIndex[nChartIndex] = -1;
 			v->nVideoCompositionPoints[nChartIndex] = 0;
-#ifdef PRO
 			if ((v->nChartParameters & 0xffff0000) == 0x00010000)
 			{
 				// H264
@@ -1394,7 +1346,6 @@ LRESULT FAR PASCAL VideoCompositionChartWindowProc(HWND hWnd, UINT uMsg, WPARAM 
 				else
 					v->nVideoCompositionPoints[nChartIndex] = MAX_CHART_GOP_LENGTH;
 			}
-#endif PRO
 			v->fVideoMaxRate[nChartIndex] = 0.0f;
 
 			// Actually create the chart
@@ -1419,10 +1370,8 @@ LRESULT FAR PASCAL VideoCompositionChartWindowProc(HWND hWnd, UINT uMsg, WPARAM 
 				PEszset(v->m_hPE[nChartIndex], PEP_szMAINTITLE, "Video Composition");
 				PEszset(v->m_hPE[nChartIndex], PEP_szYAXISLABEL, "Bits per Picture");
 				PEszset(v->m_hPE[nChartIndex], PEP_szXAXISLABEL, "Picture Type");
-#ifdef PRO
 				if ((v->nChartParameters & 0xffff0000) == 0x00010000)
 					lstrcpy(szInitialPointLabel, "Waiting for first picture");
-#endif PRO
 				PEvsetcell( v->m_hPE[nChartIndex], PEP_szaPOINTLABELS, 0, szInitialPointLabel);
 				{
 					float fData = 0.0;
@@ -1856,7 +1805,6 @@ void InputMPEG2VideoCompositionESData(BYTE * pPESPacket, int nPESLength, int nCh
 	}
 }
 
-#ifdef PRO
 typedef struct _tagPIDUsageStacked
 {
 	int nPIDList[8192];
@@ -2065,5 +2013,3 @@ void AddDataToPIDUsageStackedChart(int nChartIndex)
 
 	priorcount.QuadPart = count.QuadPart;
 }
-#endif PRO
-#endif LITE

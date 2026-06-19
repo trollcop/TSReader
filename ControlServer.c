@@ -1,4 +1,3 @@
-#ifndef LITE
 #include <windows.h>
 #include <commctrl.h>
 #include <time.h>
@@ -8,7 +7,7 @@
 #include "resource.h"
 
 // Forward declarations - should be in TSReader.h
-int GetTotalPMTChannels();
+int GetTotalPMTChannels(void);
 BOOL IsAC3AudioStream(int nPMTProgramIndex, int nESIndex);
 BOOL IsPCMAudioStream(int nPMTProgramIndex, int nESIndex);
 void GetLanguageFromDescriptor(char * szLanguage, int nPMTIndex, int nESIndex);
@@ -35,13 +34,11 @@ SOCKET ControlBaseSocket = INVALID_SOCKET;
 SOCKET ControlSocket = INVALID_SOCKET;
 BOOL fServerThreadActive;
 char szNewSourceName[MAX_PATH] = {0};
-#ifdef PRO
 BOOL fXMLStreamRunning = FALSE;
 BOOL fKillXMLStreamThread = FALSE;
 BOOL fDataRequest = FALSE;
 int nDataRequestlParam = 0;
 char szCurrentlyDoingTerminator[128] = {""};
-#endif PRO
 
 static char szError506[] = {"506 Already playing or recording\r\n"};
 static char szError507[] = {"507 No program selected\r\n"};
@@ -961,9 +958,8 @@ void CS__GetInfo(char * szParameters)
 	}
 }
 
-#ifdef PRO
 static char szXMLLeadin[] = {"<?xml version = \"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"};
-void CS__XML_SendGeneralInfo()
+void CS__XML_SendGeneralInfo(void)
 {
 	char szSource[128], * szSourcePtr;
 	char szTuner[128], * szTunerPtr;
@@ -1000,7 +996,7 @@ void CS__XML_SendGeneralInfo()
 	SendControlResponse(szResponse, lstrlen(szResponse) + 1);
 }
 
-void CS__XML_SendPIDs()
+void CS__XML_SendPIDs(void)
 {
 	int i;
 	double dPercent, dRate = 0.0;
@@ -1082,7 +1078,7 @@ char * CS__XMLFormatStats64(__int64 nValue)
 	return szReturnValue;
 }
 
-void CS__XML_SendStats()
+void CS__XML_SendStats(void)
 {
 	char * szString;
 	char szSections[1024] =  {" <SECTIONS "};
@@ -1222,7 +1218,6 @@ void SendRequestedData(int nDataRequestlParam)
 						 DS_status,
 						 DS_day_of_month,
 						 DS_hour);
-#ifdef PRO
 				{
 					__int64 nSystemTime, nStream;
 					__int64 nDifference;
@@ -1246,7 +1241,6 @@ void SendRequestedData(int nDataRequestlParam)
 					wsprintf(szTemp2, "Difference between stream and PC time: %d seconds\r\n", (int)nDifference);
 					lstrcat(szTemp, szTemp2);
 				}
-#endif PRO
 				SetDlgItemText(hDlg, IDC_SI_TEXT, szTemp);
 			}
 			memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
@@ -1779,7 +1773,6 @@ void CS__XML(char * szXML)
 		LeaveCriticalSection(&v->csXMLLog);
 	}
 }
-#endif PRO
 
 void CS__Window(char * szParameters)
 {
@@ -1922,9 +1915,7 @@ void CS__WriteThumbnail(char * szParameters)
 			|| v->pat.pmt[nPMTIndex].es[nESIndex].nStreamType == 0x02		// MPEG-2
 			|| v->pat.pmt[nPMTIndex].es[nESIndex].nStreamType == 0x10		// MPEG-4			
 			|| v->pat.pmt[nPMTIndex].es[nESIndex].nStreamType == 0x1b		// h.264
-#ifdef PRO
 			|| v->pat.pmt[nPMTIndex].es[nESIndex].nStreamType == 0xea		// VC1
-#endif PRO
 			|| v->pat.pmt[nPMTIndex].es[nESIndex].nStreamType == 0x80)		// DC-II
 		{
 			if (v->pat.pmt[nPMTIndex].es[nESIndex].pRGBVideoFrame != NULL)
@@ -2465,8 +2456,7 @@ void CS__DiSEqC(char * szParameters)
 			szParameters++;
 			continue;
 		}
-		if (*szParameters >= '0' && *szParameters <= '9' ||
-			*szParameters >= 'A' && *szParameters <= 'F')
+		if ((*szParameters >= '0' && *szParameters <= '9') || (*szParameters >= 'A' && *szParameters <= 'F'))
 		{
 			int nValue;
 			char szTemp[4];
@@ -2634,7 +2624,6 @@ DWORD WINAPI ControlServerThread(LPVOID lpv)
 			//setsockopt (gHTTPSocket, IPPROTO_TCP, TCP_MAXSEG, (char *) &flag, sizeof(int));
 		}
 
-#ifdef PRO
 		{
 			int i;
 
@@ -2644,7 +2633,6 @@ DWORD WINAPI ControlServerThread(LPVOID lpv)
 			LeaveCriticalSection(&v->csXMLLog);
 		}
 		if (!v->fStreamingXMLMode)
-#endif PRO
 		{
 			wsprintf(szTemp, "200 TSReader version %s Control Server\r\n", GetTSRVersion(NULL));
 			SendControlResponse(szTemp, lstrlen(szTemp));
@@ -2653,9 +2641,7 @@ DWORD WINAPI ControlServerThread(LPVOID lpv)
 		// Loop for commands
 		do
 		{
-#ifdef PRO
 			BOOL fXML = FALSE;
-#endif PRO
 			int nLength;
 			int nCommandLength = 0;
 			char * szSpacePtr;
@@ -2667,12 +2653,10 @@ DWORD WINAPI ControlServerThread(LPVOID lpv)
 				nLength = recv(ControlSocket, &szCommandBuffer[nCommandLength], 1, 0);
 				if (nLength <= 0)
 					break;
-#ifdef PRO
 				if (nCommandLength == 0 && szCommandBuffer[0] == '<')
 					fXML = TRUE;
 				if (fXML == FALSE)
 				{
-#endif PRO
 					if (szCommandBuffer[nCommandLength] == '\r')
 					{
 						szCommandBuffer[nCommandLength] = '\0';
@@ -2680,7 +2664,6 @@ DWORD WINAPI ControlServerThread(LPVOID lpv)
 					}
 					if (szCommandBuffer[nCommandLength] != '\n')
 						nCommandLength++;
-#ifdef PRO
 				}
 				else
 				{	
@@ -2691,7 +2674,6 @@ DWORD WINAPI ControlServerThread(LPVOID lpv)
 					}
 					nCommandLength++;
 				}
-#endif PRO
 			} while (nCommandLength < sizeof(szCommandBuffer));
 			if (nLength <= 0)
 				break;
@@ -2701,13 +2683,11 @@ DWORD WINAPI ControlServerThread(LPVOID lpv)
 				OutputDebugString(szTemp);
 			}
 			RemoveCommandBackspaces(szCommandBuffer);
-#ifdef PRO
 			if (fXML == TRUE)
 			{
 				CS__XML(szCommandBuffer);
 				continue;
 			}
-#endif PRO
 
 			// Parse command
 			szSpacePtr = strstr(szCommandBuffer, " ");
@@ -2803,5 +2783,3 @@ BOOL TerminateControlServer()
 	
 	return TRUE;
 }
-
-#endif LITE

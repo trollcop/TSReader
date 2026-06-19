@@ -1,5 +1,3 @@
-#ifdef PRO
-
 #include <windows.h>
 #include <commctrl.h>
 #include <ole2.h>
@@ -11,7 +9,6 @@
 
 extern PVARIABLES v;
 extern char gszAppName[];
-extern char szLiteWarning[];
 extern char gszKeyName[];
 extern char gszMainClass[];
 char gszProfileClassName[] = {"TSReader.Profile"};
@@ -471,7 +468,7 @@ HRESULT CreateShortcut(LPCSTR lpszPathObj, LPSTR lpszPathLink, LPSTR lpszDesc, L
     CoInitialize(NULL);
 
 	// Get a pointer to the IShellLink interface. 
-    hres = CoCreateInstance(&CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, &IID_IShellLink, &psl); 
+    hres = CoCreateInstance(&CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, &IID_IShellLink, (LPVOID *)&psl);
     if (SUCCEEDED(hres))
 	{ 
         IPersistFile* ppf; 
@@ -485,7 +482,7 @@ HRESULT CreateShortcut(LPCSTR lpszPathObj, LPSTR lpszPathLink, LPSTR lpszDesc, L
 				
        // Query IShellLink for the IPersistFile interface for saving the 
        // shortcut in persistent storage. 
-        hres = psl->lpVtbl->QueryInterface(psl, &IID_IPersistFile, &ppf); 
+        hres = psl->lpVtbl->QueryInterface(psl, &IID_IPersistFile, (LPVOID *)&ppf);
  
         if (SUCCEEDED(hres))
 		{ 
@@ -1642,4 +1639,3 @@ BOOL ShowProfileBrowser()
 
 	return v->fContinueAfterProfileBrowser;
 }
-#endif PRO

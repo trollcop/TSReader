@@ -6776,12 +6776,8 @@ void SourceHelper_GetTSReaderEXEDirectory(HINSTANCE hInstance, char * szCurrentD
 
 BOOL SourceHelper_GetProfileName(char * szBuffer)
 {
-#ifndef PRO
-	return FALSE;
-#else PRO
 	lstrcpy(szBuffer, v->szProfileName);
 	return TRUE;
-#endif PRO
 }
 
 // =====================================================================

@@ -1,4 +1,3 @@
-#ifdef PRO
 /* Initialize a RS codec
  *
  * Copyright 2002 Phil Karn, KA9Q
@@ -165,4 +164,3 @@ void *p,DTYPE *data, DTYPE *bb){
       bb[NROOTS-1] = 0;
   }
 }
-#endif PRO

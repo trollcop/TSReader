@@ -1,4 +1,3 @@
-#ifdef PRO
 #include <windows.h>
 #include <commctrl.h>
 
@@ -77,4 +76,3 @@ void PBRSScramble(BYTE * pPacket)
 			pPacket[i] = nOutputByte; 
 	}	
 }
-#endif PRO

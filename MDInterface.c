@@ -2,11 +2,11 @@
 #include <commctrl.h>
 #include <time.h>
 #include "TSReader.h"
-#include "softcsa.h"
-#include "MDInterface.h"
+#include "SoftCSA.h"
 #include "resource.h"
 
-#include "Md\MultiDec\Globals.h"
+#include "Md\MULTIDEC\Globals.h"
+#include "MDInterface.h"
 
 extern PVARIABLES v;
 
@@ -15,12 +15,25 @@ void IPDVBModeOff(HWND hDlg);
 
 Extern_IPData ipdata[5];
 Extern_Descriptor_Decode DescriptorDecode[5];
+int External_Dll_Count = 0;
+struct TProgramm Programm[MAXPROGS + 1];
+struct TProgramm ProgrammNeu[NEUSIZE];
 
-CRITICAL_SECTION csDecrypt;
-BYTE * pKeys;
+char MD_API_Version[32] = { 0, };
+
+int VideoPID = 0;
+int AudioPID = 0;
+int MultiPID = 0;
+int AddPIDFilter = 0;
+int DelPIDFilter = 0;
+struct TOSD_START DLL_OSD_Call;
+struct External_Stream_Dll Ext_Dll[5];
+
+static CRITICAL_SECTION csDecrypt;
+BYTE *pKeys;
 static BYTE bZeroKeys[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-BYTE bCurrentKeys[16];
-csakey csaCurrent;
+static BYTE bCurrentKeys[16];
+static csakey csaCurrent;
 
 #define MAX_START_FILTERS 128
 
@@ -275,11 +288,7 @@ void MD__StartPluginsRunning(HINSTANCE hInst, HWND hWnd)
 	HMENU hTopMenu = GetMenu(hWnd);
 	HMENU hPlugInsMenu;
 
-	int nMenuIndex = 5;		// for TSReader Lite and TSReader
-
-#ifdef PRO
-	nMenuIndex = 6;		// for TSReader Pro
-#endif PRO
+	int nMenuIndex = 6; // for TSReader Pro
 
 	hPlugInsMenu = GetSubMenu(hTopMenu, nMenuIndex);
 
@@ -289,7 +298,7 @@ void MD__StartPluginsRunning(HINSTANCE hInst, HWND hWnd)
 		memset(&filtertspackets[i], 0, sizeof(filtertspackets[i]));
 	}
 
-    memset(MD_API_Version, 0x00, 32);
+	memset(MD_API_Version, 0x00, 32);
 	lstrcpy(MD_API_Version,"MD-API Version 01.02 - 1.06 TSR");
 
 	for ( i=0; i < 5; i++ )
@@ -602,7 +611,6 @@ BOOL MD__ExternCommandDispatch(HWND hWnd, UINT message, UINT wParam, LONG lParam
 			 }
 		 }
 		 return(TRUE);
-#ifndef LITE
 	 case TSREADER_MDAPI_GET_PIDS:
 		 {
 			int nPID;
@@ -674,7 +682,6 @@ BOOL MD__ExternCommandDispatch(HWND hWnd, UINT message, UINT wParam, LONG lParam
 			 return FALSE;
 		 }
 		 break;
-#endif LITE
 	 }
 	 
 	 return (FALSE);
@@ -682,7 +689,7 @@ BOOL MD__ExternCommandDispatch(HWND hWnd, UINT message, UINT wParam, LONG lParam
 
 void MD__ChannelChange(int nProgramNumber,
 					   int nVideoPID, int nAudioPID, int nTeletextPID, int nPCRPID,
-					   int nPMTPID, int nECMPID, struct TCA_System * CA,
+					   int nPMTPID, int nECMPID, TCA_System *CA,
 					   char * szChannelName)
 {
 	int i;
@@ -850,7 +857,6 @@ void MD__DataToFilters(BYTE * pData, int * nSize, int * nPacketLength)
 	int nPacketCounter = 0;
 	BYTE * pOriginalData = pData;
 	
-#ifndef LITE
 	// All data hook
 	for (j = 0; j < MAX_START_FILTERS; j++)
 	{
@@ -880,7 +886,6 @@ void MD__DataToFilters(BYTE * pData, int * nSize, int * nPacketLength)
 			}
 		}
 	}
-#endif LITE
 
 	// Data comes in from the main thread. If we have a filter setup for a PID
 	// we buffer up to 1K of data before sending it down to the plugin.

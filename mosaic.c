@@ -1,5 +1,3 @@
-#ifdef PRO
-
 #include <windows.h>
 #include <commctrl.h>
 #include <shlobj.h>
@@ -402,7 +400,3 @@ void ShowVideoMosaic(HWND hWnd)
 	}
 	return;
 }
-
-
-
-#endif PRO

@@ -1,4 +1,3 @@
-#ifdef PRO
 /* Include file to configure the RS codec for character symbols
  *
  * Copyright 2002, Phil Karn, KA9Q
@@ -87,7 +86,3 @@ int decode_rs_ccsds(unsigned char *data,int *eras_pos,int no_eras,int pad);
  * dual->conventional (Tal1tab) bases
  */
 extern unsigned char Taltab[],Tal1tab[];
-
-
-
-#endif PRO

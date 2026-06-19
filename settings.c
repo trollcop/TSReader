@@ -1,5 +1,3 @@
-#ifdef PRO
-
 #include <windows.h>
 #include <commctrl.h>
 #include "TSReader.h"
@@ -7,7 +5,6 @@
 
 extern PVARIABLES v;
 extern char gszAppName[];
-extern char szLiteWarning[];
 
 HWND hWndSettings[32];
 int nMaxSettingsPages;
@@ -806,4 +803,3 @@ INT_PTR CALLBACK SettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 	return FALSE;
 }
-#endif PRO

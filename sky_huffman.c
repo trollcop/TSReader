@@ -1,4 +1,3 @@
-#ifndef LITE
 #include <windows.h>
 #include <string.h>
 
@@ -490,5 +489,3 @@ void sky_decode(unsigned char *src, unsigned char *dst, int max_input_length, in
 	} // end while loop
 
 }
-
-#endif LITE

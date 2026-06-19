@@ -1,5 +1,3 @@
-#ifdef PRO
-
 #include <windows.h>
 #include <commctrl.h>
 #include <time.h>
@@ -1697,5 +1695,3 @@ void ForwarderModuleStartStop(HWND hWnd, int nIndex)
 		}
 	}
 }
-
-#endif PRO

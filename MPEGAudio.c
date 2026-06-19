@@ -1,4 +1,3 @@
-#ifndef LITE
 #include <windows.h>
 #include <commctrl.h>
 #include <limits.h>
@@ -188,4 +187,3 @@ DWORD WINAPI MPEGAudioDecoderThread(LPVOID lpv)
 	MPEGADeInit(esparserinfo->nES);
 	return 0;
 }
-#endif LITE

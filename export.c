@@ -19,7 +19,6 @@ extern struct AC3frmsize AC3frmsizecod_tbl[];
 extern int (* GetSyncLossCount) (BOOL fReset);
 extern int (* GetRetuneCount) (BOOL fReset);
 
-#ifndef LITE
 void WriteAudioSampleXMLData(HANDLE hXMLFile, int nPMTIndex, int nESIndex)
 {
 	if (v->pat.pmt[nPMTIndex].es[nESIndex].as.nChannels)
@@ -128,14 +127,12 @@ void XMLExport__WriteESParserData(HANDLE hXMLFile, int nPMTIndex, int nESIndex)
 				}
 			}
 			break;
-#ifndef LITE
 		case PARSE_ES_TYPE_MPEG2_AAC_AUDIO:
 			//todo
 			break;
 		case PARSE_ES_TYPE_MPEG4_AAC_AUDIO:
 			//todo
 			break;
-#endif LITE
 		case PARSE_ES_TYPE_MPEG_AUDIO:
 			{
 				PPARSEDMPEGAUDIO pMPEG = (PPARSEDMPEGAUDIO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData;
@@ -234,7 +231,6 @@ void XMLExport__WriteESParserData(HANDLE hXMLFile, int nPMTIndex, int nESIndex)
 				wsprintf(v->szSIFormatBuffer, "   <VERTICAL-RESOLUTION>%d</VERTICAL-RESOLUTION>", pMPEG4->vertical_size_value);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
 			}
 			break;
-#ifdef PRO
 		case PARSE_ES_TYPE_VC1_VIDEO:
 			{
 				PPARSEDVC1VIDEO pVC1 = (PPARSEDVC1VIDEO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData;
@@ -249,7 +245,6 @@ void XMLExport__WriteESParserData(HANDLE hXMLFile, int nPMTIndex, int nESIndex)
 				wsprintf(v->szSIFormatBuffer, "   <VERTICAL-RESOLUTION>%d</VERTICAL-RESOLUTION>", pVC1->vertical_size_value);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
 			}
 			break;
-#endif PRO
 		}
 	}
 }
@@ -275,15 +270,7 @@ void XMLExport(HWND hDlg, HANDLE hXMLFile)
 	WriteHTMLLine(hXMLFile, " <TSREADER>");
 	wsprintf(v->szSIFormatBuffer, "  <VERSION>%s</VERSION>", GetTSRVersion(NULL));
 	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
-#ifdef LITE
-	WriteHTMLLine(hXMLFile, "  <EDITION>LITE</EDITION>");
-#else LITE
- #ifdef PRO
 	WriteHTMLLine(hXMLFile, "  <EDITION>PROFESSIONAL</EDITION>");
- #else PRO
-	WriteHTMLLine(hXMLFile, "  <EDITION>STANDARD</EDITION>");
- #endif PRO
-#endif LITE
 	WriteHTMLLine(hXMLFile, " </TSREADER>");
 
 	// other stuff??
@@ -1322,7 +1309,6 @@ void XMLExport(HWND hDlg, HANDLE hXMLFile)
 	//UpdateMainStatusText("");
 }
 
-#ifndef LITE
 void XMLTVExport(HWND hDlg, HANDLE hXMLFile)
 {
 	int nServiceIndex;
@@ -1349,7 +1335,6 @@ void XMLTVExport(HWND hDlg, HANDLE hXMLFile)
 	WriteHTMLLine(hXMLFile, "</tv>");
 	//UpdateMainStatusText("");
 }
-#endif LITE
 
 void StartXMLExport(HWND hDlg, BOOL fXMLTVFormat)
 {
@@ -1394,7 +1379,6 @@ void StartXMLExport(HWND hDlg, BOOL fXMLTVFormat)
 		CursorNormal();
 	}
 }
-#endif LITE
 
 void WriteHTMLStatistics(HANDLE hHTMFile, int nTable, char * szTableName)
 {
@@ -1595,7 +1579,6 @@ void HTMLExport(HANDLE hHTMFile, int nExportSITables, char * szOutputFilename)
 							case PARSE_ES_TYPE_AC3_AUDIO:
 								FormatAC3Parse((PPARSEDAC3AUDIO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData, szParseDecode);
 								break;
-#ifndef LITE
 							case PARSE_ES_TYPE_MPEG2_AAC_AUDIO:
 							case PARSE_ES_TYPE_MPEG4_AAC_AUDIO:
 								FormatAACAudioParse((PPARSEDAACAUDIO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData, szParseDecode);
@@ -1606,12 +1589,9 @@ void HTMLExport(HANDLE hHTMFile, int nExportSITables, char * szOutputFilename)
 							case PARSE_ES_TYPE_MPEG4_VIDEO:
 								FormatMPEG4VideoParse(nPMTIndex, nESIndex, szParseDecode);
 								break;
-#endif LITE
-#ifdef PRO
 							case PARSE_ES_TYPE_VC1_VIDEO:
 								FormatVC1VideoParse(nPMTIndex, nESIndex, szParseDecode);
 								break;
-#endif PRO
 							}
 							if (lstrlen(szParseDecode))
 							{

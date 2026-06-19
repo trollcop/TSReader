@@ -4,7 +4,7 @@
 #include "inttypes.h"
 #include "mpeg2.h"
 #include "convert.h"
-#include "softcsa.h"
+#include "SoftCSA.h"
 #include "sources.h"
 
 // Stuff for imglib
@@ -114,20 +114,15 @@ enum SIGNAL_CHART_MODE
 	SIGNAL_CHART_MODE_QUALITY_DBM
 };
 
-#ifndef PRO
- #define MAX_CHARTS 1
- #define MAX_ES_PARSERS 1
-#else PRO
  #define MAX_CHARTS 16
  #define MAX_ES_PARSERS 32
-#endif PRO
 #define REAL_MAX_CHARTS 32
 #define REAL_MAX_ES_PARSERS 32
 
 #define IP_UDP_ID 17
 #define PMT_TIMEOUT 15
 
-enum PSI_BUFFERS
+typedef enum PSI_BUFFERS
 {
 	BUFFER_EIT = 0,
 	BUFFER_SDT,
@@ -355,8 +350,6 @@ enum EVENT_ICONS
 #define DESCRIPTOR_VCT 7
 #define DESCRIPTOR_MGT 8
 #define MAX_DESCRIPTOR_TAG_ARRAY DESCRIPTOR_MGT + 1
-
-BYTE bDescriptorTagArray[MAX_DESCRIPTOR_TAG_ARRAY][256];
 
 #define MAX_EIT_CONNECTIONS 100
 typedef struct _tagConnection
@@ -1131,15 +1124,7 @@ typedef struct _tagStreamMonitorLog
 
 // Transport stream buffer
 #define MAX_RECORD_BUFFERS 64
-#ifdef LITE
- #define ACTUAL_MAX_RECORD_BUFFERS 1
-#else LITE
- #ifndef PRO
-  #define ACTUAL_MAX_RECORD_BUFFERS 16
- #else PRO
-  #define ACTUAL_MAX_RECORD_BUFFERS MAX_RECORD_BUFFERS;
- #endif PRO
-#endif LITE
+#define ACTUAL_MAX_RECORD_BUFFERS MAX_RECORD_BUFFERS;
 
 typedef struct _tagESParserInfo
 {
@@ -1533,7 +1518,6 @@ typedef struct tag_Variables
 	BOOL fATSCRecordMode;
 	BOOL fMDPluginsLoaded;
 	BOOL fSourceCanBeStopped;
-	BOOL fLiteMonitorThreadActive;
 	BOOL fWarnedAboutLite;
 	BOOL fAgreedToLicense;
 	BOOL fSaveThumbnails;
@@ -2051,10 +2035,10 @@ typedef int (* td_UDPSender_GetDevices) (int nIndex, char * szName, char * szDes
 typedef int (* td_UDPSender_OpenDevice) (char * szName);
 typedef int (* td_UDPSender_CloseDevice) ();
 typedef int (* td_UDPSender_SendPacket) (BYTE * pData, int nLength);
-int (*UDPSender_GetDevices) (int nIndex, char * szName, char * szDescription);
-int (*UDPSender_OpenDevice) (char * szName);
-int (*UDPSender_CloseDevice) ();
-int (*UDPSender_SendPacket) (BYTE * pData, int nLength);
+extern int (*UDPSender_GetDevices) (int nIndex, char * szName, char * szDescription);
+extern int (*UDPSender_OpenDevice) (char * szName);
+extern int (*UDPSender_CloseDevice) ();
+extern int (*UDPSender_SendPacket) (BYTE * pData, int nLength);
 
 typedef BOOL (* td_Init) (PSOURCESTRUCT pss);
 typedef BOOL (* td_DeInit) ();

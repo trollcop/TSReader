@@ -33,20 +33,18 @@
 //#define MAX_CA_SYSTEMS 64
 #define MAX_PID_IDS  32
 
-struct PIDFilters {
+typedef struct PIDFilters {
          char FilterName[5];
 		 unsigned char FilterId;
 		 unsigned short PID;
-};
+} PIDFilters;
 
-
-struct TCA_System {
+typedef struct TCA_System {
 		 unsigned short CA_Typ;
 		 unsigned short ECM;
 		 unsigned short EMM;
 		 unsigned int   Provider_Id;
-};
-
+} TCA_System;
 
 typedef struct TProgramm
 {
@@ -108,7 +106,6 @@ struct DVBTunerParameter
 	unsigned char I2C;
     BOOL CableTuner;
 };
-
 
 typedef struct TLNB {
 	     BOOL Use;
@@ -556,17 +553,17 @@ struct tPidParam {
 };
 
 
-unsigned int RootBytes;
+extern unsigned int RootBytes;
 
-HANDLE MultiDec_Heap;
+extern HANDLE MultiDec_Heap;
 
 #define MAXPROGS 4096
 #define NEUSIZE   256
 
-struct TProgramm Programm[MAXPROGS+1];
-struct TProgramm ProgrammNeu[NEUSIZE];
+extern struct TProgramm Programm[MAXPROGS+1];
+extern struct TProgramm ProgrammNeu[NEUSIZE];
 
-FILE *LogFile;
+extern FILE *LogFile;
 
 struct TTiming {
 	 DWORD WriteRegDelay;
@@ -616,8 +613,8 @@ struct External_Stream_Dll {
 		HMENU Extern_Menu;
 };
 
-struct External_Stream_Dll Ext_Dll[5];
-int External_Dll_Count;
+extern struct External_Stream_Dll Ext_Dll[5];
+extern int External_Dll_Count;
 
 #define MDAPI_GET_TRANSPONDER        0x01020000
 #define MDAPI_SET_TRANSPONDER        0x01020001
@@ -656,12 +653,12 @@ struct TOSD_START {
 		BOOL Input;
 };
 
-struct TOSD_START DLL_OSD_Call;
+extern struct TOSD_START DLL_OSD_Call;
 
-char MD_API_Version[32];
+extern char MD_API_Version[32];
 
-int VideoPID;
-int	AudioPID;
-int	MultiPID;
-int	AddPIDFilter;
-int	DelPIDFilter;
+extern int VideoPID;
+extern int AudioPID;
+extern int MultiPID;
+extern int AddPIDFilter;
+extern int DelPIDFilter;

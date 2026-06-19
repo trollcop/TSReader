@@ -1,5 +1,3 @@
-#ifdef PRO
-
 #include <windows.h>
 #include <commctrl.h>
 #include <shlobj.h>
@@ -941,5 +939,3 @@ INT_PTR CALLBACK GPSSignalExportDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
 	}
 	return FALSE;
 }
-
-#endif PRO

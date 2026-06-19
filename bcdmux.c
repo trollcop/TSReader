@@ -151,7 +151,6 @@ void set_bit_pos(int index, unsigned int newpos)
 }
 
 // ------------------------------------------------------------------------------------
-#ifndef LITE
 
 void set_pts(unsigned char* buf, __int64 PTS)
 {
@@ -837,6 +836,5 @@ int PS__TranslateToProgramStream(BYTE * pPacketData, int nLength)
 
 	return 0;
 }
-#endif LITE
 
 

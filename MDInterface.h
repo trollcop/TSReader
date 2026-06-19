@@ -5,7 +5,7 @@ void MD__StartPluginsRunning(HINSTANCE hInst, HWND hWnd);
 BOOL MD__ExternCommandDispatch(HWND hWnd,UINT message,UINT wParam,LONG lParam);
 void MD__ChannelChange(int nProgramNumber,
 					   int nVideoPID, int nAudioPID, int nTeletextPID, int nPCRPID,
-					   int nPMTPID, int nECMPID, struct TCA_System * CA,
+					   int nPMTPID, int nECMPID, TCA_System *CA,
 					   char * szChannelName);
 void MD__DataToFilters(BYTE * pData, int * nSize, int * nPacketLength);
 void MD__Shutdown();

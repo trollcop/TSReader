@@ -1,5 +1,3 @@
-#ifdef PRO
-
 #include <windows.h>
 #include <commctrl.h>
 #include <shlobj.h>
@@ -2008,7 +2006,7 @@ DWORD WINAPI RemoveOldestFilesThread(LPVOID lpv)
 			ULARGE_INTEGER ulFileDate;
 			char szFilename[MAX_PATH];
 
-			if ((fd.dwFileAttributes && FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
+			if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
 				continue;				
 
 			lstrcpy(szFilename, szOutputLocation);
@@ -5138,6 +5136,3 @@ INT_PTR CALLBACK SaveEPGDataDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 	return FALSE;
 }
-
-#endif PRO
-

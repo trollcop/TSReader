@@ -2,7 +2,6 @@
 #include <commctrl.h>
 #include "TSReader.h"
 
-#ifdef PRO
 //#define CC_TRACE
 
 #include "resource.h"
@@ -17,7 +16,6 @@
 extern PVARIABLES v;
 extern char gszAppName[];
 extern char gszEPGGridClass[];
-extern char szLiteWarning[];
 
 PCLOSEDCAPTIONVARIABLES ccv = NULL;
 
@@ -34,7 +32,6 @@ char codeMessage2[512];
 char codeMessage3[1024];
 
 #include "CCDecoder_Strings.h"
-#endif PRO
 
 void bs_init(bs_t* b, uint8_t* buf, int size)
 {
@@ -196,7 +193,6 @@ void read_vui_parameters(sps_t* sps, bs_t* b)
 	}
 }
 
-#ifdef PRO
 void Scroll608Page(int nPage, BYTE bEvenField)
 {
 	int nRow, nCol;
@@ -3508,6 +3504,4 @@ void InputCCData(BYTE * pPESPacket, int nPESLength, int nChartIndex)
 		OutputDebugString("CC Pipe write problem 2\n");
 	LeaveCriticalSection(&v->csCCPipeBytes);
 }
-
-#endif PRO
 

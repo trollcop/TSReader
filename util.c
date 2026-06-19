@@ -3,7 +3,7 @@
 #include <time.h>
 #include <winsock.h>
 #include <shlobj.h>
-#include "tsreader.h"
+#include "TSReader.h"
 #include "bcdmux.h"
 #include "util.h"
 #include "formatter.h"
@@ -392,13 +392,13 @@ void GetATSCMultipleString(int nBitBufferIndex, char * szOutputString, int nLeng
 				for (m = 0; m < number_bytes; m++)
 					compressed_string_byte[m] = get_bits(nBitBufferIndex, 8);
 				compressed_string_byte[m] = '\0';
-				lstrcat(szOutputString, compressed_string_byte);
+				lstrcat(szOutputString, (LPCSTR)compressed_string_byte);
 				break;
 			case 1:		// Huffman
 			case 2:		// Huffman
 				compressed_string_byte[0] = '\0';
-				ATSCHuffmanDecode(nBitBufferIndex, compression_type, number_bytes, compressed_string_byte);
-				lstrcat(szOutputString, compressed_string_byte);
+				ATSCHuffmanDecode(nBitBufferIndex, compression_type, number_bytes, (char *)compressed_string_byte);
+				lstrcat(szOutputString, (LPCSTR)compressed_string_byte);
 				break;
 			}
 		}
@@ -577,9 +577,7 @@ BOOL EventInPast(PEITEVENT pEvent, BOOL fAllowPastEITData)
 
 void LogDescriptor(int nDescriptorIndex, int nDescriptorTag)
 {
-#ifdef PRO
 	v->bDescriptorTagArray[nDescriptorIndex][nDescriptorTag] = 1;
-#endif PRO
 }
 
 void ExpireOldEIT_debug(PEITEVENT pCurrent, int nServiceID, int nType)
@@ -665,7 +663,6 @@ void ExpireOldEITData(int nServiceID)
 	}
 }
 
-#ifndef LITE
 void SaveEPGData(PEITEVENT pEITItem, int nChannelNumber)
 {
 	if (v->hEPGSaveHandle != INVALID_HANDLE_VALUE)
@@ -749,7 +746,7 @@ void SaveEPGData(PEITEVENT pEITItem, int nChannelNumber)
 	}
 }
 
-void SaveExistingEPGData()
+void SaveExistingEPGData(void)
 {
 	int nChannel;
 
@@ -772,8 +769,6 @@ void SaveExistingEPGData()
 	}
 
 }
-
-#endif LITE
 
 BOOL myGetSaveFileName(LPOPENFILENAME lpofn)
 {
@@ -1274,10 +1269,8 @@ void SetupScrambledChannelThumbnail(int nESParsePMTIndex, int nESParseESIndex)
 	v->pat.pmt[nESParsePMTIndex].es[nESParseESIndex].pRGBVideoFrame = pDestBuffer;
 	LeaveCriticalSection(&v->csThumbnails);
 	PostMessage(v->hDlgSIParser, WM_USER + 3, 0, 1);
-#ifdef PRO
 	if (v->hWndVideoMosaic != NULL)
 		InvalidateRect(v->hWndVideoMosaic, NULL, FALSE);
-#endif PRO
 }
 
 void GetVideoArea(int * xStart, int * yStart, int * xWidth, int * yHeight)
@@ -1327,8 +1320,6 @@ int ReadFromMPEG2ESPipe(BYTE * pBuffer, int nLength, int nES)
 	return nRequestedLength;
 }
 
-
-#ifdef PRO
 BOOL GetArchiveThumbnailName(int nPMTIndex, char * szThumbnailName);	// in archive.c
 void SaveArchiveThumbnail(char * szStatus, int nES)
 {
@@ -1356,12 +1347,8 @@ void SaveArchiveThumbnail(char * szStatus, int nES)
 		}
 	}
 }
-#endif PRO
 
-#ifndef LITE
-#ifdef PRO
-void XMLLogCheckItemCount();											// in tsreader.c
-#endif PRO
+void XMLLogCheckItemCount(void); // in tsreader.c
 
 void DecoderThread_SaveThumbnail(char * szStatus, int nES, int width, int height, BYTE * picbuf)
 {
@@ -1426,7 +1413,6 @@ void DecoderThread_SaveThumbnail(char * szStatus, int nES, int width, int height
 								 100,
 								 0);
 			_ISCloseDest(hDestinationObject);
-#ifdef PRO
 			if (v->fStreamingXMLMode)
 			{
 				BOOL fAlreadyGotThisOne = FALSE;
@@ -1472,13 +1458,10 @@ void DecoderThread_SaveThumbnail(char * szStatus, int nES, int width, int height
 
 				LeaveCriticalSection(&v->csXMLLog);
 			}
-#endif PRO
 		}
 	}
 }
-#endif LITE
 
-#ifdef PRO
 BYTE ReverseBits(BYTE bInput)
 {
 	BYTE x = 0;
@@ -1493,7 +1476,6 @@ BYTE ReverseBits(BYTE bInput)
 	if (bInput & 0x01) x |= 0x80;
 	return x;
 }
-#endif PRO
 
 int DetermineSignalType(char * szSignal)
 {
@@ -1951,7 +1933,6 @@ void GetSourceInfoLine(int nLine, char * szOutput)
 				wsprintf(szOutput, "Save All EPG: %d Items", v->nEPGSaveCount);
 		}
 		break;
-#ifdef PRO
 	case 6:
 		{
 			if (lstrlen(v->szProfileName))
@@ -1960,7 +1941,6 @@ void GetSourceInfoLine(int nLine, char * szOutput)
 				lstrcpy(szOutput, "Profile: Default");
 		}
 		break;
-#endif PRO
 	case 7:
 		{
 			char szNetworkMode[64] = {"Unknown"};

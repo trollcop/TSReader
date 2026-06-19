@@ -172,17 +172,13 @@ DWORD WINAPI MPEG2DecoderThread(LPVOID lpv)
 							if ( ((info->current_picture->flags & PIC_MASK_CODING_TYPE) == PIC_FLAG_CODING_TYPE_I)
 								 || (nPictureCount > nMaximumPictures) )
 							{
-#ifndef LITE
 								if (v->fSaveThumbnails)
 									DecoderThread_SaveThumbnail(szStatus, esparserinfo->nES, info->sequence->width, info->sequence->height,
 									                                 info->display_fbuf->buf[0]);
-#ifdef PRO
 								if (v->fArchiveRunning)
 									SaveArchiveThumbnail(szStatus, esparserinfo->nES);
 								if (v->hWndVideoMosaic != NULL)
 									InvalidateRect(v->hWndVideoMosaic, NULL, FALSE);
-#endif PRO
-#endif LITE
 								mpeg2_close(mpeg2dec);
 
 								CloseHandle(v->hMPEGDecoderReadPipe[esparserinfo->nES]);

@@ -19,9 +19,9 @@
 #include "winioctl.h"
 
 #include "TSReader.h"
-#include "MDInterface.h"
 #include "bcdmux.h"
-#include "Md\MultiDec\Globals.h"
+#include "Md\MULTIDEC\Globals.h"
+#include "MDInterface.h"
 #include "parser.h"
 #include "formatter.h"
 
@@ -34,40 +34,28 @@
 #include "EPGGrid.h"
 #include "registry_list.h"
 
-#ifdef PRO
- #include "mdi/mdi.h"
-/* #ifndef ZANALYZER
-  #ifndef DTVSENTINEL
-  #endif DTVSENTINEL
- #endif ZANALYZER*/
-#endif PRO
+#include "MDI/mdi.h"
 
 // Stuff in RokuTelnetInterface.c
 DWORD WINAPI RokuTelnetControlThread(LPVOID lpv);
 
-#ifndef LITE
 // Stuff in ControlServer.c
 BOOL StartControlServer(void);
 BOOL TerminateControlServer(void);
-#endif LITE
 
 // Stuff in MPEG2Decoder.c
 DWORD WINAPI MPEG2DecoderThread(LPVOID lpv);
 
-#ifndef LITE
 // Stuff in H264Decoder.c
 DWORD WINAPI H264DecoderThread(LPVOID lpv);
 
 // Stuff in MPEG4Decoder.c
 DWORD WINAPI MPEG4DecoderThread(LPVOID lpv);
-#endif LITE
 
 // Audio decoders
 DWORD WINAPI MPEGAudioDecoderThread(LPVOID lpv);
-#ifndef LITE
 DWORD WINAPI AC3AudioDecoderThread(LPVOID lpv);
 DWORD WINAPI AACAudioDecoderThread(LPVOID lpv);
-#endif LITE
 
 // In export.c
 void HTMLExport(HANDLE hHTMFile, int nExportSITables, char * szOutputFilename);
@@ -77,7 +65,6 @@ void StartXMLExport(HWND hDlg, BOOL fXMLTVFormat);
 void XMLTVExport(HWND hDlg, HANDLE hXMLFile);
 
 
-#ifdef PRO
 // Stuff in EITServer.c
 BOOL StartEITServer(void);
 BOOL TerminateEITServer(void);
@@ -121,7 +108,6 @@ INT_PTR CALLBACK GPSSignalExportDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
 // Stuff in TitleThumbnails.c
 INT_PTR CALLBACK AudioThumbnailSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 BOOL DecodeAudioTitleData(BYTE * pPESPacket, int nPacketLength, int nES);
-#endif PRO
 
 // Stuff in CI-CAM.C
 INT_PTR CALLBACK CAMMenuDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -130,59 +116,48 @@ typedef BOOL (* td_SendCAPMT) (BYTE * pBuffer, int nLength);
 BOOL (* SendCAPMT) (BYTE * pBuffer, int nLength);
 
 // Stuff in sky_epg.c
-#ifndef LITE
 void ParseSkyEPG(BYTE * pPacket, int nLength, BOOL fPrimaryEPGPID);
 void UpdateSkyEPGMap(int nBATID);
-#endif LITE
 
 // Stuff in settings.c
 INT_PTR SettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 // Completion routine for parser
-#ifndef LITE
 typedef void (* td_InputData) (BYTE * pPESPacket, int nPESLength, int nChartIndex);
-#endif LITE
 
 int nTSReaderReturnValue;
 PVARIABLES v;
 PTSPARSERVARIABLES tv;
 
 ///////////////////////// these should go into the v struct
-#ifdef PRO
-tMDISTREAM * mdi;	
-#endif PRO
+tMDISTREAM * mdi;
 ///
+
+/* UDP Sender */
+td_UDPSender_GetDevices UDPSender_GetDevices = NULL;
+td_UDPSender_OpenDevice UDPSender_OpenDevice = NULL;
+td_UDPSender_CloseDevice UDPSender_CloseDevice = NULL;
+td_UDPSender_SendPacket UDPSender_SendPacket = NULL;
+
+/* CSA stuff */
+td_ptr_set_cws ptr_set_cws = NULL;
+td_ptr_decrypt ptr_decrypt = NULL;
+td_get_keyset_size get_keyset_size = NULL;
+td_get_internal_parallelism get_internal_parallelism = NULL;
+td_set_control_words set_control_words = NULL;
+td_decrypt_packets decrypt_packets = NULL;
 
 #define SOURCE_INFO_COLOR_1 RGB(41, 253, 136)
 #define SOURCE_INFO_COLOR_2 RGB(7,141,44)
 
 extern char szProValue[];
- #ifdef LITE
- char gszAppName[] = TEXT("TSReader Lite");
- char szLiteWarning[] = {"This function is only available in registered versions of TSReader"};
- #else LITE
-  #ifndef PRO
-   char gszAppName[32] = TEXT("TSReaderPro");
-  #else PRO
-   #ifndef ZANALYZER
-    #ifndef DTVSENTINEL
-     char gszAppName[32] = TEXT("TSReader Professional");
-    #else DTVSENTINEL
-	 char gszAppName[32] = TEXT("DTV Sentinel");
-    #endif DTVSENTINEL
-   #else ZANALYZER
-    char gszAppName[32] = TEXT("ZAnalyzer");
-   #endif ZANALYZER
-  #endif PRO
- #endif LITE
+char gszAppName[32] = TEXT("TSReader Professional");
 char gszMainClass[256] = {TEXT("TSReaderMain")};
 char gszEPGGridClass[] = {"TSReaderEPGClass"};
 char gszChartClass[] = {"TSReaderChartClass"};
 char gszRestartNeeded[128] = {"For this change to take full effect you should restart "};
 char gszKeyName[64] = TEXT("Software\\TSReaderPro");
-#ifdef PRO
 char gszVideoMosaicClass[] = {"TSReaderVideoMosaicClass"};
-#endif PRO
 
 // Source DLL functions
 BOOL (* Init) (PSOURCESTRUCT pss);
@@ -236,11 +211,12 @@ void SaveSettings_New(HKEY hkReg)
 		case REG_DWORD:
 			RegSetValueEx(hkReg, rl[nOffset].szDescription, 0, REG_DWORD, (BYTE *)v + rl[nOffset].dwOffset, sizeof(DWORD));
 			break;
+
 		case REG_SZ:
 			{
-				BYTE * szString = (BYTE *)v + rl[nOffset].dwOffset;
+				BYTE *szString = (BYTE *)v + rl[nOffset].dwOffset;
 
-				RegSetValueEx(hkReg, rl[nOffset].szDescription, 0, REG_SZ, (BYTE *)szString, lstrlen(szString) + 1);
+				RegSetValueEx(hkReg, rl[nOffset].szDescription, 0, REG_SZ, (BYTE *)szString, lstrlen((LPCSTR)szString) + 1);
 			}
 			break;
 		}
@@ -248,7 +224,7 @@ void SaveSettings_New(HKEY hkReg)
 	};
 }
 
-void SaveSettings()
+void SaveSettings(void)
 {
 	LONG lKey;
 	HKEY hkMainReg;
@@ -294,9 +270,7 @@ void SaveSettings()
 		if (!v->fHideWhenMinimizedTemporary)
 			RegSetValueEx(hkMainReg, "HideWhenMinimized", 0, REG_DWORD, (BYTE *)&v->fHideWhenMinimized, sizeof(DWORD));
 
-#ifndef LITE		
 		RegSetValueEx(hkMainReg, "IgnoredNetworks", 0, REG_BINARY, (BYTE *)&v->nIgnoredNetworks, sizeof(v->nIgnoredNetworks));
-#ifdef PRO
 		for (i = 0; i < MONITOR_COUNT; i++)
 		{
 			char szValue[64];
@@ -304,8 +278,6 @@ void SaveSettings()
 			RegSetValueEx(hkMainReg, szValue, 0, REG_DWORD, (BYTE *)&v->sm[i].fDisabled, sizeof(DWORD));		
 		}
 
-#endif PRO
-#endif LITE
 		if (v->fDisableStreamParsing == FALSE)
 		{
 			RegSetValueEx(hkMainReg, "ThumbnailProcessingThreadPriority", 0, REG_DWORD, (BYTE *)&v->nThumbnailProcessingThreadPriority, sizeof(DWORD));
@@ -380,14 +352,13 @@ void LoadSettings_New(HKEY hkReg)
 	};
 }
 
-void LoadSettings()
+void LoadSettings(void)
 {
 	DWORD dwDisposition;
 	DWORD dwDataSize;
 	DWORD dwType;
 	LONG lKey;
 	HKEY hkMainReg, hkAllReg;
-	char szTemp[128] = {0};
 	char szKeyName[MAX_PATH];
 
 	lKey = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
@@ -429,18 +400,14 @@ void LoadSettings()
 v->nProcessPriority = NORMAL_PRIORITY_CLASS;
 
 			LoadSettings_New(hkMainReg);
-#ifdef PRO
 			if (v->nMaximumThumbnailThreads <= 0)
 				v->nMaximumThumbnailThreads = 4;
 			if (v->nGPSSerialBaudRate == 0)
 				v->nGPSSerialBaudRate = 4800;
 			if (v->nGPSLogSeconds == 0)
 				v->nGPSLogSeconds = 5;
-#endif PRO
-#ifndef LITE
 			if (v->nMaximumH264Pictures <= 0)
 				v->nMaximumH264Pictures = 4;
-#endif LITE
 
 			if (lstrlen(v->szSplitFormatString) == 0)
 				lstrcpy(v->szSplitFormatString, "%f_%3n.%e");
@@ -479,12 +446,10 @@ v->nProcessPriority = NORMAL_PRIORITY_CLASS;
 			if (v->epg.nSearchFlag == 0)
 				v->epg.nSearchFlag = 1;
 			
-#ifndef LITE
 			memset(v->nIgnoredNetworks, 0, sizeof(v->nIgnoredNetworks));
 			dwDataSize = sizeof(v->nIgnoredNetworks);
 			RegQueryValueEx(hkMainReg, "IgnoredNetworks", NULL, &dwType, (BYTE *)&v->nIgnoredNetworks, &dwDataSize);
 
-#endif LITE
 			if (v->nVLCPort <= 0)
 				v->nVLCPort = 1234;			
 			if (v->nStreamingPipeSize <= 0)
@@ -501,7 +466,6 @@ v->nProcessPriority = NORMAL_PRIORITY_CLASS;
 			v->nEPGChannelHeight = 2;
 			v->nGraphRefreshRate = 1000;
 			v->nGraphHistoricalPoints = 300;
-#ifndef LITE
 			dwDataSize = sizeof(v->nMinimumPATs);
 			RegQueryValueEx(hkMainReg, "MinimumPATs", NULL, &dwType, (BYTE *)&v->nMinimumPATs, &dwDataSize);
 			if (v->nMaximumMPEGPictures == 0)
@@ -519,7 +483,6 @@ v->nProcessPriority = NORMAL_PRIORITY_CLASS;
 			if (v->nEPGChannelHeight < 2)
 				v->nEPGChannelHeight = 2;
 
-#ifdef PRO
 			if (v->nEITServerPort == 0)
 				v->nEITServerPort = 1401;			
 			if (v->nStreamMonitorAlarmTimeout == 0)
@@ -533,8 +496,6 @@ v->nProcessPriority = NORMAL_PRIORITY_CLASS;
 				wsprintf(szValue, "StreamMonitorMask%02d", i);
 				v->sm[i].fDisabled = myRegQueryDWORDValue(hkMainReg, szValue);
 			}
-#endif PRO
-#endif LITE
 			dwDataSize = sizeof(v->nESParsingCounterReload);
 			RegQueryValueEx(hkMainReg, "ESParsingCounterReload", NULL, &dwType, (BYTE *)&v->nESParsingCounterReload, &dwDataSize);
 			if (v->nESParsingCounterReload < 0)
@@ -703,9 +664,7 @@ v->nProcessPriority = NORMAL_PRIORITY_CLASS;
 			v->dwEPGTimeGridColor = RGB(192, 0, 0);
 			v->epg.nSearchFlag = 1;
 			v->nProcessPriority = NORMAL_PRIORITY_CLASS;		
-#ifdef PRO
 			v->nStreamMonitorAlarmTimeout = 10;
-#endif PRO
 		}
 		RegCloseKey(hkMainReg);
 		
@@ -714,7 +673,7 @@ v->nProcessPriority = NORMAL_PRIORITY_CLASS;
 	}
 }
 
-char * GetTSRVersion(char * szOutput)
+char *GetTSRVersion(char *szOutput)
 {
 	if (szOutput == NULL)
 		szOutput = v->szVersionBuffer;
@@ -723,26 +682,9 @@ char * GetTSRVersion(char * szOutput)
 		wsprintf(szOutput, "%d.%d.%d%c", VERSION_MAJOR, VERSION_MINOR, VERSION_EDIT, VERSION_SUB_EDIT);
 	else
 		wsprintf(szOutput, "%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_EDIT);
+
 	return szOutput;
 }
-
-#ifdef LITE
-DWORD WINAPI LiteMonitorThread(LPVOID lpv)
-{
-	int nCount = 1275;
-	while (v->fParseThreadRunning != FALSE)
-	{
-		Sleep(50);
-		nCount--;
-		if (!nCount)
-		{
-			PostMessage(v->hWndMainWindow, WM_USER + 7, 0, 0);
-			return 0;
-		}
-	}
-	return 0;
-}
-#endif LITE
 
 BOOL ContainsRC(int nPMTIndex)
 {
@@ -879,7 +821,6 @@ int GetNextESPID(BOOL fReset, int nES)
 				else if (IsTeleTextOrVBIStream(nPMTIndex, nESIndex) == TRUE)
 					v->nESParseType[nES] = PARSE_ES_TYPE_TELETEXT;
 				break;
-#ifndef LITE
 			case 0x0f:	// MPEG-2 AAC audio
 				v->nESParseType[nES] = PARSE_ES_TYPE_MPEG2_AAC_AUDIO;
 				v->fESParseDecoderStartedLibMPEG[nES] = FALSE;
@@ -902,8 +843,6 @@ int GetNextESPID(BOOL fReset, int nES)
 				v->fESParseDecoderStartedLibMPEG[nES] = FALSE;
 				v->fESParseDecoderCompletedLibMPEG[nES] = FALSE;
 				break;
-#endif LITE
-#ifdef PRO
 			case 0xea:	// VC1 video
 				v->nESParseType[nES] = PARSE_ES_TYPE_VC1_VIDEO;
 				v->fESParseDecodedHeader[nES] = FALSE;
@@ -923,7 +862,6 @@ int GetNextESPID(BOOL fReset, int nES)
 					}
 				}
 				break;
-#endif PRO
 			}
 			if (v->nESParseType[nES])
 			{
@@ -953,7 +891,6 @@ int GetNextESPID(BOOL fReset, int nES)
 	case PARSE_ES_TYPE_TELETEXT:
 		wsprintf(szTemp, "Parsing Teletext/VBI stream from program %d on PID %s", v->pat.pmt[v->nESParsePMTIndex[nES]].nProgramNumber, FormatTooltipPID(v->nESParsePID[nES]));
 		break;
-#ifndef LITE
 	case PARSE_ES_TYPE_MPEG2_AAC_AUDIO:
 		wsprintf(szTemp, "Parsing MPEG-2 AAC audio stream from program %d on PID %s", v->pat.pmt[v->nESParsePMTIndex[nES]].nProgramNumber, FormatTooltipPID(v->nESParsePID[nES]));
 		break;
@@ -966,15 +903,12 @@ int GetNextESPID(BOOL fReset, int nES)
 	case PARSE_ES_TYPE_MPEG4_VIDEO:
 		wsprintf(szTemp, "Parsing MPEG-4 video stream from program %d on PID %s", v->pat.pmt[v->nESParsePMTIndex[nES]].nProgramNumber, FormatTooltipPID(v->nESParsePID[nES]));
 		break;
-#endif LITE
-#ifdef PRO
 	case PARSE_ES_TYPE_VC1_VIDEO:
 		wsprintf(szTemp, "Parsing VC-1 video stream from program %d on PID %s", v->pat.pmt[v->nESParsePMTIndex[nES]].nProgramNumber, FormatTooltipPID(v->nESParsePID[nES]));
 		break;
 	case PARSE_ES_TYPE_AUDIO_TITLE:
 		wsprintf(szTemp, "Parsing audio title stream from program %d on PID %s", v->pat.pmt[v->nESParsePMTIndex[nES]].nProgramNumber, FormatTooltipPID(v->nESParsePID[nES]));
 		break;
-#endif PRO
 	default:
 		szTemp[0] = '\0';
 		break;
@@ -993,17 +927,15 @@ int GetNextESPID(BOOL fReset, int nES)
 
 		// Debug Output allways very useful
 		lstrcat(szTemp2, szTemp);
-#ifdef PRO
 		wsprintf(szTemp, " - ES thread %d", nES);
 		lstrcat(szTemp2, szTemp);
-#endif PRO
 		lstrcat(szTemp2, "\n"); 
 		OutputDebugString(szTemp2);
 	}
 	if (v->nESParseType[nES])
 		v->lnESParseStartTime[nES] = v->lnMuxRatePCR;
 
-#ifdef PROx
+#ifdef PROx /* TODO research this */
 	if (v->pat.pmt[v->nESParsePMTIndex[nES]].es[v->nESParseESIndex[nES]].pRGBVideoFrame != NULL)
 	{
 		BYTE * pThumbnail = v->pat.pmt[v->nESParsePMTIndex[nES]].es[v->nESParseESIndex[nES]].pRGBVideoFrame;
@@ -1031,11 +963,10 @@ int GetNextESPID(BOOL fReset, int nES)
 		//PostMessage(v->hDlgSIParser, WM_USER + 3, 0, 1);
 	}
 
-#endif PRO
+#endif PROx
 	return v->nESParsePID[nES];
 }
 
-#ifndef LITE
 BOOL DecodeH264Video(BYTE * pPESPacket, int nPacketLength, int nES)
 {
 	int nOffset = 0;
@@ -1110,7 +1041,6 @@ BOOL DecodeH264Video(BYTE * pPESPacket, int nPacketLength, int nES)
 	return fRetVal;
 }
 
-
 BOOL DecodeMPEG4Video(BYTE * pPESPacket, int nPacketLength, int nES)
 {
 	int nOffset = 0;
@@ -1183,9 +1113,7 @@ BOOL DecodeMPEG4Video(BYTE * pPESPacket, int nPacketLength, int nES)
 	}
 	return fRetVal;
 }
-#endif LITE
 
-#ifdef PRO
 BOOL DecodeVC1Video(BYTE * pPESPacket, int nPacketLength, int nES)
 {
 	int nOffset = 0;
@@ -1258,7 +1186,6 @@ BOOL DecodeVC1Video(BYTE * pPESPacket, int nPacketLength, int nES)
 	}
 	return fRetVal;
 }
-#endif PRO
 
 BOOL DecodeMPEG2Video(BYTE * pPESPacket, int nPacketLength, int nES)
 {
@@ -1458,14 +1385,6 @@ BOOL DecodeAC3AudioHeader(BYTE * pPESPacket, int nPacketLength, int nES)
 		}
 	}
 
-#ifdef LITE
-#define NOAC3DECODER
-#endif
-#ifdef INEOQUEST
-#define NOAC3DECODER
-#endif INEOQUEST
-
-#ifndef NOAC3DECODER
 	// Decode the audio for a thumbnail view
 	if (v->nThumbnailProcessingThreadPriority == 3 || !v->fAudioThumbnails)
 		return TRUE;	// disabled
@@ -1514,9 +1433,6 @@ BOOL DecodeAC3AudioHeader(BYTE * pPESPacket, int nPacketLength, int nES)
 			OutputDebugString(szTemp);
 		}
 	}
-#else NOAC3DECODER
-	fRetVal = TRUE;
-#endif NOAC3DECODER
 	
 	return fRetVal;
 }
@@ -1655,10 +1571,9 @@ BOOL DecodeTeletextVBIHeader(BYTE * pPESPacket, int nPESPacketLength, int nES)
 				int line_offset = get_bits(BM_PARSER_THREAD, 5);
 				int first_pixel_position = get_bits(BM_PARSER_THREAD, 16);
 				int n_pixels = get_bits(BM_PARSER_THREAD, 8);
-				int Y_value;
 				for (i = 0; i < n_pixels; i++)
 				{
-					Y_value = get_bits(BM_PARSER_THREAD, 8);
+					int Y_value = get_bits(BM_PARSER_THREAD, 8);
 					nPESPacketLength--; data_unit_length--;
 				}
 				nPESPacketLength -= 4; data_unit_length -= 4;
@@ -1698,7 +1613,6 @@ BOOL DecodeTeletextVBIHeader(BYTE * pPESPacket, int nPESPacketLength, int nES)
 	return TRUE;
 }
 
-#ifndef LITE
 BOOL DecodeMPEGAACAudio(BYTE * pPESPacket, int nPacketLength, int nES)
 {
 	BOOL fRetVal = FALSE;
@@ -1767,7 +1681,6 @@ BOOL DecodeMPEGAACAudio(BYTE * pPESPacket, int nPacketLength, int nES)
 	}
 	return fRetVal;
 }
-#endif LITE
 
 BOOL DecodeMPEGAudioHeader(BYTE * pPESPacket, int nPacketLength, int nES)
 {
@@ -1807,7 +1720,6 @@ BOOL DecodeMPEGAudioHeader(BYTE * pPESPacket, int nPacketLength, int nES)
 		}
 	}
 
-#ifndef LITE
 	// Decode the audio for a thumbnail view
 	if (v->nThumbnailProcessingThreadPriority == 3 || !v->fAudioThumbnails)
 		return TRUE;	// disabled
@@ -1855,24 +1767,18 @@ BOOL DecodeMPEGAudioHeader(BYTE * pPESPacket, int nPacketLength, int nES)
 			OutputDebugString(szTemp);
 		}
 	}
-#else LITE
-	fRetVal = TRUE;
-#endif LITE
 	
 	return fRetVal;
 }
 
-void AutoRecordPIDs()
+void AutoRecordPIDs(void)
 {
-#ifndef LITE
 	PostMessage(v->hWndMainWindow, WM_COMMAND, IDC_SI_PARSER_RECORD_PID, 0);
-#endif LITE
 
 }
 
-void AutoRecord()
+void AutoRecord(void)
 {
-#ifndef LITE
 	int nPMTIndex;
 
 	if (v->nAutoRecord == AUTO_RECORD_ALL)
@@ -1898,7 +1804,6 @@ void AutoRecord()
 	v->nAutoRecordSeconds = 0;
 	if (!v->fDontWarnAboutInccorectAutoRecordProgram)
 		PostMessage(v->hWndMainWindow, WM_USER + 14, 0, 0);
-#endif LITE
 }
 
 int __cdecl SortPMTCompareFunction(const void *elem1, const void *elem2)
@@ -2002,9 +1907,7 @@ void GenerateSplitFilename(char * szInputFileName, char * szOutputFileName, char
 	char szEITEventName[256] = {0};
 	char szNull[] = {""};
 
-#ifdef PRO
 	EnterCriticalSection(&v->csActualRecordFilename);
-#endif PRO
 	lstrcpy(szFileName, szInputFileName);		
 	szExtensionPtr = GetExtensionPtr(szFileName);
 	if (szExtensionPtr != NULL)
@@ -2017,14 +1920,10 @@ void GenerateSplitFilename(char * szInputFileName, char * szOutputFileName, char
 		szArgumentPtrs[i] = szNull;
 	
 	// Generate mask and index variables
-#ifndef PRO
-	GetLocalTime(&stTime);
-#else PRO
 	if (v->fAdvancedRecordUTCTime)
 		GetSystemTime(&stTime);
 	else
 		GetLocalTime(&stTime);
-#endif PRO
 	GetCurrentEITEvent(v->nRecordProgram, szEITEventName);
 	do
 	{
@@ -2048,7 +1947,7 @@ void GenerateSplitFilename(char * szInputFileName, char * szOutputFileName, char
 		{
 			if (*szFormatString >= '1' && *szFormatString <= '9')
 				nNumberFormat = *szFormatString - '0';
-			else if (*szFormatString >= 'a' && *szFormatString <= 'z' || *szFormatString == '%')
+			else if ((*szFormatString >= 'a' && *szFormatString <= 'z') || *szFormatString == '%')
 			{
 				char cArgument = *szFormatString;
 				fEscaped = FALSE;
@@ -2135,9 +2034,7 @@ void GenerateSplitFilename(char * szInputFileName, char * szOutputFileName, char
 		     szArgumentPtrs[8], szArgumentPtrs[9], szArgumentPtrs[10], szArgumentPtrs[11],
 		     szArgumentPtrs[12], szArgumentPtrs[13], szArgumentPtrs[14], szArgumentPtrs[15],
 			 szArgumentPtrs[16], szArgumentPtrs[17], szArgumentPtrs[18], szArgumentPtrs[19]);
-#ifdef PRO
 	LeaveCriticalSection(&v->csActualRecordFilename);
-#endif PRO
 }
 
 void UpdateSDTContinuity()
@@ -2407,7 +2304,6 @@ void SavePIDListDialog(HWND hDlg)
 	}
 }
 
-#ifdef PRO
 BOOL LoadTableList(HWND hDlg, char * szInputFile)
 {
 	int nItemIndex;
@@ -2596,10 +2492,9 @@ INT_PTR CALLBACK RecordAdvancedMuxDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 				if (v->pc[i].lnPackets)
 				{
 					int nIndex;
-					int j = 0;
 					char szPID[64];
 
-					wsprintf(szPID, "%s", FormatTooltipPID(v->pc[i].nPID));			
+					wsprintf(szPID, "%s", FormatTooltipPID(v->pc[i].nPID));
 					nIndex = (int)SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_ADDSTRING, 0, (LPARAM)szPID);
 					if (v->bAdvancedDropPID[v->pc[i].nPID])
 						SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_SETSEL, TRUE, nIndex);
@@ -2657,7 +2552,6 @@ INT_PTR CALLBACK RecordAdvancedMuxDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 	}
 	return FALSE;
 }
-#endif PRO
 
 INT_PTR CALLBACK RecordDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -2702,11 +2596,7 @@ INT_PTR CALLBACK RecordDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				else
 					CheckDlgButton(hDlg, IDC_RECORD_PMT_DEFACTO, BST_CHECKED);
 			}
-#ifdef LITE
-			EnableWindow(GetDlgItem(hDlg, IDC_RECORD_LIMIT), FALSE);
-#endif LITE
 
-#ifndef LITE
 			if (v->fRecordLimit && !v->fRecordDialogStreamOnly)
 			{
 				CheckDlgButton(hDlg, IDC_RECORD_LIMIT, BST_CHECKED);
@@ -2728,17 +2618,13 @@ INT_PTR CALLBACK RecordDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				EnableWindow(GetDlgItem(hDlg, IDC_ATSC_MODE), FALSE);								
 				EnableWindow(GetDlgItem(hDlg, IDC_RECORD_PMT_DEFACTO), FALSE);								
 				EnableWindow(GetDlgItem(hDlg, IDC_RECORD_PMT_ETSI), FALSE);													
-#ifdef PRO
 				ShowWindow(GetDlgItem(hDlg, IDC_RECORD_ADVANCED_FILE), SW_SHOW);
 				ShowWindow(GetDlgItem(hDlg, IDC_RECORD_ADVANCED_MUX), SW_SHOW);
-#endif PRO
 			}
 			else
-#endif LITE
 			{
 				if (v->fRecordDialogStreamOnly == FALSE)
 				{
-#ifndef LITE
 					CheckDlgButton(hDlg, IDC_INCLUDE_CA, v->fIncludeCAData);
 					if (v->fRecordProgramStream)
 					{
@@ -2747,14 +2633,10 @@ INT_PTR CALLBACK RecordDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 						CheckDlgButton(hDlg, IDC_RECORD_PS, BST_CHECKED);
 					}
 					else
-#endif LITE
 						CheckDlgButton(hDlg, IDC_RECORD_TS, BST_CHECKED);
 					EnableWindow(GetDlgItem(hDlg, IDC_RECORD_TS), TRUE);
 					EnableWindow(GetDlgItem(hDlg, IDC_RECORD_PS), TRUE);
 					EnableWindow(GetDlgItem(hDlg, IDC_RECORD_STREAM_CAPTION), TRUE);
-#ifdef LITE
-					ShowWindow(GetDlgItem(hDlg, IDC_INCLUDE_CA), SW_HIDE);
-#endif LITE
 				}
 				if (v->pat.hPATTreeItem != NULL || GetTotalPMTChannels())
 				{
@@ -2928,14 +2810,12 @@ Record_BuildESListDefault:
 		case BN_CLICKED:			
 			switch(LOWORD(wParam))
 			{
-#ifdef PRO
 			case IDC_RECORD_ADVANCED_FILE:
 				DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_RECORD_ADVANCED_FILE), hDlg, RecordAdvancedFileDlgProc);
 				break;
 			case IDC_RECORD_ADVANCED_MUX:
 				DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_RECORD_ADVANCED_MUX), hDlg, RecordAdvancedMuxDlgProc);
 				break;
-#endif PRO
 			case IDC_RECORD_ALL_AUDIO:
 				{
 					int i;
@@ -2950,12 +2830,10 @@ Record_BuildESListDefault:
 						SendDlgItemMessage(hDlg, IDC_RECORD_OTHER_ES, LB_SETSEL, TRUE, i);
 				}
 				break;
-#ifndef LITE
 			case IDC_RECORD_LIMIT:
 				v->fRecordLimit = IsDlgButtonChecked(hDlg, IDC_RECORD_LIMIT);
 				EnableWindow(GetDlgItem(hDlg, IDC_RECORD_LIMIT_SIZE), v->fRecordLimit);
 				break;
-#endif LITE
 			case IDC_ATSC_MODE:
 				v->fATSCRecordMode = IsDlgButtonChecked(hDlg, IDC_ATSC_MODE);
 				break;
@@ -3014,7 +2892,6 @@ Record_BuildESListDefault:
 																0);
 						v->fAudioPMTETSI = IsDlgButtonChecked(hDlg, IDC_RECORD_PMT_ETSI);
 					}
-#ifndef LITE
 					else
 						v->fDiscardNULLPIDs = IsDlgButtonChecked(hDlg, IDC_RECORD_NO_NULLS);
 					//if (v->fRecordLimit && v->nAutoRecord == AUTO_RECORD_NONE && !v->fRecordDialogStreamOnly)
@@ -3031,7 +2908,6 @@ Record_BuildESListDefault:
 					else if (v->nAutoRecord == AUTO_RECORD_NONE)						
 						v->nAutoRecordSeconds = 0;
 					v->fIncludeCAData = IsDlgButtonChecked(hDlg, IDC_INCLUDE_CA);
-#endif LITE
 
 					if (!v->fRecordDialogStreamOnly)
 					{
@@ -3098,18 +2974,6 @@ Record_BuildESListDefault:
 				break;
 			case IDC_RECORD_PS:
 			case IDC_RECORD_TS:
-#ifdef LITE
-				if (LOWORD(wParam) == IDC_RECORD_PS)
-				{
-					if (IsDlgButtonChecked(hDlg, IDC_RECORD_PS))
-					{
-						CheckDlgButton(hDlg, IDC_RECORD_PS, FALSE);
-						CheckDlgButton(hDlg, IDC_RECORD_TS, TRUE);
-						v->fRecordProgramStream = FALSE;
-						MessageBox(hDlg, szLiteWarning, gszAppName, MB_ICONSTOP);
-					}
-				}
-#else LITE
 				if (LOWORD(wParam) == IDC_RECORD_PS && !v->fDisablePSWarning)
 				{
 					if (DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_PROGRAM_STREAM_WARNING), hDlg, PSWarningDlgProc) == FALSE)
@@ -3121,8 +2985,7 @@ Record_BuildESListDefault:
 				}
 				v->fRecordProgramStream = IsDlgButtonChecked(hDlg, IDC_RECORD_PS);
 				EnableWindow(GetDlgItem(hDlg, IDC_RECORD_TITLE), !v->fRecordProgramStream);
-				EnableWindow(GetDlgItem(hDlg, IDC_RECORD_TITLE_CAPTION), !v->fRecordProgramStream);				
-#endif LITE
+				EnableWindow(GetDlgItem(hDlg, IDC_RECORD_TITLE_CAPTION), !v->fRecordProgramStream);
 				break;
 			case IDC_RECORD_BROWSE:
 				{
@@ -3194,12 +3057,10 @@ BOOL VerifySelectedProgram(HWND hDlg)
 int BuildTSSection(BYTE * pInput, int nInputLength, BYTE * pOutput, int nMaxOutput, int nPID)
 {
 	int nPacket;
-	int nPointer;
 	int nWholePackets = (nInputLength + 1) / 184; // +1 for pointer byte on first packet
 	int nRemainder = nInputLength - (nWholePackets * 184);
 	if (nRemainder > 0)
 		nWholePackets++;
-	nPointer = 184 - nRemainder;;
 	
 	set_buf(BM_USER_THREAD, pOutput, nWholePackets * 188, TRUE);
 	for (nPacket = 0; nPacket < nWholePackets; nPacket++)
@@ -3861,7 +3722,6 @@ void SetupPriorToProgramRecording()
 		}
 	}
 
-#ifndef LITE
 	// Setup CA PID list
 	if (v->fIncludeCAData)
 	{
@@ -3893,7 +3753,6 @@ void SetupPriorToProgramRecording()
 		}
 		v->nCAPIDs[nCAPIDIndex] = 0x1fff;
 	}
-#endif LITE
 }
 
 void EnableDisableVLCMenuItems(HMENU hMenu, int nOptions)
@@ -4220,7 +4079,6 @@ void StreamDecoder(HWND hWnd)
 				v->fRecordAllTS = FALSE;		
 				if (v->nStreamTo != STREAM_TO_XNS && v->fRecordProgramStream == FALSE)
 					WritePATandPMTandSDT();
-				v->fLiteMonitorThreadActive = FALSE;
 				v->dwRecordTickCounter = GetTickCount();
 				v->fRecording = TRUE;
 
@@ -4289,7 +4147,6 @@ void GetRecordStartTime()
 	memcpy(&v->lnRecordTime, &ftNow, sizeof(DWORD64));
 }
 
-#ifdef PRO
 DWORD WINAPI AdvancedRecordFreeSpaceMonitorThread(LPVOID lpv)
 {
 	while (v->fRecording)
@@ -4353,8 +4210,8 @@ DWORD WINAPI AdvancedRecordFreeSpaceMonitorThread(LPVOID lpv)
 						ULARGE_INTEGER ulFileDate;
 						char szFilename[MAX_PATH];
 
-						if ((fd.dwFileAttributes && FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
-							continue;				
+						if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
+							continue;
 
 						lstrcpy(szFilename, szOutputFolder);
 						lstrcat(szFilename, "\\");
@@ -4397,7 +4254,6 @@ DWORD WINAPI AdvancedRecordFreeSpaceMonitorThread(LPVOID lpv)
 
 	return 0;
 }
-#endif PRO
 
 void RecordStream(HWND hWnd, BOOL fEntireTS, int nPID)
 {
@@ -4408,13 +4264,11 @@ void RecordStream(HWND hWnd, BOOL fEntireTS, int nPID)
 			EnableMenuItem(GetMenu(hWnd), IDC_SI_PARSER_RECORD_ALL, MF_ENABLED | MF_BYCOMMAND);			
 			CheckMenuItem(GetMenu(hWnd), IDC_SI_PARSER_RECORD, MF_UNCHECKED | MF_BYCOMMAND);
 		}
-#ifndef LITE
 		else
 		{
 			EnableMenuItem(GetMenu(hWnd), IDC_SI_PARSER_RECORD, MF_ENABLED | MF_BYCOMMAND);
 			CheckMenuItem(GetMenu(hWnd), IDC_SI_PARSER_RECORD_ALL, MF_UNCHECKED | MF_BYCOMMAND);
 		}
-#endif LITE
 		EnableOrDisableStreamMenuItems(hWnd, TRUE);
 		v->fRecording = FALSE;
 		v->fRecordAllTS = FALSE;
@@ -4424,10 +4278,8 @@ void RecordStream(HWND hWnd, BOOL fEntireTS, int nPID)
 		//UpdateMainStatusText("");
 		//UpdateSecondaryStatusText("");
 
-#ifndef LITE
 		if (v->fRecordAllTS == FALSE && v->fRecordPIDMode == FALSE && v->fRecordProgramStream == TRUE)
 			PS__StopWriting();
-#endif LITE
 
 		CloseHandle(v->hRecordFile);
 		//if (v->nAutoRecord != AUTO_RECORD_NONE)
@@ -4459,27 +4311,21 @@ void RecordStream(HWND hWnd, BOOL fEntireTS, int nPID)
 				CheckMenuItem(GetMenu(hWnd), IDC_SI_PARSER_RECORD, MF_CHECKED | MF_BYCOMMAND);
 				EnableMenuItem(GetMenu(hWnd), IDC_SI_PARSER_RECORD_ALL, MF_DISABLED | MF_GRAYED | MF_BYCOMMAND);			
 			}
-#ifndef LITE
 			else
 			{
 				CheckMenuItem(GetMenu(hWnd), IDC_SI_PARSER_RECORD_ALL, MF_CHECKED | MF_BYCOMMAND);
 				EnableMenuItem(GetMenu(hWnd), IDC_SI_PARSER_RECORD, MF_DISABLED | MF_GRAYED | MF_BYCOMMAND);
 			}
-#endif LITE
 			EnableOrDisableStreamMenuItems(hWnd, FALSE);
 
 			v->nPATRecordCounter = 0;
-#ifndef LITE
 			if (v->fRecordAllTS == FALSE && v->fRecordPIDMode == FALSE && v->fRecordProgramStream == TRUE)
 				PS__StartWriting();
-#endif LITE
 
 			SendMessage(v->hWndST, SB_SETICON, 4, (LPARAM)v->hStatusBarIcons[5]);
-			v->fLiteMonitorThreadActive = FALSE;
 			v->dwRecordTickCounter = GetTickCount();
 			v->fRecording = TRUE;
 			GetRecordStartTime();
-#ifdef PRO
 			if (v->fAdvancedRecordRemoveOldEnabled)
 			{
 				DWORD dwThreadID;
@@ -4488,7 +4334,6 @@ void RecordStream(HWND hWnd, BOOL fEntireTS, int nPID)
 				hThread = CreateThread(NULL, 0, AdvancedRecordFreeSpaceMonitorThread, (LPVOID)0, 0, &dwThreadID);
 				CloseHandle(hThread);										
 			}
-#endif PRO
 		}
 		else
 			v->nRecordProgram = 0;
@@ -4530,14 +4375,12 @@ BOOL CheckForFileSplit()
 
 		if (fSplitRequired)
 		{
-#ifndef LITE
 			if (v->fRecordProgramStream == TRUE && v->fRecordAllTS == FALSE && v->fRecordPIDMode == FALSE)
 			{
 				DWORD dwWritten;
 				BYTE bEndCode[4] = {0x00, 0x00, 0x01, 0xb9};
 				WriteFile(v->hRecordFile, bEndCode, sizeof(bEndCode), &dwWritten, NULL);
 			}
-#endif LITE
 			CloseHandle(v->hRecordFile);
 			v->nPATRecordCounter = 0;
 
@@ -4573,7 +4416,6 @@ BOOL CheckForFileSplit()
 	return FALSE;
 }
 
-#ifndef LITE
 void RecordAllTS(BYTE * buffer, int nLength, int nPacketLength)
 {
 	int n;
@@ -4583,13 +4425,11 @@ void RecordAllTS(BYTE * buffer, int nLength, int nPacketLength)
 	for (n = 0; n < nLength; n += nPacketLength)
 	{
 		int nPID = (buffer[n + 1] << 8 | buffer[n + 2]) & 0x1fff;
-#ifdef PRO
 		if (v->fAdvancedRecordDropPID)
 		{
 			if (v->bAdvancedDropPID[nPID])
 				continue;
 		}
-#endif PRO
 		if (!(v->fDiscardNULLPIDs == TRUE && nPID == 0x1fff))
 		{
 			if (v->ss.fTimestampPackets && tv->pIncomingTimestamps != NULL)
@@ -4606,7 +4446,6 @@ void RecordAllTS(BYTE * buffer, int nLength, int nPacketLength)
 		}
 	}
 }
-#endif LITE
 
 void UpdateInputActivityPosition(int nPosition)
 {
@@ -4627,7 +4466,6 @@ void UpdateInputActivityPosition(int nPosition)
 	}
 }
 
-#ifdef PRO
 void UpdateForwarderActivityPosition(int nPosition)
 {
 	if (!v->fForwarderEnabled && !v->fwd.nForwarderModulesActive)
@@ -4651,7 +4489,6 @@ void UpdateForwarderActivityPosition(int nPosition)
 		}
 	}
 }
-#endif PRO
 
 void ForcePID(BYTE * pTSPacket, int nPID)
 {
@@ -4725,7 +4562,6 @@ void RecordOutstandingTSBuffers()
 				}
 				if (fRecordCurrentBuffer)
 				{
-#ifndef LITE
 					BOOL fWritePS = FALSE;
 
 					if (v->fRecordProgramStream && !v->fStradisActive)
@@ -4734,7 +4570,6 @@ void RecordOutstandingTSBuffers()
 					if (fWritePS)
 						PS__TranslateToProgramStream(tv->pOutputRecordPackets[i], tv->dwRecordSize[i]);
 					else
-#endif LITE
 					{
 						WriteFile(v->hRecordFile, tv->pOutputRecordPackets[i], tv->dwRecordSize[i], &dwWritten, NULL);
 						if (v->fStradisActive == TRUE)
@@ -4746,17 +4581,6 @@ void RecordOutstandingTSBuffers()
 							LeaveCriticalSection(&v->csPipeBytes);
 							v->nStreamBuffers = nPipeBytes;
 						}
-#ifdef LITE
-						if (v->fLiteMonitorThreadActive == FALSE)
-						{
-							DWORD dwThreadID;
-							HANDLE hThread;
-							v->fLiteMonitorThreadActive = TRUE;
-	
-							hThread = CreateThread(NULL, 0, LiteMonitorThread, (LPVOID)0, 0, &dwThreadID);
-							CloseHandle(hThread);
-						}
-#endif LITE
 					}
 					
 				}
@@ -4857,7 +4681,7 @@ void CheckPIDContinuity(int nPID)
 						&& ((tv->pIncomingBuffer[tv->nBufferOffset + 5] & 0x10) == 0x10)	// PCR flag
 						&& ((tv->pIncomingBuffer[tv->nBufferOffset + 1] & 0x80) == 0x00) )	// no TEI error
 					{
-						int a=1;
+						;
 					}
 				}
 			}
@@ -4873,7 +4697,6 @@ void CheckPIDContinuity(int nPID)
 
 void TimestampRecordPID(BYTE * pInputAdaptationField)
 {
-#ifndef LITE
 	static BYTE bTSReaderSig[] = {"PCR packet generated by TSReader"};
 
 	if (v->fRecording == TRUE)
@@ -4906,8 +4729,8 @@ void TimestampRecordPID(BYTE * pInputAdaptationField)
 				set_bits(BM_PARSER_THREAD, 0, 1);		// adaptation_field_extension_flag
 				for (i = 0; i < 6; i++)
 					set_bits(BM_PARSER_THREAD, pInputAdaptationField[2 + i], 8);
-				set_bits(BM_PARSER_THREAD, lstrlen(bTSReaderSig), 8);
-				for (i = 0; i < lstrlen(bTSReaderSig); i++)
+				set_bits(BM_PARSER_THREAD, lstrlen((LPCSTR)bTSReaderSig), 8);
+				for (i = 0; i < lstrlen((LPCSTR)bTSReaderSig); i++)
 					set_bits(BM_PARSER_THREAD, bTSReaderSig[i], 8);
 				while (get_byte_pos(BM_PARSER_THREAD) <= 188)
 					set_bits(BM_PARSER_THREAD, 0xff, 8);
@@ -4916,7 +4739,6 @@ void TimestampRecordPID(BYTE * pInputAdaptationField)
 			}
 		}
 	}
-#endif LITE
 }
 
 __int64 DecodeDSSRTC(BYTE * pRTC)
@@ -5070,14 +4892,12 @@ void MPEG2MuxrateProcessing(int nPID)
 						v->nMuxRateCounter = 0;
 						v->lnMuxRatePCR = 0;
 						v->nMuxRateBytes = 0;
-#ifdef PRO
 						if (v->nSelectedPCRPID != 0)
 						{
 							v->nSelectedPCRPID = 0;
 							v->lnMuxRatePCR = nCurrentPCR;
 						}
 						else
-#endif PRO
 							v->nMuxRatePID = v->nNullPID;
 						OutputDebugString("TSReader: Reset mux rate calculation PID - dRate too small\n");
 						return;
@@ -5267,7 +5087,6 @@ void BufferRecordChannelData(int nPID)
 		}
 	}
 
-#ifndef LITE
 	if (v->fIncludeCAData)
 	{
 		int nCAPIDIndex;
@@ -5283,11 +5102,8 @@ void BufferRecordChannelData(int nPID)
 			}
 		}
 	}
-#endif LITE
 }
 
-#ifndef LITE
-//void CheckForGeneralESParsing(int nPID, int nComparePID, BYTE * bESBuffer, int * nESLength, int * nESFillPtr, td_InputData CompletionRoutine, int nChartIndex)
 void CheckForGeneralESParsing(int nPID, int nComparePID, BYTE * bESBuffer, int * nESLength, int * nESFillPtr, int nCompletionRoutine, int nChartIndex)
 {
 	if (nComparePID == nPID)
@@ -5331,11 +5147,9 @@ void CheckForGeneralESParsing(int nPID, int nComparePID, BYTE * bESBuffer, int *
 					nActualLength = *(nESLength);				
 					switch(nCompletionRoutine)
 					{
-#ifdef PRO
 					case 0:
 						InputCCData(bESBuffer, nActualLength, nChartIndex);
 						break;
-#endif PRO
 					case 1:
 						InputMPEG2VideoCompositionESData(bESBuffer, nActualLength, nChartIndex);
 						break;
@@ -5381,10 +5195,8 @@ void CheckForGeneralESParsing(int nPID, int nComparePID, BYTE * bESBuffer, int *
 		}
 	}
 }
-#endif LITE
 
-#ifndef LITE
-void LogTableMonitorData()
+void LogTableMonitorData(void)
 {
 	int nPacketLength = v->nTableMonitorFillPtr;
 	int nTableID;
@@ -5420,7 +5232,6 @@ void LogTableMonitorData()
 
 	}
 	v->tablemonitor[nTableID].lnLastTime = lnNow;
-#ifdef PRO
 	if (v->fTableMonitorSectionDisplayEnabled && nTableID == v->nTableMonitorSectionTable)
 	{
 		char szFullOutput[32 * 1024] = {0};
@@ -5454,13 +5265,10 @@ void LogTableMonitorData()
 		}
 		SendMessage(v->hTableViewerSectionDisplayWindow, WM_SETTEXT, 0, (LPARAM)szFullOutput);
 	}
-#endif PRO
 }
-#endif LITE
 
 void CheckForTableMonitor(int nPID)
 {
-#ifndef LITE
 	if (!v->fTableMonitorRunning)
 		return;
 
@@ -5510,7 +5318,6 @@ void CheckForTableMonitor(int nPID)
 			return;
 		}
 	}
-#endif LITE
 }
 
 void CheckForESParsing(int nPID, int nES)
@@ -5621,15 +5428,12 @@ void CheckForESParsing(int nPID, int nES)
 						case PARSE_ES_TYPE_MPEG2_VIDEO:
 							fRetVal = DecodeMPEG2Video(tv->bESBuffer[nES], tv->nPESLength[nES], nES);
 							break;
-#ifdef PRO
 						case PARSE_ES_TYPE_VC1_VIDEO:
 							fRetVal = DecodeVC1Video(tv->bESBuffer[nES], tv->nPESLength[nES], nES);
 							break;
 						case PARSE_ES_TYPE_AUDIO_TITLE:
 							fRetVal = DecodeAudioTitleData(tv->bESBuffer[nES], tv->nPESLength[nES], nES);
 							break;
-#endif PRO
-#ifndef LITE
 						case PARSE_ES_TYPE_MPEG2_AAC_AUDIO:
 							fRetVal = DecodeMPEGAACAudio(tv->bESBuffer[nES], tv->nPESLength[nES], nES);
 							break;
@@ -5642,7 +5446,6 @@ void CheckForESParsing(int nPID, int nES)
 						case PARSE_ES_TYPE_MPEG4_VIDEO:
 							fRetVal = DecodeMPEG4Video(tv->bESBuffer[nES], tv->nPESLength[nES], nES);
 							break;
-#endif LITE
 						case PARSE_ES_TYPE_MPEG_AUDIO:
 							fRetVal = DecodeMPEGAudioHeader(tv->bESBuffer[nES], tv->nPESLength[nES], nES);
 							break;
@@ -5738,7 +5541,7 @@ void CheckForESParsing(int nPID, int nES)
 	}
 }
 
-void GetNextECMPID()
+void GetNextECMPID(void)
 {
 	do
 	{
@@ -5794,28 +5597,23 @@ void GetNextECMPID()
 	} while (TRUE);
 }
 
-void PMTParsingComplete()
+void PMTParsingComplete(void)
 {
 	int nES;
 	int nMaxThreads = 1;
 	HWND hWndTV = GetDlgItem(v->hDlgSIParser, IDC_SI_TREE);
 
-#ifndef LITE
 	int nPMTListenIndex;
 
 	for (nPMTListenIndex = 0; nPMTListenIndex < MAX_PAT_ENTRIES; nPMTListenIndex++)
 		v->pmtlisten[nPMTListenIndex].nFillPtr = 0;
 
-#endif LITE
-
 	v->nPMTPID = v->nNullPID; 
 	v->ss.nPATCATProcessed |= 3;
 	v->nFillPtr[tv->nBufferID] = 0;
 	
-#ifdef PRO
 	if (!v->fWaitForCAThumbnail)
 		nMaxThreads = v->nMaximumThumbnailThreads;
-#endif PRO
 	EnterCriticalSection(&v->csNextESPID);
 	for (nES = 0; nES < nMaxThreads; nES++)
 	{
@@ -5844,7 +5642,6 @@ void PMTParsingComplete()
 		}
 	}
 
-#ifdef PRO
 	if (v->fAutomaticForwarding)
 		PostMessage(v->hWndMainWindow, WM_COMMAND, ID_FORWARD_FORWARDTOUDP, 0);
 	if (v->fAutomaticStreamMonitor)
@@ -5854,15 +5651,12 @@ void PMTParsingComplete()
 	}
 	if (v->fAutomaticRecordAll)
 		PostMessage(v->hWndMainWindow, WM_COMMAND, ID_RECORD_RECORDALLPROGRAMS, 0);
-#endif PRO
-#ifndef LITE
 	if (v->nCommandLineChart)
 	{
 		if (v->wChartMenuItems[v->nCommandLineChart - 1] != 0)
 			PostMessage(v->hWndMainWindow, WM_COMMAND, v->wChartMenuItems[v->nCommandLineChart - 1], 0);
 		v->nCommandLineChart = 0;
 	}
-#endif LITE
 
 	// See about parsing DCII ECM PIDs to get channel names
 	if (v->nNetworkPID == 0x0ffe)
@@ -5940,7 +5734,6 @@ void PostPATProcessing()
 		qsort(v->pat.pmt, nCount, sizeof(PMT), SortPMTCompareFunction);
 	PostMessage(v->hDlgSIParser, WM_USER + 2, SI_PARSER_PAT, 0);
 
-#ifndef LITE
 	if (v->nMaxSourcePIDs == 8192 && !v->fFastPMTParserDisabled)
 	{
 		int i;
@@ -5978,7 +5771,6 @@ void PostPATProcessing()
 		}
 	}
 	else
-#endif LITE
 	{
 		v->nPMTProgramIndex = 0;	
 		while (v->pat.pmt[v->nPMTProgramIndex].nProgramNumber == 0
@@ -6058,7 +5850,6 @@ BOOL CheckPATVersionNumber(BYTE * pSectionPointer, int nPacketLength)
 	return FALSE;
 }
 
-#ifdef PRO
 void RecordTableData(int nRecordIndex, BYTE * pPacket, int nPacketLength)
 {
 	do
@@ -6151,9 +5942,8 @@ void RecordTableData(int nRecordIndex, BYTE * pPacket, int nPacketLength)
 		nPacketLength -= nSectionLength + 3;
 	}
 }
-#endif PRO
 
-void DispatchSIPacket()
+void DispatchSIPacket(void)
 {
 #ifdef DEBUG_MESSAGES
 	{
@@ -6236,7 +6026,6 @@ void DispatchSIPacket()
 		case BUFFER_CETT:
 			ParseATSCCETT(v->bSIBuffer[tv->nBufferID], v->nFillPtr[tv->nBufferID]);
 			break;
-#ifdef PRO
 		case BUFFER_INT:
 			if (v->nNetworkPID == 0x0010)		// must be DVB
 			{
@@ -6264,8 +6053,6 @@ void DispatchSIPacket()
 				RecordTableData(nRecordIndex, v->bSIBuffer[tv->nBufferID], v->nFillPtr[tv->nBufferID]);
 			}
 			break;
-#endif PRO
-#ifndef LITE
 		case BUFFER_SKY_EPG_PID1:
 		case BUFFER_SKY_EPG_PID2:
 		case BUFFER_SKY_EPG_PID3:
@@ -6275,14 +6062,12 @@ void DispatchSIPacket()
 			if (v->fSkyEPG)
 				ParseSkyEPG(v->bSIBuffer[tv->nBufferID], v->nFillPtr[tv->nBufferID], tv->nBufferID == BUFFER_SKY_EPG_PID1);
 			break;
-#endif LITE
 		case BUFFER_PAT_PMT:
 			if ((tv->nBufferID == 3) && (v->nPMTPID == v->nNullPID))	// we're done with the PAT/PMT/CAT
 			{
 				v->nSIParserPackets[SI_PARSER_STATS_PAT]++;
 				if (CheckPATVersionNumber(v->bSIBuffer[tv->nBufferID], v->nFillPtr[tv->nBufferID]) == TRUE)
 				{
-#ifndef LITE
 					if (v->fAutoRestartOnPATVersionChange)
 					{
 						if (v->fAutoRestartNoTuneDialog == TRUE)
@@ -6291,7 +6076,6 @@ void DispatchSIPacket()
 							PostMessage(v->hWndMainWindow, WM_USER + 10, 0, 0);
 						PostMessage(v->hWndMainWindow, WM_COMMAND, ID_FILE_RESTART_SOURCE, 0);
 					}
-#endif LITE
 				}
 				break;
 			}
@@ -6303,10 +6087,8 @@ void DispatchSIPacket()
 					PostPATProcessing();
 				break;
 			default:	// probably doing a PMT
-#ifndef LITE
 				if (v->nMaxSourcePIDs == 8192 && !v->fFastPMTParserDisabled)
 					break;
-#endif LITE
 				if (v->nPMTPID != v->nNullPID)
 				{
 					v->nSIParserPackets[SI_PARSER_STATS_PMT]++;
@@ -6329,7 +6111,6 @@ void DispatchSIPacket()
 #endif DEBUG_MESSAGES
 }
 
-#ifndef LITE
 void PMTListenPMTParser(BYTE * pSectionBuffer, int nSectionLength, int nPMTListenIndex)
 {
 	char szTemp[128];
@@ -6423,7 +6204,6 @@ void PMTListenParser(int nPMTListenIndex, int nPID, BYTE * pPacket)
 			v->pmtlisten[nPMTListenIndex].nFillPtr = 0;
 	}
 }
-#endif LITE
 
 void BufferSections(int nPID)
 {
@@ -6498,13 +6278,9 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 		tv->fBufferSections[i] = FALSE;
 	}
 
-#ifndef LITE
-#ifdef PRO
 	tv->bCCESBuffer = LocalAlloc(LPTR, ES_BUFFER_SIZE);
-#endif PRO
 	for (i = 0; i < MAX_CHARTS; i++)
 		tv->bVideoESBuffer[i] = LocalAlloc(LPTR, ES_BUFFER_SIZE);
-#endif LITE
 	tv->nBufferNumber = -1;
 	tv->nPreviousBuffers = -1;
 	tv->nPacketLength = 188;
@@ -6579,7 +6355,6 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 			}
 		}
 
-#ifdef PRO
 		if (v->fMDIIndexActive)
 		{
 			MDITIME ts;
@@ -6593,7 +6368,6 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 			mdiPacket(ts, tv->pIncomingBuffer, tv->nIncomingBufferLength, mdi);
 			LeaveCriticalSection(&v->csMDI);
 		}
-#endif PRO
 
 		// Bump the activity indicator
 		tv->nActivityByteCounter += tv->nIncomingBufferLength;
@@ -6608,11 +6382,9 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 		// Record entire transport stream or setup for individual PIDs
 		if (v->fRecording == TRUE)
 		{
-#ifndef LITE
 			if (v->fRecordAllTS == TRUE)
 				RecordAllTS(tv->pIncomingBuffer, tv->nIncomingBufferLength, tv->nPacketLength);
 			else
-#endif LITE
 			{
 				if (v->fRecordPIDMode == TRUE)
 				{
@@ -6631,7 +6403,6 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 			}
 		}
 
-#ifdef PRO
 		// Potentially pass to the Pro feature parsers, but not for DSS packets
 		if (tv->nPacketLength == 188)
 		{
@@ -6642,7 +6413,6 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 			if (v->fMonitorRunning)
 				MonitorProgramData(tv->pIncomingBuffer, tv->nIncomingBufferLength);
 		}
-#endif PRO
 
 		// Loop for each packet
 		do
@@ -6736,19 +6506,14 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 				if (nPID == v->nNullPID)
 					continue;
 
-#ifdef PRO
 				if (!v->fWaitForCAThumbnail)
 					nMaxThreads = v->nMaximumThumbnailThreads;
-#endif PRO
 				for (nES = 0; nES < nMaxThreads; nES++)
 					CheckForESParsing(nPID, nES);
-#ifndef LITE
-#ifdef PRO
 				if (v->nCaptionPID != -1)
 					CheckForGeneralESParsing(nPID, v->nCaptionPID, tv->bCCESBuffer, &tv->nCCPESLength, &tv->nCCESFillPtr, 0, 0);
 				else
 					tv->nCCESFillPtr = 0;
-#endif PRO
 				{
 					int nChartIndex = 0;
 					for (nChartIndex = 0; nChartIndex < MAX_CHARTS; nChartIndex++)
@@ -6769,14 +6534,9 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 						}
 					}
 				}
-#endif LITE
 				CheckForTableMonitor(nPID);
 
-#ifndef LITE
 				if (v->nPMTPID != v->nNullPID && v->nMaxSourcePIDs != 8192 && !v->fFastPMTParserDisabled)
-#else LITE
-				if (v->nPMTPID != v->nNullPID)
-#endif LITE
 				{
 					if (v->nPMTTimeoutCounter >= PMT_TIMEOUT)
 					{
@@ -6827,10 +6587,8 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 							tv->nBufferID = BUFFER_CAT;
 						else if (nPID == 0x0024 && v->fISDB)
 							tv->nBufferID = BUFFER_BIT;
-#ifdef PRO
 						else if (nPID == v->nINTPID && v->nINTService)
 							tv->nBufferID = BUFFER_INT;
-#endif PRO
 						else if (nPID == v->nATSCCETTPID) tv->nBufferID = BUFFER_CETT;
 						else if (nPID == v->nATSCEITPID[0] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT0;
 						else if (nPID == v->nATSCEITPID[1] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT1;
@@ -6960,14 +6718,11 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 						else if (nPID == v->nATSCETTPID[61] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT61;
 						else if (nPID == v->nATSCETTPID[62] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT62;
 						else if (nPID == v->nATSCETTPID[63] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT63;
-#ifndef LITE
 						else if (v->fSkyEPG && nPID == v->nSkyEPGPIDs[0])	tv->nBufferID =	BUFFER_SKY_EPG_PID1;
 						else if (v->fSkyEPG && nPID == v->nSkyEPGPIDs[1])	tv->nBufferID =	BUFFER_SKY_EPG_PID2;
 						else if (v->fSkyEPG && nPID == 80)	tv->nBufferID =	BUFFER_SKY_PID_80;
 						else if (v->fSkyEPG && nPID == 81)	tv->nBufferID =	BUFFER_SKY_PID_81;
 						//else if (v->fSkyEPG && nPID == 85)	tv->nBufferID =	BUFFER_SKY_PID_85;
-#endif LITE
-#ifndef LITE
 						else
 						{
 							if (v->nMaxSourcePIDs == 8192 && !v->fFastPMTParserDisabled)
@@ -7014,7 +6769,6 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 								}
 							}
 						}
-#endif LITE
 					}
 				}
 			}
@@ -7026,7 +6780,6 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 			}
 			if (tv->nBufferID != -1)
 				BufferSections(nPID);
-#ifdef PRO
 			if (v->fRecordTablesActive)
 			{
 				int nTableIndex;
@@ -7040,7 +6793,6 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 					}
 				}
 			}
-#endif PRO
 		} while ((tv->nBufferOffset += tv->nPacketLength) < tv->nIncomingBufferLength );
 
 	} while (TRUE);
@@ -7050,13 +6802,9 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 
 	for (i = 0; i < MAX_ES_PARSERS; i++)
 		LocalFree(tv->bESBuffer[i]);
-#ifndef LITE
-#ifdef PRO
 	LocalFree(tv->bCCESBuffer);
-#endif PRO
 	for (i = 0; i < MAX_CHARTS; i++)
 		LocalFree(tv->bVideoESBuffer[i]);
-#endif LITE
 	CloseHandle(v->hStreamProcessingThread);
 	LocalFree(tv);
 	OutputDebugString("TSReader: ParseIncomingTSDataThread-\n");
@@ -7093,8 +6841,7 @@ void CleanupIPParsingThread(HWND hDlg)
 	}
 }
 
-#ifndef LITE
-void ReadPersistantEPG()
+void ReadPersistantEPG(void)
 {
 	HANDLE hEITFile;
 	char szPersistantFile[MAX_PATH];
@@ -7166,7 +6913,7 @@ void ReadPersistantEPG()
 	}
 }
 
-void WritePersistantEPG()
+void WritePersistantEPG(void)
 {
 	HANDLE hEITFile;
 	char szPersistantFile[MAX_PATH];
@@ -7240,7 +6987,6 @@ void WritePersistantEPG()
 	}
 }
 
-#endif LITE
 void CleanupMPEGParsingThread(HWND hDlg)
 {
 	int i, j;
@@ -7252,12 +6998,10 @@ void CleanupMPEGParsingThread(HWND hDlg)
 	OutputDebugString("CleanupMPEGParsingThread: EIT\n");
 #endif DEBUG_MESSAGES
 	UpdateMainStatusText("Unloading EIT data...");
-#ifndef LITE
 	if (1) // fPersistantEPG
 	{
 		WritePersistantEPG();
 	}
-#endif LITE
 	for (i = 0; i < MAX_EIT_CHANNEL_DATA; i++)
 	{
 		PEITEVENT pCurrent, pNext;
@@ -7350,13 +7094,11 @@ void CleanupMPEGParsingThread(HWND hDlg)
 		}
 		memset(&v->pat.pmt[nPMTIndex], 0, sizeof(PMT));
 	}
-#ifndef LITE
 	if (v->pat.pRawPAT != NULL)
 	{
 		LocalFree(v->pat.pRawPAT);
 		v->pat.pRawPAT = NULL;
 	}
-#endif LITE
 
 #ifdef DEBUG_MESSAGES
 	OutputDebugString("CleanupMPEGParsingThread: NIT\n");
@@ -7543,8 +7285,8 @@ HTREEITEM AddItemToSITree(HWND hwndTV, LPTSTR lpszItem, int nLevel, LPARAM lPara
 	TV_INSERTSTRUCT tvins; 
 	LPTV_ITEM tvi = &tvins.item; 
 	static HTREEITEM hPrev = (HTREEITEM) TVI_FIRST; 
-	static HTREEITEM hPrevRootItem = NULL; 
-	static HTREEITEM hPrevLev2Item = NULL; 
+	static HTREEITEM hPrevRootItem = NULL;
+	static HTREEITEM hPrevLev2Item = NULL;
  
 	tvi->mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM ; 
  
@@ -7832,9 +7574,7 @@ void DrawThumbnail(HDC hDC, int nPMTIndex, int nESIndex, int yCurrent, int yEnd,
 					  dwChannelTextColor);				
 	if (   v->pat.pmt[nPMTIndex].es[nESIndex].nParseType == PARSE_ES_TYPE_MPEG2_VIDEO
 		|| v->pat.pmt[nPMTIndex].es[nESIndex].nParseType == PARSE_ES_TYPE_H264_VIDEO
-#ifdef PRO
 		|| v->pat.pmt[nPMTIndex].es[nESIndex].nParseType == PARSE_ES_TYPE_VC1_VIDEO
-#endif PRO
 		|| v->pat.pmt[nPMTIndex].es[nESIndex].nParseType == PARSE_ES_TYPE_MPEG4_VIDEO)
 	{
 		if (LocateCurrentProgram(nPMTIndex, szCurrentProgram, NULL, NULL, NULL, TRUE) == TRUE)
@@ -7901,14 +7641,12 @@ void DrawThumbnail(HDC hDC, int nPMTIndex, int nESIndex, int yCurrent, int yEnd,
 					else
 						pIcon = v->pRGB_BL_MPG4Video;
 					break;
-#ifdef PRO
 				case PARSE_ES_TYPE_VC1_VIDEO:
 					if (!v->pat.pmt[nPMTIndex].es[nESIndex].nBlacklisted)
 						pIcon = v->pRGB_VC1Video;
 					else
 						pIcon = v->pRGB_BL_VC1Video;
 					break;
-#endif PRO
 				}
 				if (pIcon != NULL)
 					_ISOverlayRGBTrans(v->pNewPicture, nThumbnailWidth, nThumbnailHeight, pIcon, 24, 13, nThumbnailWidth - 25, 1, 1.0, 0xff0000);
@@ -7927,7 +7665,6 @@ void DrawThumbnail(HDC hDC, int nPMTIndex, int nESIndex, int yCurrent, int yEnd,
 				else
 					pIcon = v->pRGB_BL_MPEGAudio;
 				break;
-#ifndef LITE
 			case PARSE_ES_TYPE_AC3_AUDIO:
 				if (!v->pat.pmt[nPMTIndex].es[nESIndex].nBlacklisted)
 					pIcon = v->pRGB_AC3Audio;
@@ -7941,7 +7678,6 @@ void DrawThumbnail(HDC hDC, int nPMTIndex, int nESIndex, int yCurrent, int yEnd,
 				else
 					pIcon = v->pRGB_BL_AACAudio;
 				break;
-#endif LITE
 			}					
 			if (pIcon != NULL)
 				_ISOverlayRGBTrans(v->pNewPicture, nThumbnailWidth, nThumbnailHeight, pIcon, 24, 13, nThumbnailWidth - 25, 1, 1.0, 0xff0000);
@@ -8400,7 +8136,6 @@ void UpdatePIDChart(HWND hDlg)
 		}
 		dTotalPercent += dPercent;
 
-#ifndef LITE
 		if (v->pc[i].nPIDHasContinuityErrors)
 		{
 			if (v->fCountContinuityErrors == FALSE)
@@ -8418,7 +8153,6 @@ void UpdatePIDChart(HWND hDlg)
 			wsprintf(szTemp, "/%d", v->pc[i].nPIDTEICount);
 			lstrcat(szPID, szTemp);
 		}
-#endif LITE
 
 		GetTextExtentPoint32(hDC, szPID, lstrlen(szPID), &pidsize);
 		xTextPos = xStart + (int)(v->pc[i].lnPackets * dScale) + 5;
@@ -8663,10 +8397,10 @@ void HandleTreeClickIPDVB(HWND hDlg, LPNMHDR pnmh)
 				break;
 			}
 			sprintf(szOutput, "Destination Address: %d.%d.%d.%d\r\nProtocol: %s\r\nPackets: %d\r\nMBytes: %.3f\r\n",
-					 (pCurrentIP->dwDestinationAddress >> 24) & 0xff,
-					 (pCurrentIP->dwDestinationAddress >> 16) & 0xff,
-					 (pCurrentIP->dwDestinationAddress >> 8) & 0xff,
-					 (pCurrentIP->dwDestinationAddress & 0xff),
+					 (int)((pCurrentIP->dwDestinationAddress >> 24) & 0xff),
+					 (int)((pCurrentIP->dwDestinationAddress >> 16) & 0xff),
+					 (int)((pCurrentIP->dwDestinationAddress >> 8) & 0xff),
+					 (int)((pCurrentIP->dwDestinationAddress & 0xff)),
 					 szProtocol,
 					 pCurrentIP->nPacketCount,
 					 (double)pCurrentIP->nByteCount / 1024.0 / 1024.0);
@@ -8778,7 +8512,6 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 						 DS_status,
 						 DS_day_of_month,
 						 DS_hour);
-#ifdef PRO
 				{
 					__int64 nSystemTime, nStream;
 					__int64 nDifference;
@@ -8802,7 +8535,6 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 					wsprintf(szTemp2, "Difference between stream and PC time: %d seconds\r\n", (int)nDifference);
 					lstrcat(szTemp, szTemp2);
 				}
-#endif PRO
 				SetDlgItemText(hDlg, IDC_SI_TEXT, szTemp);
 			}
 			memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
@@ -9042,8 +8774,7 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 						SendCAPMT(bCAMMessage, nCAPMTLength);
 					}
 				}
-#ifndef LITE
-				if (   (v->dwSourceCapabilities && CAPABILITIES_SERIAL_CONTROL) 
+				if (   (v->dwSourceCapabilities & CAPABILITIES_SERIAL_CONTROL)
 					&& (v->ss.fSerialReceiverControlEnabled == TRUE)
 					&& (v->fSerialReceiverControlThreadRunning == TRUE) )
 				{
@@ -9068,7 +8799,6 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 														 v->pat.nTransportStreamID,
  												 		 nNetworkID);
 				}
-#endif LITE
 
 				v->fStradisAutostart = FALSE;
 				if (fRestartStradis == TRUE)
@@ -9227,7 +8957,6 @@ void SIParserMsgNotify(HWND hDlg, UINT uMessage, WPARAM wparam, LPARAM lParam)
 					nNITRightClickIndex = tvi.lParam & 0x0fffffff;
 					if (nNITRightClickIndex == 0x0fffffff)
 					{
-#ifndef LITE
 						// root of the NIT
 						// Get the bounding rectangle of the client area
 						GetClientRect(hDlg, (LPRECT) &rc); 
@@ -9247,7 +8976,6 @@ void SIParserMsgNotify(HWND hDlg, UINT uMessage, WPARAM wparam, LPARAM lParam)
 						ClientToScreen(hDlg, (LPPOINT) &pt); 
 						TrackPopupMenu(hMenuTrackPopup, TPM_LEFTALIGN | TPM_LEFTBUTTON, pt.x, pt.y, 0, hDlg, NULL); 
 						DestroyMenu(hMenu); 
-#endif LITE
 						return;
 
 					}
@@ -9325,7 +9053,6 @@ void SIParserMsgNotify(HWND hDlg, UINT uMessage, WPARAM wparam, LPARAM lParam)
 						DestroyMenu(hMenu); 
 					}
 				}
-#ifndef LITE
 				else if ((tvi.lParam & 0xf0000000) == SI_PARSER_BAT)
 				{
 					RECT rc;
@@ -9381,7 +9108,7 @@ void SIParserMsgNotify(HWND hDlg, UINT uMessage, WPARAM wparam, LPARAM lParam)
 				}
 				else if ((tvi.lParam & 0xf0000000) == SI_PARSER_ES)
 				{
-					int nPMTIndex, nESIndex;
+					int nPMTIndex, nESIndex = 0;
 					BOOL fFound = FALSE;
 
 					// It's an ES we just clicked on
@@ -9432,7 +9159,6 @@ void SIParserMsgNotify(HWND hDlg, UINT uMessage, WPARAM wparam, LPARAM lParam)
 						break;
 					}
 				}
-#ifdef PRO
 				else
 				{
 					// See if it's a PCR tree-item
@@ -9468,8 +9194,6 @@ void SIParserMsgNotify(HWND hDlg, UINT uMessage, WPARAM wparam, LPARAM lParam)
 						}
 					}
 				}
-#endif PRO
-#endif LITE
 			}
 			else
 			{
@@ -9618,10 +9342,8 @@ void UpdatePIDChartingData(HWND hDlg)
 		v->lnTotalTSPackets = 0;
 	LeaveCriticalSection(&v->ss.csPIDCounter);//zz
 
-#ifdef PRO
 	if (v->nPIDUsageStackedAreaChartIndex != -1)
 		AddDataToPIDUsageStackedChart(v->nPIDUsageStackedAreaChartIndex);
-#endif PRO
 
 	if (v->fSortChartByPID == FALSE)
 	{
@@ -9808,10 +9530,8 @@ void UpdateStatistics(HWND hDlg, BOOL fFromTimer)
 			TextOut(hDC, xStart, yStart + textsize.cy + textsize.cy + textsize.cy, szRetunes, lstrlen(szRetunes));
 			TextOut(hDC, xStart + 125, yStart + textsize.cy + textsize.cy + textsize.cy, szTemp, lstrlen(szTemp));
 		}
-#ifndef LITE
 		if (v->nContinuityErrors)
 			TextOut(hDC, xStart, yEnd - textsize.cy, szContinuityIndicator, lstrlen(szContinuityIndicator));
-#endif LITE
 		
 		TextOut(hDC, xStart + 180, yStart, szMuxBitrate, lstrlen(szMuxBitrate));
 		if (v->dDisplayMuxRate > 0)
@@ -9902,7 +9622,7 @@ void UpdateStatistics(HWND hDlg, BOOL fFromTimer)
 	ReleaseDC(hDlg, hDC);
 }
 
-void ResetTreeViewHandles()
+void ResetTreeViewHandles(void)
 {
 	int i;
 
@@ -9928,7 +9648,7 @@ void ResetTreeViewHandles()
 		v->hEITTreeItem[i] = NULL;
 }
 
-void ResetParserPackets()
+void ResetParserPackets(void)
 {
 	v->nSIParserPackets[SI_PARSER_STATS_PAT] = 0;
 	v->nSIParserPackets[SI_PARSER_STATS_PMT] = 0;
@@ -9940,7 +9660,7 @@ void ResetParserPackets()
 	v->nSIParserPackets[SI_PARSER_STATS_TDT] = 0;
 }
 
-void ResetParserCRCs()
+void ResetParserCRCs(void)
 {
 	v->nSIParserCRCs[SI_PARSER_STATS_PAT] = 0;
 	v->nSIParserCRCs[SI_PARSER_STATS_PMT] = 0;
@@ -9952,8 +9672,7 @@ void ResetParserCRCs()
 	v->nSIParserCRCs[SI_PARSER_STATS_TDT] = 0;
 }
 
-#ifdef PRO
-void ResetParserTableErrors()
+void ResetParserTableErrors(void)
 {
 	v->nSIParserTableErrors[SI_PARSER_STATS_PAT] = 0;
 	v->nSIParserTableErrors[SI_PARSER_STATS_PMT] = 0;
@@ -9965,7 +9684,7 @@ void ResetParserTableErrors()
 	v->nSIParserTableErrors[SI_PARSER_STATS_TDT] = 0;
 }
 
-void ResetTableTimes()
+void ResetTableTimes(void)
 {
 	v->dSIParserTableTime[SI_PARSER_STATS_PAT] = 0.0;
 	v->dSIParserTableTime[SI_PARSER_STATS_PMT] = 0.0;
@@ -9977,7 +9696,7 @@ void ResetTableTimes()
 	v->dSIParserTableTime[SI_PARSER_STATS_TDT] = 0.0;
 }
 
-void ResetTableTimingErrors()
+void ResetTableTimingErrors(void)
 {
 	v->nSIParserTimingErrors[SI_PARSER_STATS_PAT] = 0;
 	v->nSIParserTimingErrors[SI_PARSER_STATS_PMT] = 0;
@@ -9988,7 +9707,6 @@ void ResetTableTimingErrors()
 	v->nSIParserTimingErrors[SI_PARSER_STATS_BAT] = 0;
 	v->nSIParserTimingErrors[SI_PARSER_STATS_TDT] = 0;
 }
-#endif PRO
 
 void ResetPIDChart(HWND hWnd)
 {
@@ -10051,7 +9769,6 @@ void WaitForThumbnailThread(HWND hWnd)
 		OutputDebugString("TSReader: Thumbnail decoder thread timeout\n");
 }
 
-#ifndef LITE
 void SetupForNewStream(HWND hWnd)
 {
 	int i;
@@ -10086,11 +9803,9 @@ void SetupForNewStream(HWND hWnd)
 	v->nNITTreeItemCount = 0;
 	v->nBATTreeItemCount = 0;
 
-#ifndef LITE
-	memset(v->bDescriptorTagArray, 0, sizeof(bDescriptorTagArray));
+	memset(v->bDescriptorTagArray, 0, sizeof(v->bDescriptorTagArray));
 	for (i = 0; i < MAX_PAT_ENTRIES; i++)
 		memset(&v->pmtlisten[i], 0, sizeof(PMTLISTEN));
-#endif LITE
 
 	v->fIPDVBMode = FALSE;
 	CleanupIPParsingThread(hWnd);
@@ -10159,11 +9874,9 @@ void SetupForNewStream(HWND hWnd)
 
 	ResetParserPackets();
 	ResetParserCRCs();
-#ifdef PRO
 	ResetParserTableErrors();
 	ResetTableTimes();
 	ResetTableTimingErrors();
-#endif PRO
 	v->nDCIIECMPMTIndex = 0;
 	v->nDCIIECMDescriptorPID = -1;
 
@@ -10195,7 +9908,6 @@ void SetupForNewStream(HWND hWnd)
 	}
 	InvalidateRect(v->hDlgSIParser, NULL, TRUE);
 
-#ifdef PRO
 	{
 		int nTableIndex;
 		for (nTableIndex = 0; nTableIndex < MAX_RECORD_TABLES; nTableIndex++)
@@ -10210,11 +9922,8 @@ void SetupForNewStream(HWND hWnd)
 			v->XMLLog = NULL;
 		}
 	}
-#endif PRO
 }
-#endif LITE
 
-#ifndef LITE
 BOOL RetuneForSIParser(HWND hDlg, int nFrequency, int nSymbolRate, int nPolarization)
 {
 	BOOL fRetVal = FALSE;
@@ -10232,8 +9941,6 @@ BOOL RetuneForSIParser(HWND hDlg, int nFrequency, int nSymbolRate, int nPolariza
 
 	return fRetVal;
 }
-#endif LITE
-
 
 double GetPercentageOfTransportStream(int nPID)
 {
@@ -10243,7 +9950,7 @@ double GetPercentageOfTransportStream(int nPID)
 	{
 		if (nPID == v->pc[i].nPID)
 		{
-			double dPercent = ((double)v->pc[i].lnPackets / (double)v->lnCopyTotalTSPackets) * 100.0;			
+			double dPercent = ((double)v->pc[i].lnPackets / (double)v->lnCopyTotalTSPackets) * 100.0;
 			return dPercent;
 		}
 	}
@@ -10252,9 +9959,6 @@ double GetPercentageOfTransportStream(int nPID)
 
 void SIParserExportNIT(HWND hWnd)
 {
-#ifdef LITE
-	MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#else LITE
 	int nNITIndex;
 	int nRetVal;
 	BOOL fFirstTime = TRUE;
@@ -10551,7 +10255,6 @@ SIParserExportNIT_default:
 					 v->ss.nPolarity);	
 	
 	CursorNormal();
-#endif LITE
 }
 
 void HandleThumbnailScroll(HWND hDlg, WPARAM wParam, LPARAM lParam)
@@ -10752,8 +10455,7 @@ void HandleWMUSER2IPMode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 	SendMessage(hWndTV, WM_SETREDRAW, TRUE, 0);
 }
 
-#ifdef PRO
-void XMLLogCheckItemCount()
+void XMLLogCheckItemCount(void)
 {
 	if (v->nXMLLogCount == v->nXMLLogMax)
 	{
@@ -10788,7 +10490,6 @@ void LogXMLItem(WPARAM wParam, LPARAM lParam)
 	v->nXMLLogCount++;
 	LeaveCriticalSection(&v->csXMLLog);
 }
-#endif PRO
 
 void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 {
@@ -11511,12 +11212,10 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 			}
 			wsprintf(szMask, "BAT %s (v%d)", v->szOutputPIDFlags, v->bat[nBATIndex].version_number);
 			wsprintf(szTemp, szMask, v->bat[nBATIndex].bouquet_id);
-#ifndef LITE
 			if (v->bat[nBATIndex].bouquet_id == v->nCurrentBATID)
 			{
 				nIcon = 26;
 			}
-#endif LITE
 			v->bat[nBATIndex].hTreeItem = AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_BAT + nBATIndex, nIcon, v->hBATRootTreeItem, NULL);
 			v->nBATTreeItemCount++;
 			{
@@ -11533,11 +11232,8 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 		}
 	}
 	
-#ifdef PRO
 	if (v->fStreamingXMLMode)
 		LogXMLItem(wParam, lParam);
-#endif PRO
-
 }
 
 void UpdateRecordPIDsOneFileOptions(HWND hDlg)
@@ -11571,7 +11267,6 @@ INT_PTR CALLBACK IPDVBPIDSelectDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
 
 						wsprintf(szPID, "%s", FormatTooltipPID(v->pc[i].nPID));			
 						nIndex = (int)SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_ADDSTRING, 0, (LPARAM)szPID);
-#ifndef LITE
 						for (j = 0; j < MAX_RECORD_BUFFERS; j++)
 						{
 							if (v->nAutoRecordPIDsPID[j] == v->pc[i].nPID)
@@ -11580,12 +11275,10 @@ INT_PTR CALLBACK IPDVBPIDSelectDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
 								SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_SETSEL, TRUE, nIndex);
 							}
 						}
-#endif LITE
 					}
 				}
 			}
 
-#ifndef LITE
 			if (fAutoRecordPIDMode == TRUE)
 			{
 				lstrcpy(v->szRecordPIDFolder, v->szAutoRecordPIDsFile);
@@ -11599,7 +11292,6 @@ INT_PTR CALLBACK IPDVBPIDSelectDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
 				if (v->nAutoRecordPIDsOptions & 8)
 					v->fRecordPIDIncludePCR = TRUE;
 			}
-#endif LITE
 
 			if (v->fRecordPIDMode == TRUE)
 			{
@@ -11607,20 +11299,15 @@ INT_PTR CALLBACK IPDVBPIDSelectDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
 				CheckDlgButton(hDlg, IDC_RECORD_PID_NO_HEADER, v->fRecordPIDNoTSHeader);
 				CheckDlgButton(hDlg, IDC_RECORD_PID_ONE_FILE, v->fRecordPIDsOneFile);
 				CheckDlgButton(hDlg, IDC_RECORD_PID_APPEND, v->fRecordPIDsAppend);
-#ifndef LITE
 				CheckDlgButton(hDlg, IDC_RECORD_PID_INCLUDE_PCR, v->fRecordPIDIncludePCR);
-#endif LITE
 				UpdateRecordPIDsOneFileOptions(hDlg);
 			}
 			SetFocus(GetDlgItem(hDlg, IDOK));			
-#ifndef LITE
 			if (fAutoRecordPIDMode)
 			{				
 				PostMessage(hDlg, WM_COMMAND, IDOK, 0);
 				SetTimer(v->hDlgSIParser, 5, v->nAutoRecordPIDsDuration * 1000, NULL);
 			}
-				
-#endif LITE
 		}
 		break;
 	case WM_DESTROY:
@@ -11650,16 +11337,6 @@ INT_PTR CALLBACK IPDVBPIDSelectDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
 					{
 						int i;
 
-#ifdef LITE
-						if (nRetVal > 1)
-						{
-							nRetVal = 1;
-							if (v->fRecordPIDMode == FALSE)
-								MessageBox(hDlg, "This version of TSReader is limited to processing IP/DVB traffic from only one PID at a time.\nThe first PID selected has been used.", gszAppName, MB_OK | MB_ICONINFORMATION);
-							else
-								MessageBox(hDlg, "This version of TSReader is limited to recording from one PID at a time.\nThe first PID selected has been used.", gszAppName, MB_OK | MB_ICONINFORMATION);
-						}
-#else LITE
 						if (nRetVal > tv->nActualMaxRecordBuffers)
 						{
 							char szTemp[256];
@@ -11671,7 +11348,6 @@ INT_PTR CALLBACK IPDVBPIDSelectDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
 								wsprintf(szTemp, "This application is currently limited to recording traffic from\n%d PIDs simultaneously. Please contact us if you feel this\nrestriction should be lifted.\n\nOnly the first %d selected PIDs will be processed", tv->nActualMaxRecordBuffers, tv->nActualMaxRecordBuffers);
 							MessageBox(hDlg, szTemp, gszAppName, MB_OK | MB_ICONINFORMATION);
 						}
-#endif LITE
 
 						if (v->fRecordPIDMode == TRUE)
 						{
@@ -11681,9 +11357,6 @@ INT_PTR CALLBACK IPDVBPIDSelectDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
 						}
 
 						memset(&v->nIPMonitorPID[0], -1, sizeof(v->nIPMonitorPID[0]) * 8192);
-#ifdef LITE
-						nRetVal = 1;
-#endif LITE
 						for (i = 0; i < nRetVal; i++)
 						{
 							int nPID;
@@ -11697,9 +11370,6 @@ INT_PTR CALLBACK IPDVBPIDSelectDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
 							v->nIPMonitorPID[nPID] = i;
 							if (nPID == v->nRecordPIDsPCRPID)
 								fPIDClash = TRUE;
-#ifdef LITE
-							break;
-#endif LITE
 						}
 						if (fPIDClash == TRUE && v->fRecordPIDIncludePCR && v->fRecordPIDsOneFile)
 							MessageBox(hDlg, "Warning - PID 0x1ffe is already used in this mux and this PID\nis used for the PCR generation option which you've enabled.\n\nThe PCR generation option should be turned off for this mux.", gszAppName, MB_ICONWARNING);
@@ -11717,7 +11387,6 @@ INT_PTR CALLBACK IPDVBPIDSelectDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
 			case IDC_RECORD_PID_APPEND:
 				v->fRecordPIDsAppend = IsDlgButtonChecked(hDlg, IDC_RECORD_PID_APPEND);
 				break;
-#ifndef LITE
 			case IDC_RECORD_PID_INCLUDE_PCR:
 				v->fRecordPIDIncludePCR = IsDlgButtonChecked(hDlg, IDC_RECORD_PID_INCLUDE_PCR);
 				break;
@@ -11727,13 +11396,6 @@ INT_PTR CALLBACK IPDVBPIDSelectDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
 			case IDC_RECORD_PID_SAVE:
 				SavePIDListDialog(hDlg);
 				break;
-#else LITE
-			case IDC_RECORD_PID_INCLUDE_PCR:
-			case IDC_RECORD_PID_LOAD:
-			case IDC_RECORD_PID_SAVE:
-				MessageBox(hDlg, szLiteWarning, gszAppName, MB_ICONSTOP);
-				break;
-#endif LITE
 			case IDC_RECORD_PID_BROWSE:
 				if (v->fRecordPIDsOneFile == TRUE)
 					return SendMessage(hDlg, WM_COMMAND, IDC_RECORD_BROWSE, 0);
@@ -11961,15 +11623,7 @@ INT_PTR CALLBACK LicenseDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				TEXT("of this License Agreement.\r\n")
 				TEXT("\r\n")
 				TEXT("COOL.STF LICENSE AGREEMENT\r\n")
-#ifndef LITE
- #ifdef PRO
 				TEXT("COOL.STF TSReader Professional Release 2\r\n")
- #else PRO
-				TEXT("COOL.STF TSReader Standard Release 2\r\n")
- #endif PRO
-#else LITE
-				TEXT("COOL.STF TSReader Lite Release 2\r\n")
-#endif LITE
 				TEXT("\r\n")
 				TEXT("1. LICENSE RIGHTS AND RESTRICTIONS.\r\n")
 				TEXT("\r\n")
@@ -12019,14 +11673,6 @@ INT_PTR CALLBACK LicenseDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 				TEXT("any rights arising out of or relating to this Agreement, the\r\n")
 				TEXT("prevailing party shall be entitled to recover reasonable\r\n")
 				TEXT("attorneys fees, costs and expenses.\r\n")
-#ifdef LITE
-				TEXT("5. COMMERCIAL-USE PROHIBITED.\r\n")
-				TEXT("\r\n")
-				TEXT("You may not use the TSReader Code in commercial applications\r\n")
-				TEXT("other than to evaluate the TSReader Code for use in your\r\n")
-				TEXT("application with the intent to purchase the full version of\r\n")
-				TEXT("the TSReader Code should it meet your needs.\r\n")
-#endif LITE
 			};
 			char szStamp[] = {"[End of license agreement]"};
 
@@ -12046,12 +11692,8 @@ INT_PTR CALLBACK LicenseDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 		switch(LOWORD(wParam))
 		{
 		case IDCANCEL:
- #ifndef LITE
-			MessageBox(hDlg, "Please contact Digital River to obtain a refund of your license fees.\n\nYou are also required to remove this software from your computer since\nyou don't accept our license.\n\nTSReader will now close.", gszAppName, MB_ICONSTOP);
- #else LITE
-			MessageBox(hDlg, "Please remove this software from your computer since you don't accept our license.\n\nTSReader will now close.", gszAppName, MB_ICONSTOP);
- #endif LITE
-			EndDialog(hDlg, FALSE);
+ 			MessageBox(hDlg, "Please contact Digital River to obtain a refund of your license fees.\n\nYou are also required to remove this software from your computer since\nyou don't accept our license.\n\nTSReader will now close.", gszAppName, MB_ICONSTOP);
+ 			EndDialog(hDlg, FALSE);
 			break;
 		case IDOK:
 			v->fAgreedToLicense = TRUE;
@@ -12063,7 +11705,6 @@ INT_PTR CALLBACK LicenseDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 	return FALSE;
 }
 
-#ifndef LITE
 void RestartTSReader_Stop(HWND hWnd)
 {
 	int i;
@@ -12071,7 +11712,6 @@ void RestartTSReader_Stop(HWND hWnd)
 
 	v->fStopping = TRUE;
 
-#ifdef PRO
 	if (v->fArchiveRunning)
 		SendMessage(hWnd, WM_COMMAND, ID_RECORD_RECORDALLPROGRAMS, 0);
 	if (v->fForwarderEnabled)
@@ -12084,7 +11724,6 @@ void RestartTSReader_Stop(HWND hWnd)
 		if (v->fwd.fActive[i])
 			ForwarderModuleStartStop(hWnd, i);
 	}
-#endif PRO
 
 	KillTimer(v->hDlgSIParser, 1);
 	KillTimer(v->hDlgSIParser, 2);
@@ -12113,7 +11752,6 @@ void RestartTSReader_Stop(HWND hWnd)
 		DestroyWindow(v->hWndEPGGrid);
 		v->hWndEPGGrid = NULL;
 	}
-#ifdef PRO
 	if (v->hWndVideoMosaic != NULL)
 	{
 		DestroyWindow(v->hWndVideoMosaic);
@@ -12124,12 +11762,11 @@ void RestartTSReader_Stop(HWND hWnd)
 		DestroyWindow(v->hWndCCDisplay);
 		v->hWndCCDisplay = NULL;
 	}
-#endif PRO
 
 	Stop();
 	DeInit();
 
-	if ( (v->dwSourceCapabilities && CAPABILITIES_SERIAL_CONTROL) && (v->ss.fSerialReceiverControlEnabled == TRUE) )
+	if ( (v->dwSourceCapabilities & CAPABILITIES_SERIAL_CONTROL) && (v->ss.fSerialReceiverControlEnabled == TRUE) )
 		SourceHelper_DeInitSerialControl();
 
 	EnterCriticalSection(&v->ss.csTSBuffersInUse);
@@ -12169,13 +11806,9 @@ void RestartTSReader_Stop(HWND hWnd)
 	SendMessage(v->hWndST, SB_SETTEXT, (WPARAM)2, (LPARAM)"");		
 	v->fStopping = FALSE;
 }
-#endif LITE
 
 void SaveManualChannels(HWND hDlg)
 {
-#ifdef LITE
-	MessageBox(hDlg, szLiteWarning, gszAppName, MB_ICONSTOP);
-#else LITE
 	OPENFILENAME ofn;
 	char szOutputFile[MAX_PATH] = {0};
 
@@ -12226,14 +11859,12 @@ void SaveManualChannels(HWND hDlg)
 		else
 			MessageBox(hDlg, "Unable to open output file", gszAppName, MB_ICONSTOP);
 	}
-#endif LITE
 }
 
-#ifndef LITE
 void RestartTSReader_Start(HWND hWnd)
 {
 	Init(&v->ss);
-	if ( (v->dwSourceCapabilities && CAPABILITIES_SERIAL_CONTROL) && (v->ss.fSerialReceiverControlEnabled == TRUE) )
+	if ( (v->dwSourceCapabilities & CAPABILITIES_SERIAL_CONTROL) && (v->ss.fSerialReceiverControlEnabled == TRUE) )
 	{
 		if (SourceHelper_InitSerialControl() == FALSE)
 			v->ss.fSerialReceiverControlEnabled = FALSE;
@@ -12241,13 +11872,9 @@ void RestartTSReader_Start(HWND hWnd)
 
 	PostMessage(hWnd, WM_USER + 5, 0, 0);
 }
-#endif LITE
 
 void RestartTSReader(HWND hDlg)
 {
-#ifdef LITE
-	MessageBox(hDlg, "The Restart Source function is not supported in this version of TSReader.\nYou must exit and restart TSReader to restart the source.", gszAppName, MB_ICONSTOP);
-#else LITE
 	if (v->fDirtyManualChannels == TRUE)
 	{
 		if (MessageBox(hDlg, "Manual channels have not been saved. Would you like to save them now?", gszAppName, MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1) == IDYES)
@@ -12256,7 +11883,6 @@ void RestartTSReader(HWND hDlg)
 
 	RestartTSReader_Stop(hDlg);
 	RestartTSReader_Start(hDlg);
-#endif LITE
 }
 
 void UpdateThreadDialogPriorities(HWND hDlg)
@@ -12370,58 +11996,16 @@ void SetupMenu(HWND hWnd)
 			EnableMenuItem(hTopMenu, ID_PLAYBACK_VLC_1 + i, MF_DISABLED | MF_GRAYED | MF_BYCOMMAND);	
 	}
 
-#ifndef INEOQUEST
-#ifndef LITE
 	{
 		HMENU hSubMenu = GetSubMenu(hTopMenu, 8);	// Help Menu
 		DeleteMenu(hSubMenu, ID_HELP_PURCHASETSREADER, MF_BYCOMMAND);	// remove Purchase TSReader
 	}
-#endif LITE
-#ifndef PRO
-	{
-		HMENU hSubMenu;
-
-		DeleteMenu(hTopMenu, 5, MF_BYPOSITION);							// remove Forward menu
-
-		hSubMenu = GetSubMenu(hTopMenu, 2);	// View Menu
-		DeleteMenu(hSubMenu, ID_VIEW_ARCHIVEDFILES, MF_BYCOMMAND);		// remove the Archived Files menu
-		DeleteMenu(hSubMenu, ID_VIEW_CLOSEDCAPTIONS, MF_BYCOMMAND);		// remove the Closed Captions menu
-		DeleteMenu(hSubMenu, ID_VIEW_VIDEOMOSAIC, MF_BYCOMMAND);		// remove the Video Mosaic menu
-		DeleteMenu(hSubMenu, ID_VIEW_MDIINDEX, MF_BYCOMMAND);			// remove the MDI Index menu
-		DeleteMenu(hSubMenu, ID_VIEW_DESCRIPTORUSAGE, MF_BYCOMMAND);	// remove the Descriptors menu
-		DeleteMenu(hSubMenu, ID_VIEW_STREAMMONITOR, MF_BYCOMMAND);		// remove the Stream Monitor menu
-		hSubMenu = GetSubMenu(hSubMenu, 1);	// View/Chart Menu
-		DeleteMenu(hSubMenu, ID_VIEW_CHART_SETTINGS_SAVECHARTDATA, MF_BYCOMMAND);
-		DeleteMenu(hSubMenu, ID_VIEW_CHART_PIDUSAGEVBRSTACKEDAREA, MF_BYCOMMAND);
-
-		hSubMenu = GetSubMenu(hTopMenu, 3);			// Record Menu
-		DeleteMenu(hSubMenu, ID_RECORD_RECORDALLPROGRAMS, MF_BYCOMMAND);// remove the Record All Programs menu
-		DeleteMenu(hSubMenu, ID_RECORD_RECORDTABLES, MF_BYCOMMAND);		// remove the Record Tables menu
-			
-		hSubMenu = GetSubMenu(hTopMenu, 6);			// Settings Menu
-		DeleteMenu(hSubMenu, ID_SETTINGS_EITSERVER, MF_BYCOMMAND);		// remove EIT server menu
-		DeleteMenu(hSubMenu, ID_SETTINGS_EMAILSETTINGS, MF_BYCOMMAND);	// remove email setup menu
-		
-		hSubMenu = GetSubMenu(hTopMenu, 1);			// Export Menu
-		DeleteMenu(hSubMenu, ID_EXPORT_SAVEEPGDATA, MF_BYCOMMAND);		// remove Save EPG data
-		DeleteMenu(hSubMenu, ID_EXPORT_GPSSIGNALEXPORT, MF_BYCOMMAND);	// remove Export GPS/Signal
-	}
-#else PRO
 	{
 		HMENU hSubMenu;
 
 		hSubMenu = GetSubMenu(hTopMenu, 7);			// Settings Menu
 		ModifyMenu(hSubMenu, ID_SETTINGS_THUMBNAILTHREAD_ENABLEAUDIOTHUMBNAILS, MF_STRING | MF_BYCOMMAND, ID_SETTINGS_THUMBNAILTHREAD_ENABLEAUDIOTHUMBNAILS, "Audio thumbnail settings...");
 	}
-#endif PRO
-#endif INEOQUEST
-#ifdef ZANALYZER
-	{
-		HMENU hSubMenu = GetSubMenu(hTopMenu, 4);	// Playback Menu
-		DeleteMenu(hSubMenu, 0, MF_BYPOSITION);		// remove Roku Playback
-		DeleteMenu(hSubMenu, 1, MF_BYPOSITION);		// remove XNS Playback
-	}
-#endif ZANALYZER
 }
 
 void SetupVLCMenuNames(HWND hDlg)
@@ -12474,11 +12058,9 @@ void IPDVBModeOn(HWND hWnd)
 	SetDlgItemText(v->hDlgSIParser, IDC_SI_TEXT, "");
 	ResetParserPackets();
 	ResetParserCRCs();
-#ifdef PRO
 	ResetParserTableErrors();
 	ResetTableTimes();
 	ResetTableTimingErrors();
-#endif PRO
 }
 
 void IPDVBModeOff(HWND hWnd)
@@ -12510,11 +12092,9 @@ void IPDVBModeOff(HWND hWnd)
 	UpdateMainStatusText("Reading PAT");
 	ResetParserPackets();
 	ResetParserCRCs();
-#ifdef PRO
 	ResetParserTableErrors();
 	ResetTableTimes();
 	ResetTableTimingErrors();
-#endif PRO
 	GetNextESPID(TRUE, 0);
 }
 
@@ -12532,9 +12112,6 @@ void ToggleIPDVBMode(HWND hWnd)
 
 void SaveThumbnails(HWND hDlg, BOOL fContinuous)
 {
-#ifdef LITE
-	MessageBox(hDlg, szLiteWarning, gszAppName, MB_ICONSTOP);
-#else LITE
 	int nExportCount = 0;
 	OPENFILENAME ofn;
 
@@ -12640,7 +12217,6 @@ void SaveThumbnails(HWND hDlg, BOOL fContinuous)
 				MessageBox(hDlg, "No thumbnails exported", gszAppName, MB_OK | MB_ICONINFORMATION);
 		}
 	}
-#endif LITE
 }
 /*
 void AddMemoryItem(char * szTags, char * szUsage, char * szTitle, int nDataItem, BOOL fDontTranslate)
@@ -12667,22 +12243,9 @@ INT_PTR CALLBACK ThumbnailRefreshRateDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam
 		SetDlgItemInt(hDlg, IDC_REFRESH_RATE, v->nESParsingCounterReload, FALSE);
 		SetDlgItemInt(hDlg, IDC_MAXIMUM_MPEG_PICTURES, v->nMaximumMPEGPictures, FALSE);
 		SetDlgItemInt(hDlg, IDC_MAXIMUM_DCII_PICTURES, v->nMaximumDCIIPictures, FALSE);
-#ifndef LITE
 		SetDlgItemInt(hDlg, IDC_MAXIMUM_H264_PICTURES, v->nMaximumH264Pictures, FALSE);
-#endif LITE
-#ifdef PRO
 		SetDlgItemInt(hDlg, IDC_MAXIMUM_THUMBNAIL_THREADS, v->nMaximumThumbnailThreads, FALSE);
-#endif PRO
 
-#ifdef LITE
-		ShowWindow(GetDlgItem(hDlg, IDC_MAXIMUM_H264_PICTURES), SW_HIDE);
-		ShowWindow(GetDlgItem(hDlg, IDC_MAXIMUM_H264_PICTURES_CAPTION), SW_HIDE);
-#endif LITE
-
-#ifdef LITE
-		EnableWindow(GetDlgItem(hDlg, IDC_MAXIMUM_MPEG_PICTURES), FALSE);
-		EnableWindow(GetDlgItem(hDlg, IDC_MAXIMUM_DCII_PICTURES), FALSE);
-#endif LITE
 		SendDlgItemMessage(hDlg, IDC_REFRESH_RATE, EM_SETSEL, 0, -1);
 		SetFocus(GetDlgItem(hDlg, IDC_REFRESH_RATE));
 		break;
@@ -12696,14 +12259,10 @@ INT_PTR CALLBACK ThumbnailRefreshRateDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam
 			v->nESParsingCounterReload = GetDlgItemInt(hDlg, IDC_REFRESH_RATE, NULL, FALSE);
 			v->nMaximumMPEGPictures = GetDlgItemInt(hDlg, IDC_MAXIMUM_MPEG_PICTURES, NULL, FALSE);
 			v->nMaximumDCIIPictures = GetDlgItemInt(hDlg, IDC_MAXIMUM_DCII_PICTURES, NULL, FALSE);
-#ifndef LITE
 			v->nMaximumH264Pictures = GetDlgItemInt(hDlg, IDC_MAXIMUM_H264_PICTURES, NULL, FALSE);
-#endif LITE
-#ifdef PRO
 			v->nMaximumThumbnailThreads = GetDlgItemInt(hDlg, IDC_MAXIMUM_THUMBNAIL_THREADS, NULL, FALSE);
 			if (v->nMaximumThumbnailThreads > MAX_ES_PARSERS || v->nMaximumThumbnailThreads <= 0)
 				v->nMaximumThumbnailThreads = MAX_ES_PARSERS;
-#endif PRO
 			EndDialog(hDlg, TRUE);
 			break;
 		case IDCANCEL:
@@ -12825,7 +12384,6 @@ void GetSourceDispInfo(LV_DISPINFO *pnmv)
 	}
 }
 
-#ifndef LITE
 void BrowseIPSaveFolder(HWND hDlg)
 {
 	BROWSEINFO BrowsingInfo;
@@ -12883,7 +12441,6 @@ INT_PTR CALLBACK IPSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM l
 
 	return FALSE;
 }
-#endif LITE
 
 INT_PTR CALLBACK PIDListDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -12939,7 +12496,6 @@ INT_PTR CALLBACK PIDListDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 	return FALSE;
 }
 
-#ifndef LITE
 INT_PTR CALLBACK ControlServerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
@@ -12983,7 +12539,6 @@ INT_PTR CALLBACK ControlServerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARA
 
 	return FALSE;
 }
-#endif LITE
 
 INT_PTR CALLBACK BufferSizesDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -13188,7 +12743,6 @@ INT_PTR CALLBACK SourceDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 	return FALSE;
 }
 
-#ifndef LITE
 void PopulateManualChannelList(HWND hWndList)
 {
 	int nPMTIndex;
@@ -13644,18 +13198,12 @@ INT_PTR CALLBACK ManualChannelsDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 
 	return FALSE;
 }
-#endif LITE
 
 void DefineManualChannels(HWND hDlg)
 {
-#ifdef LITE
-	MessageBox(hDlg, szLiteWarning, gszAppName, MB_ICONSTOP);
-#else LITE
 	DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_MANUAL_CHANNELS), hDlg, ManualChannelsDialogProc);
-#endif LITE
 }
 
-#ifndef LITE
 BOOL LoadManualChannels(HWND hWnd, char * szInputFile)
 {
 	HANDLE hInputFile = CreateFile(szInputFile, GENERIC_READ, 0, (LPSECURITY_ATTRIBUTES)NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, (HANDLE)NULL);
@@ -13735,13 +13283,8 @@ BOOL LoadManualChannels(HWND hWnd, char * szInputFile)
 	return TRUE;
 }
 
-#endif LITE
-
 void LoadManualChannelsMenu(HWND hDlg)
 {
-#ifdef LITE
-	MessageBox(hDlg, szLiteWarning, gszAppName, MB_ICONSTOP);
-#else LITE
 	OPENFILENAME ofn;
 	char szInputFile[MAX_PATH] = {0};
 
@@ -13762,7 +13305,6 @@ void LoadManualChannelsMenu(HWND hDlg)
 			MessageBox(hDlg, "Unable to open input file", gszAppName, MB_ICONSTOP);		
 		v->fDirtyManualChannels = FALSE;
 	}
-#endif LITE
 }
 
 void ToggleMenuOption(HWND hDlg, int nMenuID, BOOL * fOption)
@@ -13822,7 +13364,7 @@ void LoadSerialPortCombo(HWND hDlg)
 								   &dwValueName,
 								   NULL,
 								   &dwType,
-								   szValue,
+								   (LPBYTE)szValue,
 								   &dwValue);
 			if (lResult != ERROR_SUCCESS)
 				break;
@@ -13837,7 +13379,6 @@ void LoadSerialPortCombo(HWND hDlg)
 	}
 }
 
-#ifndef LITE
 void InitSerialControlDialog(HWND hDlg)
 {
 	int nIndex;
@@ -13910,7 +13451,6 @@ INT_PTR CALLBACK SerialControlDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARA
 
 	return FALSE;
 }
-#endif LITE
 
 void VLCSettings_WM_COMMAND(HWND hDlg, WPARAM wParam, LPARAM lParam, BOOL fFromProfileEditor)
 {
@@ -14123,11 +13663,7 @@ void LoadPlugins(HWND hWnd)
 	{
 		HMENU hPlugInsMenu;
 		HMENU hTopMenu = GetMenu(hWnd);
-		int nMenuIndex = 5;		// for TSReader Lite and TSReader
-
-#ifdef PRO
-		nMenuIndex = 6;		// for TSReader Pro
-#endif PRO
+		int nMenuIndex = 6; // for TSReader Pro
 		hPlugInsMenu = GetSubMenu(hTopMenu, nMenuIndex);
 		DeleteMenu(hPlugInsMenu, ID_PLUGINS_SOMETHING, MF_BYCOMMAND);	// remove the "something" placeholder
 		v->fMDPluginsLoaded = FALSE;
@@ -14157,21 +13693,12 @@ void ResizeStatusbar(HWND hWndST)
 	nParts[0] = ((rect.right / 20) * 9);					// main part
 	nParts[1] = ((rect.right / 20) * 5)  + nParts[0];		// record status
 	nIconExtra = 24;
-#ifndef PRO
-	nParts[2] = rect.right - nIconExtra - 24 - 24;			// profile
-#else PRO
 	nParts[2] = rect.right - nIconExtra - 24 - 24 - 24;			// profile
-#endif PRO
 	nParts[3] = 24 + nParts[2];								// ?? icon
 	nParts[4] = 24 + nParts[3];								// record icon
-#ifndef PRO
-	nParts[5] = -1;											// activity icon
-	SendMessage(hWndST, SB_SETPARTS, (WPARAM)6, (LPARAM)(LPINT)&nParts);
-#else PRO
 	nParts[5] = 24 + nParts[4];								// record icon
 	nParts[6] = -1;											// activity icon
 	SendMessage(hWndST, SB_SETPARTS, (WPARAM)7, (LPARAM)(LPINT)&nParts);
-#endif PRO
 }
 
 void CreateStatusBar(HWND hWnd)
@@ -14187,12 +13714,10 @@ void CreateStatusBar(HWND hWnd)
 	v->hStatusBarIcons[nIndex++] = LoadImage(v->hInstance, MAKEINTRESOURCE(IDI_RUN_4), IMAGE_ICON, 16, 16, 0);				//4
 	v->hStatusBarIcons[nIndex++] = LoadImage(v->hInstance, MAKEINTRESOURCE(IDI_RECORD), IMAGE_ICON, 16, 16, 0);				//5
 	v->hStatusBarIcons[nIndex++] = LoadImage(v->hInstance, MAKEINTRESOURCE(IDI_STREAM), IMAGE_ICON, 16, 16, 0);				//6
-#ifdef PRO
 	v->hStatusBarIcons[nIndex++] = LoadImage(v->hInstance, MAKEINTRESOURCE(IDI_FWD_1), IMAGE_ICON, 16, 16, 0);				//7
 	v->hStatusBarIcons[nIndex++] = LoadImage(v->hInstance, MAKEINTRESOURCE(IDI_FWD_2), IMAGE_ICON, 16, 16, 0);				//8
 	v->hStatusBarIcons[nIndex++] = LoadImage(v->hInstance, MAKEINTRESOURCE(IDI_FWD_3), IMAGE_ICON, 16, 16, 0);				//9
 	v->hStatusBarIcons[nIndex++] = LoadImage(v->hInstance, MAKEINTRESOURCE(IDI_FWD_4), IMAGE_ICON, 16, 16, 0);				//10
-#endif PRO
 
 	//Create the status bar
 	dwStyle = WS_CHILD | WS_VISIBLE | SBT_TOOLTIPS;
@@ -14207,9 +13732,7 @@ void CreateStatusBar(HWND hWnd)
 		SendMessage(v->hWndST, SB_SETTIPTEXT, 2, (LPARAM)"Decoder State");
 		SendMessage(v->hWndST, SB_SETTIPTEXT, 4, (LPARAM)"Record/Stream Indicator");
 		SendMessage(v->hWndST, SB_SETTIPTEXT, 5, (LPARAM)"Input Data Indicator");
-#ifdef PRO
 		SendMessage(v->hWndST, SB_SETTIPTEXT, 6, (LPARAM)"Forwarder Data Indicator");
-#endif PRO
 
 		SendMessage(v->hWndST, SB_SIMPLE, (WPARAM)FALSE, 0);
 		ResizeStatusbar(v->hWndST);
@@ -14228,7 +13751,6 @@ void DeleteStatusBar(HWND hWnd)
 
 }
 
-#ifdef PRO
 INT_PTR CALLBACK FwdSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
@@ -14285,7 +13807,6 @@ INT_PTR CALLBACK FwdSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 	}
 	return FALSE;
 }
-#endif PRO
 
 INT_PTR CALLBACK RokuHD1000Settings(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -14323,7 +13844,6 @@ INT_PTR CALLBACK RokuHD1000Settings(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 	return FALSE;
 }
 
-#ifndef LITE
 void GetDescriptorListDispInfo(LV_DISPINFO *pnmv) 
 { 
     // Provide the item or subitem's text, if requested. 
@@ -14500,7 +14020,6 @@ INT_PTR CALLBACK DescriptorUsageDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
 
 	return FALSE;
 }
-#endif LITE
 
 BYTE * GetBitmapPtr(char * szResource, HDC hDC)
 {
@@ -14542,9 +14061,7 @@ void SetupServiceBitmaps(HWND hDlg, BOOL fLoad)
 		v->pRGB_DCIIVideo = GetBitmapPtr(MAKEINTRESOURCE(IDB_VID_DCII), hDC);
 		v->pRGB_MPG4Video = GetBitmapPtr(MAKEINTRESOURCE(IDB_VID_MPEG4), hDC);
 		v->pRGB_H264Video = GetBitmapPtr(MAKEINTRESOURCE(IDB_VID_H264), hDC);
-#ifdef PRO
 		v->pRGB_VC1Video = GetBitmapPtr(MAKEINTRESOURCE(IDB_VID_VC1), hDC);
-#endif PRO
 		v->pRGB_BL_MPEGAudio = GetBitmapPtr(MAKEINTRESOURCE(IDB_BAUD_MPEG), hDC);
 		v->pRGB_BL_AC3Audio = GetBitmapPtr(MAKEINTRESOURCE(IDB_BAUD_AC3), hDC);
 		v->pRGB_BL_AACAudio = GetBitmapPtr(MAKEINTRESOURCE(IDB_BAUD_AAC), hDC);
@@ -14552,9 +14069,7 @@ void SetupServiceBitmaps(HWND hDlg, BOOL fLoad)
 		v->pRGB_BL_DCIIVideo = GetBitmapPtr(MAKEINTRESOURCE(IDB_BVID_DCII), hDC);
 		v->pRGB_BL_MPG4Video = GetBitmapPtr(MAKEINTRESOURCE(IDB_BVID_MPEG4), hDC);
 		v->pRGB_BL_H264Video = GetBitmapPtr(MAKEINTRESOURCE(IDB_BVID_H264), hDC);
-#ifdef PRO
 		v->pRGB_BL_VC1Video = GetBitmapPtr(MAKEINTRESOURCE(IDB_BVID_VC1), hDC);
-#endif PRO
 
 		ReleaseDC(hDlg, hDC);
 	}
@@ -14581,9 +14096,7 @@ void SetupServiceBitmaps(HWND hDlg, BOOL fLoad)
 		GlobalFree(v->pRGB_DCIIVideo);
 		GlobalFree(v->pRGB_MPG4Video);
 		GlobalFree(v->pRGB_H264Video);
-#ifdef PRO
 		GlobalFree(v->pRGB_VC1Video);
-#endif PRO
 		GlobalFree(v->pRGB_BL_MPEGAudio);
 		GlobalFree(v->pRGB_BL_AC3Audio);
 		GlobalFree(v->pRGB_BL_AACAudio);
@@ -14591,9 +14104,7 @@ void SetupServiceBitmaps(HWND hDlg, BOOL fLoad)
 		GlobalFree(v->pRGB_BL_DCIIVideo);
 		GlobalFree(v->pRGB_BL_MPG4Video);
 		GlobalFree(v->pRGB_BL_H264Video);
-#ifdef PRO
 		GlobalFree(v->pRGB_BL_VC1Video);
-#endif PRO
 	}
 }
 
@@ -14791,7 +14302,6 @@ void ResizeDialogWindow(HWND hDlg, WPARAM wParam, LPARAM lParam)
 	if (v->fBlockResizeMessage)
 		return;
 
-#ifndef LITE
 	if (v->fAllowResizing)
 	{
 		{
@@ -14883,7 +14393,6 @@ void ResizeDialogWindow(HWND hDlg, WPARAM wParam, LPARAM lParam)
 		if (wParam == -1)
 			PostMessage(hDlg, WM_USER + 3, 0, 0);
 	}
-#endif LITE
 }
 
 static void SetupProcessorAffinity(void)
@@ -15017,7 +14526,6 @@ void EnableDisableSourceMenuItems(HWND hWnd)
 	else
 		EnableMenuItem(hMenu, ID_FILE_DISEQCPOSITIONER, MF_ENABLED | MF_BYCOMMAND);
 
-#ifndef LITE
 	if ((v->dwSourceCapabilities & CAPABILITIES_TIMESTAMP) == 0)
 	{
 		EnableMenuItem(hMenu, ID_SETTINGS_TIMESTAMPPACKETS, MF_DISABLED | MF_GRAYED | MF_BYCOMMAND);
@@ -15028,18 +14536,12 @@ void EnableDisableSourceMenuItems(HWND hWnd)
 		if (v->ss.fTimestampPackets)
 			CheckMenuItem(hMenu, ID_SETTINGS_TIMESTAMPPACKETS, MF_CHECKED | MF_BYCOMMAND);		
 	}
-#else LITE
-	EnableMenuItem(hMenu, ID_SETTINGS_TIMESTAMPPACKETS, MF_DISABLED | MF_GRAYED | MF_BYCOMMAND);
-	v->ss.fTimestampPackets = FALSE;
-#endif LITE
 
 	if ((v->dwSourceCapabilities & CAPABILITIES_CI_CAM) == 0)
 		EnableMenuItem(hMenu, ID_FILE_CICAMMENU, MF_DISABLED | MF_GRAYED | MF_BYCOMMAND);
 	else
 		EnableMenuItem(hMenu, ID_FILE_CICAMMENU, MF_ENABLED | MF_BYCOMMAND);
 }
-
-#ifndef LITE
 
 INT_PTR CALLBACK IPDeviceDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -15321,9 +14823,7 @@ void RecordSelectedIPPIDStream(HWND hDlg, BOOL fStartRecording, int nIPSaveMode)
 	}
 }
 
-#endif LITE
-
-void ToggleAlwaysOnTop()
+void ToggleAlwaysOnTop(void)
 {
 	if (v->fAlwaysOnTop)
 		 SetWindowPos(v->hWndMainWindow, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
@@ -15331,7 +14831,6 @@ void ToggleAlwaysOnTop()
 		 SetWindowPos(v->hWndMainWindow, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
 }
 
-#ifndef LITE
 void CheckThumbnailDisplayOrderMenu(HMENU hMenu)
 {
 	if (v->fThumbnailsRightToLeft)
@@ -15374,22 +14873,19 @@ void CheckThumbnailSizeMenu(HMENU hMenu)
 						   MF_BYCOMMAND);
 	}
 }
-#endif LITE
 
 void SetInitialMenuStates(HWND hWnd)
 {
 	HMENU hMenu = GetMenu(hWnd);
 
 	if (v->fKeepPastEITData)
-		CheckMenuItem(hMenu, ID_SETTINGS_KEEPPASTEITDATA, MF_CHECKED | MF_BYCOMMAND);			
+		CheckMenuItem(hMenu, ID_SETTINGS_KEEPPASTEITDATA, MF_CHECKED | MF_BYCOMMAND);
 	if (v->fHideWhenMinimized)
 		CheckMenuItem(hMenu, ID_SETTINGS_HIDEWHENMINIMIZED, MF_CHECKED | MF_BYCOMMAND);
-#ifndef LITE
 	if (v->fCountContinuityErrors)
 		CheckMenuItem(hMenu, ID_SETTINGS_COUNTCONTINUITYERRORS, MF_CHECKED | MF_BYCOMMAND);
-#endif LITE
 	if (v->fControlDVHSDeck)
-		CheckMenuItem(hMenu, ID_SETTINGS_CONTROLDVHSDECK, MF_CHECKED | MF_BYCOMMAND);			
+		CheckMenuItem(hMenu, ID_SETTINGS_CONTROLDVHSDECK, MF_CHECKED | MF_BYCOMMAND);
 	if (v->fPowerCycleDVHSDeck)
 		CheckMenuItem(hMenu, ID_SETTINGS_DVHSCONTROL_AUTOPOWERONOFF, MF_CHECKED | MF_BYCOMMAND);
 	if (v->fIgnoreEIT)
@@ -15416,10 +14912,8 @@ void SetInitialMenuStates(HWND hWnd)
 		CheckMenuItem(hMenu, ID_SETTINGS_DVHS_FORCEPIDSTOBEATSCCOMPATIBLE, MF_CHECKED | MF_BYCOMMAND);
 	if (v->fKeepSpecialXMLCharacters)
 		CheckMenuItem(hMenu, ID_SETTINGS_KEEPSPECIALXMLCHARACTERS, MF_CHECKED | MF_BYCOMMAND);
-#ifndef LITE
 	if (v->fReloadManualChannels)
 		CheckMenuItem(hMenu, ID_SETTINGS_RELOADMANUALCHANNELSAFTERRESTART, MF_CHECKED | MF_BYCOMMAND);
-#endif LITE
 	if (v->fWaitForCAThumbnail)
 		CheckMenuItem(hMenu, ID_SETTINGS_THUMBNAILTHREAD_WAITFORCABEFOREPICTURE, MF_CHECKED | MF_BYCOMMAND);
 	if (v->fSDTOnlyForCurrentMux)
@@ -15428,22 +14922,12 @@ void SetInitialMenuStates(HWND hWnd)
 		CheckMenuItem(hMenu, ID_SETTINGS_THUMBNAILTHREAD_DISPLAYFULLTHUMBNAILSONLY, MF_CHECKED | MF_BYCOMMAND);
 	if (v->fDecimalPIDs)
 		CheckMenuItem(hMenu, ID_SETTINGS_DECIMALPIDS, MF_CHECKED | MF_BYCOMMAND);
-#ifndef LITE
-#ifndef PRO
 	if (v->fAudioThumbnails)
 		CheckMenuItem(hMenu, ID_SETTINGS_THUMBNAILTHREAD_ENABLEAUDIOTHUMBNAILS, MF_CHECKED | MF_BYCOMMAND);		
-#endif PRO
 	CheckThumbnailSizeMenu(hMenu);
 	CheckThumbnailDisplayOrderMenu(hMenu);
 	if (v->fRealtimeCharting)
 		CheckMenuItem(hMenu, ID_SETTINGS_REALTIMECHARTING, MF_CHECKED | MF_BYCOMMAND);
-#else LITE
-	CheckMenuRadioItem(hMenu,
-					   ID_SETTINGS_THUMBNAILTHREAD_THUMBNAILSIZE_SMALL,
-					   ID_SETTINGS_THUMBNAILTHREAD_THUMBNAILSIZE_LARGE,
-					   ID_SETTINGS_THUMBNAILTHREAD_THUMBNAILSIZE_NORMAL,
-					   MF_BYCOMMAND);
-#endif LITE
 	if (v->fHideThumbnailIcons)
 		CheckMenuItem(hMenu, ID_SETTINGS_THUMBNAILTHREAD_HIDETHUMBNAILICONS, MF_CHECKED | MF_BYCOMMAND);
 	if (v->fPlainCADescriptors)
@@ -15464,32 +14948,6 @@ void SetInitialMenuStates(HWND hWnd)
 					   MF_BYCOMMAND);
 }
 
-#ifdef LITE
-BOOL CALLBACK LiteChartWarningDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch(uMsg)
-	{
-	case WM_INITDIALOG:
-		MessageBeep(0);
-		break;
-	case WM_CLOSE:
-		EndDialog(hDlg, FALSE);
-		break;
-	case WM_COMMAND:
-		switch(LOWORD(wParam))
-		{
-		case IDOK:
-			v->fLiteChartWarning = IsDlgButtonChecked(hDlg, IDC_LITE_CHART_NO_WARN);
-			EndDialog(hDlg, FALSE);
-			break;
-		}
-		break;
-	}
-
-	return FALSE;
-}
-#endif LITE
-
 void SetupChartClassName(char * szClassName, int nNewChartIndex)
 {
 	wsprintf(szClassName, "%s%d", gszChartClass, nNewChartIndex);
@@ -15499,18 +14957,6 @@ int CloseExistingChart(HWND hWnd, WORD wMenuID)
 {
 	int i;
 
-#ifdef LITE
-	int nPos = 0;
-
-	while (v->wChartMenuItems[nPos] != 0)
-	{
-		if (wMenuID != v->wChartMenuItems[nPos])
-			EnableMenuItem(GetMenu(v->hWndMainWindow), v->wChartMenuItems[nPos], MF_DISABLED | MF_GRAYED | MF_BYCOMMAND);
-		nPos++;
-	}
-	if (v->fLiteChartWarning == FALSE)
-		DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_LITE_CHART_WARNING), hWnd, LiteChartWarningDlgProc);
-#endif LITE
 	for (i = 0; i < MAX_CHARTS; i++)
 	{
 		if (v->hWndChart[i] == NULL)
@@ -15891,12 +15337,7 @@ INT_PTR CALLBACK GraphRefreshRateDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LP
 	{
 	case WM_INITDIALOG:
 		SetDlgItemInt(hDlg, IDC_GRAPH_REFRESH_RATE, v->nGraphRefreshRate, FALSE);
-#ifdef PRO
 		SetDlgItemInt(hDlg, IDC_GRAPH_HISTORICAL_POINTS, v->nGraphHistoricalPoints, FALSE);
-#else PRO
-		ShowWindow(GetDlgItem(hDlg, IDC_GRAPH_HISTORICAL_POINTS), SW_HIDE);
-		ShowWindow(GetDlgItem(hDlg, IDC_GRAPH_HISTORICAL_POINTS_CAPTION), SW_HIDE);
-#endif PRO
 		SendDlgItemMessage(hDlg, IDC_GRAPH_REFRESH_RATE, EM_SETSEL, 0, -1);
 		SetFocus(GetDlgItem(hDlg, IDC_GRAPH_REFRESH_RATE));
 		break;
@@ -15911,9 +15352,7 @@ INT_PTR CALLBACK GraphRefreshRateDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LP
 				int nTemp = GetDlgItemInt(hDlg, IDC_GRAPH_REFRESH_RATE, NULL, FALSE);
 				if (nTemp > 0)
 					v->nGraphRefreshRate = nTemp;
-#ifdef PRO
 				v->nGraphHistoricalPoints = GetDlgItemInt(hDlg, IDC_GRAPH_HISTORICAL_POINTS, NULL, FALSE);
-#endif PRO
 				EndDialog(hDlg, TRUE);
 			}
 			break;
@@ -16438,7 +15877,6 @@ void GetTableMonitorDispInfo(LV_DISPINFO *pnmv)
 	}
 }
 
-#ifdef PRO
 void AddRecordTable(HWND hDlg)
 {
 	int nPIDIndex = (int)SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_GETCURSEL, 0, 0);
@@ -16621,10 +16059,9 @@ INT_PTR CALLBACK RecordTablesDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 				if (v->pc[i].lnPackets)
 				{
 					int nIndex;
-					int j = 0;
 					char szPID[64];
 
-					wsprintf(szPID, "%s", FormatTooltipPID(v->pc[i].nPID));			
+					wsprintf(szPID, "%s", FormatTooltipPID(v->pc[i].nPID));
 					nIndex = (int)SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_ADDSTRING, 0, (LPARAM)szPID);
 				}
 			}
@@ -16802,7 +16239,6 @@ INT_PTR CALLBACK RecordTablesDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM
 	
 	return FALSE;
 }
-#endif PRO
 
 INT_PTR CALLBACK PluginSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -16976,7 +16412,6 @@ INT_PTR CALLBACK EITServerSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 	return FALSE;
 }
 
-#ifndef LITE
 INT_PTR CALLBACK TableViewerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
@@ -17036,11 +16471,9 @@ INT_PTR CALLBACK TableViewerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 			}
 			SetDlgItemText(hDlg, IDC_TABLE_VIEWER_PID, szTemp);
 
-#ifdef PRO
 			v->nTableMonitorSectionTable = -1;
 			SendDlgItemMessage(hDlg, IDC_TABLE_VIEWER_SECTION_DISPLAY, WM_SETFONT, (WPARAM)v->hCourierNew, MAKELONG(TRUE, 0));
 			v->hTableViewerSectionDisplayWindow = GetDlgItem(hDlg, IDC_TABLE_VIEWER_SECTION_DISPLAY);
-#endif PRO
 			SetFocus(GetDlgItem(hDlg, IDC_TABLE_VIEWER_PID));
 		}
 		return TRUE;
@@ -17110,7 +16543,6 @@ INT_PTR CALLBACK TableViewerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				SendMessage(hDlg, WM_COMMAND, IDOK, 0);
 			EndDialog(hDlg, FALSE);
 			break;
-#ifdef PRO
 		case IDC_TABLE_VIEWER_SHOW_SECTIONS:
 			if (!v->fTableMonitorRunning)
 			{
@@ -17124,7 +16556,6 @@ INT_PTR CALLBACK TableViewerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 			}
 			v->fTableMonitorSectionDisplayEnabled = IsDlgButtonChecked(hDlg, IDC_TABLE_VIEWER_SHOW_SECTIONS);
 			break;
-#endif PRO
 		}
 		break;
 	case WM_TIMER:
@@ -17139,7 +16570,6 @@ INT_PTR CALLBACK TableViewerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				GetTableMonitorDispInfo((LV_DISPINFO *) lParam);
 			}
 			break;
-#ifdef PRO
 		case LVN_ITEMCHANGED:
 			{
 				LPNMLISTVIEW pnmv = (LPNMLISTVIEW)lParam;
@@ -17149,16 +16579,14 @@ INT_PTR CALLBACK TableViewerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				}
 			}
 			break;
-#endif PRO
 		}
 		break;
 	}
 
 	return FALSE;
 }
-#endif LITE
 
-BOOL IsFileSource()
+BOOL IsFileSource(void)
 {
 	if (strstr(v->szSourceName, "_File") != NULL)
 		return TRUE;
@@ -17192,7 +16620,7 @@ void SetPCTimeToStreamTime(HWND hWnd)
 	if (SetSystemTime(&stNew) == FALSE)
 	{
 		int nGLE = GetLastError();
-		nGLE = nGLE;
+		/* TODO what */
 	}
 	GetSystemTime(&stSet);
 }
@@ -17226,7 +16654,6 @@ LRESULT APIENTRY MainDlgSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 	return FALSE;
 }
 
-#ifdef PRO
 INT_PTR CALLBACK ChartSaveDataDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
@@ -17323,9 +16750,7 @@ INT_PTR CALLBACK MDIIndexDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 	return FALSE;
 }
-#endif PRO
 
-#ifndef LITE
 typedef struct _tagNetworkToINIList
 {
 	int nNetworkID;
@@ -17756,7 +17181,6 @@ void ToggleNetworkIgnore(HWND hWnd)
 		}
 	}
 }
-#endif LITE
 
 INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -17814,22 +17238,16 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			ResetParserPackets();
 			ResetParserCRCs();
-#ifdef PRO
 			ResetParserTableErrors();
 			ResetTableTimes();
 			ResetTableTimingErrors();
-#endif PRO
 			SetupFonts(hDlg);
 			SetupServiceBitmaps(hDlg, TRUE);
 
 			if (Init(&v->ss) == FALSE)
 			{
 				v->fSourceInitFailed = TRUE;
-#ifndef PRO
-				MessageBox(hDlg, "The source module you selected didn't initialize. The device may be missing or not installed correctly.\n\nTo change source module, launch TSReader with the Ctrl key held down.", gszAppName, MB_OK | MB_ICONSTOP);
-#else PRO
 				MessageBox(hDlg, "The source module you selected didn't initialize. The device may be missing or not installed correctly.\n\nUse the profile browser to change source modules.", gszAppName, MB_OK | MB_ICONSTOP);
-#endif PRO
 				//v->szSourceName[0] = 0;
 				DeInit();
 				EndDialog(hDlg, FALSE);
@@ -17839,13 +17257,11 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			// Refresh capabilities after Init() as they may have changed
 			if (GetDescription != NULL)
 				GetDescription(NULL, NULL, NULL, &v->nMaxSourcePIDs, &v->dwSourceCapabilities);
-#ifndef LITE
-			if ( (v->dwSourceCapabilities && CAPABILITIES_SERIAL_CONTROL) && (v->ss.fSerialReceiverControlEnabled == TRUE) )
+			if ( (v->dwSourceCapabilities & CAPABILITIES_SERIAL_CONTROL) && (v->ss.fSerialReceiverControlEnabled == TRUE) )
 			{
 				if (SourceHelper_InitSerialControl() == FALSE)
 					v->ss.fSerialReceiverControlEnabled = FALSE;
 			}
-#endif LITE
 
 			memset(&v->pat, 0, sizeof(v->pat));
 			v->pat.nVersionNumber = -1;
@@ -17934,14 +17350,9 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		switch(LOWORD(wParam))
 		{
 		case ID_IDRNITPOPUP_IGNORETHISNETWORK:
-#ifndef LITE
 			if (v->nNITRightClickIndex != -1)		
 				ToggleNetworkIgnore(v->hWndMainWindow);
-#else LITE
-			MessageBox(hDlg, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 			break;
-#ifdef PRO
 		case ID_IDPCRPOPUP_USETHISPIDFORMUXRATE:
 			{
 				int nPID;
@@ -17970,15 +17381,9 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				UpdateStatistics(v->hDlgSIParser, FALSE);
 			}
 			break;
-#endif PRO
 		case ID_IDRNITPOPUP_RETUNETOTHISMUX:
-#ifndef LITE
 			RetuneToThisMux(v->hWndMainWindow);
-#else LITE
-			MessageBox(hDlg, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 			break;
-#ifndef LITE
 		case ID_NIT_EXPORT_EXPORT_TO_INI:
 			if (DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_EXPORT_NIT_INI), hDlg, ExportNITAsINIDlgProc) == TRUE)
 			{
@@ -17994,9 +17399,7 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				}
 			}
 			break;
-#endif LITE
 		case ID_IDRNITPOPUP_RETUNETOTHISMUX_SDT:
-#ifndef LITE
 			if (v->nSDTRightClickIndex != -1)
 			{
 				if (v->pChannelData[v->nSDTRightClickIndex] != NULL)
@@ -18027,11 +17430,7 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 					}
 				}
 			}
-#else LITE
-			MessageBox(hDlg, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 			break;
-#ifndef LITE
 		case ID_IDRESPOPUP_REMOVEESBLACKLIST:
 			{
 
@@ -18078,7 +17477,6 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				v->nBATRightClickIndex = -1;
 			}
 			break;
-#endif LITE
 		case IDCANCEL:
 			PostMessage(v->hWndMainWindow, WM_CLOSE, 0, 0);
 			break;
@@ -18112,7 +17510,6 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		case ID_IDRIPPOPUP_SAVEPAYLOAD:
 		case ID_IDRIPPOPUP_SAVEPAYLOADANDXXXIPHEADER:
 		case ID_IDRIPPOPUP_SAVEPAYLOADXXXIPHEADERANDMPEHEADER:
-	#ifndef LITE
 			if (v->pLastClickedIPEntry != NULL)
 			{
 				int nIPSaveMode;
@@ -18131,15 +17528,11 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				}
 				RecordSelectedIPStream(hDlg, LOWORD(wParam) != ID_IDRIPPOPUP_STOPSAVING, nIPSaveMode);
 			}
-	#else LITE
-			MessageBox(hDlg, szLiteWarning, gszAppName, MB_ICONSTOP);
-	#endif LITE
 			break;
 		case ID_IDRIPPOPUP_SAVEPAYLOAD_MAC:
 		case ID_IDRIPPOPUPMAC_SAVEALLPAYLOADANDXXXIPHEADERSFORMAC:
 		case ID_IDRIPPOPUPMAC_SAVEALLPAYLOADXXXIPHEADERANDMPEHEADERSFORMAC:
 		case ID_IDRIPPOPUP_STOPSAVING_MAC:
-	#ifndef LITE
 			if (v->pLastClickedIPMACEntry != NULL)
 			{
 				int nIPSaveMode = 0;
@@ -18157,15 +17550,11 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				}
 				RecordSelectedIPMACStream(hDlg, LOWORD(wParam) != ID_IDRIPPOPUP_STOPSAVING_MAC, nIPSaveMode);
 			}
-	#else LITE
-			MessageBox(hDlg, szLiteWarning, gszAppName, MB_ICONSTOP);
-	#endif LITE
 			break;
 		case ID_IDRIPPOPUP_SAVEPAYLOAD_PID:
 		case ID_IDRIPPOPUPPID_SAVEALLPAYLOADANDXXXIPHEADERSONPID:
 		case ID_IDRIPPOPUPPID_SAVEALLPAYLOADXXXIPHEADERANDMPEHEADERSONPID:
 		case ID_IDRIPPOPUP_STOPSAVING_PID:
-	#ifndef LITE
 			if (v->pLastClickedIPPIDEntry != NULL)
 			{
 				int nIPSaveMode = 0;
@@ -18184,42 +17573,27 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				}
 				RecordSelectedIPPIDStream(hDlg, LOWORD(wParam) != ID_IDRIPPOPUP_STOPSAVING_PID, nIPSaveMode);
 			}
-	#else LITE
-			MessageBox(hDlg, szLiteWarning, gszAppName, MB_ICONSTOP);
-	#endif LITE
 			break;
 		case ID_IDRIPPOPUP_RETRANSMITPAYLOAD:
 		case ID_IDRIPPOPUP_STOPTRANSMITTING:
-	#ifndef LITE
 			if (v->pLastClickedIPEntry != NULL)
 			{
 				ReTransmitSelectedIPStream(hDlg, LOWORD(wParam) == ID_IDRIPPOPUP_RETRANSMITPAYLOAD);
 			}
-	#else LITE
-			MessageBox(hDlg, szLiteWarning, gszAppName, MB_ICONSTOP);
-	#endif LITE
 			break;
 		case ID_IDRIPPOPUP_RETRANSMITPAYLOAD_MAC:
 		case ID_IDRIPPOPUP_STOPTRANSMITTING_MAC:
-	#ifndef LITE
 			if (v->pLastClickedIPMACEntry != NULL)
 			{
 				ReTransmitSelectedIPMACStream(hDlg, LOWORD(wParam) == ID_IDRIPPOPUP_RETRANSMITPAYLOAD_MAC);
 			}
-	#else LITE
-			MessageBox(hDlg, szLiteWarning, gszAppName, MB_ICONSTOP);
-	#endif LITE
 			break;
 		case ID_IDRIPPOPUP_RETRANSMITPAYLOAD_PID:
 		case ID_IDRIPPOPUP_STOPTRANSMITTING_PID:
-	#ifndef LITE
 			if (v->pLastClickedIPPIDEntry != NULL)
 			{
 				ReTransmitSelectedIPPIDStream(hDlg, LOWORD(wParam) == ID_IDRIPPOPUP_RETRANSMITPAYLOAD_PID);
 			}
-	#else LITE
-			MessageBox(hDlg, szLiteWarning, gszAppName, MB_ICONSTOP);
-	#endif LITE
 			break;
 		}
 		break;
@@ -18286,7 +17660,6 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			v->nPMTTimeoutCounter++;
 			
 			// Update counter for data stop
-#ifndef LITE
 			if (v->fAutoRestartOnDataStop && v->fDataReceviedInParseIncomingDataThread && !IsFileSource())
 			{
 				BOOL fRestart = FALSE;
@@ -18303,7 +17676,6 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 					PostMessage(v->hWndMainWindow, WM_COMMAND, ID_FILE_RESTART_SOURCE, 0);
 				}
 			}
-#endif LITE
 			// Update counter for remote control
 			if (v->nTreeUpdateCounter2 != -1)
 			{
@@ -18326,7 +17698,6 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				if (v->nTreeUpdateCounter == v->nAutoExportDelay)
 				{
 					v->nTreeUpdateCounter = -1;
-#ifndef LITE
 					if (v->fAutoXMLExport == TRUE)
 					{
 						HANDLE hXMLFile;
@@ -18365,7 +17736,6 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 						}
 						PostMessage(v->hWndMainWindow, WM_CLOSE, 0, 0);
 					}
-#endif LITE
 				}
 			}
 
@@ -18427,9 +17797,7 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			break;
 		case 2:		// 10 Hz for activity counter
 			UpdateInputActivityPosition(v->nInputActivityPosition);
-#ifdef PRO
 			UpdateForwarderActivityPosition(v->nForwarderActivityPosition);
-#endif PRO
 
 			// and also for the statusbar
 			if (v->hWndST != NULL)
@@ -18556,13 +17924,11 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			int i;
 			MSG msg;
 		
-#ifndef LITE
 			if (v->fDirtyManualChannels == TRUE)
 			{
 				if (MessageBox(hDlg, "Manual channels have not been saved. Would you like to save them now?", gszAppName, MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1) == IDYES)
 					SaveManualChannels(hDlg);
 			}
-#endif LITE
 			SaveSettings();
 
 			// Stop recording/streaming
@@ -18631,10 +17997,8 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			}
 			MD__Shutdown();
 
-#ifndef LITE
-			if ( (v->dwSourceCapabilities && CAPABILITIES_SERIAL_CONTROL) && (v->ss.fSerialReceiverControlEnabled == TRUE) )
+			if ( (v->dwSourceCapabilities & CAPABILITIES_SERIAL_CONTROL) && (v->ss.fSerialReceiverControlEnabled == TRUE) )
 				SourceHelper_DeInitSerialControl();
-#endif LITE
 			DestroyWindow(hDlg);
 			break;
 		}
@@ -18696,10 +18060,8 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			}
 
 			GetNextESPID(TRUE, 0);
-#ifdef PRO
 			if (!v->fWaitForCAThumbnail)
 				nMaxThreads = v->nMaximumThumbnailThreads;
-#endif PRO
 			EnterCriticalSection(&v->csNextESPID);
 			for (nES = 0; nES < nMaxThreads; nES++)
 			{
@@ -18721,11 +18083,9 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			int y = HIWORD(lParam);
 			if (v->fRecording == FALSE && v->nSelectedProgram != -1)
 			{
-#ifdef PRO
 				if (v->fDefaultPlaybackViaStradis)
 					PostMessage(v->hWndMainWindow, WM_COMMAND, IDC_SI_PARSER_TO_STRADIS, 0);
 				else
-#endif PRO
 					PostMessage(v->hWndMainWindow, WM_COMMAND, ID_PLAYBACK_VLC_1, 0);
 			}
 		}
@@ -18936,7 +18296,6 @@ void DecodeSkyLCN()
 }
 #endif _DEBUG
 
-#ifndef LITE
 BOOL LoadPIDListFile(char * szInputFile)
 {
 	HANDLE hInputFile = CreateFile(szInputFile, GENERIC_READ, 0, (LPSECURITY_ATTRIBUTES)NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, (HANDLE)NULL);
@@ -18963,13 +18322,9 @@ BOOL LoadPIDListFile(char * szInputFile)
 
 	return TRUE;
 }
-#endif LITE
 
 void LoadManualPIDList(HWND hWnd)
 {
-#ifdef LITE
-	MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#else LITE
 	OPENFILENAME ofn;
 	char szInputFile[MAX_PATH] = {0};
 
@@ -18990,10 +18345,8 @@ void LoadManualPIDList(HWND hWnd)
 		if (LoadPIDListFile(szInputFile) == FALSE)
 			MessageBox(hWnd, "Unable to open PID list file", gszAppName, MB_ICONSTOP);
 	}
-#endif LITE
 }
 
-#ifndef LITE
 int GetVideoCompositionPID(HWND hWnd)
 {
 	int nVideoCompositionPID;
@@ -19015,11 +18368,9 @@ int GetVideoCompositionPID(HWND hWnd)
 		case 0x02:	// MPEG2
 			nVideoCompositionPID = v->pat.pmt[v->nSelectedProgram].es[i].nESPID;
 			break;
-#ifndef LITE
 		case 0x1b:	// H264
 			nVideoCompositionPID = v->pat.pmt[v->nSelectedProgram].es[i].nESPID | 0x0010000;
 			break;
-#endif LITE
 		case 0x80:	// DCII
 			if (v->nNetworkPID != 0x0010)
 				nVideoCompositionPID = v->pat.pmt[v->nSelectedProgram].es[i].nESPID;
@@ -19028,11 +18379,7 @@ int GetVideoCompositionPID(HWND hWnd)
 	}
 	if (nVideoCompositionPID == -1)
 	{
-#ifndef LITE
 		MessageBox(hWnd, "No MPEG-2/H.264 video stream found in this program", gszAppName, MB_ICONSTOP);
-#else LITE
-		MessageBox(hWnd, "No MPEG-2 video stream found in this program", gszAppName, MB_ICONSTOP);
-#endif LITE
 		return 0;
 	}
 	if (v->fPIDScrambled[nVideoCompositionPID])
@@ -19043,7 +18390,6 @@ int GetVideoCompositionPID(HWND hWnd)
 
 	return nVideoCompositionPID;
 }
-#endif LITE
 
 DWORD WINAPI CheckNewVersionThread(LPVOID lpv)
 {
@@ -19074,22 +18420,7 @@ DWORD WINAPI CheckNewVersionThread(LPVOID lpv)
 	}
 	PostMessage(hDlg, WM_USER + 1, 4, 0);
 
-#ifdef PRO
 	hRequest = HttpOpenRequest(hHTTP, "GET", "/tsreader/versions/pro/", NULL, NULL, NULL, INTERNET_FLAG_KEEP_CONNECTION, 0); 
-#else PRO
- #ifndef LITE
-	hRequest = HttpOpenRequest(hHTTP, "GET", "/tsreader/versions/std/", NULL, NULL, NULL, INTERNET_FLAG_KEEP_CONNECTION, 0);
- #else LITE
-	{
-		char szLiteExe[MAX_PATH];
-		if (VERSION_SUB_EDIT != '\0')
-			wsprintf(szLiteExe, "/tsreader/TSReaderLite%d.%d.%d%c.exe", VERSION_MAJOR, VERSION_MINOR, VERSION_EDIT, VERSION_SUB_EDIT);
-		else
-			wsprintf(szLiteExe, "/tsreader/TSReaderLite%d.%d.%d.exe", VERSION_MAJOR, VERSION_MINOR, VERSION_EDIT);
-		hRequest = HttpOpenRequest(hHTTP, "GET", szLiteExe, NULL, NULL, NULL, INTERNET_FLAG_KEEP_CONNECTION, 0);
-	}
- #endif LITE
-#endif PRO
 	if (hRequest == NULL)
 	{
 		PostMessage(hDlg, WM_USER + 1, 5, 0);
@@ -19108,28 +18439,16 @@ DWORD WINAPI CheckNewVersionThread(LPVOID lpv)
 	memset(szTemp, 0, sizeof(szTemp));
 	dwSizeLen = sizeof(szTemp);
 	nRetVal = HttpQueryInfo(hRequest, HTTP_QUERY_CONTENT_LENGTH, szTemp, &dwSizeLen, NULL); 
-#ifndef LITE
 	if (nRetVal != 0)
 		nActSize = atol(szTemp); 
 	else
 		nActSize = 20;
-#else LITE
-	if (nRetVal != 0)
-	{
-		nActSize = atol(szTemp); 
-		if (nActSize > sizeof(szVersionBuffer))
-			nActSize = sizeof(szVersionBuffer);
-	}
-	else
-		nActSize = sizeof(szVersionBuffer);
-#endif LITE
 	PostMessage(hDlg, WM_USER + 1, 10, 0);		
 
 	memset(szVersionBuffer, 0, sizeof(szVersionBuffer));
 	nRetVal = InternetReadFile(hRequest, szVersionBuffer, nActSize, &dwRead); 
 	if (nRetVal != FALSE)
 	{
-#ifndef LITE
 		// We get the proper version for Standard and Lite
 		char * szLineBreak;
 		char szMyVersion[128];
@@ -19144,19 +18463,6 @@ DWORD WINAPI CheckNewVersionThread(LPVOID lpv)
 		else
 			PostMessage(hDlg, WM_USER + 1, 13, 0);
 		goto CheckNewVersionThread_Exit1;
-#else LITE
-		// For Lite we check for a HTTP 404 error - that means we have a new version
-		// because this version's setup util couldn't be found. If this is the latest
-		// we get the first 1KB of the setup util
-		char * szError404;
-
-		szError404 = strstr(szVersionBuffer, "<TITLE>404");
-		if (szError404 != NULL)
-			PostMessage(hDlg, WM_USER + 1, 13, 0);
-		else
-			PostMessage(hDlg, WM_USER + 1, 12, 0);
-		goto CheckNewVersionThread_Exit1;
-#endif LITE
 	}
 	PostMessage(hDlg, WM_USER + 1, 11, 0);
 
@@ -19266,13 +18572,8 @@ INT_PTR CALLBACK CheckNewVersionDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
 			}
 			break;
 		case 13:	// New version
-#ifndef LITE
 			if (MessageBox(hDlg, "A new version available. Would you like to login in order to download it now?", gszAppName, MB_ICONINFORMATION | MB_YESNO) == IDYES)
 				ShellExecute(NULL, "open", "https://tsreader.co.uk", NULL, NULL, SW_SHOW);
-#else LITE
-			if (MessageBox(hDlg, "A new version of TSReader Lite is available. Would you like to go to the download page now?", gszAppName, MB_ICONINFORMATION | MB_YESNO) == IDYES)
-				ShellExecute(NULL, "open", "https://tsreader.co.uk", NULL, NULL, SW_SHOW);
-#endif LITE
 			EndDialog(hDlg, FALSE);
 			break;
 		}
@@ -19290,7 +18591,6 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		if ( (wParam >= 40000) && (wParam < 50000) )
 			MD__Send_External_DLL_Menu_Cmd((unsigned int)wParam);
 		break;
-#ifdef PRO
 	case ID_RECORD_RECORDTABLES:
 		if (v->fRecordTablesActive == FALSE)
 		{
@@ -19317,7 +18617,6 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 			CheckMenuItem(GetMenu(hWnd), ID_RECORD_RECORDTABLES, MF_UNCHECKED | MF_BYCOMMAND);
 		}
 		break;
-#endif PRO
 	case ID_SETTINGS_PLUGINSETTINGS:
 		DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_PLUGIN_SETTINGS), hWnd, PluginSettingsDlgProc);
 		break;
@@ -19325,29 +18624,13 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		LoadManualPIDList(hWnd);
 		break;
 	case ID_VIEW_TABLELIST:
-#ifndef LITE
-#ifndef PRO
-		DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_TABLE_VIEWER), hWnd, TableViewerDlgProc);
-#else PRO
 		DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_TABLE_VIEWER_PRO), hWnd, TableViewerDlgProc);
-#endif PRO
-#else LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 		break;
 	case ID_SETTINGS_EPGGRID:
-#ifndef LITE
 		DialogBoxParam(v->hInstance, MAKEINTRESOURCE(IDD_EPG_GRID_SETTINGS), hWnd, EPGGridSettingsDlgProc, FALSE);
-#else LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 		break;
 	case ID_VIEW_CHART_SETTINGS_REFRESHRATE:
-#ifndef LITE
 		DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_GRAPH_REFRESH), hWnd, GraphRefreshRateDlgProc);
-#else LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 		break;
 	case ID_VIEW_CHART_SETTINGS_PIDCHARTCOLORS:
 		DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_PID_CHART_COLORS), hWnd, PIDChartColorsDlgProc);
@@ -19454,7 +18737,6 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		CreateChartWindow(hWnd, ActivePIDsChartWindowProc, TRUE, LOWORD(wParam));
 		break;
 	case ID_VIEW_CHART_VIDEOCOMPOSITIONCHART:
-#ifndef LITE
 		{
 			int nMonitorPID = GetVideoCompositionPID(hWnd);
 			if (nMonitorPID)
@@ -19465,12 +18747,8 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 				v->nVideoCompositionPID[nChartIndex] = nMonitorPID;
 			}
 		}
-#else LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 		break;
 	case ID_VIEW_CHART_SIGNALCHART:
-#ifndef LITE
 		CloseExistingChart(hWnd, ID_VIEW_CHART_SIGNALCHART);
 		{
 			char * szCompareSignal;
@@ -19485,42 +18763,24 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 			}
 			CreateChartWindow(hWnd, SignalChartWindowProc, FALSE, LOWORD(wParam));
 		}
-#else LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 		break;
 	case ID_VIEW_CHART_PROGRAMUSAGESTACKEDBARCHART:
-#ifndef LITE
 		CreateChartWindow(hWnd, ProgramUsageChartWindowProc, FALSE, LOWORD(wParam));
-#else LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 		break;
-#ifdef PRO
 	case ID_VIEW_CHART_PIDUSAGEVBRSTACKEDAREA:
 		if (!v->fRealtimeCharting)
 			MessageBox(hWnd, "This chart requires TSReader operate in real-time charting mode. Please select this mode first", gszAppName, MB_ICONSTOP);
 		else
 			CreateChartWindow(hWnd, PIDUsageVBRStackedAreaWindowProc, TRUE, LOWORD(wParam));
 		break;
-#endif PRO
-
 	case ID_SETTINGS_IPDVBSETTINGS:
-#ifndef LITE
 		DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_IP_SETTINGS), hWnd, IPSettingsDlgProc);
-#else LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 		break;
 	case ID_HELP_SHOWPIDLIST:
 		DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_PID_LIST), hWnd, PIDListDlgProc);
 		break;
 	case ID_SETTINGS_CONTROLSERVERSETTINGS:
-#ifndef LITE
 		DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_CONTROL_SERVER), hWnd, ControlServerDlgProc);
-#else LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 		break;
 	case ID_SETTINGS_BUFFERSIZES:
 		DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_BUFFER_SIZES), hWnd, BufferSizesDlgProc);
@@ -19532,16 +18792,6 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		SaveThumbnails(hWnd, TRUE);
 		break;
 	case IDC_SUPPORT:
-#ifdef INEOQUEST
-		ShellExecute(NULL, "open", "http://www.ineoquest.com", NULL, NULL, SW_SHOW);
-#else INEOQUEST
- #ifdef ZANALYZER
-		ShellExecute(NULL, "open", "http://www.zanalyzer.com", NULL, NULL, SW_SHOW);
- #else ZANALYZER
-  #ifdef DTVSENTINEL
-		ShellExecute(NULL, "open", "http://www.mediatechnologysolutions.net", NULL, NULL, SW_SHOW);
-  #else DTVSENTINEL
-   #ifndef LITE
 		{
 			char szSupportHTMLFile[MAX_PATH];
 
@@ -19549,12 +18799,6 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 			lstrcat(szSupportHTMLFile, "\\documentation\\support.html");
 			ShellExecute(NULL, "open", szSupportHTMLFile, NULL, NULL, SW_SHOW);
 		}
-    #else LITE
-		ShellExecute(NULL, "open", "https://tsreader.co.uk", NULL, NULL, SW_SHOW);
-   #endif LITE
-  #endif DTVSENTINEL
- #endif ZANALYZER
-#endif INEOQUEST
 		break;
 	case ID_FILE_SELECTSOURCE:
 		{
@@ -19565,7 +18809,6 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 			{
 				if (lstrcmp(szCurrentSource, v->szSourceName) != 0)
 				{
-#ifndef LITE
 					RestartTSReader_Stop(hWnd);
 
 					// Switch source if we need to
@@ -19574,9 +18817,6 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 					LoadSource(hWnd);						
 					EnableDisableSourceMenuItems(hWnd);
 					RestartTSReader_Start(hWnd);
-#else LITE
-					MessageBox(hWnd, "You will now need to close and restart TSReader for the change to take effect", gszAppName, MB_ICONINFORMATION);
-#endif LITE
 				}
 			}
 		}
@@ -19588,18 +18828,10 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		PostMessage(hWnd, WM_CLOSE, 0, 0);
 		break;
 	case IDC_SI_PARSER_EXPORT_EIT:
-#ifndef LITE
 		StartXMLExport(hWnd, FALSE);
-#else LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 		break;
 	case ID_EXPORT_XMLTVEXPORT:
-#ifndef LITE
 		StartXMLExport(hWnd, TRUE);
-#else LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 		break;
 	case IDC_SI_PARSER_EXPORT:
 		SIParserExport(hWnd);
@@ -19622,7 +18854,6 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	case ID_SETTINGS_EITLANGUAGE:
 		DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_EIT_LANGUAGE_SETTINGS), hWnd, EITLanguageSettingsDlgProc);
 		break;
-#ifdef PRO
 	case ID_EXPORT_GPSSIGNALEXPORT:
 		DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_GPS_SIGNAL_EXPORT), hWnd, GPSSignalExportDlgProc);
 		break;
@@ -19743,7 +18974,6 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 			ForwarderModuleStartStop(hWnd, nIndex);
 		}
 		break;
-#endif PRO
 	case ID_PLAYBACK_ROKUHD1000:
 		{
 			BOOL fAbort = FALSE;
@@ -19813,9 +19043,6 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		RecordStream(hWnd, FALSE, -1);
 		break;
 	case IDC_SI_PARSER_RECORD_ALL:
-#ifdef LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#else LITE
 		if (   v->nMaxSourcePIDs != 8192
 			&& v->fIgnoreRecordAllPIDLimitationWarning == FALSE
 			&& v->nAutoRecord == AUTO_RECORD_NONE)
@@ -19824,7 +19051,6 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 				break;
 		}
 		RecordStream(hWnd, TRUE, -1);
-#endif LITE
 		break;
 	case IDC_SI_PARSER_RECORD_PID:
 		{				
@@ -19929,11 +19155,6 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	case ID_HELP_CHECKFORNEWVERSION:
 		DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_CHECK_NEW_VERSION), hWnd, CheckNewVersionDlgProc);
 		break;
-#ifdef LITE
-	case IDC_LITE_WARNING:
-		MessageBox(hWnd, "This version of TSReader limits recording and streaming to one minute", gszAppName, MB_ICONINFORMATION);
-		break;
-#endif LITE
 	case ID_SETTINGS_MAINPROCESSPRIORITY_REALTIME:
 		v->nProcessPriority = REALTIME_PRIORITY_CLASS;
 		SetProcessPriority();
@@ -20019,9 +19240,6 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		// Purchase link removed - this is a memorial build, no commercial version available
 		break;
 	case ID_HELP_RESETALL:
-#ifdef LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#else LITE
 		SendMessage(hWnd, WM_COMMAND, ID_HELP_RESETCONTINUITYCOUNTERS, 0);
 		SendMessage(hWnd, WM_COMMAND, ID_HELP_RESETTEICOUNTERS, 0);
 		SendMessage(hWnd, WM_COMMAND, ID_HELP_RESETCRCCOUNTERS, 0);
@@ -20032,7 +19250,6 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		if (GetRetuneCount != NULL)
 			GetRetuneCount(TRUE);
 		break;
-#endif LITE
 	case ID_HELP_RESETCONTINUITYCOUNTERS:
 		{
 			int i;
@@ -20066,33 +19283,18 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		ResetPIDChart(hWnd);
 		break;
 	case ID_SETTINGS_AUTORESTART:
-#ifndef LITE
 		DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_AUTO_RESTART), hWnd, AutoRestartDlgProc);
-#else LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 		break;
 	case ID_VIEW_ALWAYSONTOP:
 		ToggleMenuOption(hWnd, ID_VIEW_ALWAYSONTOP, &v->fAlwaysOnTop);
 		ToggleAlwaysOnTop();
 		break;
 	case ID_SETTINGS_THUMBNAILTHREAD_REFRESHNOW:
-#ifndef LITE
 		SendMessage(v->hDlgSIParser, WM_USER + 7, 0, 0);
-#endif LITE
 		break;
 	case ID_SETTINGS_THUMBNAILTHREAD_ENABLEAUDIOTHUMBNAILS:
-#ifndef LITE
-#ifndef PRO
-		ToggleMenuOption(hWnd, ID_SETTINGS_THUMBNAILTHREAD_ENABLEAUDIOTHUMBNAILS, &v->fAudioThumbnails);
-		UpdateVideoPix(hWnd);
-#else PRO
 		if (DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_AUDIO_THUMBNAIL_SETTINGS), hWnd, AudioThumbnailSettingsDlgProc) == TRUE)
 			UpdateVideoPix(hWnd);
-#endif PRO
-#else LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 		break;
 	case ID_VIEW_CHART_SETTINGS_STYLE_GRADIENTBITMAPBACKGROUND:
 		ToggleMenuOption(hWnd, ID_SETTINGS_SHOWNONVIDEOPCRICONS, &v->fChartGradientBitmap);
@@ -20118,21 +19320,16 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		UpdateVideoPix(hWnd);
 		break;
 	case ID_SETTINGS_REALTIMECHARTING:
-#ifndef LITE
 		if (v->nMaxSourcePIDs < 8192)
 		{
 			MessageBox(hWnd, "This function can only be used full-transport stream interfaces.", gszAppName, MB_ICONSTOP);
 			break;
 		}
 		ToggleMenuOption(hWnd, ID_SETTINGS_REALTIMECHARTING, &v->fRealtimeCharting);
-#else LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 		break;
 	case ID_SETTINGS_THUMBNAILTHREAD_THUMBNAILSIZE_SMALL:
 	case ID_SETTINGS_THUMBNAILTHREAD_THUMBNAILSIZE_LARGE:
 	case ID_SETTINGS_THUMBNAILTHREAD_THUMBNAILSIZE_NORMAL:
-#ifndef LITE
 		if (LOWORD(wParam) == ID_SETTINGS_THUMBNAILTHREAD_THUMBNAILSIZE_SMALL)
 			v->nThumbnailSize = 1;
 		else if (LOWORD(wParam) == ID_SETTINGS_THUMBNAILTHREAD_THUMBNAILSIZE_LARGE)
@@ -20146,30 +19343,19 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		}
 		CheckThumbnailSizeMenu(GetMenu(hWnd));
 		PostMessage(v->hDlgSIParser, WM_USER + 3, 0, 1);
-#else LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 		break;
 	case ID_SETTINGS_THUMBNAILTHREAD_DISPLAYORDER_RIGHTTOLEFT:
 	case ID_SETTINGS_THUMBNAILTHREAD_DISPLAYORDER_TOPDOWN:
-#ifndef LITE
 		if (LOWORD(wParam) == ID_SETTINGS_THUMBNAILTHREAD_DISPLAYORDER_RIGHTTOLEFT)
 			v->fThumbnailsRightToLeft = TRUE;
 		else
 			v->fThumbnailsRightToLeft = FALSE;
 		CheckThumbnailDisplayOrderMenu(GetMenu(hWnd));
 		PostMessage(hWnd, WM_USER + 3, 0, 1);
-#else LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 		break;
 	case ID_SETTINGS_TIMESTAMPPACKETS:
-#ifndef LITE
 		ToggleMenuOption(hWnd, ID_SETTINGS_TIMESTAMPPACKETS, &v->ss.fTimestampPackets);
 		MessageBox(hWnd, gszRestartNeeded, gszAppName, MB_ICONINFORMATION);
-#else LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 		break;
 	case ID_SETTINGS_DECIMALPIDS:
 		ToggleMenuOption(hWnd, ID_SETTINGS_DECIMALPIDS, &v->fDecimalPIDs);
@@ -20187,11 +19373,7 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		ToggleMenuOption(hWnd, ID_SETTINGS_HIDEWHENMINIMIZED, &v->fHideWhenMinimized);
 		break;
 	case ID_SETTINGS_COUNTCONTINUITYERRORS:
-#ifndef LITE
 		ToggleMenuOption(hWnd, ID_SETTINGS_COUNTCONTINUITYERRORS, &v->fCountContinuityErrors);
-#else LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 		break;
 	case ID_SETTINGS_KEEPPASTEITDATA:
 		ToggleMenuOption(hWnd, ID_SETTINGS_KEEPPASTEITDATA, &v->fKeepPastEITData);
@@ -20239,18 +19421,10 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		ToggleMenuOption(hWnd, ID_SETTINGS_KEEPSPECIALXMLCHARACTERS, &v->fKeepSpecialXMLCharacters);
 		break;
 	case ID_SETTINGS_RELOADMANUALCHANNELSAFTERRESTART:
-#ifndef LITE
 		ToggleMenuOption(hWnd, ID_SETTINGS_RELOADMANUALCHANNELSAFTERRESTART, &v->fReloadManualChannels);
-#else LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 		break;
 	case ID_SETTINGS_THUMBNAILTHREADPRIORITY_REFRESHRATE:
-#ifdef PRO
 		DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_THUMBNAIL_REFRESH_RATE_PRO), hWnd, ThumbnailRefreshRateDlgProc);
-#else PRO
-		DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_THUMBNAIL_REFRESH_RATE), hWnd, ThumbnailRefreshRateDlgProc);
-#endif PRO
 		break;
 	case ID_SETTINGS_ROKUHD1000:
 		DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_ROKU1000_SETTINGS), hWnd, RokuHD1000Settings);
@@ -20271,25 +19445,13 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_VLC_SETTINGS), hWnd, VLCSettingsDlgProc);
 		break;
 	case ID_FILE_STOPSOURCE:
-#ifdef LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#else LITE
 		Stop();
-#endif LITE
 		break;
 	case ID_FILE_DISEQCPOSITIONER:
-#ifdef LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#else LITE
 		SourceHelper_DiSEqCPositionerDialog(hWnd);
-#endif LITE
 		break;
 	case ID_SETTINGS_SERIALRECEVIERCONTROL:
-#ifndef LITE
 		DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_SERIAL_CONTROL), hWnd, SerialControlDlgProc);
-#else LITE
-		MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 		break;
 	case ID_VIEW_SHOWEPGGRID:
 		ShowEPGGrid(hWnd);
@@ -20297,7 +19459,6 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	}
 }
 
-#ifndef LITE
 INT_PTR CALLBACK AutoRecordNoProgramDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch(uMsg)
@@ -20327,9 +19488,7 @@ INT_PTR CALLBACK AutoRecordNoProgramDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 	
 	return FALSE;
 }
-#endif LITE
 
-#ifdef PRO
 void LoadForwardDLLs(HWND hWnd)
 {
 	HANDLE hFind;
@@ -20374,7 +19533,6 @@ void LoadForwardDLLs(HWND hWnd)
 		FindClose(hFind);
 	}
 }
-#endif PRO
 
 LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -20397,9 +19555,7 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			SetupVLCMenuNames(hWnd);
 			UpdateThreadDialogPriorities(hWnd);
 			SetInitialMenuStates(hWnd);
-#ifdef PRO
 			LoadForwardDLLs(hWnd);
-#endif PRO
 			if (v->fDisableStreamParsing == TRUE)
 			{
 				EnableMenuItem(GetMenu(hWnd), ID_SETTINGS_THUMBNAILTHREADPRIORITY_HIGH, MF_DISABLED | MF_GRAYED | MF_BYCOMMAND);
@@ -20431,7 +19587,6 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		ProcessMain_WM_COMMAND(hWnd, wParam, lParam);
 		break;
 	case WM_CLOSE:
-#ifdef PRO
 		{
 			int nConnectionCount = 0;
 			int i;
@@ -20463,7 +19618,6 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 					return 0;
 			}
 		}
-#endif PRO
 
 		SendMessage(v->hDlgSIParser, WM_CLOSE, 0, 0);
 		if (v->fHideWhenMinimized)
@@ -20481,7 +19635,6 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				v->fBalloonQueued = FALSE;
 			}
 		}
-#ifndef LITE
 		if (!v->fMaximizedFlag && !v->fMinimizedFlag)
 		{
 			RECT rc;
@@ -20492,7 +19645,6 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			v->nMainWindowPositionX = rc.left;
 			v->nMainWindowPositionY = rc.top;
 		}
-#endif LITE
 		DestroyWindow(hWnd);
 		break;
 	case WM_ACTIVATE:
@@ -20568,10 +19720,8 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 					if (TuneDialog(hWnd) == FALSE)
 					{
 						OutputDebugString("TSReader: TuneDialog() returned FALSE - returning to source selection\n");
-#ifndef LITE
-						if ( (v->dwSourceCapabilities && CAPABILITIES_SERIAL_CONTROL) && (v->ss.fSerialReceiverControlEnabled == TRUE) )
+						if ( (v->dwSourceCapabilities & CAPABILITIES_SERIAL_CONTROL) && (v->ss.fSerialReceiverControlEnabled == TRUE) )
 							SourceHelper_DeInitSerialControl();
-#endif LITE
 
 						// Cancelling the tune dialog takes us back to the source selection
 						// dialog instead of exiting the app. If the user also cancels there,
@@ -20648,32 +19798,26 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			if (fAborted == FALSE)
 			{
 				UpdateMainStatusText("Reading PAT");
-#ifndef LITE
 				if (lstrlen(v->szAutoLoadManualChannelFilename))
 				{
 					LoadManualChannels(hWnd, v->szAutoLoadManualChannelFilename);
 					if (v->nAutoRecord != AUTO_RECORD_NONE)
 						v->nPMTTimeoutCounter = PMT_TIMEOUT;
 				}
-#endif LITE
 				LoadPlugins(hWnd);
 				StartIncomingTSDataThread();
-#ifndef LITE
 				ReadPersistantEPG();
-#endif LITE
 				Start();
 				v->fRunning = TRUE;
 				SetTimer(v->hDlgSIParser, 1, 1000, NULL);
 				SetTimer(v->hDlgSIParser, 2, 100, NULL);
 				SetTimer(v->hDlgSIParser, 6, v->nPIDDataRefreshRate, NULL);
 				OutputDebugString("TSReader: Running!\n");
-#ifndef LITE
 				if (lstrlen(v->szAutoLoadPIDListFilename))
 				{
 					LoadPIDListFile(v->szAutoLoadPIDListFilename);
 					v->szAutoLoadPIDListFilename[0] = '\0';
 				}
-#endif LITE
 
 				if (v->fRunHidden)
 				{
@@ -20692,22 +19836,6 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			}
 		}
 		break;
-#ifdef LITE
-	case WM_USER + 7:
-		if (v->fRecording)
-		{
-			if (v->fStradisActive)
-				StreamDecoder(hWnd);
-			else
-				RecordStream(hWnd, FALSE, -1);
-			if (v->fWarnedAboutLite == FALSE)
-			{
-				v->fWarnedAboutLite = TRUE;
-				PostMessage(hWnd, WM_COMMAND, IDC_LITE_WARNING, 0);
-			}
-		}
-		break;
-#endif LITE
 #ifndef NIN_BALLOONSHOW
 #define NIN_BALLOONSHOW WM_USER + 2
 #define NIN_BALLOONHIDE WM_USER + 3
@@ -20798,12 +19926,9 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			break;
 		}
 		break;
-#ifndef LITE
 	case WM_USER + 10:
 		MessageBeep(0);
 		break;
-#endif LITE
-#ifdef PRO
 		// This message is from the archive monitor app - we get it's hWnd
 		// to close it if the archiver is stopped
 	case WM_USER + 11:
@@ -20814,12 +19939,9 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 	case WM_USER + 13:
 		MessageBox(hWnd, "A plugin has provided a descrambling key but no CSA plugin has been located by TSReader.\nSearch the Internet for CSA.DLL or preferably FFDecsa_64_MMX.dll and put it into the\nTSReader folder.\n\nTSReader does not include its own CSA code since this is patented.\n\nThis warning is displayed each time TSReader is run and no CSA decoder can be located.\nYou can stop it by removing the plugin or installing either of these files. FFDecsa_64_MMX.dll\nhas a significantly lower impact on CPU load and is highly recommended.", gszAppName, MB_ICONINFORMATION);
 		break;
-#endif PRO
-#ifndef LITE
 	case WM_USER + 14:
 		DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_AUTO_RECORD_NO_PROGRAM), hWnd, AutoRecordNoProgramDlgProc);
 		break;
-#endif LITE
 	default:
 		if (uMsg == v->dwTaskbarRestartMessage)
 		{
@@ -20924,7 +20046,6 @@ void InitVariables(HINSTANCE hInstance, int nCmdShow)
 	InitializeCriticalSection(&v->csNextESPID);			
 	InitializeCriticalSection(&v->csStatusbar);
 
-#ifdef PRO
 	InitializeCriticalSection(&v->csActualRecordFilename);
 	InitializeCriticalSection(&v->csXMLLog);
 	InitializeCriticalSection(&v->csH264VideoChart);
@@ -20933,7 +20054,6 @@ void InitVariables(HINSTANCE hInstance, int nCmdShow)
 		for (nTableIndex = 0; nTableIndex < MAX_RECORD_TABLES; nTableIndex++)
 			v->record_tables[nTableIndex].nPID = -1;
 	}
-#endif PRO
 	QueryPerformanceFrequency((LARGE_INTEGER *)&v->lnTicksPerSecond);
 
 	SourceHelper_Init(v);
@@ -20973,7 +20093,6 @@ void InitVariables(HINSTANCE hInstance, int nCmdShow)
 	memset(v->out_pmt, 0xff, sizeof(v->out_pmt));
 	memset(v->out_sdt, 0xff, sizeof(v->out_sdt));
 
-#ifndef LITE
 	{
 		HMODULE hWPCAP = LoadLibrary("wpcap.dll");
 		if (hWPCAP != NULL)
@@ -20989,7 +20108,6 @@ void InitVariables(HINSTANCE hInstance, int nCmdShow)
 			}
 		}
 	}
-#endif LITE
 	i = 0;
 	v->wChartMenuItems[i++] = ID_VIEW_PIDPIECHART;
 	v->wChartMenuItems[i++] = ID_VIEW_PIDUSAGE2DPIECHART;
@@ -21004,7 +20122,7 @@ void InitVariables(HINSTANCE hInstance, int nCmdShow)
 	v->wChartMenuItems[i++] = ID_VIEW_CHART_SIGNALCHART;
 }
 
-void DeInitVariables()
+void DeInitVariables(void)
 {
 	int nIndex;
 
@@ -21014,19 +20132,13 @@ void DeInitVariables()
 		DeleteDC(v->hThumbnailDC);
 	}
 
-#ifdef PRO
-#ifdef PRO
 	if (v->fStreamingXMLMode)
 	{
 		if (v->XMLLog != NULL)
 			LocalFree(v->XMLLog);
 	}
-#endif PRO
-#endif PRO
-#ifndef LITE
 	if (v->hUDPSender != NULL)
 		FreeLibrary(v->hUDPSender);
-#endif LITE
 
 	for (nIndex = 0; nIndex < 3; nIndex++)
 	{
@@ -21042,11 +20154,9 @@ void DeInitVariables()
 	DeleteCriticalSection(&v->csAutoRestartOnDataStopCounter);			
 	DeleteCriticalSection(&v->csNextESPID);			
 	DeleteCriticalSection(&v->csStatusbar);
-#ifdef PRO
 	DeleteCriticalSection(&v->csActualRecordFilename);
 	DeleteCriticalSection(&v->csXMLLog);
 	DeleteCriticalSection(&v->csH264VideoChart);
-#endif PRO
 	
 	for (nIndex = 0; nIndex < MAX_ES_PARSERS; nIndex++)
 		DeleteCriticalSection(&v->esparserinfo[nIndex].csThreadSignal);
@@ -21066,7 +20176,6 @@ void DeInitVariables()
 	LocalFree(v);
 }
 
-#ifndef LITE
 BOOL GetCommandLineFilename(char * szCommandLinePtr, char * szOutputName, int * nOffset)
 {
 	if (*szCommandLinePtr == '\"')
@@ -21345,7 +20454,6 @@ char * ParseTSReaderCommandLine(char * szCmdLinePtr, BOOL * fResult)
 				szCmdLinePtr = SkipCommandLineSwitch(szCmdLinePtr);
 			}
 			break;
-#ifdef PRO
 		case 'e':	// EPG Save all (Pro)
 			{
 				int nNewOffset;
@@ -21364,7 +20472,6 @@ char * ParseTSReaderCommandLine(char * szCmdLinePtr, BOOL * fResult)
 				szCmdLinePtr += nNewOffset;
 			}
 			break;
-#endif PRO
 		case 'E':	// extended EPGs
 			{
 				char * szNextSpace;
@@ -21389,12 +20496,10 @@ char * ParseTSReaderCommandLine(char * szCmdLinePtr, BOOL * fResult)
 					szCmdLinePtr += lstrlen(szCmdLinePtr);
 			}
 			break;
-#ifdef PRO
 		case 'f':	// Automatic forwarding
 			szCmdLinePtr = SkipCommandLineSwitch(szCmdLinePtr);
 			v->fAutomaticForwarding = TRUE;
 			break;
-#endif PRO
 		case 'h':	// Display chart
 			{
 				szCmdLinePtr += 2;	// skip '-h'
@@ -21511,7 +20616,6 @@ char * ParseTSReaderCommandLine(char * szCmdLinePtr, BOOL * fResult)
 					szCmdLinePtr += lstrlen(szCmdLinePtr);
 			}
 			break;
-#ifdef PRO
 		case 'l':
 			szCmdLinePtr = SkipCommandLineSwitch(szCmdLinePtr);
 			v->fStreamingXMLMode = TRUE;
@@ -21556,7 +20660,6 @@ char * ParseTSReaderCommandLine(char * szCmdLinePtr, BOOL * fResult)
 					lstrcpy(v->szProfileName, szProfileName);
 			}
 			break;
-#endif PRO
 		case 'm':	// load manual channel
 			{
 				int nNewOffset;
@@ -21584,7 +20687,6 @@ char * ParseTSReaderCommandLine(char * szCmdLinePtr, BOOL * fResult)
 				v->fRunHidden = TRUE;
 			}
 			break;
-#ifdef PRO
 		case 'n':
 			szCmdLinePtr = SkipCommandLineSwitch(szCmdLinePtr);
 			v->fAutomaticRecordAll = TRUE;
@@ -21593,7 +20695,6 @@ char * ParseTSReaderCommandLine(char * szCmdLinePtr, BOOL * fResult)
 			szCmdLinePtr = SkipCommandLineSwitch(szCmdLinePtr);
 			v->fAutomaticStreamMonitor = TRUE;
 			break;
-#endif PRO
 		case 'p':	// force program stream recording
 			szCmdLinePtr = SkipCommandLineSwitch(szCmdLinePtr);
 			v->fRecordProgramStream = TRUE;	
@@ -21953,9 +21054,8 @@ char * ParseTSReaderCommandLine(char * szCmdLinePtr, BOOL * fResult)
 
 	return szCmdLinePtr;
 }
-#endif LITE
 
-void LoadOutputModules()
+void LoadOutputModules(void)
 {
 	// Try loading StradisDecoder.dll
 	HMODULE hDecoder = LoadLibrary("StradisDecoder.dll");
@@ -22084,7 +21184,6 @@ VOID UnloadOtherModules()
 		FreeLibrary(v->hFFCSA);
 	}
 
-#ifdef PRO
 	{
 		int i;
 		
@@ -22098,7 +21197,6 @@ VOID UnloadOtherModules()
 		}
 		v->fwd.nForwarderDLLCount = 0;
 	}
-#endif PRO
 }
 
 BOOL NEAR InitApplication()
@@ -22130,32 +21228,19 @@ HWND NEAR InitInstance(int nCmdShow)
 	char szTitle[256] = {"\0"};
 	char szProfileName[256] = {"Default"};
 
-#ifdef PRO
 	if (lstrlen(v->szProfileName))
 		lstrcpy(szProfileName, v->szProfileName);
 	wsprintf(szTitle, "%s -- %s %s", szProfileName, gszAppName, GetTSRVersion(NULL));
-#else PRO
-	wsprintf(szTitle, "%s -- %s", gszAppName, GetTSRVersion(NULL));
-#endif PRO
 #ifdef BETA
 	lstrcat(szTitle, " BETA");
 #endif BETA
-#ifdef LITE
-	lstrcat(szTitle, " - not for commerical use");
-#endif LITE
 	fMaximizedFlag = v->fMaximizedFlag; // save as it gets reset on the first WM_SIZE
 	v->hAccel = LoadAccelerators(v->hInstance, MAKEINTRESOURCE(IDR_ACCELERATOR_TOP));
 
 	// create the window
-#ifndef LITE
 	dwStyle = WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU | WS_SIZEBOX;
 #define TSREADER_INITIAL_X 1000
 #define TSREADER_INITIAL_Y 720
-#else LITE
-	dwStyle = WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU;
-#define TSREADER_INITIAL_X 640
-#define TSREADER_INITIAL_Y 480
-#endif LITE
 
 	nInitialXPos = 0;
 	nInitialYPos = 0;
@@ -22170,21 +21255,6 @@ HWND NEAR InitInstance(int nCmdShow)
 	if (NULL == v->hWndMainWindow)
 		return (NULL);
 
-#ifdef LITE
-	{
-		int xExtras, yExtras;
-		RECT rcClient, rcStatusbar;
-
-		xExtras = GetSystemMetrics(SM_CXSIZEFRAME) + GetSystemMetrics(SM_CXSIZEFRAME);
-		yExtras = GetSystemMetrics(SM_CYMENU) + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYSIZEFRAME) + GetSystemMetrics(SM_CYSIZEFRAME);
-		GetClientRect(v->hDlgSIParser, &rcClient);
-		GetClientRect(v->hWndST, &rcStatusbar);
-		SetWindowPos(v->hWndMainWindow, NULL,
-			         0, 0,
-					 rcClient.right + xExtras, rcClient.bottom + rcStatusbar.bottom + yExtras,
-					 SWP_NOMOVE);
-	}
-#else LITE
 	{
 		if (v->nMainWindowPositionX < 0 || v->nMainWindowPositionY < 0)
 			v->nMainWindowPositionX = v->nMainWindowPositionY = 0;
@@ -22200,7 +21270,6 @@ HWND NEAR InitInstance(int nCmdShow)
 					 v->nMainWindowSizeX, v->nMainWindowSizeY,
 					 0);
 	}
-#endif LITE
 	v->fMaximizedFlag = fMaximizedFlag;
 	if (v->fRunHidden)
 	{
@@ -22254,26 +21323,20 @@ void DoNormalTSReaderWindow(char * szCmdLinePtr)
 
 	if (LoadSource(NULL) == TRUE)
 	{
-#ifndef LITE
 		v->szSourceParametersPtr = szCmdLinePtr;
 		if (ParseSourceModuleCommandLine(&v->ss, szCmdLinePtr, FALSE) == TRUE)
-#endif LITE
 		{
 			if (DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_LICENSE), NULL, LicenseDlgProc) == TRUE)
 			{
 				LoadOtherModules();
 				LoadOutputModules();
-#ifndef LITE
 				if (v->fControlServerEnabled)
 					StartControlServer();
-#ifdef PRO
 				if (v->fEITServerEnabled)
 				{
 					if (StartEITServer() == FALSE)
 						MessageBox(NULL, "The EIT server failed to start", gszAppName, MB_ICONSTOP);
 				}
-#endif PRO
-#endif LITE
 				if (InitApplication() != FALSE)
 				{
 					if (InitInstance(v->nSavedCmdShow) != NULL)
@@ -22318,12 +21381,8 @@ void DoNormalTSReaderWindow(char * szCmdLinePtr)
 #endif CATCH_ERRORS
 					}
 				}
-#ifndef LITE
 				TerminateControlServer();
-#ifdef PRO
 				TerminateEITServer();
-#endif PRO
-#endif LITE
 				UnloadOtherModules();
 			}
 		}
@@ -22394,13 +21453,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 	lstrcat(gszRestartNeeded, gszAppName);
 
-#ifndef LITE
 	{
 		char szTemp2[1024];
 		wsprintf(szTemp2, "TSReader: Commandline: %s\n", lpszCmdLine);
 		OutputDebugString(szTemp2);
 	}
-#endif LITE
 #ifdef BETA
 	{
 		SYSTEMTIME systime;
@@ -22445,13 +21502,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	}
 #endif INEOQUEST
 
-#ifdef LITE
-	if (lstrlen(szCmdLinePtr))
-		MessageBox(NULL, "Command-line parameters are not supported by this version of TSReader. Parameters ignored.", gszAppName, MB_ICONWARNING);
-	fOK = TRUE;
-#else LITE
 	szCmdLinePtr = ParseTSReaderCommandLine(szCmdLinePtr, &fOK);
-#ifdef PRO
 	if (lstrlen(v->szProfileName))
 	{
 		LoadSettings();
@@ -22468,17 +21519,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 		else
 			lstrcpy(v->szOutputPIDFlags, "0x%04x");
 	}
-#endif PRO
-#endif LITE
 	if (fOK == TRUE)
 	{
-#ifdef PRO
 		if (lstrlen(v->szProfileName))
 		{
 			lstrcat(gszMainClass, ".");
 			lstrcat(gszMainClass, v->szProfileName);
 		}
-#endif PRO
 
 		if (v->fSingleInstance)
 		{

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stddef.h>
 
 typedef struct _tagRegistryList
@@ -147,12 +149,6 @@ static REGISTRYLIST rl[] =
 	"ShowNonVideoPCR", offsetof(VARIABLES, fShowNonVideoPCR), sizeofstruct(VARIABLES, fShowNonVideoPCR), REG_DWORD,
 	//"", offsetof(VARIABLES, ), sizeofstruct(VARIABLES, ), REG_DWORD,
 
-#ifdef LITE
-	// TSReader Lite
-	"LiteChartWarning", offsetof(VARIABLES, fLiteChartWarning), sizeofstruct(VARIABLES, fLiteChartWarning), REG_DWORD,
-#endif LITE
-
-#ifndef LITE
 	//TSReader Standard and Pro
 	"ThumbnailsRightToLeft", offsetof(VARIABLES, fThumbnailsRightToLeft), sizeofstruct(VARIABLES, fThumbnailsRightToLeft), REG_DWORD,
 	"MaximumH264Pictures", offsetof(VARIABLES, nMaximumH264Pictures), sizeofstruct(VARIABLES, nMaximumH264Pictures), REG_DWORD,
@@ -218,9 +214,7 @@ static REGISTRYLIST rl[] =
 	"ChartMaximizedFlag", offsetof(VARIABLES, fChartMaximizedFlag), sizeofstruct(VARIABLES, fChartMaximizedFlag), REG_DWORD,
 	"DontWarnAboutInccorectAutoRecordProgram", offsetof(VARIABLES, fDontWarnAboutInccorectAutoRecordProgram), sizeofstruct(VARIABLES, fDontWarnAboutInccorectAutoRecordProgram), REG_DWORD,
 	//"", offsetof(VARIABLES, ), sizeofstruct(VARIABLES, ), REG_DWORD,
-#endif LITE
 
-#ifdef PRO
 	// TSReader Pro
 	"RecordTablesFolder", offsetof(VARIABLES, szRecordTablesFolder), sizeofstruct(VARIABLES, szRecordTablesFolder), REG_SZ,
 	"RecordTablesHexASCII", offsetof(VARIABLES, fRecordTablesHexASCII), sizeofstruct(VARIABLES, fRecordTablesHexASCII), REG_DWORD,
@@ -282,6 +276,5 @@ static REGISTRYLIST rl[] =
 	"GPSLogTime", offsetof(VARIABLES, nGPSLogTime), sizeofstruct(VARIABLES, nGPSLogTime), REG_DWORD,
 	"GPSErrorLogEnabled", offsetof(VARIABLES, fGPSErrorLogEnabled), sizeofstruct(VARIABLES, fGPSErrorLogEnabled), REG_DWORD,
 	"GPSErrorLogMilliseconds", offsetof(VARIABLES, nGPSErrorLogMilliseconds), sizeofstruct(VARIABLES, nGPSErrorLogMilliseconds), REG_DWORD,
-#endif PRO
 	"", 0, 0, 0
 };

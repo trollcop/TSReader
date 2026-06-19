@@ -1,5 +1,3 @@
-#ifndef LITE
-
 #include <windows.h>
 #include <commctrl.h>
 #include "TSReader.h"
@@ -71,18 +69,14 @@ int (* MPEG4) (HANDLE hInPipe, PMPEG4DECODE hd);
 			pMPEG4->vertical_size_value = hd.y;
 			v->pat.pmt[v->nESParsePMTIndex[esparserinfo->nES]].es[v->nESParseESIndex[esparserinfo->nES]].pParsedData = (BYTE *)pMPEG4;
 		}
-#ifndef LITE
 		if (v->fSaveThumbnails)
 			DecoderThread_SaveThumbnail(NULL, esparserinfo->nES, hd.x, hd.y, pImage);
-#endif LITE
-#ifdef PRO
 		if (v->fArchiveRunning)
 			SaveArchiveThumbnail(NULL, esparserinfo->nES);
 		if (v->hWndVideoMosaic != NULL)
 			InvalidateRect(v->hWndVideoMosaic, NULL, FALSE);
-#endif PRO
 
-		LocalFree(pImage);	
+		LocalFree(pImage);
 	}
 	else
 	{
@@ -154,5 +148,3 @@ DWORD WINAPI MPEG4DecoderThread(LPVOID lpv)
 	return 0;
 }
 */
-
-#endif LITE

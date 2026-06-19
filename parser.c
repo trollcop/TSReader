@@ -3,7 +3,7 @@
 #include <time.h>
 #include <winsock.h>
 #include <shlobj.h>
-#include "tsreader.h"
+#include "TSReader.h"
 #include "bcdmux.h"
 #include "util.h"
 #include "dn_huffman.h"
@@ -88,7 +88,6 @@ void ParseATSCEITPacket(BYTE * pSectionPointer, int nPacketLength, int nEITNumbe
 	if (!v->dvbtdt.fSTTSeen)
 		return;
 
-#ifndef LITE
 	if (v->fEPGSaveEnabled == FALSE)
 	{
 		if (v->hEPGSaveHandle != INVALID_HANDLE_VALUE)
@@ -105,7 +104,6 @@ void ParseATSCEITPacket(BYTE * pSectionPointer, int nPacketLength, int nEITNumbe
 			v->fEPGSaveFirstTime = FALSE;
 		}
 	}
-#endif LITE
 
 	set_buf(BM_PARSER_THREAD, pSectionPointer, 0, FALSE);
 	{
@@ -249,10 +247,8 @@ void ParseATSCEITPacket(BYTE * pSectionPointer, int nPacketLength, int nEITNumbe
 								}
 								fUsedThisEITEvent = TRUE;
 								v->nEITEvents++;
-#ifndef LITE
 								if (v->fEPGSaveEnabled)
 									SaveEPGData(v->pEvents[nServiceID], nServiceID);
-#endif LITE
 								PostMessage(v->hDlgSIParser, WM_USER + 2, SI_PARSER_EIT, nServiceID);
 							}
 						}
@@ -300,10 +296,8 @@ void ParseATSCEITPacket(BYTE * pSectionPointer, int nPacketLength, int nEITNumbe
 												break;
 										}
 										v->nEITEvents++;
-#ifndef LITE
 										if (v->fEPGSaveEnabled)
 											SaveEPGData(pNewEvent, nServiceID);
-#endif LITE
 									}
 								}
 								break;
@@ -343,7 +337,6 @@ void ParseATSCETTPacket(BYTE * pSectionPointer, int nPacketLength)
 	OutputDebugString("TSReader:ParseATSCETTPacket+\n");
 #endif DEBUG_MESSAGES
 
-#ifndef LITE
 	if (v->fEPGSaveEnabled == FALSE)
 	{
 		if (v->hEPGSaveHandle != INVALID_HANDLE_VALUE)
@@ -360,7 +353,6 @@ void ParseATSCETTPacket(BYTE * pSectionPointer, int nPacketLength)
 			v->fEPGSaveFirstTime = FALSE;
 		}
 	}
-#endif LITE
 
 	set_buf(BM_PARSER_THREAD, pSectionPointer, 0, FALSE);
 	{
@@ -427,10 +419,8 @@ void ParseATSCETTPacket(BYTE * pSectionPointer, int nPacketLength)
 									{
 										pCurrent->szShortEventDescription = LocalAlloc(LPTR, lstrlen(szExtendedEventString) + 1 + 4);
 										lstrcpy(pCurrent->szShortEventDescription, szExtendedEventString);
-#ifndef LITE
 										if (v->fEPGSaveEnabled)
 											SaveEPGData(pCurrent, nServiceID);
-#endif LITE
 										if (v->hWndEPGGrid != NULL && v->fEPGDisplayActive && v->fEPGUpdateRealtime)
 											PostMessage(v->hWndEPGGrid, WM_USER + 2, SI_PARSER_EIT + nServiceID, (LPARAM)pCurrent);
 									}
@@ -461,7 +451,6 @@ void ParseDVBEITPacket(BYTE * pSectionPointer, int nPacketLength)
 	EITEVENT thiseitevent;
 	PEITEVENT pNewEIT;
 
-#ifndef LITE
 	if (v->fEPGSaveEnabled == FALSE)
 	{
 		if (v->hEPGSaveHandle != INVALID_HANDLE_VALUE)
@@ -478,7 +467,6 @@ void ParseDVBEITPacket(BYTE * pSectionPointer, int nPacketLength)
 			v->fEPGSaveFirstTime = FALSE;
 		}
 	}
-#endif LITE
 
 	do
 	{
@@ -506,9 +494,7 @@ void ParseDVBEITPacket(BYTE * pSectionPointer, int nPacketLength)
 		{
 			if ((nTableID < 0x4e || nTableID > 0x6f) && (nTableID != 0x72) )
 			{
-#ifdef PRO
 				v->nSIParserTableErrors[SI_PARSER_STATS_EIT]++;
-#endif PRO
 				break;
 			}
 		}
@@ -522,7 +508,6 @@ void ParseDVBEITPacket(BYTE * pSectionPointer, int nPacketLength)
 			continue;
 		}
 
-#ifdef PRO
 		if (nTableID == 0x4e)
 		{
 			double dCurrentTime = GetStreamMonitorTime();
@@ -535,7 +520,6 @@ void ParseDVBEITPacket(BYTE * pSectionPointer, int nPacketLength)
 			}
 			v->dSIParserTableTime[SI_PARSER_STATS_EIT] = dCurrentTime;
 		}
-#endif PRO
 
 		if (SourceHelper_CRC_Check(pSectionPointer, nSectionLength + 3) != TRUE)
 		{
@@ -816,10 +800,8 @@ LogDefaultEITDescriptor:
 								fUsedThisEITEvent = TRUE;
 								v->nEITEvents++;
 								PostMessage(v->hDlgSIParser, WM_USER + 2, SI_PARSER_EIT, nServiceID);
-#ifndef LITE
 								if (v->fEPGSaveEnabled)
 									SaveEPGData(pNewItem, nServiceID);
-#endif LITE
 							}
 						}
 					}
@@ -885,10 +867,8 @@ LogDefaultEITDescriptor:
 										fUsedThisEITEvent = TRUE;
 										pCurrent->dwNextEvent = (LONG_PTR)pNewEvent;
 										v->nEITEvents++;
-#ifndef LITE
 										if (v->fEPGSaveEnabled)
 											SaveEPGData(pNewEvent, nServiceID);
-#endif LITE
 									}
 								}
 								break;
@@ -1059,10 +1039,8 @@ int ParseDVBBAT(BYTE * pSectionPointer, int nSectionLength)
 						LogDescriptor(DESCRIPTOR_BAT, v->bat[nBATIndex].batts[nTransportIndex].transport_descriptors[j + 0]);
 						j += v->bat[nBATIndex].batts[nTransportIndex].transport_descriptors[j + 1] + 2;
 					}
-#ifndef LITE
 					if (v->fSkyEPG && bouquet_id == v->nCurrentBATID)
 						UpdateSkyEPGMap(v->nCurrentBATID);
-#endif LITE
 				}
 				else
 				{
@@ -1119,9 +1097,7 @@ void ParseDVBSDTPacket(BYTE * pSectionPointer, int nPacketLength)
 		nTableID = pSectionPointer[0];
 		if (!(nTableID == 0x42 || nTableID == 0x46 || nTableID == 0x4a || nTableID == 0x72))
 		{
-#ifdef PRO
 			v->nSIParserTableErrors[SI_PARSER_STATS_SDT]++;
-#endif PRO
 			return;
 		}
 
@@ -1152,7 +1128,6 @@ void ParseDVBSDTPacket(BYTE * pSectionPointer, int nPacketLength)
 			continue;
 		}
 
-#ifdef PRO
 		if (nTableID == 0x42)
 		{
 			double dCurrentTime = GetStreamMonitorTime();
@@ -1165,7 +1140,6 @@ void ParseDVBSDTPacket(BYTE * pSectionPointer, int nPacketLength)
 			}
 			v->dSIParserTableTime[SI_PARSER_STATS_SDT] = dCurrentTime;
 		}
-#endif PRO
 
 		if (v->fSDTOnlyForCurrentMux == TRUE && nTableID != 0x42)
 			return;
@@ -1524,7 +1498,6 @@ BOOL ParsePMTPacket(BYTE * pSectionPointer, int nPacketLength, int nCurrentProgr
 	if (nTableID == 0x40)	// DCII "PMT type thing"
 		return (ParseDCIIPMTTypeThing(pSectionPointer, nPacketLength, nCurrentProgramNumber));
 
-#ifdef PRO
 	{
 		double dCurrentTime = GetStreamMonitorTime();
 
@@ -1536,11 +1509,9 @@ BOOL ParsePMTPacket(BYTE * pSectionPointer, int nPacketLength, int nCurrentProgr
 		}
 		v->dSIParserTableTime[SI_PARSER_STATS_PMT] = dCurrentTime;
 	}
-#endif PRO
 
 	if (nTableID != 2)			// Standard MPEG-2 PMT
 	{
-#ifndef LITE
 		if (v->fFastPMTParserDisabled == FALSE && nPMTListenIndex != -1)
 		{
 			// Let's see if this is a screwy ONN like feed with an extra
@@ -1555,7 +1526,6 @@ BOOL ParsePMTPacket(BYTE * pSectionPointer, int nPacketLength, int nCurrentProgr
 			fRetVal = FALSE;
 			goto ParsePMTPacket_Windup;
 		}
-#endif LITE
 
 		// Let's see if this is a screwy ONN like feed with an extra
 		// byte after the pointer
@@ -1566,10 +1536,8 @@ BOOL ParsePMTPacket(BYTE * pSectionPointer, int nPacketLength, int nCurrentProgr
 		{
 			v->nPMTPointerKludge = 1;
 		}
-#ifdef PRO
 		else
 			v->nSIParserTableErrors[SI_PARSER_STATS_PMT]++;
-#endif PRO
 		fRetVal = FALSE;
 		goto ParsePMTPacket_Windup;
 	}
@@ -2004,7 +1972,6 @@ void ParseIPPacket(BYTE * pSectionPointer, int nPacketLength, int nPID, int nBuf
 							pCurrentIP->nByteCount += mpe.IPHeader_TotalLength - 8;
 						else if (mpe.IPHeader_Version == 6)
 							pCurrentIP->nByteCount += mpe.IPv6Header_PayloadLength;
-#ifndef LITE
 						if (pCurrentIP->hSaveFile != NULL)
 						{
 							switch(pCurrentIP->nSaveMode)
@@ -2077,11 +2044,9 @@ void ParseIPPacket(BYTE * pSectionPointer, int nPacketLength, int nPID, int nBuf
 							}
 							UDPSender_SendPacket(pEthernetBuffer, nEthernetLength);
 						}
-#endif LITE
 						break;
 					case 6:	// TCP
 						pCurrentIP->nByteCount += mpe.IPHeader_TotalLength - 20;
-#ifndef LITE
 						if (pCurrentIP->hSaveFile != NULL)
 						{
 							if (mpe.IPHeader_Version == 4)
@@ -2100,7 +2065,6 @@ void ParseIPPacket(BYTE * pSectionPointer, int nPacketLength, int nPID, int nBuf
 								}
 							}
 						}
-#endif LITE
 						break;
 					}
 					break;
@@ -2169,9 +2133,7 @@ BOOL ParsePATPacket(BYTE * pSectionPointer, int nPacketLength)
 	nTableID = pSectionPointer[0];
 	if (nTableID != 0)
 	{
-#ifdef PRO
 		v->nSIParserTableErrors[SI_PARSER_STATS_PAT]++;
-#endif PRO
 		fRetVal = FALSE;
 		goto ParsePATPacket_Windup;
 	}
@@ -2210,7 +2172,6 @@ BOOL ParsePATPacket(BYTE * pSectionPointer, int nPacketLength)
 		goto ParsePATPacket_Windup;
 	}
 
-#ifdef PRO
 	{
 		double dCurrentTime = GetStreamMonitorTime();
 
@@ -2222,7 +2183,6 @@ BOOL ParsePATPacket(BYTE * pSectionPointer, int nPacketLength)
 		}
 		v->dSIParserTableTime[SI_PARSER_STATS_PAT] = dCurrentTime;
 	}
-#endif PRO
 
 	nTransportStreamID = (pSectionPointer[3] << 8) + pSectionPointer[4];
 	nVersionNumber = (pSectionPointer[5] >> 1) & 0x1f;
@@ -2256,10 +2216,8 @@ BOOL ParsePATPacket(BYTE * pSectionPointer, int nPacketLength)
 		v->pat.nTransportStreamID = nTransportStreamID;
 	}
 
-#ifndef LITE
 	v->pat.pRawPAT = LocalAlloc(LMEM_FIXED, nPacketLength + 4);
 	memcpy(v->pat.pRawPAT, pSectionPointer, nPacketLength);
-#endif LITE
 
 	nSectionLength -= 5;
 	pSectionPointer += 8;
@@ -2820,9 +2778,7 @@ BOOL ParseCATPacket(BYTE * pSectionPointer, int nPacketLength)
 	nTableID = pSectionPointer[0];
 	if (nTableID != 1)
 	{
-#ifdef PRO
 		v->nSIParserTableErrors[SI_PARSER_STATS_CAT]++;
-#endif PRO
 		return FALSE;
 	}
 
@@ -3396,9 +3352,7 @@ void ParseDVBRSTPacket(BYTE * pSectionPointer, int nPacketLength)
 		int section_length = get_bits(BM_PARSER_THREAD, 12);
 		if (table_id != 0x71 || table_id != 0x72)
 		{
-#ifdef PRO
 			v->nSIParserTableErrors[SI_PARSER_STATS_RST]++;
-#endif PRO
 			return;
 		}
 		// todo -- handle stuffing section
@@ -3524,7 +3478,6 @@ void ParseDVBTDTPacket(BYTE * pSectionPointer, int nPacketLength)
 		if (nTableID == 0)
 			break;
 
-#ifdef PRO
 		if (nTableID == 0x70)
 		{
 			double dCurrentTime = GetStreamMonitorTime();
@@ -3537,7 +3490,6 @@ void ParseDVBTDTPacket(BYTE * pSectionPointer, int nPacketLength)
 			}
 			v->dSIParserTableTime[SI_PARSER_STATS_TDT] = dCurrentTime;
 		}
-#endif PRO
 
 		nSectionLength = ((pSectionPointer[1] << 8) + pSectionPointer[2]) & 0xfff;
 		if ( (nSectionLength <= 0) || (nSectionLength > 1024) )
@@ -3613,9 +3565,7 @@ void ParseDVBTDTPacket(BYTE * pSectionPointer, int nPacketLength)
 			}
 			break;
 		default:
-#ifdef PRO
 			v->nSIParserTableErrors[SI_PARSER_STATS_TDT]++;
-#endif PRO
 			return;		// dunno how to handle
 		}
 	} while (nPacketLength);
@@ -3666,9 +3616,7 @@ void ParseDVBNITPacket(BYTE * pSectionPointer, int nPacketLength)
 		nNetworkID = (pSectionPointer[3] << 8) + pSectionPointer[4];
 		if (!(nTableID == 0x40 || nTableID == 0x41 || nTableID == 0x72))
 		{
-#ifdef PRO
 			v->nSIParserTableErrors[SI_PARSER_STATS_NIT]++;
-#endif PRO
 			break;
 		}
 
@@ -3681,7 +3629,6 @@ void ParseDVBNITPacket(BYTE * pSectionPointer, int nPacketLength)
 			continue;
 		}
 
-#ifdef PRO
 		{
 			double dCurrentTime = GetStreamMonitorTime();
 
@@ -3693,7 +3640,6 @@ void ParseDVBNITPacket(BYTE * pSectionPointer, int nPacketLength)
 			}
 			v->dSIParserTableTime[SI_PARSER_STATS_NIT] = dCurrentTime;
 		}
-#endif PRO
 
 		nVersionNumber = (pSectionPointer[5] >> 1) & 0x1f;
 		if (v->nSIParserVersionNumbers[SI_PARSER_STATS_NIT] == -1)
@@ -3733,7 +3679,6 @@ void ParseDVBNITPacket(BYTE * pSectionPointer, int nPacketLength)
 							szNetworkName[k] = *pText++;
 						break;
 					}
-#ifdef PRO
 				case 0x4a:
 					set_buf(BM_PARSER_THREAD, &pSectionPointer[2], 0, FALSE);
 					{
@@ -3772,7 +3717,6 @@ void ParseDVBNITPacket(BYTE * pSectionPointer, int nPacketLength)
 						}
 					}
 					break;
-#endif PRO
 				case 0:
 					break;
 				}

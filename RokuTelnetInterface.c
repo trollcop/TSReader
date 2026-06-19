@@ -39,7 +39,7 @@ BOOL fFirstIACByte = FALSE;
 // Should be in TSReader.h
 void CopyListControlToClipboard(HWND hListControl, BOOL fAddCR);
 
-void SendIACEmulatorName()
+void SendIACEmulatorName(void)
 {
 	int i;
 	int nOutIndex;

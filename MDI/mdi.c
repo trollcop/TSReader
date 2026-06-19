@@ -1,4 +1,3 @@
-#ifdef PRO
 /***************************************************************************/
 /***************************************************************************/
 /***************************************************************************/
@@ -45,20 +44,17 @@ tMDISTREAM *mdiStreamInit(unsigned int mtspSize)
 	tMDISTREAM *pStream;
 
 	/* Allocate all necessary memory. */
-	pStream = calloc(1, sizeof(tMDISTREAM) + (MDI_MAX_SAMPLES * sizeof(MDIULONG))
-			+ (MDI_MAX_SAMPLES * sizeof(MDIULONG)) + (8192 * sizeof(MDIUBYTE)));
+	pStream = calloc(1, sizeof(tMDISTREAM) + (MDI_MAX_SAMPLES * sizeof(MDIULONG)) + (MDI_MAX_SAMPLES * sizeof(MDIULONG)) + (8192 * sizeof(MDIUBYTE)));
 
-	if (0 != pStream)
-	{
+	if (pStream != NULL) {
 		pStream->timeArray = (MDIULONG *)(pStream + 1);
 		pStream->bytesArray = (MDIULONG *)(&pStream->timeArray[MDI_MAX_SAMPLES]);
 		pStream->pidArray = (MDIUBYTE *)(&pStream->bytesArray[MDI_MAX_SAMPLES]);
 		memset((void *)pStream->pidArray, 0, 8192 * sizeof(MDIUBYTE));
 
 		pStream->mtspSize = mtspSize;
+		pStream->pcrPid = (MDIUSHORT)-1;
 	}
-
-	pStream->pcrPid = (MDIUSHORT)-1;
 
 	return pStream;
 }
@@ -76,7 +72,7 @@ tMDISTREAM *mdiStreamInit(unsigned int mtspSize)
 /***************************************************************************/
 void mdiStreamStop(tMDISTREAM *pStream)
 {
-	if (0 != pStream)
+	if (pStream)
 		free(pStream);
 }
 
@@ -241,9 +237,9 @@ void mdiPacket(MDITIME ts, void *pPayload, unsigned int nPayloadBytes, tMDISTREA
 
 						/* Compute the PCR drainrate. */
 #if MDI_USE_FLOAT
-						drainrate = pStream->nBytes;
-						drainrate /= abs(workingPcr - pStream->lastPcr);
-						drainrate = 1000000000.0 / (drainrate * 27000000.0);
+						drainrate = (MDIFLOAT)pStream->nBytes;
+						drainrate /= workingPcr - pStream->lastPcr;
+						drainrate = (MDIFLOAT)(1000000000.0 / (drainrate * 27000000.0));
 #else
 						drainrate = abs(workingPcr - pStream->lastPcr) * 37;
 						drainrate = (drainrate + (drainrate / 1000) + (drainrate / 1000000)) / pStream->nBytes;
@@ -262,7 +258,7 @@ void mdiPacket(MDITIME ts, void *pPayload, unsigned int nPayloadBytes, tMDISTREA
 						/* Compute the virtual buffer size. If this value is
 						   greater than the currently saved vBuffer value then
 						   save it. */
-						vBuffer = (pStream->frbMax - pStream->frbMin) /*/ 8*/;
+						vBuffer = (MDIULONG)((pStream->frbMax - pStream->frbMin)) /*/ 8*/;
 						pStream->vBuffer = (MDIUSHORT)max(pStream->vBuffer, vBuffer);
 					}
 
@@ -313,10 +309,8 @@ void mdiSample(MDITIME ts, tMDISTREAM *pStream, tMDISAMPLE *pSample)
 		* (pStream->mtspSize * 8);
 
 	if (pSample->bitrate)
-		pSample->delayFactor = ((pSample->vBuffer * 100000) / pSample->bitrate) * 80;
+		pSample->delayFactor = (MDIFLOAT)(((pSample->vBuffer * 100000) / pSample->bitrate) * 80);
 
 	pStream->processedBytes = pStream->processedTime = 0;
 	pStream->frbCurrent = pStream->frbMin = pStream->frbMax = 0;
 }
-
-#endif PRO

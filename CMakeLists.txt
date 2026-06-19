@@ -13,7 +13,6 @@ set(CMAKE_CXX_STANDARD 14)
 # ============================================================
 # Options
 # ============================================================
-option(TSREADER_LITE "Build LITE version" OFF)
 option(TSREADER_PRO "Build PRO version" OFF)
 
 # ============================================================
@@ -29,9 +28,6 @@ if(MSVC)
         _WINSOCK_DEPRECATED_NO_WARNINGS
     )
 
-    if(TSREADER_LITE)
-        add_compile_definitions(LITE)
-    endif()
     if(TSREADER_PRO)
         add_compile_definitions(PRO)
     endif()

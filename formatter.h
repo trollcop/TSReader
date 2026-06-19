@@ -30,7 +30,7 @@ void DecodeATSCAC3Descriptor(char * szBuffer, BYTE * pDescriptor);
 void DecodeATSCCaptionServceDescriptor(char * szBuffer, BYTE * pDescriptor);
 void DecodeATSCContentAdvisoryDescriptor(char * szBuffer, BYTE * pDescriptor, BOOL fShortMode);
 void DecodeFEC(int nFEC, char * szFEC, BOOL fDCIIMode);
-char * GetTableDescription(nTableID);
+char * GetTableDescription(int nTableID);
 BOOL QuickFormatNIT(char * szBuffer, int nTransportStreamID, BOOL fLongVersion);
 void DecodeCADescriptor(char * szBuffer, BYTE * pDescriptor);
 void FormatDefaultEITDescriptor(char * szBuffer, BYTE * pDescriptor, BOOL fXML);
@@ -40,11 +40,11 @@ char * FormatEITEntry(int nChannelNumber, int nEITFormat, BOOL fIncludeHTMLTags)
 char * FormatCAT(BOOL fHTMLMode);
 char * FormatCVCT(int nCVCTIndex);
 char * FormatBAT(int nBATIndex);
-char * FormatMGT();
+char * FormatMGT(void);
 char * FormatRRTEntry(int nRegion);
 char * FormatSITEntry(int nItemIndex);
 char * FormatCDTEntry(int nItemIndex);
-char * FormatDVBTOT();
+char * FormatDVBTOT(void);
 char * FormatTDTEntry(int nItemIndex);
 char * FormatMMTEntry(int nItemIndex);
 char * FormatESEntry(int nESPID);
@@ -68,11 +68,7 @@ void GetMPEGAudioSamplingFrequency(int sampling_frequency, char * szSamplingRate
 void GetAC3fscod(int fscod, char * szSamplingRate);
 void GetAC3bsmod(int bsmod, int acmod, char * szBitstreamMode);
 void GetAC3acmod(int acmod, char * szAudioCodingMode);
-#ifndef LITE
 void GetAC3cmixlev(int cmixlev, char * szCMixLev);
 void GetAC3surmixlev(int surmixlev, char * szSurMixLev);
 void GetAC3dsurmod(int dsurmod, char * szDSurMod);
-#endif LITE
-#ifdef PRO
 void FormatVC1VideoParse(int nPMTIndex, int nESIndex, char * szOutput);
-#endif PRO

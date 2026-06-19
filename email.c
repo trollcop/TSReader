@@ -1,5 +1,3 @@
-#ifdef PRO
-
 #include <windows.h>
 #include <commctrl.h>
 #include <winsock.h>
@@ -357,5 +355,3 @@ EmailThreadWindup:
 	LocalFree(pEventEmailData);
 	return 0;
 }
-
-#endif PRO

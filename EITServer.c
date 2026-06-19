@@ -1,5 +1,3 @@
-#ifdef PRO
-
 #include <windows.h>
 #include <commctrl.h>
 #include <limits.h>
@@ -252,5 +250,3 @@ BOOL TerminateEITServer()
 	}
 	return TRUE;
 }
-
-#endif PRO

@@ -87,7 +87,7 @@ USHORT CmpString( void*, void*,     // NULL terminated string compression
 
 #endif  // HNCODE
 /******************************************************************************/
-HUFFMANTAB ExtHufTab;
+extern HUFFMANTAB ExtHufTab;
 
 
 #endif  // HDCODE_H

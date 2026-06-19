@@ -1,3 +1,5 @@
+#pragma once
+
 void CopyListControlToClipboard(HWND hListControl, BOOL fAddCR);
 void UpdateMainStatusText(char * szText);
 void UpdateSecondaryStatusText(char * szText);
@@ -32,10 +34,8 @@ BOOL EventInPast(PEITEVENT pEvent, BOOL fAllowPastEITData);
 void LogDescriptor(int nDescriptorIndex, int nDescriptorTag);
 void ExpireOldEITData(int nServiceID);
 
-#ifndef LITE
 void SaveEPGData(PEITEVENT pEITItem, int nChannelNumber);
 void SaveExistingEPGData();
-#endif LITE
 
 BOOL myGetSaveFileName(LPOPENFILENAME lpofn);
 void GetLanguageFromDescriptor(char * szLanguage, int nPMTIndex, int nESIndex);
@@ -45,8 +45,8 @@ void EscapeReplaceXML(char * szBuffer);
 void WriteHTMLLine(HANDLE hFile, char * szString);
 void WriteHTMLASCII(HANDLE hFile, char * szBuffer);
 
-int GetVideoStreamCount();
-int GetProgramCount();
+int GetVideoStreamCount(void);
+int GetProgramCount(void);
 
 void LoadVideoDecoderCrashThumbnail(int nESParsePMTIndex, int nESParseESIndex);
 void YUVtoRGB(BYTE * pImage, BYTE * pY, BYTE * pU, BYTE * pV, int x, int y);
@@ -64,9 +64,7 @@ int ReadFromMPEG2ESPipe(BYTE * pBuffer, int nLength, int nES);
 void SaveArchiveThumbnail(char * szStatus, int nES);
 void DecoderThread_SaveThumbnail(char * szStatus, int nES, int width, int height, BYTE * picbuf);
 
-#ifdef PRO
 BYTE ReverseBits(BYTE bInput);
-#endif PRO
 
 int DetermineSignalType(char * szSignal);
 void ExtractSignalData(int nSignalChartMode, float * fNewValues0, float * fNewValues1);

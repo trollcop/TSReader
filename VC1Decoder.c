@@ -1,5 +1,3 @@
-#ifdef PRO
-
 #include <windows.h>
 #include <commctrl.h>
 #include "TSReader.h"
@@ -294,16 +292,12 @@ DWORD WINAPI VC1DecoderThread(LPVOID lpv)
 			pVC1->interlaced = hd.interlaced;
 			v->pat.pmt[v->nESParsePMTIndex[esparserinfo->nES]].es[v->nESParseESIndex[esparserinfo->nES]].pParsedData = (BYTE *)pVC1;
 		}
-#ifndef LITE
 		if (v->fSaveThumbnails)
 			DecoderThread_SaveThumbnail(NULL, esparserinfo->nES, hd.x, hd.y, pImage);
-#endif LITE
-#ifdef PRO
 		if (v->fArchiveRunning)
 			SaveArchiveThumbnail(NULL, esparserinfo->nES);
 		if (v->hWndVideoMosaic != NULL)
 			InvalidateRect(v->hWndVideoMosaic, NULL, FALSE);
-#endif PRO
 
 		LocalFree(pImage);
 		LocalFree(hd.pY);
@@ -334,6 +328,3 @@ DWORD WINAPI VC1DecoderThread(LPVOID lpv)
 	
 	return 0;
 }
-
-#endif PRO
-

@@ -1,4 +1,3 @@
-#ifndef LITE
 #include <windows.h>
 #include <commctrl.h>
 #include <time.h>
@@ -181,10 +180,8 @@ unsigned int dump_table_b5(unsigned char *b, unsigned char len)
 					v->nEITEvents++;
 					nLocalEITCount++;
 					PostMessage(v->hDlgSIParser, WM_USER + 2, SI_PARSER_EIT, nServiceID);
-#ifdef PRO
 					if (v->fEPGSaveEnabled)
 						SaveEPGData(pNewItem, nServiceID);
-#endif PRO
 				}
 			}
 		}
@@ -217,10 +214,8 @@ unsigned int dump_table_b5(unsigned char *b, unsigned char len)
 							fAddedNewEvent = TRUE;
 							v->nEITEvents++;
 							nLocalEITCount++;
-#ifdef PRO
 							if (v->fEPGSaveEnabled)
 								SaveEPGData(pNewEvent, nServiceID);
-#endif PRO
 						}
 					}
 					break;
@@ -274,10 +269,8 @@ unsigned int dump_table_b9(unsigned char *b, unsigned char len)
 						{
 							pCurrent->szShortEventDescription = LocalAlloc(LPTR, lstrlen(decomp_str) + 1);
 							lstrcpy(pCurrent->szShortEventDescription, decomp_str);
-#ifdef PRO
 							if (v->fEPGSaveEnabled)
 								SaveEPGData(pCurrent, nServiceID);
-#endif PRO
 						}
 					}
 					break;
@@ -614,4 +607,3 @@ void UpdateSkyEPGMap(int nBATID)
 	v->fSkyEPGMapComplete = TRUE;
 	LeaveCriticalSection(&v->csEIT);
 }
-#endif LITE

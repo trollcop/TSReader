@@ -5,10 +5,11 @@
 #include <strsafe.h>
 #include <stdint.h>
 #include <shlobj.h>
-#include "tsreader.h"
+#include "TSReader.h"
 #include "bcdmux.h"
 #include "util.h"
-#include "mdinterface.h"
+#include "Md/MULTIDEC/Globals.h"
+#include "MDInterface.h"
 #include "TSID.h"
 
 // Stuff in ATSC_huffman.c
@@ -992,7 +993,6 @@ void FormatDVBTHierarchyInformation(char * szHierarchyInformation, int nHierarch
 
 void DecodeDescriptorNames(char * szDescriptor, BYTE nDescriptorID)
 {
-#ifdef PRO
 	{
 		int i;
 
@@ -1007,7 +1007,6 @@ void DecodeDescriptorNames(char * szDescriptor, BYTE nDescriptorID)
 			}
 		}
 	}
-#endif PRO
 
 	switch(nDescriptorID)
 	{
@@ -2826,25 +2825,21 @@ void DecodeMPEG2Descriptor(BYTE * pDescriptorData, BOOL fHTMLMode)
 {
 	char szTemp[32 * 1024] = {""};
 
-#ifdef PRO
-	{
-		int i;
+	int i;
 
-		// User decoding in Pro
-		for (i = 0; i < 5; i++)
+	// User decoding in Pro
+	for (i = 0; i < 5; i++)
+	{
+		if (DescriptorDecode[i] != NULL)
 		{
-			if (DescriptorDecode[i] != NULL)
+			BOOL fRetVal = DescriptorDecode[i](FALSE, v->nNetworkPID, pDescriptorData, szTemp);
+			if (fRetVal)
 			{
-				BOOL fRetVal = DescriptorDecode[i](FALSE, v->nNetworkPID, pDescriptorData, szTemp);
-				if (fRetVal)
-				{
-					lstrcat(v->szSIFormatBuffer, szTemp);
-					return;
-				}
+				lstrcat(v->szSIFormatBuffer, szTemp);
+				return;
 			}
 		}
 	}
-#endif PRO
 
 	switch(pDescriptorData[0])
 	{
@@ -5172,7 +5167,7 @@ void DecodeFEC(int nFEC, char * szFEC, BOOL fDCIIMode)
 	}
 }
 
-char * GetTableDescription(nTableID)
+char *GetTableDescription(int nTableID)
 {
 	switch(nTableID)
 	{
@@ -5335,8 +5330,6 @@ char * GetTableDescription(nTableID)
 
 	return "";
 }
-
-
 
 char * FormatNITEntry(int nTransportStreamID, BOOL fIncludeHTMLTags)
 {
@@ -5526,7 +5519,6 @@ int __cdecl SortEITCompare(const void *elem1, const void *elem2)
 	return 0;
 }
 
-#ifndef LITE
 void GetEITSource(char * szSource, PEITEVENT pEvent)
 {
 	if (v->nNetworkPID == 0x0010)
@@ -5556,7 +5548,6 @@ void GetEITSource(char * szSource, PEITEVENT pEvent)
 		wsprintf(szSource, "EIT%d", pEvent->nSource);
 	}
 }
-#endif LITE
 
 char * FormatEITEntry(int nChannelNumber, int nEITFormat, BOOL fIncludeHTMLTags)
 {
@@ -5736,9 +5727,7 @@ char * FormatEITEntry(int nChannelNumber, int nEITFormat, BOOL fIncludeHTMLTags)
 						{
 							char szEventDescriptionLines[4096] = {0};
 							char szSource[128] = {"n/a"};
-#ifndef LITE
 							GetEITSource(szSource, &pSortList[nEITIndex]);	
-#endif LITE
 							if (pSortList[nEITIndex].szShortEventDescription != NULL)
 								lstrcpy(szEventDescriptionLines, pSortList[nEITIndex].szShortEventDescription);
 							if (pSortList[nEITIndex].szLongEventDescription != NULL)
@@ -5768,9 +5757,7 @@ char * FormatEITEntry(int nChannelNumber, int nEITFormat, BOOL fIncludeHTMLTags)
 							if (pSortList[nEITIndex].szShortEventDescription != NULL)
 								pDescription = pSortList[nEITIndex].szShortEventDescription;
 
-#ifndef LITE
 							GetEITSource(szSource, &pSortList[nEITIndex]);
-#endif LITE
 							wsprintf(szTemp, "---------------------------------------------\r\nStarts: %s %s\r\nLength: %02d:%02d:%02d\r\nEIT Source: %s\r\nName: %s\r\nDescription: %s\r\n",
 									 szStartDate,
 									 szStartTime,
@@ -6730,7 +6717,6 @@ char * FormatPMTEntry(int nPMTIndex, BOOL fHTMLMode)
 	return v->szSIFormatBuffer;
 }
 
-#ifndef LITE
 void FormatAACAudioParse(PPARSEDAACAUDIO pAAC, char * szOutput)
 {
 	char szUnknown[] = {"Unknown"};
@@ -6816,16 +6802,13 @@ void FormatMPEG4VideoParse(int nPMTIndex, int nESIndex, char * szOutput)
 	
 	wsprintf(szOutput, "MPEG-4 Video: Resolution %d x %d\r\n", pMPEG4->horizontal_size_value, pMPEG4->vertical_size_value);
 }
-#endif LITE
 
-#ifdef PRO
 void FormatVC1VideoParse(int nPMTIndex, int nESIndex, char * szOutput)
 {
 	PPARSEDVC1VIDEO pVC1 = (PPARSEDVC1VIDEO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData;
 	
 	wsprintf(szOutput, "VC-1 Video: Resolution %d x %d Interlaced: %d\r\n", pVC1->horizontal_size_value, pVC1->vertical_size_value, pVC1->interlaced);
 }
-#endif PRO
 
 void GetMPEG2VideoAspectRation(int aspect_ratio_information, char * szAspectRatio)
 {
@@ -7170,7 +7153,6 @@ void GetAC3acmod(int acmod, char * szAudioCodingMode)
 		break;
 	}
 }
-#ifndef LITE
 void GetAC3cmixlev(int cmixlev, char * szCMixLev)
 {
 	switch(cmixlev)
@@ -7236,7 +7218,6 @@ void GetAC3dsurmod(int dsurmod, char * szDSurMod)
 		break;
 	}
 }
-#endif LITE
 
 void FormatAC3Parse(PPARSEDAC3AUDIO pAC3, char * szOutput)
 {
@@ -7255,7 +7236,6 @@ void FormatAC3Parse(PPARSEDAC3AUDIO pAC3, char * szOutput)
 	GetAC3bsmod(pAC3->bsmod, pAC3->acmod, szBitstreamMode);
 	GetAC3acmod(pAC3->acmod, szAudioCodingMode);
 
-#ifndef LITE
 	GetAC3cmixlev(pAC3->cmixlev, szCMixLev);
 	GetAC3surmixlev(pAC3->surmixlev, szSurMixLev);
 	GetAC3dsurmod(pAC3->dsurmod, szDSurMod);
@@ -7304,13 +7284,6 @@ void FormatAC3Parse(PPARSEDAC3AUDIO pAC3, char * szOutput)
 			 szOptionalLine,
 			 szLFEMod,
 			 szDialNorm);
-#else LITE
-	wsprintf(szOutput, "AC3: Bitrate %d Kbps Sample Rate %s KHz\r\nAC3: Mode %s Coding %s\r\n",
-		     AC3frmsizecod_tbl[pAC3->frmsizecod].bit_rate,
-			 szSamplingRate,
-			 szBitstreamMode,
-			 szAudioCodingMode);
-#endif LITE
 }
 
 char * FormatESEntry(int nESPID)
@@ -7366,7 +7339,6 @@ char * FormatESEntry(int nESPID)
 					case PARSE_ES_TYPE_AC3_AUDIO:
 						FormatAC3Parse((PPARSEDAC3AUDIO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData, szParseDecode);
 						break;
-#ifndef LITE
 					case PARSE_ES_TYPE_MPEG2_AAC_AUDIO:
 					case PARSE_ES_TYPE_MPEG4_AAC_AUDIO:
 						FormatAACAudioParse((PPARSEDAACAUDIO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData, szParseDecode);
@@ -7377,12 +7349,9 @@ char * FormatESEntry(int nESPID)
 					case PARSE_ES_TYPE_MPEG4_VIDEO:
 						FormatMPEG4VideoParse(nPMTIndex, nESIndex, szParseDecode);
 						break;
-#endif LITE
-#ifdef PRO
 					case PARSE_ES_TYPE_VC1_VIDEO:
 						FormatVC1VideoParse(nPMTIndex, nESIndex, szParseDecode);
 						break;
-#endif PRO
 					}
 					if (lstrlen(szParseDecode))
 						lstrcat(v->szSIFormatBuffer, szParseDecode);

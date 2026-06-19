@@ -1,5 +1,3 @@
-#ifndef LITE
-
 #include <windows.h>
 #include <commctrl.h>
 #include "TSReader.h"
@@ -88,12 +86,10 @@ DWORD WINAPI H264DecoderThread(LPVOID lpv)
 		}
 		if (v->fSaveThumbnails)
 			DecoderThread_SaveThumbnail(NULL, esparserinfo->nES, hd.x, hd.y, pImage);
-#ifdef PRO
 		if (v->fArchiveRunning)
 			SaveArchiveThumbnail(NULL, esparserinfo->nES);
 		if (v->hWndVideoMosaic != NULL)
 			InvalidateRect(v->hWndVideoMosaic, NULL, FALSE);
-#endif PRO
 
 		LocalFree(pImage);	
 	}
@@ -177,6 +173,3 @@ DWORD WINAPI H264DecoderThread_DEBUG(LPVOID lpv)
 	return 0;
 }
 #endif _DEBUG
-
-#endif LITE
-

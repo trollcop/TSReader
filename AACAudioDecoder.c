@@ -1,5 +1,3 @@
-#ifndef LITE
-
 #include <windows.h>
 #include <commctrl.h>
 #include <limits.h>
@@ -14,9 +12,9 @@ extern PVARIABLES v;
 
 #define BUFFER_SIZE 20480
 
-BYTE * pThumbnail[REAL_MAX_ES_PARSERS];
-signed short * pSamples[REAL_MAX_ES_PARSERS];
-int nSampleWriteIndex[REAL_MAX_ES_PARSERS];
+static BYTE *pThumbnail[REAL_MAX_ES_PARSERS];
+static signed short *pSamples[REAL_MAX_ES_PARSERS];
+static int nSampleWriteIndex[REAL_MAX_ES_PARSERS];
 
 DWORD WINAPI AACAudioDecoderThread(LPVOID lpv)
 {
@@ -175,4 +173,3 @@ aac_windup:
 	}
 	return 0;
 }
-#endif LITE

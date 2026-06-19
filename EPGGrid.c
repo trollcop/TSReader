@@ -3,17 +3,14 @@
 #include "TSReader.h"
 #include "resource.h"
 
-#ifndef LITE
 #include "TSReader_Scheduler/TSReader_Scheduler.h"
 PEPGSCHEDULE pepgschedule;
 int nEPGScheduleItems;
 int nEPGScheduleMax;
 void UpdateSkyEPGMap(int nBATID);
-#endif LITE
 
 extern PVARIABLES v;
 extern char gszAppName[];
-extern char szLiteWarning[];
 
 #define EXTRA_VERTICAL_PIXELS 3
 #ifndef WM_MOUSEWHEEL
@@ -103,7 +100,6 @@ int SetupVerticalScrollMax(HWND hWnd)
 
 int IsRecordingScheduled(int nProgramNumber, PEITEVENT pEvent)
 {
-#ifndef LITE
 	int nIndex;
 	int nDuration;
 	int nCompareProgramNumber = nProgramNumber;
@@ -144,11 +140,9 @@ int IsRecordingScheduled(int nProgramNumber, PEITEVENT pEvent)
 				return nIndex;		
 		}
 	}
-#endif LITE	
 	return -1;
 }
 
-#ifndef LITE
 /*void FormatFILETIME(char * szReturn, __int64 nValue)
 {
 	SYSTEMTIME st;
@@ -208,7 +202,6 @@ int CheckForDuplicateRecording(PEITEVENT pEvent)
 
 	return -1;
 }
-#endif LITE
 
 void DrawEPGScheduledIcon(HDC hDC, int nCircleXRight, SIZE sizeChannel, int nCurrentY, RECT * rc, int nScheduleIndex, RECT * rcEventRectange)
 {
@@ -223,7 +216,6 @@ void DrawEPGScheduledIcon(HDC hDC, int nCircleXRight, SIZE sizeChannel, int nCur
 			nCircleXRight - sizeChannel.cy - (sizeChannel.cy / 4), nCurrentY + 1,
 			nCircleXRight - (sizeChannel.cy / 4), nCurrentY + 1 + sizeChannel.cy);*/
 
-#ifndef LITE
 	if (pepgschedule[nScheduleIndex].wPreRoll)
 	{
 		SelectObject(hDC, v->epg.hCellEntryPrePostRollPen);
@@ -236,7 +228,6 @@ void DrawEPGScheduledIcon(HDC hDC, int nCircleXRight, SIZE sizeChannel, int nCur
 		MoveToEx(hDC, rcEventRectange->right - 2, rcEventRectange->top + 3, NULL);
 		LineTo(hDC, rcEventRectange->right - 2, rcEventRectange->bottom - 3);
 	}
-#endif LITE
 }
 
 void EPGPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
@@ -283,18 +274,14 @@ void EPGPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	{
 		SIZE sizeNoEvents;
 		static char szNoEvents[] = {"No EPG data available at this time"};
-#ifndef LITE
 		SIZE sizeManualRecord;
 		static char szManualRecord[] = {"Press M to schedule a manual recording"};
-#endif LITE
 
 		SetTextColor(hDC, v->dwEPGMainTextColor);
 		GetTextExtentPoint(hDC, szNoEvents, lstrlen(szNoEvents), &sizeNoEvents);
 		TextOut(hDC, rc.right / 2 - sizeNoEvents.cx / 2, rc.bottom / 2 - sizeNoEvents.cy / 2, szNoEvents, lstrlen(szNoEvents));
-#ifndef LITE
 		GetTextExtentPoint(hDC, szManualRecord, lstrlen(szManualRecord), &sizeManualRecord);
 		TextOut(hDC, rc.right / 2 - sizeManualRecord.cx / 2, rc.bottom / 2 - sizeNoEvents.cy / 2 + sizeNoEvents.cy, szManualRecord, lstrlen(szManualRecord));
-#endif LITE
 
 		if (!v->epg.fTimerRunning)
 		{
@@ -420,18 +407,15 @@ void EPGPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 			else
 				SelectObject(hDC, v->epg.hChannelEntryBackground);
 		}
-#ifndef LITE
 		else
 		{
 			SelectObject(hDC, v->epg.hChannelEntryBackground);
 		}
-#endif LITE
 		SelectObject(hDC, GetStockObject(BLACK_PEN));
 		RoundRect(hDC, 
 				  1, nCurrentY - 1, 
 				  99, nCurrentY + (sizeChannel.cy * v->nEPGChannelHeight) + 1, 
 				  10, 10);
-#ifndef LITE
 		if (v->epg.fHideChannelSelectMode)
 		{
 			int nByteOffset;
@@ -444,7 +428,6 @@ void EPGPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 				DrawIcon(hDC, 3, nCurrentY, v->epg.hEPGChannelHidden);
 			}
 		}
-#endif LITE
 		v->nMaxEPGDisplayChannel = nProgramNumber;
 		v->epg.screenevents[nEvents].rc.left = 1;
 		v->epg.screenevents[nEvents].rc.right = 99;
@@ -531,6 +514,11 @@ void EPGPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 						do
 						{
 							SIZE size;
+
+							/* skip event that already has no name */
+							if (!lstrlen(szEventName))
+								break;
+
 							GetTextExtentPoint(hDC, szEventName, lstrlen(szEventName), &size);
 							if (size.cx < nPixelWidth - 4)
 								break;
@@ -544,10 +532,8 @@ void EPGPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 							else
 								SelectObject(hDC, v->epg.hCellEntryBackground);
 						}
-#ifndef LITE
 						else
 							SelectObject(hDC, v->epg.hCellEntryHideModeBackground);
-#endif LITE
 						SelectObject(hDC, GetStockObject(BLACK_PEN));
 						if (nFirstEPGX == -1)
 						{
@@ -714,10 +700,8 @@ void EPGPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 							else
 								SelectObject(hDC, v->epg.hCellEntryBackground);
 						}
-#ifndef LITE
 						else
 							SelectObject(hDC, v->epg.hCellEntryHideModeBackground);
-#endif LITE
 						RoundRect(hDC, 
 								  100, nCurrentY - 1, 
 								  nFirstEPGX - 1, nCurrentY + (sizeChannel.cy * v->nEPGChannelHeight) + 1, 
@@ -757,10 +741,8 @@ void EPGPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 							else
 								FillRect(hDC, &rcFill, v->epg.hCellEntryBackground);
 						}
-#ifndef LITE
 						else
 							FillRect(hDC, &rcFill, v->epg.hCellEntryHideModeBackground);
-#endif LITE
 
 						SelectObject(hDC, GetStockObject(BLACK_PEN));
 						MoveToEx(hDC, 100, nCurrentY - 1, NULL);
@@ -774,6 +756,11 @@ void EPGPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 						do
 						{
 							SIZE size;
+
+							/* skip event that already has no name */
+							if (!lstrlen(szEventName))
+								break;
+
 							GetTextExtentPoint(hDC, szEventName, lstrlen(szEventName), &size);
 							if (size.cx < (nFirstEPGX - 100) - 4)
 								break;
@@ -850,11 +837,9 @@ EPGPaint_SelectedEvents:
 		TextOut(hDC, 5, 5 + sizeEventName.cy + 2 + sizeEventDate.cy, szTemp, lstrlen(szTemp));
 		GetTextExtentPoint(hDC, szTemp, lstrlen(szTemp), &sizeEventDuration);
 
-#ifndef LITE
 		GetEITSource(szEventSource, v->epg.pSelectedEvent);
 		wsprintf(szTemp, "EIT: %s", szEventSource);
 		TextOut(hDC, 5, 5 + sizeEventName.cy + 2 + sizeEventDate.cy + sizeEventDuration.cy, szTemp, lstrlen(szTemp));
-#endif LITE
 
 		if (v->nNetworkPID == 0x1ffb)
 		{
@@ -1164,7 +1149,6 @@ void SetEPGOffsetNearChannel(int nProgram)
 	}
 }
 
-#ifndef LITE
 BOOL SearchNextEPGEntry(HWND hWndParent)
 {
 	BOOL fRetVal = TRUE;
@@ -1609,10 +1593,8 @@ BOOL ScheduleManualRecording(HWND hDlg)
 	wsprintf(szRecordFileName, "%s%s.mpg", v->szSchedulerDirectory, szTaskName);
 
 	// Parameters
-#ifdef PRO
 	if (lstrlen(v->szProfileName))
 		wsprintf(szProfile, "-L \"%s\" ", v->szProfileName);
-#endif PRO
 	for (szSourceName = v->szSourceName + lstrlen(v->szSourceName); szSourceName > v->szSourceName; szSourceName--)
 	{
 		if (*(szSourceName - 1) == '\\')
@@ -2350,10 +2332,8 @@ void ScheduleRecording(HWND hWnd, LPARAM lParam, WORD wPreRoll, WORD wPostRoll)
 	}
 
 	// Parameters
-#ifdef PRO
 	if (lstrlen(v->szProfileName))
 		wsprintf(szProfile, "-L \"%s\" ", v->szProfileName);
-#endif PRO
 	for (szSourceName = v->szSourceName + lstrlen(v->szSourceName); szSourceName > v->szSourceName; szSourceName--)
 	{
 		if (*(szSourceName - 1) == '\\')
@@ -2572,7 +2552,6 @@ void LoadEPGMaps()
 	CloseHandle(hInputFile);
 
 }
-#endif LITE
 
 LRESULT FAR PASCAL EPGridWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -2640,7 +2619,6 @@ LRESULT FAR PASCAL EPGridWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 
 			fClosing = FALSE;
 
-#ifndef LITE
 			nEPGScheduleMax = 1000;
 			nEPGScheduleItems = 0;
 			pepgschedule = LocalAlloc(LPTR, sizeof(EPGSCHEDULE) * nEPGScheduleMax);
@@ -2650,7 +2628,6 @@ LRESULT FAR PASCAL EPGridWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 				UpdateSkyEPGMap(v->nCurrentBATID);
 
 			LoadEPGMaps();
-#endif LITE
 			v->fEPGDisplayActive = TRUE;
 			fShownScreenEventsWarning = FALSE;
 		}
@@ -2705,15 +2682,12 @@ LRESULT FAR PASCAL EPGridWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 			v->nEPGWindowH = rcEPGWindow.bottom - rcEPGWindow.top;
 		}
 
-#ifndef LITE
 		if (v->epg.hSchedulerDLL != NULL)
 			FreeLibrary(v->epg.hSchedulerDLL);
 		LocalFree(pepgschedule);
-#endif LITE
 		SetForegroundWindow(v->hWndMainWindow);
 		PostMessage(v->hWndMainWindow, WM_USER + 9, 1, 0);
 		break;
-#ifndef LITE
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
 		{
@@ -2729,7 +2703,6 @@ LRESULT FAR PASCAL EPGridWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 			break;
 		}
 		break;
-#endif LITE
 	case WM_TIMER:
 		if (GetMaxEITChannels())
 			EPGPaint(hWnd, wParam, lParam);
@@ -2827,7 +2800,6 @@ LRESULT FAR PASCAL EPGridWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 					if (v->epg.screenevents[nScreenEventOffset].pEITEvent == NULL)
 					{
 						v->epg.nSelectedChannel = v->epg.screenevents[nScreenEventOffset].nChannel;
-#ifndef LITE
 						if (v->epg.fHideChannelSelectMode)
 						{
 							int nByteOffset;
@@ -2840,7 +2812,6 @@ LRESULT FAR PASCAL EPGridWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 							else
 								v->epg.bHiddenChannels[nByteOffset] |= (1 << nBit);
 						}
-#endif LITE
 					}
 					else
 					{
@@ -2855,7 +2826,6 @@ LRESULT FAR PASCAL EPGridWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 		}
 		break;
 	case WM_LBUTTONDBLCLK:
-#ifndef LITE
 		if (v->nNetworkPID != 0x0010 && v->nNetworkPID != 0x1ffb)
 		{
 			MessageBox(hWnd, "Currently tuning and scheduling from the EPG\nis only supported on DVB and ATSC networks", gszAppName, MB_ICONWARNING);
@@ -2880,9 +2850,6 @@ LRESULT FAR PASCAL EPGridWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 		{
 			ScheduleRecording(hWnd, lParam, v->nSchedulerDefaultPreRoll, v->nSchedulerDefaultPostRoll);
 		}
-#else LITE
-		MessageBox(hWnd, "Double-click functions such as retuning and\nscheduling are not supported in this version\nof TSReader.", gszAppName, MB_ICONSTOP);
-#endif LITE
 		break;
 	case WM_KEYDOWN:
 		switch(wParam)
@@ -2901,14 +2868,10 @@ LRESULT FAR PASCAL EPGridWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 		case VK_UP:
 			if (GetKeyState(VK_SHIFT) & 0x8000)
 			{
-#ifndef LITE
 				v->nEPGChannelHeight--;
 				if (v->nEPGChannelHeight < 2)
 					v->nEPGChannelHeight = 2;
 				InvalidateRect(hWnd, NULL, FALSE);
-#else LITE
-				MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 			}
 			else
 			{
@@ -2920,14 +2883,10 @@ LRESULT FAR PASCAL EPGridWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 		case VK_DOWN:
 			if (GetKeyState(VK_SHIFT) & 0x8000)
 			{
-#ifndef LITE
 				v->nEPGChannelHeight++;
 				if (v->nEPGChannelHeight > 10)
 					v->nEPGChannelHeight = 10;
 				InvalidateRect(hWnd, NULL, FALSE);
-#else LITE
-				MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 			}
 			else
 			{
@@ -2939,15 +2898,11 @@ LRESULT FAR PASCAL EPGridWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 		case VK_LEFT:
 			if (GetKeyState(VK_SHIFT) & 0x8000)
 			{
-#ifndef LITE
 				// Make time interval smaller
 				v->nEPGHalfHourWidth--;
 				if (v->nEPGHalfHourWidth < 1)
 					v->nEPGHalfHourWidth = 1;
 				InvalidateRect(hWnd, NULL, FALSE);
-#else LITE
-				MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 			}
 			else
 			{
@@ -2960,15 +2915,11 @@ LRESULT FAR PASCAL EPGridWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 		case VK_RIGHT:
 			if (GetKeyState(VK_SHIFT) & 0x8000)
 			{
-#ifndef LITE
 				// Make time interval bigger
 				v->nEPGHalfHourWidth++;
 				if (v->nEPGHalfHourWidth > 24)
 					v->nEPGHalfHourWidth = 24;
 				InvalidateRect(hWnd, NULL, FALSE);
-#else LITE
-				MessageBox(hWnd, szLiteWarning, gszAppName, MB_ICONSTOP);
-#endif LITE
 			}
 			else
 			{
@@ -3004,7 +2955,6 @@ LRESULT FAR PASCAL EPGridWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 							 "Up\t\tMove channel list up\n"
 							 "Down\t\tMove channel list down\n"
 							 "N\t\tGo to \"now\"\n"
-#ifndef LITE
 							 "Shift+Left\tShrink time width\n"
 							 "Shift+Right\tExpand time width\n"
 							 "Shift+Up\t\tExpand channel size\n"
@@ -3019,11 +2969,9 @@ LRESULT FAR PASCAL EPGridWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 							 "\n"
 							 "Double click channel to tune there\n"
 							 "Double click event to schedule recording\n"
-#endif LITE
 							 "\n",
 							 gszAppName, MB_ICONINFORMATION);
 			break;
-#ifndef LITE
 		case VK_F3:		// Find next
 			if (v->epg.fHideChannelSelectMode)
 			{
@@ -3101,7 +3049,6 @@ LRESULT FAR PASCAL EPGridWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 				break;
 			DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_EPG_MANUAL), hWnd, EPGManualScheduleDlgProc);
 			break;
-#endif LITE
 		}
 		//return DefWindowProc(hWnd, msg, wParam, lParam);
 		break;

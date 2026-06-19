@@ -76,5 +76,5 @@ void ATSCHuffmanDecode(int nBitBufferIndex, int type, int bytes, char * outtext)
 
 	// We have the entire string - Print it out
 	string[position] = 0;	// Just in case
-	lstrcpy(outtext, string);
+	lstrcpy(outtext, (LPCSTR)string);
 }
