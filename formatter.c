@@ -226,8 +226,6 @@ double DecodeDVBLeakRate(int nInput)
 	case 60:
 		return 108.0;
 	}
-
-	return -1;
 }
 
 
@@ -268,6 +266,42 @@ void FormatDVBSCodeRate(char * szFEC, int nFECRate)
 	default:
 		wsprintf(szFEC, "Unknown (0x%02x)", nFECRate);
 		break;
+	}
+}
+
+void FormatISDBSCodeRate(char *szFEC, size_t len, int nFECRate)
+{
+	switch (nFECRate) {
+		case 1:
+			lstrcpyn(szFEC, "1/2", len);
+			break;
+		case 2:
+			lstrcpyn(szFEC, "2/3", len);
+			break;
+		case 3:
+			lstrcpyn(szFEC, "3/4", len);
+			break;
+		case 4:
+			lstrcpyn(szFEC, "5/6", len);
+			break;
+		case 5:
+			lstrcpyn(szFEC, "7/8", len);
+			break;
+		case 8:
+			lstrcpyn(szFEC, "ISDB-S", len);
+			break;
+		case 9:
+			lstrcpyn(szFEC, "2.6GHz audio", len);
+			break;
+		case 10:
+			lstrcpyn(szFEC, "CS Digital", len);
+			break;
+		case 15:
+			lstrcpyn(szFEC, "1/1", len);
+			break;
+		default:
+			StringCchPrintf(szFEC, len, "Unknown (0x%02x)", nFECRate);
+			break;
 	}
 }
 
@@ -1421,6 +1455,12 @@ void DecodeDescriptorNames(char * szDescriptor, BYTE nDescriptorID)
 		else
 			goto DecodeDescriptorNames_ForceDefault;
 		break;
+	case 0xcb:
+		if (v->fISDB)
+			lstrcpy(szDescriptor, "ISDB Contract Information Descriptor");
+		else
+			goto DecodeDescriptorNames_ForceDefault;
+		break;
 	case 0xcd:
 		if (v->fISDB)
 			lstrcpy(szDescriptor, "ISDB TS Information");
@@ -1726,7 +1766,7 @@ BOOL QuickFormatNIT(char * szBuffer, int nTransportStreamID, BOOL fLongVersion)
 							lstrcpy(szFormatBuffer, "NIT: %.1f MHz\r\n");
 						else
 							lstrcpy(szFormatBuffer, "%.1f MHz");
-						sprintf(szBuffer, szFormatBuffer, (double)v->pNITData[nNITIndex]->nFrequency / 100000.0);
+						StringCchPrintf(szBuffer, sizeof(szBuffer), szFormatBuffer, (double)v->pNITData[nNITIndex]->nFrequency / 100000.0);
 					}
 					break;
 				case NIT_DVBC:
@@ -1735,10 +1775,11 @@ BOOL QuickFormatNIT(char * szBuffer, int nTransportStreamID, BOOL fLongVersion)
 							lstrcpy(szFormatBuffer, "NIT: %.1f MHz\r\n");
 						else
 							lstrcpy(szFormatBuffer, "%.1f MHz");
-						sprintf(szBuffer, szFormatBuffer, (double)v->pNITData[nNITIndex]->nFrequency / 10000.0);
+						StringCchPrintf(szBuffer, sizeof(szBuffer), szFormatBuffer, (double)v->pNITData[nNITIndex]->nFrequency / 10000.0);
 					}
 					break;
 				case NIT_DVBS:
+				case NIT_ISDBS:
 					{
 						char szFEC[16];
 						char szEW[16];
@@ -1759,7 +1800,7 @@ BOOL QuickFormatNIT(char * szBuffer, int nTransportStreamID, BOOL fLongVersion)
 						else
 							lstrcpy(szFormatBuffer, "%3.1f%s %.3f %s %d %s %s");
 
-						sprintf(szBuffer, szFormatBuffer,
+						StringCchPrintf(szBuffer, sizeof(szBuffer), szFormatBuffer,
 								(double)v->pNITData[nNITIndex]->dvbs.nOrbitalPosition / 10.0,
 								szEW,
 								(double)v->pNITData[nNITIndex]->nFrequency / 100000.0,
@@ -1768,9 +1809,6 @@ BOOL QuickFormatNIT(char * szBuffer, int nTransportStreamID, BOOL fLongVersion)
 								szFEC,
 								szModulation);
 					}
-					break;
-				case NIT_ISDBS:
-					/* TODO */
 					break;
 				}
 				return TRUE;
@@ -1808,7 +1846,7 @@ static void DecodeSIDescriptor(char *szBuffer, BYTE *pDescriptor)
 	char szTemp[256];
 
 	set_buf(BM_USER_THREAD, pDescriptor, 0, FALSE);
-	uint8_t component_tag = get_bits(BM_USER_THREAD, 8);
+	uint8_t component_tag = get_bits(BM_USER_THREAD, 8) & 0xff;
 
 	wsprintf(szTemp, " Component tag: 0x%02x (%d)\r\n", component_tag, component_tag);
 	lstrcat(szBuffer, szTemp);
@@ -2002,13 +2040,13 @@ void DecodeComponentDescriptor(char * szBuffer, BYTE * pDescriptor)
 		szBuffer[0] = '\0';
 		if (descriptor_length)
 		{
-			int reserved_future_use = get_bits(BM_USER_THREAD, 4);
-			int stream_content = get_bits(BM_USER_THREAD, 4);
-			int component_type = get_bits(BM_USER_THREAD, 8);
-			int component_tag = get_bits(BM_USER_THREAD, 8);
-			int language_code = get_bits(BM_USER_THREAD, 24);
+			uint8_t reserved_future_use = get_bits(BM_USER_THREAD, 4) & 0xff;
+			uint8_t stream_content = get_bits(BM_USER_THREAD, 4) & 0xff;
+			uint8_t component_type = get_bits(BM_USER_THREAD, 8) & 0xff;
+			uint8_t component_tag = get_bits(BM_USER_THREAD, 8) & 0xff;
+			uint32_t language_code = get_bits(BM_USER_THREAD, 24) & 0xffffff;
 			for (i = 0; i < descriptor_length - 6; i++)
-				text_char[i] = get_bits(BM_USER_THREAD, 8);
+				text_char[i] = get_bits(BM_USER_THREAD, 8) & 0xff;
 			text_char[i] = 0;
 			wsprintf(szBuffer, "Component: %s %c%c%c (%s)\r\n", text_char, 
 					 language_code >> 16, language_code >> 8, language_code & 0xff,
@@ -2330,8 +2368,8 @@ void DecodeMultilingualComponentDescriptor(char * szBuffer, BYTE * pDescriptor)
 		int descriptor_length = get_bits(BM_USER_THREAD, 8);
 		if (descriptor_length)
 		{
-			int component_tag = get_bits(BM_USER_THREAD, 8);
-			int text_description_length;
+			uint8_t component_tag = get_bits(BM_USER_THREAD, 8) & 0xff;
+			uint8_t text_description_length;
 
 			do
 			{
@@ -2339,11 +2377,11 @@ void DecodeMultilingualComponentDescriptor(char * szBuffer, BYTE * pDescriptor)
 				char text_char[128];
 				char szTemp[256];
 
-				int language_code = get_bits(BM_USER_THREAD, 24);
-				text_description_length = get_bits(BM_USER_THREAD, 8);
+				uint32_t language_code = get_bits(BM_USER_THREAD, 24) & 0xffffff;
+				text_description_length = get_bits(BM_USER_THREAD, 8) & 0xff;
 
 				for (j = 0; j < text_description_length; j++)
-					text_char[j] = get_bits(BM_USER_THREAD, 8);
+					text_char[j] = get_bits(BM_USER_THREAD, 8) & 0xff;
 				text_char[j] = '\0';
 
 				wsprintf(szTemp, "Multilangual component: %c%c%c %s\r\n",
@@ -2434,9 +2472,9 @@ void DecodeATSCCaptionServceDescriptor(char * szBuffer, BYTE * pDescriptor)
 		int number_of_services = get_bits(BM_USER_THREAD, 5);
 		for (i = 0; i < number_of_services; i++)
 		{
-			szLanguage[0] = get_bits(BM_USER_THREAD, 8);
-			szLanguage[1] = get_bits(BM_USER_THREAD, 8);
-			szLanguage[2] = get_bits(BM_USER_THREAD, 8);
+			szLanguage[0] = get_bits(BM_USER_THREAD, 8) & 0xff;
+			szLanguage[1] = get_bits(BM_USER_THREAD, 8) & 0xff;
+			szLanguage[2] = get_bits(BM_USER_THREAD, 8) & 0xff;
 			szLanguage[3] = '\0';
 			{
 				int cc_type = get_bits(BM_USER_THREAD, 1);
@@ -2520,15 +2558,15 @@ static void DecodeISDBAdditionalARIBBxmlInfo(char *szBuffer, BYTE *pInfo, uint16
 		/* reserved */
 		get_bits(BM_USER_THREAD, 4);
 		if (default_version_flag == 0) {
-			uint16_t bml_major_version = get_bits(BM_USER_THREAD, 16);
-			uint16_t bml_minor_version = get_bits(BM_USER_THREAD, 16);
+			uint16_t bml_major_version = get_bits(BM_USER_THREAD, 16) & 0xffff;
+			uint16_t bml_minor_version = get_bits(BM_USER_THREAD, 16) & 0xffff;
 			wsprintf(szTemp,
 				"   BML version: %d.%d\r\n",
 				bml_major_version, bml_minor_version);
 
 			if (use_xml == 1) {
-				uint16_t bxml_major_version = get_bits(BM_USER_THREAD, 16);
-				uint16_t bxml_minor_version = get_bits(BM_USER_THREAD, 16);
+				uint16_t bxml_major_version = get_bits(BM_USER_THREAD, 16) & 0xffff;
+				uint16_t bxml_minor_version = get_bits(BM_USER_THREAD, 16) & 0xffff;
 				wsprintf(szTemp,
 					"   XML version: %d.%d\r\n",
 					bxml_major_version, bxml_minor_version);
@@ -2576,11 +2614,11 @@ static void DecodeISDBDataComponentDescriptor(char *szBuffer, BYTE *pDescriptor)
 	int descriptor_tag = get_bits(BM_USER_THREAD, 8);
 	int descriptor_length = get_bits(BM_USER_THREAD, 8);
 
-	uint16_t data_component_id = get_bits(BM_USER_THREAD, 16);
+	uint16_t data_component_id = get_bits(BM_USER_THREAD, 16) & 0xffff;
 	descriptor_length -= 2;
 
 	for (i = 0; i < descriptor_length; i++)
-		bytes[i] = get_bits(BM_USER_THREAD, 8);
+		bytes[i] = get_bits(BM_USER_THREAD, 8) & 0xff;
 
 	wsprintf(szTemp, " Data component id: 0x%04x (%s)\r\n", data_component_id, FormatISDBDataComponentId(data_component_id));
 	lstrcat(v->szSIFormatBuffer, szTemp);
@@ -2595,9 +2633,9 @@ static void DecodeISDBDataComponentDescriptor(char *szBuffer, BYTE *pDescriptor)
 	} else if (data_component_id == 0x0008 || data_component_id == 0x0012) {
 		/* ARIB-Subtitle& teletext coding */
 		const char *isdb_timing[] = { "Asynchronous", "Program synchronous", "Time synchronous", "Undefined" };
-		uint8_t DMF = get_bits(BM_USER_THREAD, 4);
+		uint8_t DMF = get_bits(BM_USER_THREAD, 4) & 0xf;
 		get_bits(BM_USER_THREAD, 2);
-		uint8_t Timing = get_bits(BM_USER_THREAD, 2);
+		uint8_t Timing = get_bits(BM_USER_THREAD, 2) & 3;
 		wsprintf(szTemp, " - Additional data component of caption and superimpose\r\n"
 			"   Display mode flag: %d\r\n"
 			"   Timing: %d (%s)\r\n",
@@ -3060,12 +3098,11 @@ void DecodeMPEG2Descriptor(BYTE * pDescriptorData, BOOL fHTMLMode)
 					// Reset bit position
 					set_buf(BM_USER_THREAD, pDescriptorData, 0, FALSE);
 					{
-						BOOL fDecodedPrivateData = FALSE;
-						int descriptor_tag = get_bits(BM_USER_THREAD, 8);
-						int descriptor_length = get_bits(BM_USER_THREAD, 8);
-						int CA_system_ID = get_bits(BM_USER_THREAD, 16);
-						int reserved = get_bits(BM_USER_THREAD, 3);
-						int CA_PID = get_bits(BM_USER_THREAD, 13);
+						get_bits(BM_USER_THREAD, 8); /* descriptor_tag */
+						get_bits(BM_USER_THREAD, 8); /* descriptor_length */
+						get_bits(BM_USER_THREAD, 16); /* CA_system_ID */
+						get_bits(BM_USER_THREAD, 3); /* reserved */
+						get_bits(BM_USER_THREAD, 13); /* CA_PID */
 						/// todo -- what's this?
 					}
 				}
@@ -3411,7 +3448,7 @@ void DecodeMPEG2Descriptor(BYTE * pDescriptorData, BOOL fHTMLMode)
 			char szBouquetName[128] = {0};
 			while (descriptor_length)
 			{
-				szBouquetName[nOutIndex++] = get_bits(BM_USER_THREAD, 8);
+				szBouquetName[nOutIndex++] = get_bits(BM_USER_THREAD, 8) & 0xff;
 				descriptor_length--;
 			}
 			szBouquetName[nOutIndex] = '\0';
@@ -3436,14 +3473,14 @@ void DecodeMPEG2Descriptor(BYTE * pDescriptorData, BOOL fHTMLMode)
 
 			DecodeServiceType(szServiceType, service_type);
 
-			service_provider_name_length = get_bits(BM_USER_THREAD, 8);
+			service_provider_name_length = get_bits(BM_USER_THREAD, 8) & 0xff;
 			for (i = 0; i < service_provider_name_length; i++)
-				szProviderName[i] = get_bits(BM_USER_THREAD, 8);
+				szProviderName[i] = get_bits(BM_USER_THREAD, 8) & 0xff;
 			szProviderName[i] = '\0';
 
-			service_name_length = get_bits(BM_USER_THREAD, 8);
+			service_name_length = get_bits(BM_USER_THREAD, 8) & 0xff;
 			for (i = 0; i < service_name_length; i++)
-				szServiceName[i] = get_bits(BM_USER_THREAD, 8);
+				szServiceName[i] = get_bits(BM_USER_THREAD, 8) & 0xff;
 			szServiceName[i] = '\0';
 
 			wsprintf(szTemp, " Service Type: %s Provider: %s Service: %s\r\n",
@@ -3472,7 +3509,9 @@ void DecodeMPEG2Descriptor(BYTE * pDescriptorData, BOOL fHTMLMode)
 					else
 						lstrcpy(szAvailability, "Not available in");
 
-					c1 = get_bits(BM_USER_THREAD, 8); c2 = get_bits(BM_USER_THREAD, 8); c3 = get_bits(BM_USER_THREAD, 8);
+					c1 = get_bits(BM_USER_THREAD, 8) & 0xff;
+					c2 = get_bits(BM_USER_THREAD, 8) & 0xff;
+					c3 = get_bits(BM_USER_THREAD, 8) & 0xff;
 					wsprintf(szTemp, "%s %c%c%c\r\n", szAvailability, c1, c2, c3);
 					lstrcat(v->szSIFormatBuffer, szTemp);
 					descriptor_length -= 3;
@@ -3595,12 +3634,12 @@ void DecodeMPEG2Descriptor(BYTE * pDescriptorData, BOOL fHTMLMode)
 			int language_code = get_bits(BM_USER_THREAD, 24);
 			int event_name_length = get_bits(BM_USER_THREAD, 8);
 			for (i=0; i < event_name_length; i++)
-				event_name_char[i] = get_bits(BM_USER_THREAD, 8);
+				event_name_char[i] = get_bits(BM_USER_THREAD, 8) & 0xff;
 			event_name_char[i] = 0;
 			{
 				int ext_length = get_bits(BM_USER_THREAD, 8);
 				for (i = 0; i < ext_length; i++)
-					text[i] = get_bits(BM_USER_THREAD, 8);
+					text[i] = get_bits(BM_USER_THREAD, 8) & 0xff;
 				text[i] = 0;
 
 				wsprintf(szTemp, " Language: %c%c%c Event: %s Text: %s\r\n",
@@ -3762,23 +3801,23 @@ void DecodeMPEG2Descriptor(BYTE * pDescriptorData, BOOL fHTMLMode)
 			char szCoreNumber[64];
 
 			for (i = 0; i < country_prefix_length; i++)
-				szCountryPrefix[i] = get_bits(BM_USER_THREAD, 8);
+				szCountryPrefix[i] = get_bits(BM_USER_THREAD, 8) & 0xff;
 			szCountryPrefix[i] = '\0';
 
 			for (i = 0; i < international_area_code_length; i++)
-				szInternationalAreaCode[i] = get_bits(BM_USER_THREAD, 8);
+				szInternationalAreaCode[i] = get_bits(BM_USER_THREAD, 8) & 0xff;
 			szInternationalAreaCode[i] = '\0';
 
 			for (i = 0; i < operator_code_length; i++)
-				szOperatorCode[i] = get_bits(BM_USER_THREAD, 8);
+				szOperatorCode[i] = get_bits(BM_USER_THREAD, 8) & 0xff;
 			szOperatorCode[i] = '\0';
 
 			for (i = 0; i < national_area_code_length; i++)
-				szNationalAreaCode[i] = get_bits(BM_USER_THREAD, 8);
+				szNationalAreaCode[i] = get_bits(BM_USER_THREAD, 8) & 0xff;
 			szNationalAreaCode[i] = '\0';
 
 			for (i = 0; i < core_number_length; i++)
-				szCoreNumber[i] = get_bits(BM_USER_THREAD, 8);
+				szCoreNumber[i] = get_bits(BM_USER_THREAD, 8) & 0xff;
 			szCoreNumber[i] = '\0';
 
 			wsprintf(szTemp, " Foreign Availability: %s Connection Type: %d\r\n Number - International: %s Operator: %s Area: %s Core Number: %s\r\n",
@@ -3868,7 +3907,7 @@ void DecodeMPEG2Descriptor(BYTE * pDescriptorData, BOOL fHTMLMode)
 				int lc3 = get_bits(BM_USER_THREAD, 8);
 				int network_name_length = get_bits(BM_USER_THREAD, 8);
 				for (j = 0; j < network_name_length; j++)
-					szNetworkName[j] = get_bits(BM_USER_THREAD, 8);
+					szNetworkName[j] = get_bits(BM_USER_THREAD, 8) & 0xff;
 				szNetworkName[j] = '\0';
 
 				wsprintf(szTemp, " Language code: %c%c%c Network Name: %s\r\n",
@@ -3924,12 +3963,12 @@ void DecodeMPEG2Descriptor(BYTE * pDescriptorData, BOOL fHTMLMode)
 				char szServiceName[64];
 
 				for (j = 0; j < service_provider_name_length; j++)
-					szServiceProviderName[j] = get_bits(BM_USER_THREAD, 8);
+					szServiceProviderName[j] = get_bits(BM_USER_THREAD, 8) & 0xff;
 				szServiceProviderName[j] = '\0';
 
 				service_name_length = get_bits(BM_USER_THREAD, 8);
 				for (j = 0; j < service_name_length; j++)
-					szServiceName[j] = get_bits(BM_USER_THREAD, 8);
+					szServiceName[j] = get_bits(BM_USER_THREAD, 8) & 0xff;
 				szServiceName[j] = '\0';
 
 				wsprintf(szTemp, " Language: %c%c%c Service Provider: %s Service: %s\r\n",
@@ -4087,7 +4126,7 @@ void DecodeMPEG2Descriptor(BYTE * pDescriptorData, BOOL fHTMLMode)
 			lc3 = get_bits(BM_USER_THREAD, 8);
 			text_length = get_bits(BM_USER_THREAD, 8);
 			for (i = 0; i < text_length; i++)
-				text_char[i] = get_bits(BM_USER_THREAD, 8);
+				text_char[i] = get_bits(BM_USER_THREAD, 8) & 0xff;
 			text_char[i] = '\0';
 
 			wsprintf(szTemp, " Data Broadcast ID: %d Component tag: %d Language: %c%c%c\r\n Text: %s Selector Bytes: %s\r\n",
@@ -4165,7 +4204,7 @@ byte 8 uimsbf
 			goto DecodeMPEG2Descriptor_Default;
 		set_buf(BM_USER_THREAD, pDescriptorData, 0, FALSE);
 		{
-			int AC3_type, bsid, mainid, asvc;
+			int AC3_type = 0, bsid = 0, mainid = 0, asvc = 0;
 
 			int descriptor_tag = get_bits(BM_USER_THREAD, 8);
 			int descriptor_length = get_bits(BM_USER_THREAD, 8);
@@ -4323,7 +4362,7 @@ byte 8 uimsbf
 				lstrcpy(szIDSelectorBytes, " ");
 			while (descriptor_length)
 			{
-				BYTE id_selector_byte = get_bits(BM_USER_THREAD, 8);
+				uint8_t id_selector_byte = get_bits(BM_USER_THREAD, 8) & 0xff;
 				char szTemp2[16];
 				wsprintf(szTemp2, "%02x ", id_selector_byte);
 				lstrcat(szIDSelectorBytes, szTemp2);
@@ -4510,7 +4549,7 @@ byte 8 uimsbf
 				char name_string[128];
 				
 				for (j = 0; j < string_length; j++)
-					name_string[j] = get_bits(BM_USER_THREAD, 8);
+					name_string[j] = get_bits(BM_USER_THREAD, 8) & 0xff;
 				name_string[j] = '\0';
 
 				wsprintf(szTemp, " Langauge Code: %c%c%c Component String: %s\r\n",
@@ -4661,12 +4700,12 @@ byte 8 uimsbf
 			const char *digital_cci_info[] = { "Undefined", "Output with encryption to serial interface", "Undefined", "Output without encryption to serial interface" };
 			const char *analog_cci_info[] = { "Can be copied without control condition", "With pseudo-sync pulse", "Pseudo-sync pulse + 2-line reversed division burst insertion", "Pseudo-sync pulse + 4-line reversed division burst insertion" };
 
-			int descriptor_tag = get_bits(BM_USER_THREAD, 8);
-			int descriptor_length = get_bits(BM_USER_THREAD, 8);
-			uint8_t digital_recording_control_data = (get_bits(BM_USER_THREAD, 2) & 3);
-			uint8_t maximum_bitrate_flag = get_bits(BM_USER_THREAD, 1);
-			uint8_t component_control_flag = get_bits(BM_USER_THREAD, 1);
-			uint8_t copy_control_type = get_bits(BM_USER_THREAD, 2);
+			uint8_t descriptor_tag = get_bits(BM_USER_THREAD, 8) & 0xff;
+			uint8_t descriptor_length = get_bits(BM_USER_THREAD, 8) & 0xff;
+			uint8_t digital_recording_control_data = get_bits(BM_USER_THREAD, 2) & 3;
+			uint8_t maximum_bitrate_flag = get_bits(BM_USER_THREAD, 1) & 1;
+			uint8_t component_control_flag = get_bits(BM_USER_THREAD, 1) & 1;
+			uint8_t copy_control_type = get_bits(BM_USER_THREAD, 2) & 3;
 			uint8_t aps_control_data = 0xff;
 			if (copy_control_type == 1)
 				aps_control_data = get_bits(BM_USER_THREAD, 2) & 3;
@@ -4675,7 +4714,7 @@ byte 8 uimsbf
 
 			uint8_t maximum_bitrate = 0;
 			if (maximum_bitrate_flag)
-				maximum_bitrate = get_bits(BM_USER_THREAD, 8);
+				maximum_bitrate = get_bits(BM_USER_THREAD, 8) & 0xff;
 
 			if (copy_control_type == 1)
 				wsprintf(szTemp, " Recording control: %d (%s)\r\n", digital_recording_control_data, cci_info1[digital_recording_control_data]);
@@ -4731,7 +4770,7 @@ byte 8 uimsbf
 			int descriptor_tag = get_bits(BM_USER_THREAD, 8);
 			int descriptor_length = get_bits(BM_USER_THREAD, 8);
 
-			uint8_t remote_control_key_id = get_bits(BM_USER_THREAD, 8);
+			uint8_t remote_control_key_id = get_bits(BM_USER_THREAD, 8) & 0xff;
 			wsprintf(szTemp, " Remote control key id: 0x%02x (%d)\r\n", remote_control_key_id, remote_control_key_id);
 			lstrcat(v->szSIFormatBuffer, szTemp);
 
@@ -4741,7 +4780,7 @@ byte 8 uimsbf
 			/* get TS Name */
 			char szTsName[64] = { 0, };
 			for (j = 0; j < length_of_ts_name; j++)
-				szTsName[j] = get_bits(BM_USER_THREAD, 8);
+				szTsName[j] = get_bits(BM_USER_THREAD, 8) & 0xff;
 			szTsName[j] = '\0';
 			/* TODO: ARIB decoding */
 			wsprintf(szTemp, " TS name: \"%s\"\r\n", szTsName);
@@ -4749,14 +4788,14 @@ byte 8 uimsbf
 
 			/* list transmission type info */
 			for (j = 0; j < transmission_type_count; j++) {
-				uint8_t transmission_type_info = get_bits(BM_USER_THREAD, 8);
-				uint8_t num_of_service = get_bits(BM_USER_THREAD, 8);
+				uint8_t transmission_type_info = get_bits(BM_USER_THREAD, 8) & 0xff;
+				uint8_t num_of_service = get_bits(BM_USER_THREAD, 8) & 0xff;
 				char szTransmissionType[64] = { 0, };
 				FormatISDBTransmissionTypeInfo(szTransmissionType, sizeof(szTransmissionType), transmission_type_info);
 				wsprintf(szTemp, " - Transmission type info: 0x%02x (%d) - %s\r\n", transmission_type_info, transmission_type_info, szTransmissionType);
 				lstrcat(v->szSIFormatBuffer, szTemp);
 				for (k = 0; k < num_of_service; k++) {
-					uint16_t service_id = get_bits(BM_USER_THREAD, 16);
+					uint16_t service_id = get_bits(BM_USER_THREAD, 16) & 0xffff;
 					wsprintf(szTemp, "   Service id: %d (0x%04x)\r\n", service_id, service_id);
 					lstrcat(v->szSIFormatBuffer, szTemp);
 				}
@@ -4772,14 +4811,14 @@ byte 8 uimsbf
 			int descriptor_tag = get_bits(BM_USER_THREAD, 8);
 			int descriptor_length = get_bits(BM_USER_THREAD, 8);
 
-			uint8_t logo_transmission_type = get_bits(BM_USER_THREAD, 8);
+			uint8_t logo_transmission_type = get_bits(BM_USER_THREAD, 8) & 0xff;
 			if (logo_transmission_type == 0x01) {
 				/* CDT transmission type 1 */
 				get_bits(BM_USER_THREAD, 7); /* reserved */
-				uint16_t logo_id = get_bits(BM_USER_THREAD, 9);
+				uint16_t logo_id = get_bits(BM_USER_THREAD, 9) & 0x1ff;
 				get_bits(BM_USER_THREAD, 4); /* reserved */
-				uint16_t logo_version = get_bits(BM_USER_THREAD, 12);
-				uint16_t download_data_id = get_bits(BM_USER_THREAD, 16);
+				uint16_t logo_version = get_bits(BM_USER_THREAD, 12) & 0xfff;
+				uint16_t download_data_id = get_bits(BM_USER_THREAD, 16) & 0xffff;
 
 				wsprintf(szTemp, " Logo transmission type: %02x (CDT transmission type 1)\r\n"
 					" Logo id: 0x%03x (%d)\r\n"
@@ -4794,7 +4833,7 @@ byte 8 uimsbf
 			} else if (logo_transmission_type == 0x02) {
 				/* CDT transmission type 2 */
 				get_bits(BM_USER_THREAD, 7); /* reserved */
-				uint16_t logo_id = get_bits(BM_USER_THREAD, 9);
+				uint16_t logo_id = get_bits(BM_USER_THREAD, 9) & 0x1ff;
 
 				wsprintf(szTemp, " Logo transmission type: %02x (CDT transmission type 2)\r\n"
 					" Logo id: 0x%03x (%d)\r\n",
@@ -4807,8 +4846,9 @@ byte 8 uimsbf
 				char szLogoName[64] = { 0, };
 
 				for (j = 0; j < simple_logo_name_length; j++)
-					szLogoName[j] = get_bits(BM_USER_THREAD, 8);
+					szLogoName[j] = get_bits(BM_USER_THREAD, 8) & 0xff;
 				szLogoName[j] = '\0';
+				/* TODO ARIB decoding */
 
 				wsprintf(szTemp, " Logo transmission type: %02x (Simple logo type)\r\n"
 					" Logo characters: \"%s\"\r\n",
@@ -4822,7 +4862,7 @@ byte 8 uimsbf
 										" Reserved bytes: ", logo_transmission_type);
 
 				for (j = 0; j < reserved_length; j++) {
-					uint8_t byte = get_bits(BM_USER_THREAD, 8);
+					uint8_t byte = get_bits(BM_USER_THREAD, 8) & 0xff;
 					wsprintf(psz, "%02x ", byte);
 					psz += 3;
 				}
@@ -4841,11 +4881,11 @@ byte 8 uimsbf
 			int descriptor_tag = get_bits(BM_USER_THREAD, 8);
 			int descriptor_length = get_bits(BM_USER_THREAD, 8);
 			get_bits(BM_USER_THREAD, 1); // reserved
-			uint8_t copy_restriction_mode = get_bits(BM_USER_THREAD, 1);
-			uint8_t image_constraint_token = get_bits(BM_USER_THREAD, 1);
-			uint8_t retention_mode = get_bits(BM_USER_THREAD, 1);
+			uint8_t copy_restriction_mode = get_bits(BM_USER_THREAD, 1) & 1;
+			uint8_t image_constraint_token = get_bits(BM_USER_THREAD, 1) & 1;
+			uint8_t retention_mode = get_bits(BM_USER_THREAD, 1) & 1;
 			uint8_t retention_state = (get_bits(BM_USER_THREAD, 3) & 7);
-			uint8_t encryption_mode = get_bits(BM_USER_THREAD, 1);
+			uint8_t encryption_mode = get_bits(BM_USER_THREAD, 1) & 1;
 
 			wsprintf(szTemp, " Copy restriction mode: %s\r\n"
 				" Image constraint token: %s\r\n"
@@ -4868,9 +4908,9 @@ byte 8 uimsbf
 		{
 			int descriptor_tag = get_bits(BM_USER_THREAD, 8);
 			int descriptor_length = get_bits(BM_USER_THREAD, 8);
-			uint16_t ca_system_id = get_bits(BM_USER_THREAD, 16);
-			uint8_t transmission_type = get_bits(BM_USER_THREAD, 3);
-			uint16_t ecm_pid = get_bits(BM_USER_THREAD, 13);
+			uint16_t ca_system_id = get_bits(BM_USER_THREAD, 16) & 0xffff;
+			uint8_t transmission_type = get_bits(BM_USER_THREAD, 3) & 7;
+			uint16_t ecm_pid = get_bits(BM_USER_THREAD, 13) & 0x1fff;
 
 			wsprintf(szTemp, " CA System Id: 0x%04x (%s)\r\n"
 							 " Transmission type: %d (%s)\r\n"
@@ -4894,7 +4934,7 @@ byte 8 uimsbf
 			int descriptor_tag = get_bits(BM_USER_THREAD, 8);
 			int descriptor_length = get_bits(BM_USER_THREAD, 8);
 
-			uint16_t area_code = get_bits(BM_USER_THREAD, 12);
+			uint16_t area_code = get_bits(BM_USER_THREAD, 12) & 0xfff;
 			uint8_t guard_interval = get_bits(BM_USER_THREAD, 2) & 3; /* FormatDVBTGuardInterval */
 			uint8_t transmission_mode = get_bits(BM_USER_THREAD, 2) & 3;
 
@@ -4909,7 +4949,7 @@ byte 8 uimsbf
 			int j, frequency_length = (descriptor_length - 2) / 2;
 
 			for (j = 0; j < frequency_length; j++) {
-				uint16_t frequency = get_bits(BM_USER_THREAD, 16);
+				uint16_t frequency = get_bits(BM_USER_THREAD, 16) & 0xffff;
 				StringCchPrintf(szTemp, sizeof(szTemp), " Frequency: %3.3f MHz\r\n", frequency * (1.0f/7.0f));
 				lstrcat(v->szSIFormatBuffer, szTemp);
 			}
@@ -4927,7 +4967,7 @@ byte 8 uimsbf
 			int j, service_length = (descriptor_length) / 2;
 
 			for (j = 0; j < service_length; j++) {
-				uint16_t service_id = get_bits(BM_USER_THREAD, 16);
+				uint16_t service_id = get_bits(BM_USER_THREAD, 16) & 0xffff;
 				wsprintf(szTemp, " Service id: %d (0x%04x)\r\n", service_id, service_id);
 				lstrcat(v->szSIFormatBuffer, szTemp);
 			}
@@ -4955,7 +4995,7 @@ byte 8 uimsbf
 
 			uint8_t broadcasting_flag = get_bits(BM_USER_THREAD, 2) & 3;
 			uint8_t broadcasting_identifier = get_bits(BM_USER_THREAD, 6) & 0x3f;
-			uint8_t additional_broadcasting_identification = get_bits(BM_USER_THREAD, 8);
+			uint8_t additional_broadcasting_identification = get_bits(BM_USER_THREAD, 8) & 0xff;
 
 			wsprintf(szTemp, " Broadcasting flag: %d (%s)\r\n"
 				" Broadcasting identifier: %d (%s)\r\n"
@@ -4969,8 +5009,8 @@ byte 8 uimsbf
 
 			int j, additional_length = descriptor_length - 2;
 			for (j = 0; j < additional_length; j++) {
-				uint8_t additional_identification_info = get_bits(BM_USER_THREAD, 8);
-				wsprintf(szTemp, " Additional identification info: 0x%02x (%d)\r\n", additional_identification_info);
+				uint8_t additional_identification_info = get_bits(BM_USER_THREAD, 8) & 0xff;
+				wsprintf(szTemp, " Additional identification info: 0x%02x (%d)\r\n", additional_identification_info, additional_identification_info);
 				lstrcat(v->szSIFormatBuffer, szTemp);
 			}
 		}
@@ -5364,7 +5404,7 @@ char * FormatNITEntry(int nTransportStreamID, BOOL fIncludeHTMLTags)
 
 		while (nNetworkDescriptorsLength)
 		{
-			int descriptor_tag = pDescriptors[0];
+			uint8_t descriptor_tag = pDescriptors[0];
 			int descriptor_length = pDescriptors[1];
 			char szDescriptor[128];
 			char szTemp[256];
@@ -5404,13 +5444,17 @@ char * FormatNITEntry(int nTransportStreamID, BOOL fIncludeHTMLTags)
 		break;
 
 	case NIT_DVBS:
+	case NIT_ISDBS:
 		{
 			char szFEC[16];
 			char szEW[16];
 			char szPolarity[24];
 			char szModulation[64] = {0};
 
-			FormatDVBSCodeRate(szFEC, v->pNITData[nTransportStreamID]->dvbs.nFEC);
+			if (!v->fISDB)
+				FormatDVBSCodeRate(szFEC, v->pNITData[nTransportStreamID]->dvbs.nFEC);
+			else
+				FormatISDBSCodeRate(szFEC, sizeof(szFEC), v->pNITData[nTransportStreamID]->dvbs.nFEC);
 			FormatPolarity(szPolarity, v->pNITData[nTransportStreamID]->dvbs.nPolarization, TRUE);
 			if (v->pNITData[nTransportStreamID]->dvbs.fEastern == TRUE)
 				lstrcpy(szEW, "E");
@@ -5465,6 +5509,8 @@ char * FormatNITEntry(int nTransportStreamID, BOOL fIncludeHTMLTags)
 								 szFECHP, szFECLP);
 			lstrcat(v->szSIFormatBuffer, szTemp);
 		}
+	case NIT_ISDBT:
+		/* TODO - but there's nothing here that isn't already covered by ISDB Terrestrial Delivery Descriptor */
 		break;
 	}
 
@@ -5651,8 +5697,8 @@ char * FormatEITEntry(int nChannelNumber, int nEITFormat, BOOL fIncludeHTMLTags)
 
 	{
 		int nEITItems;
-		PEITEVENT pCurrent;
-		PEITEVENT pSortList;
+		PEITEVENT pCurrent = NULL;
+		PEITEVENT pSortList = NULL;
 
 		// Count the EIT items so we know how many we might need to copy
 		nEITItems = 0;
@@ -6062,8 +6108,8 @@ char * FormatCVCT(int nCVCTIndex)
 			lstrcat(v->szSIFormatBuffer, "Additional descriptors:\n");
 			while (nDescriptorsLength)
 			{
-				int nDescriptor = pAdditionalDescriptors[0];
-				int nDescriptorLength = pAdditionalDescriptors[1];
+				uint8_t nDescriptor = pAdditionalDescriptors[0];
+				uint8_t nDescriptorLength = pAdditionalDescriptors[1];
 				char szDescriptor[128];
 
 				DecodeDescriptorNames(szDescriptor, nDescriptor);
@@ -6098,8 +6144,8 @@ char * FormatBAT(int nBATIndex)
 
 			while (nDescriptorsLength)
 			{
-				int nDescriptor = pDescriptors[0];
-				int nDescriptorLength = pDescriptors[1];
+				uint8_t nDescriptor = pDescriptors[0];
+				uint8_t nDescriptorLength = pDescriptors[1];
 				char szDescriptor[128];
 
 				DecodeDescriptorNames(szDescriptor, nDescriptor);
@@ -6127,8 +6173,8 @@ char * FormatBAT(int nBATIndex)
 
 				while (nDescriptorsLength)
 				{
-					int nDescriptor = pDescriptors[0];
-					int nDescriptorLength = pDescriptors[1];
+					uint8_t nDescriptor = pDescriptors[0];
+					uint8_t nDescriptorLength = pDescriptors[1];
 					char szDescriptor[128];
 
 					DecodeDescriptorNames(szDescriptor, nDescriptor);
@@ -6188,8 +6234,8 @@ char * FormatMGT(void)
 			int nDescriptorOffset = 0;
 			while (nDescriptorsLength)
 			{
-				int nDescriptor = v->mgt[i].pDescriptors[nDescriptorOffset];
-				int nThisDescriptorLength = v->mgt[i].pDescriptors[nDescriptorOffset + 1] + 2;
+				uint8_t nDescriptor = v->mgt[i].pDescriptors[nDescriptorOffset];
+				uint8_t nThisDescriptorLength = v->mgt[i].pDescriptors[nDescriptorOffset + 1] + 2;
 				char szTemp[256];
 				char szDescriptor[128];
 
@@ -6212,8 +6258,8 @@ char * FormatMGT(void)
 		lstrcat(v->szSIFormatBuffer, "\r\n");
 		while (nDescriptorsLength)
 		{
-			int nDescriptor = v->pMGTDescriptors[nDescriptorOffset];
-			int nThisDescriptorLength = v->pMGTDescriptors[nDescriptorOffset + 1] + 2;
+			uint8_t nDescriptor = v->pMGTDescriptors[nDescriptorOffset];
+			uint8_t nThisDescriptorLength = v->pMGTDescriptors[nDescriptorOffset + 1] + 2;
 			char szTemp[256];
 			char szDescriptor[128];
 
@@ -6340,7 +6386,7 @@ char * FormatCDTEntry(int nItemIndex)
 	return v->szSIFormatBuffer;
 }
 
-char * FormatDVBTOT()
+char * FormatDVBTOT(void)
 {
 	int nDescriptorsLength = v->dvbtot.nDescriptorsLength;
 	
@@ -6353,8 +6399,8 @@ char * FormatDVBTOT()
 		lstrcpy(v->szSIFormatBuffer, "TOT Descriptors:\r\n");
 		while (nDescriptorsLength)
 		{
-			int nDescriptor = v->dvbtot.pDescriptors[nDescriptorOffset];
-			int nThisDescriptorLength = v->dvbtot.pDescriptors[nDescriptorOffset + 1] + 2;
+			uint8_t nDescriptor = v->dvbtot.pDescriptors[nDescriptorOffset];
+			uint8_t nThisDescriptorLength = v->dvbtot.pDescriptors[nDescriptorOffset + 1] + 2;
 			char szTemp[256];
 			char szDescriptor[128];
 
@@ -6703,8 +6749,8 @@ char * FormatPMTEntry(int nPMTIndex, BOOL fHTMLMode)
 			int nOffset = 0;
 			while (nProgramInfoLength)
 			{
-				int nDescriptor = v->pat.pmt[nPMTIndex].pProgramInfo[nOffset];
-				int nDescriptorLength = v->pat.pmt[nPMTIndex].pProgramInfo[nOffset + 1];
+				uint8_t nDescriptor = v->pat.pmt[nPMTIndex].pProgramInfo[nOffset];
+				uint8_t nDescriptorLength = v->pat.pmt[nPMTIndex].pProgramInfo[nOffset + 1];
 				char szDescriptor[128];
 
 				DecodeDescriptorNames(szDescriptor, nDescriptor);

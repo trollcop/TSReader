@@ -10698,6 +10698,7 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 			switch(v->pNITData[nTransportStreamID]->nType)
 			{
 			case NIT_DVBS:
+			case NIT_ISDBS:
 				FormatPolarity(szPolarity, v->pNITData[nTransportStreamID]->dvbs.nPolarization, FALSE);
 
 				if (v->pNITData[nTransportStreamID]->dvbs.fEastern == TRUE)
@@ -10726,9 +10727,6 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 				break;
 			case NIT_ISDBT:
 				StringCchPrintf(szTemp, sizeof(szTemp), "%.3f MHz - %s", (double)v->pNITData[nTransportStreamID]->nFrequency / 100000.0, v->pNITData[nTransportStreamID]->szNetworkName);
-				break;
-			case NIT_ISDBS:
-				/* TODO */
 				break;
 			}
 			if (v->pNITData[nTransportStreamID]->fThisTS != TRUE)
