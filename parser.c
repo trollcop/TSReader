@@ -187,14 +187,14 @@ void ParseATSCEITPacket(BYTE * pSectionPointer, int nPacketLength, int nEITNumbe
 							}
 							if (thiseitevent.pExtraDescriptors[i] == NULL)
 							{
-								int k;
+								int l;
 
 								thiseitevent.pExtraDescriptors[i] = &v->tempDescriptorBuffer[i][0];
 								thiseitevent.pExtraDescriptors[i][0] = descriptor_tag;
 								thiseitevent.pExtraDescriptors[i][1] = descriptor_length;
 
-								for (k = 0; k < descriptor_length; k++)
-									thiseitevent.pExtraDescriptors[i][k + 2] = bDescriptorBuffer[k];
+								for (l = 0; l < descriptor_length; l++)
+									thiseitevent.pExtraDescriptors[i][l + 2] = bDescriptorBuffer[l];
 								break;
 							}
 						}
@@ -728,8 +728,6 @@ void ParseDVBEITPacket(BYTE * pSectionPointer, int nPacketLength)
 					default:
 LogDefaultEITDescriptor:
 						{
-							int i;
-
 							for (i = 0; i < MAX_EIT_EXTRA_DESCRIPTORS; i++)
 							{
 								if (thiseitevent.pExtraDescriptors[i] != NULL)
@@ -769,7 +767,6 @@ LogDefaultEITDescriptor:
 							v->pEvents[nServiceID] = LocalAlloc(LPTR, sizeof(EITEVENT) + 4);
 							if (v->pEvents[nServiceID] != NULL)
 							{
-								int i;
 								PEITEVENT pNewItem = v->pEvents[nServiceID];
 
 								memcpy(v->pEvents[nServiceID], &thiseitevent, sizeof(EITEVENT));
@@ -836,8 +833,6 @@ LogDefaultEITDescriptor:
 									PEITEVENT pNewEvent = LocalAlloc(LPTR, sizeof(EITEVENT) + 4);
 									if (pNewEvent != NULL)
 									{
-										int i;
-
 										memcpy(pNewEvent, &thiseitevent, sizeof(EITEVENT));
 										pNewEIT = pNewEvent;
 										if (lstrlen(szShortEventDescription))
@@ -882,8 +877,6 @@ LogDefaultEITDescriptor:
 				
 				if (fUsedThisEITEvent == FALSE)
 				{
-					int i;
-
 					for (i = 0; i < MAX_EIT_EXTRA_DESCRIPTORS; i++)
 					{
 						if (thiseitevent.pExtraDescriptors[i] == NULL)
@@ -1243,8 +1236,6 @@ void ParseDVBSDTPacket(BYTE * pSectionPointer, int nPacketLength)
 								//break;		// DON'T BREAK - we want to save this descriptor too
 							default:
 								{
-									int i;
-
 									for (i = 0; i < MAX_SDT_EXTRA_DESCRIPTORS; i++)
 									{
 										if (thischanneldata.pExtraDescriptors[i] != NULL)
@@ -1330,15 +1321,15 @@ BOOL ParseDCIIPMTTypeThing(BYTE * pSectionPointer, int nPacketLength, int nCurre
 		
 		for (i = 0; i < 7; i++)
 		{
-			int unknown = get_bits(BM_PARSER_THREAD, 8);
+			get_bits(BM_PARSER_THREAD, 8); /* unknown */
 		}
 		for (i = 0; i < 6; i++)
 		{
-			int CABytes = get_bits(BM_PARSER_THREAD, 8);
+			get_bits(BM_PARSER_THREAD, 8); /* CABytes */
 		}
 		for (i = 0; i < 8; i++)
 		{
-			int unknown = get_bits(BM_PARSER_THREAD, 8);
+			get_bits(BM_PARSER_THREAD, 8); /* unknown */
 		}
 		{
 			get_bits(BM_PARSER_THREAD, 3); /* unknown1 */
@@ -1745,8 +1736,8 @@ void ParseIPPacket(BYTE * pSectionPointer, int nPacketLength, int nPID, int nBuf
 	int llc_snap_offset = 0;
 	int reserved;
 	BOOL fAddit = TRUE;
-	PIPMACENTRY pCurrentMac;
-	PIPENTRY pCurrentIP;
+	PIPMACENTRY pCurrentMac = NULL;
+	PIPENTRY pCurrentIP = NULL;
 	MPEIPPACKET mpe;
 
 
@@ -2011,7 +2002,6 @@ void ParseIPPacket(BYTE * pSectionPointer, int nPacketLength, int nPID, int nBuf
 						if (pCurrentIP->fTransmitting == TRUE)
 						{
 							int nEthernetLength = 0;
-							int i;
 							BYTE pEthernetBuffer[1514];
 
 							// Destination Ethernet address
@@ -2890,7 +2880,7 @@ void ParseDCIINetworkPacket(BYTE * pSectionPointer, int nPacketLength)
 
 				if (table_type == 4) // TDT special
 				{
-					satellite_ID = pSectionPointer[0];
+					uint8_t TDTsatellite_ID = pSectionPointer[0];
 					pSectionPointer++;
 					nPacketLength--;
 				}
@@ -2928,13 +2918,12 @@ void ParseDCIINetworkPacket(BYTE * pSectionPointer, int nPacketLength)
 						break;
 					case 3:				// SIT
 						{
-							int j;
-							int satellite_ID = pSectionPointer[0];
+							uint8_t SITsatellite_ID = pSectionPointer[0];
 							BOOL fDontAdd = FALSE;
 
 							for (j = 0; j < MAX_SIT_ENTRIES; j++)
 							{
-								if (v->sit[j].satellite_ID == satellite_ID)
+								if (v->sit[j].satellite_ID == SITsatellite_ID)
 								{
 									fDontAdd = TRUE;
 									break;
@@ -2951,7 +2940,7 @@ void ParseDCIINetworkPacket(BYTE * pSectionPointer, int nPacketLength)
 #endif DEBUG_MESSAGES
 								break;
 							}
-							v->sit[j].satellite_ID = satellite_ID;
+							v->sit[j].satellite_ID = SITsatellite_ID;
 							v->sit[j].you_are_here = pSectionPointer[1] & 0x80;
 							v->sit[j].frequency_band = (pSectionPointer[1] >> 5) & 0x03;
 							v->sit[j].out_of_service = pSectionPointer[1] & 0x10;
@@ -2968,7 +2957,6 @@ void ParseDCIINetworkPacket(BYTE * pSectionPointer, int nPacketLength)
 						break;
 					case 4:				// TDT
 						{
-							int j;
 							BOOL fDontAdd = FALSE;
 							int transponder_number = pSectionPointer[0] & 0x3f;
 							
@@ -3303,14 +3291,14 @@ void ParseDCIINetworkPacket(BYTE * pSectionPointer, int nPacketLength)
 								}
 								else
 								{
-									int reserved1 = get_bits(BM_PARSER_THREAD, 3);
-									int prefered_source = get_bits(BM_PARSER_THREAD, 1);
-									int virtual_channel_number = get_bits(BM_PARSER_THREAD, 12);
-									int application_virtual_channel = get_bits(BM_PARSER_THREAD, 1);
-									int bitstream_select = get_bits(BM_PARSER_THREAD, 1);
-									int path_select = get_bits(BM_PARSER_THREAD, 1);
-									int transport_type = get_bits(BM_PARSER_THREAD, 1);
-									int channel_type = get_bits(BM_PARSER_THREAD, 4);
+									get_bits(BM_PARSER_THREAD, 3); /* reserved1 */
+									get_bits(BM_PARSER_THREAD, 1); /* prefered_source */
+									get_bits(BM_PARSER_THREAD, 12); /* virtual_channel_number */
+									get_bits(BM_PARSER_THREAD, 1); /* application_virtual_channel */
+									get_bits(BM_PARSER_THREAD, 1); /* bitstream_select */
+									get_bits(BM_PARSER_THREAD, 1); /* path_select */
+									get_bits(BM_PARSER_THREAD, 1); /* transport_type */
+									get_bits(BM_PARSER_THREAD, 4); /* channel_type */
 
 									// virtual_channel
 								}
@@ -4095,7 +4083,7 @@ void QuickParseUserData(BYTE * pData, int user_data_len, int nESParsePMTIndex, i
 					user_data_len -= 1;
 					if (active_format_flag == 1)
 					{
-						int reserved = get_bits(BM_MPEG2_THREAD + nES, 4);
+						get_bits(BM_MPEG2_THREAD + nES, 4); /* reserved */
 						int active_format = get_bits(BM_MPEG2_THREAD + nES, 4);
 						user_data_len -= 1;
 						v->pat.pmt[nESParsePMTIndex].es[nESParseESIndex].dwAFDData = active_format;

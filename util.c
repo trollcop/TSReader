@@ -79,7 +79,7 @@ void UpdateSecondaryStatusText(char * szText)
 	LeaveCriticalSection(&v->csStatusbar);
 }
 
-BOOL ATSCPIDs()
+BOOL ATSCPIDs(void)
 {
 	if (v->nStreamTo == 0 && v->fATSCRecordMode == TRUE)
 		return TRUE;
@@ -97,7 +97,7 @@ __int64 DecodeMPEG2PCR(BYTE * bAB)
 	return ((nPCR_base >> 7) * (__int64)300) + nPCR_ext;
 }
 
-int GetTotalPMTChannels()
+int GetTotalPMTChannels(void)
 {
 	int nRetVal = 0;
 	int nPMTIndex;
@@ -391,7 +391,7 @@ void GetATSCMultipleString(int nBitBufferIndex, char * szOutputString, int nLeng
 			{
 			case 0:		// not compressed
 				for (m = 0; m < number_bytes; m++)
-					compressed_string_byte[m] = get_bits(nBitBufferIndex, 8);
+					compressed_string_byte[m] = get_bits(nBitBufferIndex, 8) & 0xff;
 				compressed_string_byte[m] = '\0';
 				lstrcat(szOutputString, (LPCSTR)compressed_string_byte);
 				break;
@@ -453,7 +453,7 @@ void GetExtendedChannelName(BYTE * pSectionPointer, char * szLongName)
 		lstrcpy(szLongName, szExtendedName);
 }
 
-void CursorNormal()
+void CursorNormal(void)
 {
 	ReleaseCapture();
 	SetCursor(LoadCursor(NULL, IDC_ARROW));
@@ -540,12 +540,12 @@ void ConvertATSCDateTime(DWORD dwGPSTime, SYSTEMTIME * st)
 	atsctime = gmtime((time_t *)&dwUnixTime);
 	if (atsctime != NULL)
 	{
-		st->wYear = atsctime->tm_year + 1900;
-		st->wMonth = atsctime->tm_mon + 1;
-		st->wDay = atsctime->tm_mday;
-		st->wHour = atsctime->tm_hour;
-		st->wMinute = atsctime->tm_min;
-		st->wSecond = atsctime->tm_sec;
+		st->wYear = (WORD)(atsctime->tm_year + 1900);
+		st->wMonth = (WORD)(atsctime->tm_mon + 1);
+		st->wDay = (WORD)(atsctime->tm_mday);
+		st->wHour = (WORD)(atsctime->tm_hour);
+		st->wMinute = (WORD)(atsctime->tm_min);
+		st->wSecond = (WORD)(atsctime->tm_sec);
 	}
 }
 
@@ -921,7 +921,7 @@ void WriteHTMLASCII(HANDLE hFile, char * szBuffer)
 
 }
 
-int GetVideoStreamCount()
+int GetVideoStreamCount(void)
 {
 	int nRetVal = 0;
 	int nPMTIndex, nESIndex;
@@ -952,7 +952,7 @@ int GetVideoStreamCount()
 	return nRetVal;
 }
 
-int GetProgramCount()
+int GetProgramCount(void)
 {
 	int nRetVal = 0;
 	int nPMTIndex;
@@ -1040,13 +1040,14 @@ void YUVtoRGB(BYTE * pImage, BYTE * pY, BYTE * pU, BYTE * pV, int x, int y)
 		for (j = 0; j < x; ++j)
 		{
 			int sub_j_uv = ((j * uv_width) / x);
-			int y = pY[(i * x) + j] - 16;
+			int y1 = pY[(i * x) + j] - 16;
 			int u = pU[(sub_i_uv * uv_width) + sub_j_uv] - 128;
-			int v = pV[(sub_i_uv * uv_width) + sub_j_uv] - 128;
-			int r = (int)((1.1644 * (float)y) + (1.5960 * (float)v));
-			int g = (int)((1.1644 * (float)y) - (0.3918 * (float)u) - (0.8130 * (float)v));
-			int b = (int)((1.1644 * (float)y) + (2.0172 * (float)u));
+			int v1 = pV[(sub_i_uv * uv_width) + sub_j_uv] - 128;
+			int r = (int)((1.1644 * (float)y1) + (1.5960 * (float)v1));
+			int g = (int)((1.1644 * (float)y1) - (0.3918 * (float)u) - (0.8130 * (float)v1));
+			int b = (int)((1.1644 * (float)y1) + (2.0172 * (float)u));
 
+			/* clip */
 			if (r < 0)		r = 0;
 			if (g < 0)		g = 0;
 			if (b < 0)		b = 0;
@@ -1054,9 +1055,9 @@ void YUVtoRGB(BYTE * pImage, BYTE * pY, BYTE * pU, BYTE * pV, int x, int y)
 			if (g > 255)	g = 255;
 			if (b > 255)	b = 255;
 
-			pImage[(i * x + j) * 3 + 0] = r;
-			pImage[(i * x + j) * 3 + 1] = g;
-			pImage[(i * x + j) * 3 + 2] = b;
+			pImage[(i * x + j) * 3 + 0] = r & 0xff;
+			pImage[(i * x + j) * 3 + 1] = g & 0xff;
+			pImage[(i * x + j) * 3 + 2] = b & 0xff;
 		}
 	}
 }
@@ -1290,7 +1291,7 @@ void GetVideoArea(int * xStart, int * yStart, int * xWidth, int * yHeight)
 		*yHeight = (rcVideo.bottom - rcVideo.top) - 22;
 }
 
-void InvalidateThumbnails()
+void InvalidateThumbnails(void)
 {
 	int xStart, yStart, xWidth, yHeight;
 	RECT rcInvalidate;

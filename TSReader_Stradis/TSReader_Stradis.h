@@ -1,3 +1,4 @@
+#pragma once
 
 typedef BOOL (* td_SetupStradis) (PVARIABLES pv);
 typedef void (* td_ShutdownStradis) (void);

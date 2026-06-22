@@ -241,7 +241,10 @@ WCHAR Translate708CharacterSet(BYTE c)
 	case 0xff:		// musical note
 		return 0x266a;
 	}
+#if 0
+	/* TODO WHY */
 	return 0x20;
+#endif
 }
 
 void Write708Character(int nService, BYTE c)
@@ -255,13 +258,13 @@ void Write708Character(int nService, BYTE c)
 	}
 }
 
-void InitCCDecoder()
+void InitCCDecoder(void)
 {
 	int csi;
 
 	// Intialize standard character set
 	for (csi = 32; csi < 128; csi++)
-		stndChar[csi] = csi;
+		stndChar[csi] = (WCHAR)csi;
 	
 	stndChar[0x2a] = 0xe1;	// lower-case a, acute accent
 	stndChar[0x5c] = 0xe9;	// lower-case e, acute accent
@@ -571,7 +574,7 @@ void cntrlCodePreAmble(int cc, BOOL bEvenField)
 	{
 		int nWritePage = ccv->n608WriteChannel + (bEvenField * 2);
 		if (ccv->n608CursorColumn[nWritePage])
-			Write608Character(' ', bEvenField);
+			Write608Character(' ', (BYTE)bEvenField);
 		InvalidateRect(v->hWndCCDisplay, NULL, FALSE);
 	}
 
@@ -687,7 +690,7 @@ void xdsCapture(int cc)
 			int nXDSIndex = ccv->xdsLastControlCode << 8 | ccv->xdsLastType;
 			memset(ccv->bXDSBuffer[nXDSIndex], 0, sizeof(ccv->bXDSBuffer[nXDSIndex]));
 			memcpy(ccv->bXDSBuffer[nXDSIndex], ccv->xdsBuffer, ccv->xdsPosition);
-			ccv->bXDSLength[nXDSIndex] = ccv->xdsPosition;
+			ccv->bXDSLength[nXDSIndex] = ccv->xdsPosition & 0xff;
 		}
 		ccv->xdsState = XDS_IDLE;
 		InvalidateRect(v->hWndCCDisplay, NULL, FALSE);
@@ -1873,7 +1876,7 @@ void DumpUserDataBuffer(BYTE * pUserData, int nUserDataLength)
 	}
 }
 
-void SendIPCaptions()
+void SendIPCaptions(void)
 {
 	// Once for EIA-608 captions
 	if (ccv->nPictureCodingType == MPEG2_PICTURE_I)		// I-frame?
@@ -2002,7 +2005,7 @@ void Buffer608Data(BYTE cc_data_1, BYTE cc_data_2, BYTE cc_type)
 		ccv->nPFrame608Count = 0;
 }
 
-void DumpEIA608Raw(char * szSystem, int cc1, int cc2, int field_number)
+void DumpEIA608Raw(char * szSystem, uint8_t cc1, uint8_t cc2, int field_number)
 {
 	DWORD dwWritten;
 	char szTemp[256];
@@ -2023,7 +2026,7 @@ void DumpEIA608Raw(char * szSystem, int cc1, int cc2, int field_number)
 	WriteFile(v->hCCLogFile, szTemp, lstrlen(szTemp), &dwWritten, NULL);
 }
 
-void DumpEIA708Raw(char * szSystem, int cc1, int cc2, int field_number)
+void DumpEIA708Raw(char * szSystem, uint8_t cc1, uint8_t cc2, int field_number)
 {
 	DWORD dwWritten;
 	char szTemp[256];
@@ -2040,7 +2043,7 @@ void DumpEIA708Raw(char * szSystem, int cc1, int cc2, int field_number)
 	WriteFile(v->hCCLogFile, szTemp, lstrlen(szTemp), &dwWritten, NULL);
 }
 
-void CCParseSystemSCTE20()
+void CCParseSystemSCTE20(void)
 {
 	static char szSystem[] = {"SCTE-20"};
 
@@ -2051,12 +2054,12 @@ void CCParseSystemSCTE20()
 
 		for (i = 0; i < cc_count; i++)
 		{
-			int cc_priority = get_bits(BM_CC_THREAD, 2);
-			int field_number = get_bits(BM_CC_THREAD, 2);
-			int line_offset = get_bits(BM_CC_THREAD, 5);
-			int cc1 = get_bits(BM_CC_THREAD, 8);
-			int cc2 = get_bits(BM_CC_THREAD, 8);
-			int marker_bit = get_bits(BM_CC_THREAD, 1);
+			uint8_t cc_priority = get_bits(BM_CC_THREAD, 2) & 3;
+			uint8_t field_number = get_bits(BM_CC_THREAD, 2) & 3;
+			uint8_t line_offset = get_bits(BM_CC_THREAD, 5) & 0x1f;
+			uint8_t cc1 = get_bits(BM_CC_THREAD, 8) & 0xff;
+			uint8_t cc2 = get_bits(BM_CC_THREAD, 8) & 0xff;
+			uint8_t marker_bit = get_bits(BM_CC_THREAD, 1) & 1;
 
 			if (line_offset == 11)
 			{
@@ -2082,7 +2085,7 @@ void CCParseSystemSCTE20()
 	}
 }
 
-void CCParseSystemCCUBE()
+void CCParseSystemCCUBE(void)
 {
 	int junk = get_bits(BM_CC_THREAD, 5 * 8);		// 5 bytes of junk
 	int type = get_bits(BM_CC_THREAD, 8);
@@ -2095,10 +2098,10 @@ void CCParseSystemCCUBE()
 		break;
 	case 0x02:		// 2 byte caption - can be repeated
 		{
-			int junk = get_bits(BM_CC_THREAD, 8);
-			int cc_data_1 = get_bits(BM_CC_THREAD, 8) & 0x7f;
-			int cc_data_2 = get_bits(BM_CC_THREAD, 8) & 0x7f;
-			int repeater = get_bits(BM_CC_THREAD, 8);
+			get_bits(BM_CC_THREAD, 8); /* junk */
+			uint8_t cc_data_1 = get_bits(BM_CC_THREAD, 8) & 0x7f;
+			uint8_t cc_data_2 = get_bits(BM_CC_THREAD, 8) & 0x7f;
+			uint8_t repeater = get_bits(BM_CC_THREAD, 8) & 0xff;
 			cc608(cc_data_1 << 8 | cc_data_2, 0);
 			if (v->fCCLogActive && (v->nCCDumpOptions & CC_DUMP_EIA_608))
 				DumpEIA608Raw(szSystem, cc_data_1, cc_data_2, 0);
@@ -2112,9 +2115,9 @@ void CCParseSystemCCUBE()
 		break;
 	case 0x04:		// 4 byte caption - not repeated
 		{
-			int junk = get_bits(BM_CC_THREAD, 8);
-			int cc_data_1 = get_bits(BM_CC_THREAD, 8) & 0x7f;
-			int cc_data_2 = get_bits(BM_CC_THREAD, 8) & 0x7f;
+			get_bits(BM_CC_THREAD, 8); /* junk */
+			uint8_t cc_data_1 = get_bits(BM_CC_THREAD, 8) & 0x7f;
+			uint8_t cc_data_2 = get_bits(BM_CC_THREAD, 8) & 0x7f;
 			cc608(cc_data_1 << 8 | cc_data_2, 0);
 			if (v->fCCLogActive && (v->nCCDumpOptions & CC_DUMP_EIA_608))
 				DumpEIA608Raw(szSystem, cc_data_1, cc_data_2, 0);
@@ -2128,11 +2131,11 @@ void CCParseSystemCCUBE()
 	case 0x05:		// type 5 is used by P (Predictive) frames, so we have to hold each one until the next
 					// P frame is received
 		{
-			int junk1 = get_bits(BM_CC_THREAD, 8 * 6);
-			int type = get_bits(BM_CC_THREAD, 8);
-			int junk2 = get_bits(BM_CC_THREAD, 8);
-			int cc_data_1 = get_bits(BM_CC_THREAD, 8) & 0x7f;
-			int cc_data_2 = get_bits(BM_CC_THREAD, 8) & 0x7f;
+			get_bits(BM_CC_THREAD, 8 * 6) /* junk1 */;
+			uint8_t ctype = get_bits(BM_CC_THREAD, 8) & 0xff;
+			get_bits(BM_CC_THREAD, 8) /* junk2 */;
+			uint8_t cc_data_1 = get_bits(BM_CC_THREAD, 8) & 0x7f;
+			uint8_t cc_data_2 = get_bits(BM_CC_THREAD, 8) & 0x7f;
 
 			if (v->fCCLogActive && (v->nCCDumpOptions & CC_DUMP_EIA_608))
 				DumpEIA608Raw(szSystem, cc_data_1, cc_data_2, 0);
@@ -2144,7 +2147,7 @@ void CCParseSystemCCUBE()
 			ccv->bPFrameCC608[0] = cc_data_1;
 			ccv->bPFrameCC608[1] = cc_data_2;
 			ccv->bPFrameCC608[2] = 0;
-			switch(type)
+			switch(ctype)
 			{
 			case 0x02:
 				break;
@@ -2160,7 +2163,7 @@ void CCParseSystemCCUBE()
 	}
 }
 
-void CCParseSystemATSC()
+void CCParseSystemATSC(void)
 {
 	BOOL process_em_data_flag = get_bits(BM_CC_THREAD, 1);
 	BOOL process_cc_data_flag = get_bits(BM_CC_THREAD, 1);
@@ -2173,11 +2176,11 @@ void CCParseSystemATSC()
 	SendIPCaptions();
 	for (i = 0; i < cc_count; i++ )
 	{
-		int marker_bits = get_bits(BM_CC_THREAD, 5);
-		BOOL cc_valid = get_bits(BM_CC_THREAD, 1);
-		int cc_type = get_bits(BM_CC_THREAD, 2);
-		BYTE cc_data_1 = get_bits(BM_CC_THREAD, 8);
-		BYTE cc_data_2 = get_bits(BM_CC_THREAD, 8);
+		uint8_t marker_bits = get_bits(BM_CC_THREAD, 5) & 0x1f;
+		BOOL cc_valid = get_bits(BM_CC_THREAD, 1) & 1;
+		uint8_t cc_type = get_bits(BM_CC_THREAD, 2) & 3;
+		uint8_t cc_data_1 = get_bits(BM_CC_THREAD, 8) & 0xff;
+		uint8_t cc_data_2 = get_bits(BM_CC_THREAD, 8) & 0xff;
 
 		if (cc_valid)
 		{
@@ -2198,13 +2201,13 @@ void CCParseSystemATSC()
 	}
 }
 
-void CCParseSystemSciAtl()
+void CCParseSystemSciAtl(void)
 {
-	int reserved_04 = get_bits(BM_CC_THREAD, 8);
-	int reserved_e2 = get_bits(BM_CC_THREAD, 8);
-	int reserved_b1 = get_bits(BM_CC_THREAD, 8);
-	int cc1 = get_bits(BM_CC_THREAD, 8);
-	int cc2 = get_bits(BM_CC_THREAD, 8);
+	uint8_t reserved_04 = get_bits(BM_CC_THREAD, 8) & 0xff;
+	get_bits(BM_CC_THREAD, 8); /* reserved_e2 */
+	get_bits(BM_CC_THREAD, 8); /* reserved_b1 */
+	uint8_t cc1 = get_bits(BM_CC_THREAD, 8) & 0xff;
+	uint8_t cc2 = get_bits(BM_CC_THREAD, 8) & 0xff;
 	static char szSystem[] = {"Sci.Atl."};
 
 	if (reserved_04 == 0x04)
@@ -2217,8 +2220,8 @@ void CCParseSystemSciAtl()
 			int reserved_b2 = get_bits(BM_CC_THREAD, 8);
 			if (reserved_b2 == 0xb2)
 			{
-				cc1 = get_bits(BM_CC_THREAD, 8);
-				cc2 = get_bits(BM_CC_THREAD, 8);
+				cc1 = get_bits(BM_CC_THREAD, 8) & 0xff;
+				cc2 = get_bits(BM_CC_THREAD, 8) & 0xff;
 				Buffer608Data(cc1 & 0x7f, cc2 & 0x7f, 1);
 				if (v->fCCLogActive && (v->nCCDumpOptions & CC_DUMP_EIA_608))
 					DumpEIA608Raw(szSystem, cc1, cc2, 1);
@@ -2227,9 +2230,9 @@ void CCParseSystemSciAtl()
 	}
 }
 
-void CCParseSystemDIRECTV()
+void CCParseSystemDIRECTV(void)
 {
-	int cc1, cc2;
+	uint8_t cc1, cc2;
 	static char szSystem[] = {"DIRECTV"};
 
 	get_bits(BM_CC_THREAD, 8);	// 0x10
@@ -2238,22 +2241,22 @@ void CCParseSystemDIRECTV()
 
 	SendIPCaptions();
 
-	cc1 = get_bits(BM_CC_THREAD, 8);
-	cc2 = get_bits(BM_CC_THREAD, 8);
+	cc1 = get_bits(BM_CC_THREAD, 8) & 0xff;
+	cc2 = get_bits(BM_CC_THREAD, 8) & 0xff;
 	Buffer608Data(cc1  & 0x7f, cc2 & 0x7f, 0);								
 	if (v->fCCLogActive && (v->nCCDumpOptions & CC_DUMP_EIA_608))
 		DumpEIA608Raw(szSystem, cc1, cc2, 0);
 
 	get_bits(BM_CC_THREAD, 8);	// 0x03
 	get_bits(BM_CC_THREAD, 8);	// 0x0a
-	cc1 = get_bits(BM_CC_THREAD, 8);
-	cc2 = get_bits(BM_CC_THREAD, 8);
+	cc1 = get_bits(BM_CC_THREAD, 8) & 0xff;
+	cc2 = get_bits(BM_CC_THREAD, 8) & 0xff;
 	Buffer608Data(cc1  & 0x7f, cc2 & 0x7f, 1);								
 	if (v->fCCLogActive && (v->nCCDumpOptions & CC_DUMP_EIA_608))
 		DumpEIA608Raw(szSystem, cc1, cc2, 1);
 }
 
-void CCParseSystem32133f()
+void CCParseSystem32133f(void)
 {
 	int reserved = get_bits(BM_CC_THREAD, 1);
 	int process_cc_data_flag = get_bits(BM_CC_THREAD, 1);
@@ -2266,12 +2269,12 @@ void CCParseSystem32133f()
 	reserved = get_bits(BM_CC_THREAD, 8);
 	for (i = 0; i < cc_count; i++)
 	{
-		int one_bit = get_bits(BM_CC_THREAD, 1);
-		int reserved = get_bits(BM_CC_THREAD, 4);
-		int cc_valid = get_bits(BM_CC_THREAD, 1);
-		int cc_type = get_bits(BM_CC_THREAD, 2);
-		int cc1 = get_bits(BM_CC_THREAD, 8);
-		int cc2 = get_bits(BM_CC_THREAD, 8);
+		get_bits(BM_CC_THREAD, 1); /* one_bit */
+		get_bits(BM_CC_THREAD, 4); /* reserved */
+		uint8_t cc_valid = get_bits(BM_CC_THREAD, 1) & 1;
+		uint8_t cc_type = get_bits(BM_CC_THREAD, 2) & 3;
+		uint8_t cc1 = get_bits(BM_CC_THREAD, 8) & 0xff;
+		uint8_t cc2 = get_bits(BM_CC_THREAD, 8) & 0xff;
 
 		if (cc_valid)
 		{
@@ -2302,7 +2305,7 @@ void ParseUserData(BYTE * pUserData, int nUserDataLength)
 	set_buf(BM_CC_THREAD, pUserData, 0, FALSE);
 	{
 		DWORD ATSC_identifier = get_bits(BM_CC_THREAD, 32);
-		BYTE user_data_type_code = get_bits(BM_CC_THREAD, 8);
+		uint8_t user_data_type_code = get_bits(BM_CC_THREAD, 8) & 0xff;
 		if (user_data_type_code == 0x03 && ATSC_identifier == 0x47413934)
 		{
 			// ATSC format
@@ -2828,7 +2831,7 @@ void CCPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	if (!ccv->fDisplay708)
 	{
 		int nPage;
-		int nPageMaxX, nPageMaxY;
+		int nPageMaxX = 0, nPageMaxY = 0;
 
 		for (nPage = 0; nPage < CC608_PAGES; nPage++)
 		{
@@ -2887,7 +2890,7 @@ void CCPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 				int nBufferOffset = 0;
 				int nStartX = -1;
 				WCHAR bOutputBuffer[CAPTION_COLUMNS];
-				BYTE b608CurrentAttribute;
+				uint8_t b608CurrentAttribute = 0;
 
 				nColumn = 0;
 				while (nColumn < CAPTION_COLUMNS)
@@ -2941,8 +2944,8 @@ void CCPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		{
 			if (ccv->bXDSLength[nXDSIndex])
 			{
-				BYTE bXDSCode = nXDSIndex >> 8;
-				BYTE bXDSType = nXDSIndex & 0xff;
+				uint8_t bXDSCode = (nXDSIndex >> 8) & 0xff;
+				uint8_t bXDSType = nXDSIndex & 0xff;
 				char szXDSDecode[1024];
 
 				switch (bXDSCode)
@@ -3033,7 +3036,7 @@ void CCPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 				int nBufferOffset = 0;
 				int nStartX = -1;
 				WCHAR bOutputBuffer[CAPTION_COLUMNS];
-				BYTE b708CurrentAttribute;
+				uint8_t b708CurrentAttribute = 0;
 
 				nColumn = 0;
 				while (nColumn < CAPTION_COLUMNS)

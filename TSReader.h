@@ -351,6 +351,8 @@ enum EVENT_ICONS
 #define DESCRIPTOR_MGT 8
 #define MAX_DESCRIPTOR_TAG_ARRAY DESCRIPTOR_MGT + 1
 
+#define MANUAL_CHANNEL_PMT_PID	((uint16_t)-2)
+
 #define MAX_EIT_CONNECTIONS 100
 typedef struct _tagConnection
 {
@@ -580,6 +582,7 @@ typedef struct _tagNITISDBSEntry {
 	/* TODO */
 	uint8_t nGuardInterval;
 	uint8_t nTransmissionMode;
+	uint16_t tsid;
 } NITISDBSENTRY, *PNITISDBSENTRY;
 
 typedef enum _tagNITType {

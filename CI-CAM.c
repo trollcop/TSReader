@@ -9,18 +9,18 @@
 extern PVARIABLES v;
 extern char gszAppName[];
 
-typedef BOOL (* td_initMMI) ();
+typedef BOOL (* td_initMMI) (void);
 typedef BOOL (* td_getMMI) (MMI_Info *pMMIInfo, int *pType);
 typedef BOOL (* td_answerMMI) (MMI_Info *pMMIInfo, int Type);
 typedef BOOL (* td_getAppInfo) (App_Info *pAppInfo, int * CAM_Type);
-typedef BOOL (* td_closeMMI) ();
-BOOL (* initMMI) ();
-BOOL (* getMMI) (MMI_Info *pMMIInfo, int *pType);
-BOOL (* answerMMI) (MMI_Info *pMMIInfo, int Type);
-BOOL (* getAppInfo) (App_Info *pAppInfo, int * CAM_Type);
-BOOL (* closeMMI) ();
+typedef BOOL (* td_closeMMI) (void);
+static td_initMMI initMMI;
+static td_getMMI getMMI;
+static td_answerMMI answerMMI;
+static td_getAppInfo getAppInfo;
+static td_closeMMI closeMMI;
 
-void CursorNormal();
+void CursorNormal(void);
 void CursorWait(HWND hWnd);
 
 int CAM_Type = CAM_DEFAULT;
@@ -432,7 +432,7 @@ void Analyse_PMT(BYTE *pBuf, int BufSize, DWORD VPid, DWORD APid, BYTE *pStartPM
 // pMMIInfo->MenuItem, sample, if select the 
 // item 3, m_strEnterCode = "3".
 
-int GetCIInfo()
+int GetCIInfo(void)
 {
 	return 6;
 }
@@ -441,7 +441,7 @@ void DeEscapeCIString(unsigned char * szString)
 {
 	int i;
 
-	for (i = 0; i < lstrlen(szString); i++)
+	for (i = 0; i < lstrlen((LPCSTR)szString); i++)
 	{
 		if ((szString[i] & 0x7f) < 32)
 		{
@@ -459,9 +459,9 @@ void UpdateCIMenu(HWND hDlg, MMI_Info *pCIMenuInfo, int nType)
 	if(!pCIMenuInfo)
 		return;
 
-	DeEscapeCIString(pCIMenuInfo->Header);
-	DeEscapeCIString(pCIMenuInfo->SubHeader);
-	DeEscapeCIString(pCIMenuInfo->ButtomLine);
+	DeEscapeCIString((unsigned char *)pCIMenuInfo->Header);
+	DeEscapeCIString((unsigned char *)pCIMenuInfo->SubHeader);
+	DeEscapeCIString((unsigned char *)pCIMenuInfo->ButtomLine);
 
 	SetDlgItemText(hDlg, IDC_CAM_HEADER, pCIMenuInfo->Header);
 	SetDlgItemText(hDlg, IDC_CAM_SUB_HEADER, pCIMenuInfo->SubHeader);
@@ -533,7 +533,7 @@ BOOL CIInit(HWND hDlg)
 	int nRetType = 0;
 	int nTimeout;
 	MMI_Info CIMenuInfo;
-	App_Info AppInfo;
+	App_Info AppInfo = { 0, };
 	char strType[128] = {0};
 
 	if (!bCIFlag || ! bCAMInfo)
@@ -588,7 +588,6 @@ BOOL CIInit(HWND hDlg)
 	CursorNormal();
 	return TRUE;
 }
-
 
 // Enter next CI Menu
 void EntryNextCI(HWND hDlg)
@@ -773,7 +772,7 @@ INT_PTR CALLBACK CAMMenuDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 		case LBN_DBLCLK:
 			{
 				int nItem = (int)SendDlgItemMessage(hDlg, IDC_CAM_LIST, LB_GETCURSEL, 0, 0);
-				m_strEnterCode[0] = nItem + 1 + '0';
+				m_strEnterCode[0] = (char)(nItem + 1 + '0');
 				m_strEnterCode[1] = 0;
 				m_nAnswerType = 1;
 				EntryNextCI(hDlg);

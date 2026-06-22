@@ -52,7 +52,7 @@ tMDISTREAM *mdiStreamInit(unsigned int mtspSize)
 		pStream->pidArray = (MDIUBYTE *)(&pStream->bytesArray[MDI_MAX_SAMPLES]);
 		memset((void *)pStream->pidArray, 0, 8192 * sizeof(MDIUBYTE));
 
-		pStream->mtspSize = mtspSize;
+		pStream->mtspSize = (MDIUBYTE)mtspSize;
 		pStream->pcrPid = (MDIUSHORT)-1;
 	}
 
@@ -176,7 +176,7 @@ void mdiPacket(MDITIME ts, void *pPayload, unsigned int nPayloadBytes, tMDISTREA
 					if (0 != (ccDiff = abs(((pStream->pidArray[pid] + ((u.p8[3] & 0x10) ? 1 : 0)) & 0x0F) - (u.p8[3] & 0x0F))))
 					{
 						/* CC error detected.  Increment the stream's CC error count. */
-						pStream->ccErrors += ccDiff;
+						pStream->ccErrors += (MDIUSHORT)ccDiff;
 
 						/* We won't be able to compute the PCR bitrate for
 						   this segment due to missing MTSP(s). */

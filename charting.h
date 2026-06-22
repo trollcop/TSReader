@@ -12,3 +12,4 @@ BOOL GetVideoCompositionPID(HWND hWnd);
 LRESULT FAR PASCAL SignalChartWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 LRESULT FAR PASCAL PIDUsageVBRStackedAreaWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void AddDataToPIDUsageStackedChart(int nPIDUsageStackedAreaChartIndex);
+void Charting__UpdateQuickStyle(int nChartIndex);

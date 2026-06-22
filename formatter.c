@@ -2867,10 +2867,8 @@ void DecodeMPEG2Descriptor(BYTE * pDescriptorData, BOOL fHTMLMode)
 {
 	char szTemp[32 * 1024] = {""};
 
-	int i;
-
 	// User decoding in Pro
-	for (i = 0; i < 5; i++)
+	for (int i = 0; i < 5; i++)
 	{
 		if (DescriptorDecode[i] != NULL)
 		{
@@ -5407,11 +5405,11 @@ char * FormatNITEntry(int nTransportStreamID, BOOL fIncludeHTMLTags)
 			uint8_t descriptor_tag = pDescriptors[0];
 			int descriptor_length = pDescriptors[1];
 			char szDescriptor[128];
-			char szTemp[256];
+			char szDescTemp[256];
 
 			DecodeDescriptorNames(szDescriptor, descriptor_tag);
-			wsprintf(szTemp, "\r\nDescriptor: %s\r\n", szDescriptor);
-			lstrcat(v->szSIFormatBuffer, szTemp);
+			wsprintf(szDescTemp, "\r\nDescriptor: %s\r\n", szDescriptor);
+			lstrcat(v->szSIFormatBuffer, szDescTemp);
 			DecodeMPEG2Descriptor(pDescriptors, fIncludeHTMLTags);
 
 			nNetworkDescriptorsLength -= descriptor_length + 2;
@@ -5535,10 +5533,10 @@ char * FormatNITEntry(int nTransportStreamID, BOOL fIncludeHTMLTags)
 		default:
 			{
 				char szDescriptor[128];
-				char szTemp[256];
+				char szDescTemp[256];
 				DecodeDescriptorNames(szDescriptor, v->pNITData[nTransportStreamID]->pExtraDescriptors[i][0]);
-				wsprintf(szTemp, "\r\nDescriptor: %s\r\n", szDescriptor);
-				lstrcat(v->szSIFormatBuffer, szTemp);
+				wsprintf(szDescTemp, "\r\nDescriptor: %s\r\n", szDescriptor);
+				lstrcat(v->szSIFormatBuffer, szDescTemp);
 
 				DecodeMPEG2Descriptor(v->pNITData[nTransportStreamID]->pExtraDescriptors[i], fIncludeHTMLTags);
 			}
@@ -5965,11 +5963,11 @@ char * FormatEITEntry(int nChannelNumber, int nEITFormat, BOOL fIncludeHTMLTags)
 						case EIT_FORMAT_PLAIN:
 							{
 								char szDescriptor[256];
-								char szTemp[256];
+								char szDescTemp[256];
 
 								DecodeDescriptorNames(szDescriptor, pSortList[nEITIndex].pExtraDescriptors[i][0]);
-								wsprintf(szTemp, "\r\nDescriptor: %s\r\n", szDescriptor);
-								lstrcat(v->szSIFormatBuffer, szTemp);
+								wsprintf(szDescTemp, "\r\nDescriptor: %s\r\n", szDescriptor);
+								lstrcat(v->szSIFormatBuffer, szDescTemp);
 								DecodeMPEG2Descriptor(pSortList[nEITIndex].pExtraDescriptors[i], FALSE);
 							}
 							break;
@@ -5987,8 +5985,6 @@ char * FormatEITEntry(int nChannelNumber, int nEITFormat, BOOL fIncludeHTMLTags)
 
 			for (nEITIndex = 0; nEITIndex < nEITItems; nEITIndex++)
 			{
-				int i;
-
 				for (i = 0; i < MAX_EIT_EXTRA_DESCRIPTORS; i++)
 				{
 					if (pSortList[nEITIndex].pExtraDescriptors[i] == NULL)
@@ -6236,12 +6232,12 @@ char * FormatMGT(void)
 			{
 				uint8_t nDescriptor = v->mgt[i].pDescriptors[nDescriptorOffset];
 				uint8_t nThisDescriptorLength = v->mgt[i].pDescriptors[nDescriptorOffset + 1] + 2;
-				char szTemp[256];
+				char szDescTemp[256];
 				char szDescriptor[128];
 
 				DecodeDescriptorNames(szDescriptor, nDescriptor);
-				wsprintf(szTemp, " Descriptor: %s\r\n", szDescriptor);
-				lstrcat(v->szSIFormatBuffer, szTemp);
+				wsprintf(szDescTemp, " Descriptor: %s\r\n", szDescriptor);
+				lstrcat(v->szSIFormatBuffer, szDescTemp);
 
 				DecodeMPEG2Descriptor(&v->mgt[i].pDescriptors[nDescriptorOffset], FALSE);
 				nDescriptorOffset += nThisDescriptorLength;
@@ -7610,7 +7606,7 @@ char * FormatPAT(BOOL fIncludeHTMLTags, int nExportSITables)
 			break;
 		if (v->pat.pmt[i].nProgramNumber)
 		{
-			if (v->pat.pmt[i].nPMTPID == -2)
+			if (v->pat.pmt[i].nPMTPID == MANUAL_CHANNEL_PMT_PID)
 			{
 				if (fIncludeHTMLTags)
 					wsprintf(szTemp, "Manual channel - <A HREF=\"#pmt_%d\">Program %d</A> ", v->pat.pmt[i].nProgramNumber, v->pat.pmt[i].nProgramNumber);

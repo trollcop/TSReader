@@ -68,7 +68,7 @@ DWORD WINAPI EITServerThread(LPVOID pvarg)
 			break;
 	}
 	if (nConnectionNumber == MAX_EIT_CONNECTIONS)
-		return -1;
+		return (DWORD)-1;
 	v->EITConnection[nConnectionNumber].fAbort = FALSE;
 	v->EITConnection[nConnectionNumber].nCurrentEventID = -1;
 
@@ -158,7 +158,7 @@ DWORD WINAPI EITServerThread(LPVOID pvarg)
 	return 0;
 }
 
-BOOL StartEITServer()
+BOOL StartEITServer(void)
 {
 	HANDLE hThread;
 	DWORD dwThreadID;
@@ -193,14 +193,14 @@ BOOL StartEITServer()
 	local_sin.sin_addr.s_addr = INADDR_ANY;
 	//dwDotted = inet_addr(g_szBindAddr);
 	//memcpy((char FAR *)&(local_sin.sin_addr), (char FAR *)&dwDotted, 4);
-	local_sin.sin_port = htons(v->nEITServerPort);
+	local_sin.sin_port = htons((unsigned short)v->nEITServerPort);
 
 	// Bind the socket
 	if (bind(v->EITBaseSocket, (struct sockaddr FAR *) &local_sin, sizeof(local_sin)) == SOCKET_ERROR)
 	{
 		wsprintf(szTemp, "EITServer: bind() failed with %d\n", WSAGetLastError());
 		OutputDebugString(szTemp);
-		closesocket(v->EITBaseSocket);
+		closesocket((unsigned short)v->EITBaseSocket);
 		return FALSE;
 	}
 
@@ -220,7 +220,7 @@ BOOL StartEITServer()
 	return TRUE;
 }
 
-int GetEITConnectionCount()
+int GetEITConnectionCount(void)
 {
 	int nConnectionCount = 0;
 	int nConnectionNumber;
@@ -239,7 +239,7 @@ int GetEITConnectionCount()
 	return nConnectionCount;
 }
 
-BOOL TerminateEITServer()
+BOOL TerminateEITServer(void)
 {
 	if (v->fEITServerInitialized)
 	{

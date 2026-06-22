@@ -773,9 +773,10 @@ int GetNextESPID(BOOL fReset, int nES)
 			}
 			if (v->fPIDActive[v->pat.pmt[nPMTIndex].es[nESIndex].nESPID] == FALSE)
 			{
-				char szTemp[256];
-				wsprintf(szTemp, "TSReader: Ignore program %d (ES PID 0x%04x) - PID not active\n", 
+				char szTemp2[256];
+				wsprintf(szTemp2, "TSReader: Ignore program %d (ES PID 0x%04x) - PID not active\n",
 					v->pat.pmt[nPMTIndex].nProgramNumber, v->pat.pmt[nPMTIndex].es[nESIndex].nESPID);
+				OutputDebugString(szTemp2);
 				continue;	// ignore empty streams
 			}
 			if (v->pat.pmt[nPMTIndex].es[nESIndex].nBlacklisted)
@@ -1352,7 +1353,7 @@ BOOL DecodeAC3AudioHeader(BYTE * pPESPacket, int nPacketLength, int nES)
 				int lfeon;
 				int dialnorm;
 
-				int syncword = get_bits(BM_PARSER_THREAD, 16);				// AC3 syncinfo
+				get_bits(BM_PARSER_THREAD, 16); /* syncword */				// AC3 syncinfo
 				int crc1 = get_bits(BM_PARSER_THREAD, 16);
 				int fscod = get_bits(BM_PARSER_THREAD, 2);
 				int frmsizecod = get_bits(BM_PARSER_THREAD, 6);
@@ -1901,17 +1902,17 @@ void GenerateSplitFilename(char * szInputFileName, char * szOutputFileName, char
 	int nTwoDigitYear = 0;
 	BOOL fEscaped = FALSE;
 	SYSTEMTIME stTime;
-	char szCFormatString[MAX_PATH] = {0};
-	char szFileName[MAX_PATH];
-	char szExtension[128] = {0};
-	char * szExtensionPtr;
-	char szStringArguments[MAX_ARGUMENTS][128];
-	char * szArgumentPtrs[MAX_ARGUMENTS];
-	char szEITEventName[256] = {0};
-	char szNull[] = {""};
+	char szCFormatString[MAX_PATH] = { 0, };
+	char szFileName[MAX_PATH] = { 0, };
+	char szExtension[128] = { 0, };
+	char *szExtensionPtr = NULL;
+	char szStringArguments[MAX_ARGUMENTS][128] = { 0, };
+	char *szArgumentPtrs[MAX_ARGUMENTS] = { 0, };
+	char szEITEventName[256] = { 0, };
+	char szNull[] = { "" };
 
 	EnterCriticalSection(&v->csActualRecordFilename);
-	lstrcpy(szFileName, szInputFileName);		
+	lstrcpy(szFileName, szInputFileName);
 	szExtensionPtr = GetExtensionPtr(szFileName);
 	if (szExtensionPtr != NULL)
 	{
@@ -2018,14 +2019,14 @@ void GenerateSplitFilename(char * szInputFileName, char * szOutputFileName, char
 					break;
 				default:
 					wsprintf(szOutputFileName, "Invalid argument '%c'", cArgument);
-					return;
+					goto release_lock;
 				}
 				nNumberFormat = -1;
 			}
 			else
 			{
 				lstrcpy(szOutputFileName, "Invalid format mask");
-				return;
+				goto release_lock;
 			}
 		}
 	} while (*szFormatString++ != '\0' && nArgumentIndex < MAX_ARGUMENTS);
@@ -2037,6 +2038,7 @@ void GenerateSplitFilename(char * szInputFileName, char * szOutputFileName, char
 		     szArgumentPtrs[8], szArgumentPtrs[9], szArgumentPtrs[10], szArgumentPtrs[11],
 		     szArgumentPtrs[12], szArgumentPtrs[13], szArgumentPtrs[14], szArgumentPtrs[15],
 			 szArgumentPtrs[16], szArgumentPtrs[17], szArgumentPtrs[18], szArgumentPtrs[19]);
+release_lock:
 	LeaveCriticalSection(&v->csActualRecordFilename);
 }
 
@@ -3527,7 +3529,7 @@ void SetupPriorToProgramRecording(void)
 		set_bits(BM_USER_THREAD, 0x0, 1);		// '0'
 		set_bits(BM_USER_THREAD, 0x3, 2);		// reserved
 		set_bits(BM_USER_THREAD, nSectionLength, 12);	// section length
-		if (ATSCPIDs())		
+		if (ATSCPIDs())
 			set_bits(BM_USER_THREAD, 0x0003, 16);	// program number
 		else
 			set_bits(BM_USER_THREAD, 0x0001, 16);	// program number
@@ -3561,8 +3563,6 @@ void SetupPriorToProgramRecording(void)
 				SetupCAESInfo(v->nRecordVideoPID, 0);
 		}
 		{
-			int i;
-
 			for (i = 0; i < MAX_AUDIO_STREAMS; i++)
 			{
 				if (v->nRecordAudioPID[i] != 0x1fff)
@@ -3640,8 +3640,6 @@ void SetupPriorToProgramRecording(void)
 			}
 		}
 		{
-			int i;
-
 			for (i = 0; i < MAX_OTHER_STREAMS; i++)
 			{
 				if (v->nRecordOtherPID[i] != 0x1fff)
@@ -5746,7 +5744,7 @@ void PostPATProcessing(void)
 			if (v->pat.pmt[i].nPMTPID == 0)
 				break;
 			if (!(v->pat.pmt[i].nProgramNumber == 0 ||
-				  v->pat.pmt[i].nPMTPID == -2 || 
+				  v->pat.pmt[i].nPMTPID == MANUAL_CHANNEL_PMT_PID ||
 				  v->pat.pmt[i].nPMTPID == 0x1fff ||
 				  v->pat.pmt[i].nProgramNumber >= 65534 ||
 				  (v->fIgnorePMT65500 && (v->pat.pmt[i].nProgramNumber >= 65500)) ||
@@ -5770,14 +5768,14 @@ void PostPATProcessing(void)
 		else
 		{
 			UpdateMainStatusText("Waiting for PMTs to arrive...");
-			v->nPMTPID = -2;
+			v->nPMTPID = MANUAL_CHANNEL_PMT_PID;
 		}
 	}
 	else
 	{
 		v->nPMTProgramIndex = 0;	
 		while (v->pat.pmt[v->nPMTProgramIndex].nProgramNumber == 0
-			   || v->pat.pmt[v->nPMTProgramIndex].nPMTPID == -2
+			   || v->pat.pmt[v->nPMTProgramIndex].nPMTPID == MANUAL_CHANNEL_PMT_PID
 			   || v->pat.pmt[v->nPMTProgramIndex].nPMTPID == 0x1fff)
 		{
 			v->nPMTProgramIndex++;				// go with first real program
@@ -6738,7 +6736,7 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 							{
 								
 								int nPMTListenIndex;
-								if (v->nPMTPID == -2)
+								if (v->nPMTPID == MANUAL_CHANNEL_PMT_PID)
 								{
 									BOOL fAllComplete = TRUE;
 
@@ -9793,8 +9791,8 @@ void SetupForNewStream(HWND hWnd)
 	WaitForThumbnailThread(hWnd);
 	CleanupMPEGParsingThread(hWnd);
 	memset(&v->pat, 0, sizeof(v->pat));
-	v->pat.nVersionNumber = -1;
-	v->cat.nVersionNumber = -1;
+	v->pat.nVersionNumber = (uint8_t)-1;
+	v->cat.nVersionNumber = (uint8_t)-1;
 	v->nCaptionPID = -1;
 	for (i = 0; i < MAX_CHARTS; i++)
 		v->nVideoCompositionPID[i] = -1;
@@ -10530,7 +10528,7 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 			{
 				if (v->pat.pmt[nPMTIndex].nPMTPID == 0)
 					break;
-				if (v->pat.pmt[nPMTIndex].nPMTPID == -2)
+				if (v->pat.pmt[nPMTIndex].nPMTPID == MANUAL_CHANNEL_PMT_PID)
 					continue;
 				if (v->pat.pmt[nPMTIndex].nProgramNumber)
 				{
@@ -11845,7 +11843,7 @@ void SaveManualChannels(HWND hDlg)
 			{
 				if (v->pat.pmt[nPMTIndex].nPMTPID == 0)
 					break;
-				if (v->pat.pmt[nPMTIndex].nPMTPID == -2)
+				if (v->pat.pmt[nPMTIndex].nPMTPID == MANUAL_CHANNEL_PMT_PID)
 				{
 					DWORD dwWritten;
 					int nESIndex;
@@ -12465,7 +12463,7 @@ INT_PTR CALLBACK PIDListDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 			for (i = 0; i < 8192; i++)
 			{
-				char szTemp[128];
+				char szToolTip[128];
 
 				if (v->fSortChartByPID == FALSE)
 				{
@@ -12478,10 +12476,11 @@ INT_PTR CALLBACK PIDListDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 						continue;
 				}
 
-				GetPIDTooltipInfo(v->pc[i].nPID, szTemp);
-				SendDlgItemMessage(hDlg, IDC_PID_LISTBOX, LB_ADDSTRING, 0, (LPARAM)szTemp);
+				GetPIDTooltipInfo(v->pc[i].nPID, szToolTip);
+				SendDlgItemMessage(hDlg, IDC_PID_LISTBOX, LB_ADDSTRING, 0, (LPARAM)szToolTip);
 				nActivePIDs++;
 			}
+
 			wsprintf(szTemp, "PID List - %d PIDs active", nActivePIDs);
 			SendMessage(hDlg, WM_SETTEXT, 0, (LPARAM)szTemp);
 			SetFocus(GetDlgItem(hDlg, IDOK));
@@ -12761,7 +12760,7 @@ void PopulateManualChannelList(HWND hWndList)
 	{
 		if (v->pat.pmt[nPMTIndex].nPMTPID == 0)
 			break;
-		if (v->pat.pmt[nPMTIndex].nPMTPID == -2)
+		if (v->pat.pmt[nPMTIndex].nPMTPID == MANUAL_CHANNEL_PMT_PID)
 		{
 			LV_ITEM lvi; 
 			memset(&lvi, 0, sizeof(lvi));
@@ -12944,7 +12943,7 @@ INT_PTR CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam
 
 							// add this channel to the end
 							v->editpmt.nProgramNumber = nProgramNumber;
-							v->editpmt.nPMTPID = -2;
+							v->editpmt.nPMTPID = MANUAL_CHANNEL_PMT_PID;
 							memcpy(&v->pat.pmt[nPMTIndex], &v->editpmt, sizeof(PMT));
 
 							if (v->pat.hPATTreeItem == NULL)
@@ -13261,7 +13260,7 @@ BOOL LoadManualChannels(HWND hWnd, char * szInputFile)
 						v->pat.hPATTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_PAT, 0, NULL, TVI_FIRST);
 					}
 
-					newpmt.nPMTPID = -2;
+					newpmt.nPMTPID = MANUAL_CHANNEL_PMT_PID;
 					memcpy(&v->pat.pmt[nPMTIndex], &newpmt, sizeof(PMT));
 					wsprintf(szTemp, "Manual - Program %d", v->pat.pmt[nPMTIndex].nProgramNumber);
 					v->pat.pmt[nPMTIndex].hPMTTreeItem = AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_PMT + nPMTIndex, 1, v->pat.hPATTreeItem, NULL);
@@ -14392,7 +14391,7 @@ void ResizeDialogWindow(HWND hDlg, WPARAM wParam, LPARAM lParam)
 		if (wParam == SIZE_MAXIMIZED)
 		{
 			v->fCurrentMaximized = TRUE;
-			PostMessage(hDlg, WM_SIZE, -1, MAKELONG(nVerticalSize, hHorizontalSize));
+			PostMessage(hDlg, WM_SIZE, (WPARAM)-1, MAKELONG(nVerticalSize, hHorizontalSize));
 		}
 		else if (wParam == SIZE_RESTORED && v->fCurrentMaximized == TRUE)
 		{
@@ -14990,40 +14989,38 @@ int CloseExistingChart(HWND hWnd, WORD wMenuID)
 
 void GetRetuneCommandLineParameters(char * szCommandLine, int nNITIndex)
 {
-	switch(v->pNITData[nNITIndex]->nType)
-	{
-	case NIT_DVBC:
+	switch (v->pNITData[nNITIndex]->nType) {
+		case NIT_DVBC:
 		{
 			// freq sr QAM inversion bandwidth
 			int nQAMMode = 0;
 
-			switch(v->pNITData[nNITIndex]->dvbc.nModulation)
-			{
-			case 0x01:	// 16 QAM
-				nQAMMode = 0;
-				break;
-			case 0x02:	// 32 QAM
-				nQAMMode = 1;
-				break;
-			case 0x03:	// 64 QAM
-				nQAMMode = 2;
-				break;
-			case 0x04:	// 128 QAM
-				nQAMMode = 3;
-				break;
-			case 0x05:	// 256 QAM
-				nQAMMode = 4;
-				break;
+			switch (v->pNITData[nNITIndex]->dvbc.nModulation) {
+				case 0x01:	// 16 QAM
+					nQAMMode = 0;
+					break;
+				case 0x02:	// 32 QAM
+					nQAMMode = 1;
+					break;
+				case 0x03:	// 64 QAM
+					nQAMMode = 2;
+					break;
+				case 0x04:	// 128 QAM
+					nQAMMode = 3;
+					break;
+				case 0x05:	// 256 QAM
+					nQAMMode = 4;
+					break;
 			}
-			wsprintf(szCommandLine, "%d %d %d %d %d", 
-				v->pNITData[nNITIndex]->nFrequency / 10, 
+			wsprintf(szCommandLine, "%d %d %d %d %d",
+				v->pNITData[nNITIndex]->nFrequency / 10,
 				v->pNITData[nNITIndex]->dvbc.nSymbolRate / 10,
 				nQAMMode,
 				v->ss.fSpectrumInversion,
 				v->ss.nBandwidth);
 		}
 		break;
-	case NIT_DVBT:
+		case NIT_DVBT:
 		{
 			int nBandwidth = 0;
 			int nTargetFrequency = v->pNITData[nNITIndex]->nFrequency / 100;
@@ -15033,37 +15030,35 @@ void GetRetuneCommandLineParameters(char * szCommandLine, int nNITIndex)
 
 			SourceHelper_GetTSReaderEXEDirectory(v->hInstance, szINIFilename, sizeof(szINIFilename));
 			lstrcat(szINIFilename, "\\dvbt.ini");
-	
+
 			// freq inversion bandwidth
-			switch(v->pNITData[nNITIndex]->dvbt.nBandwidth)
-			{
-			case 0:
-				nBandwidth = 2;
-				break;
-			case 1:
-				nBandwidth = 1;
-				break;
-			case 2:
-				nBandwidth = 0;
-				break;
+			switch (v->pNITData[nNITIndex]->dvbt.nBandwidth) {
+				case 0:
+					nBandwidth = 2;
+					break;
+				case 1:
+					nBandwidth = 1;
+					break;
+				case 2:
+					nBandwidth = 0;
+					break;
 			}
 
 			// Translate DVB-T frequencies for repeaters via a kludgey INI file
 			sprintf(szKeyName, "%.3f", (double)v->pNITData[nNITIndex]->nFrequency / 100000.0);
 			GetPrivateProfileString("DVBT", szKeyName, "", szTranslatedFrequency, sizeof(szTranslatedFrequency), szINIFilename);
-			if (lstrlen(szTranslatedFrequency))
-			{
+			if (lstrlen(szTranslatedFrequency)) {
 				int nHigh, nLow;
 				sscanf(szTranslatedFrequency, "%d.%d", &nHigh, &nLow);
 				nTargetFrequency = (nHigh * 1000) + nLow;
 			}
-			wsprintf(szCommandLine, "%d %d %d", 
-				nTargetFrequency, 
+			wsprintf(szCommandLine, "%d %d %d",
+				nTargetFrequency,
 				v->ss.fSpectrumInversion,
 				nBandwidth);
-		}					
+		}
 		break;
-	case NIT_DVBS:
+		case NIT_DVBS:
 		{
 			int nFrequency = v->pNITData[nNITIndex]->nFrequency / 100;
 			int nInputPolarity = (~v->pNITData[nNITIndex]->dvbs.nPolarization) & 1;
@@ -15079,33 +15074,28 @@ void GetRetuneCommandLineParameters(char * szCommandLine, int nNITIndex)
 				nOrbital = 3600 - nOrbital;
 
 			// See if auto switch configuration is available
-			for (i = 0; i < MAX_SWITCH_PARAMETERS; i++)
-			{
-				switch(v->sp[i].nAutoSelect)					
-				{
-				case AUTO_SELECT_LNB_FREQ:
-					if (nFrequency >= v->sp[i].nAutoSelectFreqStart && nFrequency <= v->sp[i].nAutoSelectFreqEnd)
-						nNewDiSEqCInput = i + 1;
-					break;
-				case AUTO_SELECT_LNB_ORBITAL:
-					if (nOrbital == v->sp[i].nAutoSelectOrbital)
-					{
-						if (v->sp[i].nAutoSelectPolarity == 0)
-							nNewDiSEqCInput = i + 1;							
-						else
-						{
-							if (v->sp[i].nAutoSelectPolarity - 1 == nInputPolarity)
-								nNewDiSEqCInput = i + 1;							
+			for (i = 0; i < MAX_SWITCH_PARAMETERS; i++) {
+				switch (v->sp[i].nAutoSelect) {
+					case AUTO_SELECT_LNB_FREQ:
+						if (nFrequency >= v->sp[i].nAutoSelectFreqStart && nFrequency <= v->sp[i].nAutoSelectFreqEnd)
+							nNewDiSEqCInput = i + 1;
+						break;
+					case AUTO_SELECT_LNB_ORBITAL:
+						if (nOrbital == v->sp[i].nAutoSelectOrbital) {
+							if (v->sp[i].nAutoSelectPolarity == 0)
+								nNewDiSEqCInput = i + 1;
+							else {
+								if (v->sp[i].nAutoSelectPolarity - 1 == nInputPolarity)
+									nNewDiSEqCInput = i + 1;
+							}
 						}
-					}
-					break;
-				case AUTO_SELECT_LNB_NETWORK:
-					if (nNetwork == v->sp[i].nAutoSelectNetwork)
-						nNewDiSEqCInput = i + 1;							
-					break;
+						break;
+					case AUTO_SELECT_LNB_NETWORK:
+						if (nNetwork == v->sp[i].nAutoSelectNetwork)
+							nNewDiSEqCInput = i + 1;
+						break;
 				}
-				if (nNewDiSEqCInput)
-				{
+				if (nNewDiSEqCInput) {
 					v->ss.nDiSEqCInput = nNewDiSEqCInput;
 					break;
 				}
@@ -15114,58 +15104,64 @@ void GetRetuneCommandLineParameters(char * szCommandLine, int nNITIndex)
 			if (v->ss.nDiSEqCInput >= 1 && v->ss.nDiSEqCInput <= 21)
 				SourceHelper_CalculateSwitchParameters(nFrequency, nInputPolarity, v->ss.nDiSEqCInput - 1, &nLOF, &f22KHz, &nOutputPolarity);
 
-			if (v->dwSourceCapabilities & CAPABILITIES_ADV_SATELLITE)
-			{
+			if (v->dwSourceCapabilities & CAPABILITIES_ADV_SATELLITE) {
 				//freq pol sr lnbf 22khz mode fec {input}
 				int nMode = 0; // assume DVBS
 				int nCodeRate = 5; // assume auto FEC for DVB-S
 
-				switch(v->pNITData[nNITIndex]->dvbs.nModulation)
-				{
-				case 2:
-					switch(v->pNITData[nNITIndex]->dvbs.nFEC)
-					{
+				switch (v->pNITData[nNITIndex]->dvbs.nModulation) {
 					case 2:
-						nCodeRate = 0; // 2/3
+						switch (v->pNITData[nNITIndex]->dvbs.nFEC) {
+							case 2:
+								nCodeRate = 0; // 2/3
+								break;
+							case 3:
+								nCodeRate = 1; // 3/4 I
+								break;
+							case 4:
+								nCodeRate = 3; // 5/6
+								break;
+							default:
+								nCodeRate = 4; // 8/9
+								break;
+						}
+						nMode = 2; // turbo 8PSK
 						break;
 					case 3:
-						nCodeRate = 1; // 3/4 I
+						nCodeRate = 2;  // 3/4
+						nMode = 1; // turbo QPSK
 						break;
-					case 4:
-						nCodeRate = 3; // 5/6
-						break;
-					default:
-						nCodeRate = 4; // 8/9
-						break;
-					}
-					nMode = 2; // turbo 8PSK
-					break;
-				case 3:
-					nCodeRate = 2;  // 3/4
-					nMode = 1; // turbo QPSK
-					break;
 				}
-				wsprintf(szCommandLine, "%d %d %d %d %d %d %d %d", 
-					nFrequency, 
+				wsprintf(szCommandLine, "%d %d %d %d %d %d %d %d",
+					nFrequency,
 					nOutputPolarity,
 					v->pNITData[nNITIndex]->dvbs.nSymbolRate / 10,
 					nLOF,
 					f22KHz,
 					nMode,
-					nCodeRate, 
+					nCodeRate,
 					v->ss.nDiSEqCInput);
-			}
-			else
-			{
+			} else {
 				// freq pol sr lnbf 22khz {input}
 				wsprintf(szCommandLine, "%d %d %d %d %d %d",
-					nFrequency, 
+					nFrequency,
 					nOutputPolarity,
 					v->pNITData[nNITIndex]->dvbs.nSymbolRate / 10,
 					nLOF,
 					f22KHz,
 					v->ss.nDiSEqCInput);
 			}
+		}
+		break;
+
+		case NIT_ISDBS:
+		{
+			int nFrequency = v->pNITData[nNITIndex]->nFrequency / 100;
+			uint16_t tsid = v->pNITData[nNITIndex]->isdbs.tsid;
+
+			wsprintf(szCommandLine, "%d %d",
+				nFrequency,
+				tsid);
 		}
 		break;
 	}
@@ -16605,21 +16601,21 @@ void SetPCTimeToStreamTime(HWND hWnd)
 	memset(&stNew, 0, sizeof(stNew));
 	if (v->nTDTRightClickIndex == 0)
 	{
-		stNew.wYear = v->dvbtdt.nYear;
-		stNew.wMonth = v->dvbtdt.nMonth;
-		stNew.wDay = v->dvbtdt.nDay;
-		stNew.wHour = v->dvbtdt.nHour;
-		stNew.wMinute = v->dvbtdt.nMinute;
-		stNew.wSecond = v->dvbtdt.nSecond;
+		stNew.wYear = (WORD)v->dvbtdt.nYear;
+		stNew.wMonth = (WORD)v->dvbtdt.nMonth;
+		stNew.wDay = (WORD)v->dvbtdt.nDay;
+		stNew.wHour = (WORD)v->dvbtdt.nHour;
+		stNew.wMinute = (WORD)v->dvbtdt.nMinute;
+		stNew.wSecond = (WORD)v->dvbtdt.nSecond;
 	}
 	else
 	{
-		stNew.wYear = v->dvbtot.nYear;
-		stNew.wMonth = v->dvbtot.nMonth;
-		stNew.wDay = v->dvbtot.nDay;
-		stNew.wHour = v->dvbtot.nHour;
-		stNew.wMinute = v->dvbtot.nMinute;
-		stNew.wSecond = v->dvbtot.nSecond;
+		stNew.wYear = (WORD)v->dvbtot.nYear;
+		stNew.wMonth = (WORD)v->dvbtot.nMonth;
+		stNew.wDay = (WORD)v->dvbtot.nDay;
+		stNew.wHour = (WORD)v->dvbtot.nHour;
+		stNew.wMinute = (WORD)v->dvbtot.nMinute;
+		stNew.wSecond = (WORD)v->dvbtot.nSecond;
 	}
 	if (SetSystemTime(&stNew) == FALSE)
 	{
@@ -18516,7 +18512,7 @@ INT_PTR CALLBACK CheckNewVersionDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
 		{
 			if (v->fCheckNewVersionThreadRunning == TRUE)
 			{
-				TerminateThread(v->hCheckNewVersionThread, -1);
+				TerminateThread(v->hCheckNewVersionThread, (DWORD)-1);
 				v->fCheckNewVersionThreadRunning = FALSE;
 			}
 			CloseHandle(v->hCheckNewVersionThread);
@@ -18654,7 +18650,6 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	case ID_VIEW_CHARTSETTINGS_STYLE_DARKCOLORSWITHNOBORDER:			// 12
 		{
 			int nChartIndex = 0;
-			void Charting__UpdateQuickStyle(int nChartIndex);
 
 			v->nChartStyle = LOWORD(wParam) - ID_VIEW_CHARTSETTINGS_STYLE_NOSTYLE;
 			CheckMenuRadioItem(GetMenu(hWnd),
@@ -18760,7 +18755,7 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 
 			GetSourceInfoLine(2, szSignal);
 			szCompareSignal = strstr(szSignal, " ") + 1;
-			if (lstrcmp(szCompareSignal, "n/a") == 0)
+			if (szCompareSignal && lstrcmp(szCompareSignal, "n/a") == 0)
 			{
 				MessageBox(hWnd, "The current source doesn't report signal strength, so this function cannot be used.", gszAppName, MB_ICONINFORMATION);
 				break;
@@ -19570,7 +19565,7 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			}
 			EnableDisableSourceMenuItems(hWnd);
 
-            v->dwTaskbarRestartMessage = RegisterWindowMessage(TEXT("TaskbarCreated"));
+			v->dwTaskbarRestartMessage = RegisterWindowMessage(TEXT("TaskbarCreated"));
 
 			if (v->nAutoRecord != AUTO_RECORD_NONE || v->fAutoXMLExport == TRUE)
 				PostMessage(hWnd, WM_ACTIVATE, 0, 0);

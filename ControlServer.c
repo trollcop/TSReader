@@ -21,7 +21,7 @@ void CloseExistingChart(HWND hDlg, DWORD dwMenuID);
 void GetSourceInfoLine(int nLine, char * szOutput);
 int __cdecl SortPIDsByPID(const void *elem1, const void *elem2);
 BOOL GetPIDTooltipInfo(int nPID, char * szString);
-void GetNextECMPID();
+void GetNextECMPID(void);
 HTREEITEM AddItemToSITree(HWND hwndTV, LPTSTR lpszItem, int nLevel, LPARAM lParam, int nIconIndex, HTREEITEM hParent, HTREEITEM hInsertAfter);
 
 // Global variables
@@ -809,9 +809,9 @@ void CS__ManualChannel(char * szParameters)
 
 	// Now each of the ES - szSpace points to the first one
 	memset(&v->editpmt, 0, sizeof(PMT));
-	v->editpmt.nPCRPID = nPCRPID;
-	v->editpmt.nPMTPID = -2;
-	v->editpmt.nProgramNumber = nProgramNumber;
+	v->editpmt.nPCRPID = nPCRPID & 0x1fff;
+	v->editpmt.nPMTPID = MANUAL_CHANNEL_PMT_PID;
+	v->editpmt.nProgramNumber = nProgramNumber & 0xffff;
 
 	nESIndex = 0;
 	do
@@ -828,8 +828,8 @@ void CS__ManualChannel(char * szParameters)
 			SendControlResponse(szError, lstrlen(szError));
 			return;
 		}
-		v->editpmt.es[nESIndex].nESPID = nESPID;
-		v->editpmt.es[nESIndex].nStreamType = nESType;
+		v->editpmt.es[nESIndex].nESPID = nESPID & 0x1fff;
+		v->editpmt.es[nESIndex].nStreamType = nESType & 0xff;
 		nESIndex++;
 		
 		// Skip past what we just converted
@@ -1157,19 +1157,19 @@ void CS__XMLFinishCurrentTable(int * nCurrentlyDoing)
 	*nCurrentlyDoing = SI_PARSER_NOP;
 }
 
-void SendRequestedData(int nDataRequestlParam)
+void SendRequestedData(int nData)
 {
 	int nItemIndex;
 	char * szResponse = NULL;
 
-	switch(nDataRequestlParam & 0xf0000000)
+	switch(nData & 0xf0000000)
 	{
 	case SI_PARSER_CVCT:
-		nItemIndex = nDataRequestlParam - SI_PARSER_CVCT;
+		nItemIndex = nData - SI_PARSER_CVCT;
 		szResponse = FormatCVCT(nItemIndex);
 		break;
 	case SI_PARSER_BAT:
-		nItemIndex = nDataRequestlParam - SI_PARSER_BAT;
+		nItemIndex = nData - SI_PARSER_BAT;
 		szResponse = FormatBAT(nItemIndex);
 		break;
 	case SI_PARSER_MGT:
@@ -1179,11 +1179,11 @@ void SendRequestedData(int nDataRequestlParam)
 		switch(v->nNetworkPID)
 		{
 		default:
-			nItemIndex = nDataRequestlParam - SI_PARSER_CDT;
+			nItemIndex = nData - SI_PARSER_CDT;
 			szResponse = FormatCDTEntry(nItemIndex);
 			break;
 		case 0x1ffb:
-			nItemIndex = nDataRequestlParam - SI_PARSER_RRT;
+			nItemIndex = nData - SI_PARSER_RRT;
 			szResponse = FormatRRTEntry(nItemIndex);
 			break;
 		}
@@ -1192,11 +1192,11 @@ void SendRequestedData(int nDataRequestlParam)
 		switch(v->nNetworkPID)
 		{
 		default:
-			nItemIndex = nDataRequestlParam - SI_PARSER_TDT;
+			nItemIndex = nData - SI_PARSER_TDT;
 			szResponse = FormatTDTEntry(nItemIndex);
 			break;
 		case 0x0010:
-			if ((nDataRequestlParam & 0x0fffffff) == 0)
+			if ((nData & 0x0fffffff) == 0)
 			{
 				szResponse = "";
 			}
@@ -1251,35 +1251,35 @@ void SendRequestedData(int nDataRequestlParam)
 		}
 		break;
 	case SI_PARSER_SIT:
-		nItemIndex = nDataRequestlParam - SI_PARSER_SIT;
+		nItemIndex = nData - SI_PARSER_SIT;
 		szResponse = FormatSITEntry(nItemIndex);
 		break;
 	case SI_PARSER_MMT:
-		nItemIndex = nDataRequestlParam - SI_PARSER_MMT;
+		nItemIndex = nData - SI_PARSER_MMT;
 		szResponse = FormatMMTEntry(nItemIndex);
 		break;
 	case SI_PARSER_NIT:
-		nItemIndex = nDataRequestlParam - SI_PARSER_NIT;
+		nItemIndex = nData - SI_PARSER_NIT;
 		szResponse = FormatNITEntry(nItemIndex, FALSE);
 		break;
 	case SI_PARSER_PAT:
 		szResponse = FormatPAT(FALSE, v->nExportSITables);
 		break;
 	case SI_PARSER_PMT:
-		nItemIndex = nDataRequestlParam - SI_PARSER_PMT;
+		nItemIndex = nData - SI_PARSER_PMT;
 		szResponse = FormatPMTEntry(nItemIndex, FALSE);
 		break;
 	case SI_PARSER_ES:
-		nItemIndex = nDataRequestlParam - SI_PARSER_ES;	// this isn't the index, it's the ES PID
+		nItemIndex = nData - SI_PARSER_ES;	// this isn't the index, it's the ES PID
 		szResponse = FormatESEntry(nItemIndex);
 		break;
 	case SI_PARSER_SDT:
 	case SI_PARSER_VCT:
-		nItemIndex = nDataRequestlParam - SI_PARSER_SDT;
+		nItemIndex = nData - SI_PARSER_SDT;
 		szResponse = FormatSDTEntry(nItemIndex, FALSE);
 		break;
 	case SI_PARSER_EIT:
-		nItemIndex = nDataRequestlParam - SI_PARSER_EIT;
+		nItemIndex = nData - SI_PARSER_EIT;
 		szResponse = FormatEITEntry(nItemIndex, EIT_FORMAT_PLAIN, FALSE);
 		break;
 	case SI_PARSER_CAT:
@@ -1351,7 +1351,7 @@ DWORD WINAPI ControlServerXMLStreamer(LPVOID lpv)
 
 							if (v->pat.pmt[i].nPMTPID == 0)
 								break;
-							if (v->pat.pmt[i].nPMTPID == -2)
+							if (v->pat.pmt[i].nPMTPID == MANUAL_CHANNEL_PMT_PID)
 								continue;
 
 							if (v->pat.pmt[i].nProgramNumber)
@@ -2064,7 +2064,7 @@ void CS__Graph(char * szParameters)
 
 void CS__Tune(char * szParameters)
 {
-	BOOL (* ParseCommandLine) (PSOURCESTRUCT ss, char * szCommandLine, BOOL fQuiet);
+	td_ParseCommandLine ParseCommandLine = NULL;
 	static char szSourceParameters[256];
 
 	if (szParameters == NULL)
@@ -2256,7 +2256,7 @@ void CS__Source(char * szParameters)
 	if (szParameters != NULL)
 	{
 		HMODULE hSource;
-		BOOL (* GetDescription) (char * szDescription, char * szCommandLineParameters, BOOL * fCanBeStopped, int * nMaxPIDs, DWORD * dwCapabilities);
+		td_GetDescription GetDescription = NULL;
 		char szSourceName[MAX_PATH];
 
 		lstrcpy(szSourceName, szCurrentDir);
@@ -2313,7 +2313,7 @@ void CS__Source(char * szParameters)
 					hSource = LoadLibrary(szCurrentFile);
 					if (hSource != NULL)
 					{
-						BOOL (* GetDescription) (char * szDescription, char * szCommandLineParameters, BOOL * fCanBeStopped, int * nMaxPIDs, DWORD * dwCapabilities);
+						td_GetDescription GetDescription = NULL;
 						char szResponse[128];
 
 						GetDescription = (td_GetDescription)GetProcAddress(hSource, "TSReader_GetDescription");
@@ -2407,14 +2407,14 @@ void CS__Audio(char * szParameters)
 		sscanf(szParameters, "%d", &nAutoRecordAudioTrack);
 		if (nAutoRecordAudioTrack > 0 && nAutoRecordAudioTrack < 100)
 		{
-			static char szTemp[] = {"306 Audio stream set\r\n"};
+			static char sz306[] = {"306 Audio stream set\r\n"};
 			v->nAutoRecordAudioTrack = nAutoRecordAudioTrack;
-			SendControlResponse(szTemp, lstrlen(szTemp));
+			SendControlResponse(sz306, lstrlen(sz306));
 		}
 		else
 		{
-			static char szTemp[] = {"516 Audio stream value not valid\r\n"};
-			SendControlResponse(szTemp, lstrlen(szTemp));
+			static char sz516[] = {"516 Audio stream value not valid\r\n"};
+			SendControlResponse(sz516, lstrlen(sz516));
 		}
 	}
 }
@@ -2424,7 +2424,7 @@ void CS__DiSEqC(char * szParameters)
 	int nDiSEqCSequenceLength = 0;
 	BYTE bDiSEqCSequence[16];
 
-	BOOL (*SendDiSEqC) (BYTE * bCommand, int nLength);
+	td_SendDiSEqC SendDiSEqC = NULL;
 
 	if ((v->dwSourceCapabilities & CAPABILITIES_DISEQC_POSITIONER) == 0)
 	{
@@ -2466,7 +2466,7 @@ void CS__DiSEqC(char * szParameters)
 			szTemp[2] = '\0';
 			sscanf(szTemp, "%x", &nValue);
 			szParameters += 2;
-			bDiSEqCSequence[nDiSEqCSequenceLength] = nValue;
+			bDiSEqCSequence[nDiSEqCSequenceLength] = nValue & 0xff;
 			nDiSEqCSequenceLength++;
 		}
 		else
@@ -2678,9 +2678,9 @@ DWORD WINAPI ControlServerThread(LPVOID lpv)
 			if (nLength <= 0)
 				break;
 			{
-				char szTemp[1024];
-				wsprintf(szTemp, "TSReader: Control server command:  %s\n", szCommandBuffer);
-				OutputDebugString(szTemp);
+				char szCmdTemp[1024];
+				wsprintf(szCmdTemp, "TSReader: Control server command:  %s\n", szCommandBuffer);
+				OutputDebugString(szCmdTemp);
 			}
 			RemoveCommandBackspaces(szCommandBuffer);
 			if (fXML == TRUE)
@@ -2737,7 +2737,7 @@ DWORD WINAPI ControlServerThread(LPVOID lpv)
 	return 0;
 }
 
-BOOL StartControlServer()
+BOOL StartControlServer(void)
 {
 	HANDLE hThread;
 	DWORD dwThreadID;
@@ -2767,7 +2767,7 @@ BOOL StartControlServer()
 
 }
 
-BOOL TerminateControlServer()
+BOOL TerminateControlServer(void)
 {
 
 	if (ControlBaseSocket != INVALID_SOCKET)
