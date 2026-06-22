@@ -59,7 +59,7 @@ void SendIACEmulatorName(void)
 	send(sockTelnet, szTemp, 6 + lstrlen(szTempEmulation), 0);
 }
 
-void AnswerIAC()
+void AnswerIAC(void)
 {
 	char szTemp[100];
 	int nOutIndex;
@@ -153,6 +153,7 @@ void AnswerIAC()
 				send(sockTelnet, szTemp, 3, 0);
 				break;
 
+#if 0
 				if (bIACCommand == IAC_DO)
 				{
 					// IAC WILL terminal speed
@@ -179,6 +180,7 @@ void AnswerIAC()
 					send(sockTelnet, szTemp, 17, 0);
 				}
 				break;
+#endif
 
 			case 33: // Remote Flow control
 				if (bIACCommand == IAC_DO)
@@ -266,7 +268,7 @@ BOOL ReadTelnetByte(BYTE * pByte)
 	nIACBlockPos = 0;
 	do
 	{
-		int nStatus = recv(sockTelnet, pByte, 1, 0);
+		int nStatus = recv(sockTelnet, (char *)pByte, 1, 0);
 		if (nStatus != 1)
 			return FALSE;
 

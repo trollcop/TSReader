@@ -15,19 +15,19 @@ void Base64Encode(char * szEncoded, char * szPlain)
 
 	for(i= 0;i<9;i++)
 	{
-		dtable[i]= 'A'+i;
-		dtable[i+9]= 'J'+i;
-		dtable[26+i]= 'a'+i;
-		dtable[26+i+9]= 'j'+i;
+		dtable[i]= (BYTE)('A'+i);
+		dtable[i+9]= (BYTE)('J'+i);
+		dtable[26+i]= (BYTE)('a'+i);
+		dtable[26+i+9]= (BYTE)('j'+i);
 	}
 	for(i= 0;i<8;i++)
 	{
-		dtable[i+18]= 'S'+i;
-		dtable[26+i+18]= 's'+i;
+		dtable[i+18]= (BYTE)('S'+i);
+		dtable[26+i+18]= (BYTE)('s'+i);
 	}
 	for(i= 0;i<10;i++)
 	{
-		dtable[52+i]= '0'+i;
+		dtable[52+i]= (BYTE)('0'+i);
 	}
 	dtable[62]= '+';
 	dtable[63]= '/';
@@ -79,19 +79,19 @@ void Base64Decode(char * szPlain, char * szEncoded)
 	for(i= 0;i<255;i++)
 		dtable[i]= 0x80;
 	for(i= 'A';i<='I';i++)
-		dtable[i]= 0+(i-'A');
+		dtable[i]= (BYTE)(0+(i-'A'));
 	for(i= 'J';i<='R';i++)
-		dtable[i]= 9+(i-'J');
+		dtable[i]= (BYTE)(9+(i-'J'));
 	for(i= 'S';i<='Z';i++)
-		dtable[i]= 18+(i-'S');
+		dtable[i]= (BYTE)(18+(i-'S'));
 	for(i= 'a';i<='i';i++)
-		dtable[i]= 26+(i-'a');
+		dtable[i]= (BYTE)(26+(i-'a'));
 	for(i= 'j';i<='r';i++)
-		dtable[i]= 35+(i-'j');
+		dtable[i]= (BYTE)(35+(i-'j'));
 	for(i= 's';i<='z';i++)
-		dtable[i]= 44+(i-'s');
+		dtable[i]= (BYTE)(44+(i-'s'));
 	for(i= '0';i<='9';i++)
-		dtable[i]= 52+(i-'0');
+		dtable[i]= (BYTE)(52+(i-'0'));
 	dtable['+']= 62;
 	dtable['/']= 63;
 	dtable['=']= 0;

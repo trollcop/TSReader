@@ -1943,7 +1943,7 @@ DllExportReturnBool PEcopyoletoclipboard(HWND hObject, POINT FAR* lpPoint);
 DllExportReturnBool PEbitmapandgradients(HWND hObject, HDC hTargetDC, HDC hMemDC, LPRECT pr);
 DllExportReturnBool PEallocateindmemory(HWND hObject);
 DllExportReturnBool PEfilterdllmsg(LPMSG lpMsg);
-DllExportReturnVoid PEprocessdllidle();
+DllExportReturnVoid PEprocessdllidle(void);
 DllExportReturnVoid PEDebugOutput(UINT nId);
 DllExportReturnBool PEValidateProperty(UINT nCntlType, UINT nProperty);
 DllExportReturnVoid PEcreateserialdate(double* pfSerial, TM* dt, int nType);

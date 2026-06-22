@@ -15,10 +15,11 @@ typedef struct _tagMPEG4Decode
 	int x, y;
 } MPEG4DECODE, *PMPEG4DECODE;
 
+typedef int (*td_MPEG4) (HANDLE hInPipe, PMPEG4DECODE hd);
+
 DWORD WINAPI MPEG4DecoderThread(LPVOID lpv)
 {
-typedef int (* td_MPEG4) (HANDLE hInPipe, PMPEG4DECODE hd);
-int (* MPEG4) (HANDLE hInPipe, PMPEG4DECODE hd);
+	td_MPEG4 MPEG4 = NULL;
 
 	PESPARSERINFO esparserinfo = (PESPARSERINFO)lpv;
 	MPEG4DECODE hd = {0};

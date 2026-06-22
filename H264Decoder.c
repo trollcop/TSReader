@@ -28,13 +28,11 @@ DWORD WINAPI H264DecoderThread(LPVOID lpv)
 	PESPARSERINFO esparserinfo = (PESPARSERINFO)lpv;
 	H264DECODE hd = {0};
 	HMODULE hDLL;
-	int (* H264) (HANDLE hInPipe, PH264DECODE hd);
+	td_H264 H264 = NULL;
 
-	{
-		char szTemp[128];
-		wsprintf(szTemp, "TSReader: H264DecoderThread+ %d/%d\n", esparserinfo->nProgramNumber, esparserinfo->nES);
-		OutputDebugString(szTemp);
-	}
+	char szTemp[128];
+	wsprintf(szTemp, "TSReader: H264DecoderThread+ %d/%d\n", esparserinfo->nProgramNumber, esparserinfo->nES);
+	OutputDebugString(szTemp);
 
 	hDLL = LoadLibrary("TSReader_ForVid.dll");
 	if (hDLL == NULL)
@@ -111,11 +109,8 @@ windup_h264_decode:
 	v->fMPEG2DecoderThreadRunning[esparserinfo->nES] = FALSE;
 	LeaveCriticalSection(&v->esparserinfo[esparserinfo->nES].csThreadSignal);
 
-	{
-		char szTemp[128];
-		wsprintf(szTemp, "TSReader: H264DecoderThread- %d/%d\n", esparserinfo->nProgramNumber, esparserinfo->nES);
-		OutputDebugString(szTemp);
-	}
+	wsprintf(szTemp, "TSReader: H264DecoderThread- %d/%d\n", esparserinfo->nProgramNumber, esparserinfo->nES);
+	OutputDebugString(szTemp);
 
 	return 0;	
 }

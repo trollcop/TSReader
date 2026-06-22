@@ -212,12 +212,12 @@ int MD__Load_External_Dll(HINSTANCE hInstance)
 	External_Dll_Count = 0;
 	while ( External_Dll_Count < 5 )
 	{
-		wsprintf(Ext_Dll[External_Dll_Count].Name, "%s\\MDPlugins\\%s", CurrentDir, fd.cFileName);
+		wsprintf((LPSTR)Ext_Dll[External_Dll_Count].Name, "%s\\MDPlugins\\%s", CurrentDir, fd.cFileName);
 		
 		wsprintf(szTemp,"MDAPI Scanne DLL %s",Ext_Dll[External_Dll_Count].Name);
 		Write_Log(szTemp);
 
-		Ext_Dll[External_Dll_Count].Externe_DLL = LoadLibrary(Ext_Dll[External_Dll_Count].Name);
+		Ext_Dll[External_Dll_Count].Externe_DLL = LoadLibrary((LPCSTR)Ext_Dll[External_Dll_Count].Name);
 		if ( Ext_Dll[External_Dll_Count].Externe_DLL != NULL )
 		{
 			Ext_Dll[External_Dll_Count].Extern_Send_Dll_ID_Name = (Extern_Send_Dll_ID_Name_DLL)GetProcAddress(Ext_Dll[External_Dll_Count].Externe_DLL,"On_Send_Dll_ID_Name");
@@ -308,7 +308,7 @@ void MD__StartPluginsRunning(HINSTANCE hInst, HWND hWnd)
 			int KeepRunning = 1;
 			BOOL WRITE_LOG=TRUE;
 
-			(Ext_Dll[i].Extern_Init)(hInst, hWnd, WRITE_LOG, i, &Ext_Dll[i].HotKey, &MD_API_Version[0], &KeepRunning);
+			(Ext_Dll[i].Extern_Init)(hInst, hWnd, WRITE_LOG, i, &Ext_Dll[i].HotKey, (unsigned char *)&MD_API_Version[0], &KeepRunning);
 			KeepRunning = 0;
 			if ( KeepRunning == 1 )
 			{
@@ -363,7 +363,7 @@ BOOL MD__StartFilter(LPARAM lParam)
 		 wsprintf(szTemp,"MDAPI_START_FILTER PID = 0x%04x Slot = %d", start_filter[i].Pid, i);
 		 Write_Log(szTemp);
 
-		 Ext_Dll[start_filter[i].DLL_ID].Extern_Stream_Function[start_filter[i].Filter_ID] = (void *)start_filter[i].Irq_Call_Adresse;
+		 Ext_Dll[start_filter[i].DLL_ID].Extern_Stream_Function[start_filter[i].Filter_ID] = (Extern_Stream_DLL)start_filter[i].Irq_Call_Adresse;
 		 start_filter[i].Running_ID = i + 1;
 
 		 filtertspackets[i].pBuffer = LocalAlloc(LPTR, 2048);
@@ -744,14 +744,14 @@ void MD__ChannelChange(int nProgramNumber,
 	Programm[0].tp_id = v->pat.nTransportStreamID;
 	Programm[0].freq = v->ss.nFrequency;
 	Programm[0].Link_TP = 0x00;
-	Programm[0].PMT_pid = nPMTPID;
-	Programm[0].Video_pid = nVideoPID;
-	Programm[0].PCR_pid = nPCRPID;
-	Programm[0].Audio_pid = nAudioPID;
-	Programm[0].TeleText_pid = nTeletextPID;
+	Programm[0].PMT_pid = (unsigned short)nPMTPID;
+	Programm[0].Video_pid = (unsigned short)nVideoPID;
+	Programm[0].PCR_pid = (unsigned short)nPCRPID;
+	Programm[0].Audio_pid = (unsigned short)nAudioPID;
+	Programm[0].TeleText_pid = (unsigned short)nTeletextPID;
 	Programm[0].AC3_pid = 0x1fff;
 	//Programm[0].AC3_pid = 0;
-	Programm[0].ECM_PID = nECMPID;
+	Programm[0].ECM_PID = (unsigned short)nECMPID;
 	//Programm[0].TVType = 0x03;		// 11 = NTSC
 	Programm[0].TVType = 0x00;
 	Programm[0].Typ = 'D';		// D is for "digital"!
@@ -771,7 +771,7 @@ void MD__ChannelChange(int nProgramNumber,
 			nCACount++;
 		}
 	}
-	Programm[0].CA_Anzahl = nCACount;	
+	Programm[0].CA_Anzahl = (unsigned short)nCACount;
 	//Programm[0].CA_Anzahl = MAX_CA_SYSTEMS;	
 	for ( i = 0 ; i < 5 ; i++ )
 	{
@@ -836,16 +836,16 @@ void FFDecrypt(BYTE ** pClusters, int nClusterCount)
 	LocalFree(pCopyClusters);
 }
 
-BOOL NullKey(BYTE * pKeys)
+BOOL NullKey(BYTE * pSomeKeys)
 {
 	int i;
 
-	if (pKeys == NULL)
+	if (pSomeKeys == NULL)
 		return FALSE;
 
 	for (i = 0; i < 16; i++)
 	{
-		if (pKeys[i] != 0x00)
+		if (pSomeKeys[i] != 0x00)
 			return FALSE;
 	}
 	return TRUE;

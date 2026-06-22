@@ -607,7 +607,7 @@ struct External_Stream_Dll {
 		Extern_Stream_DLL Extern_Stream_Function[8];
 		Extern_Filter_Close_DLL Extern_Filter_Close;
 		Extern_Extern_RecPlay_DLL Extern_RecPlay;
-        Extern_Send_Dll_ID_Name_DLL  Extern_Send_Dll_ID_Name;
+        Extern_Send_Dll_ID_Name_DLL Extern_Send_Dll_ID_Name;
 		Extern_Src_Restart Extern_Src_Restart_Function;
         unsigned char HotKey;
 		HMENU Extern_Menu;

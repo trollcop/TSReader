@@ -63,7 +63,7 @@ void GetThumbnailMaxWidthAndHeight(int * nMaxWidth, int * nMaxHeight)
 	}
 }
 
-int GetVideoThumbnailCount()
+int GetVideoThumbnailCount(void)
 {
 	int nPMTIndex, nESIndex;
 	int nVideoThumbnails = 0;

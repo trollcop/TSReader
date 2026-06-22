@@ -203,16 +203,16 @@ DWORD WINAPI VC1DecoderThread(LPVOID lpv)
 	GetSystemDirectory(szExecutable, sizeof(szExecutable));
 	lstrcat(szExecutable, "\\cmd.exe");
 	{
-		char szTemp[MAX_PATH * 2];
-		wsprintf(szTemp, "VC1: Starting decoder %s %s\n", szExecutable, szCommandLine);
-		OutputDebugString(szTemp);
+		char szDebugTemp[MAX_PATH * 2];
+		wsprintf(szDebugTemp, "VC1: Starting decoder %s %s\n", szExecutable, szCommandLine);
+		OutputDebugString(szDebugTemp);
 	}
 	fRetVal = CreateProcess(szExecutable, szCommandLine, NULL, NULL, FALSE, CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP, NULL, NULL, &StartupInfo, &ProcessInformation);
 	if (!fRetVal)
 	{
-		char szTemp[128];
-		wsprintf(szTemp, "VC1: CreateProcess failed with %d\n", GetLastError());
-		OutputDebugString(szTemp);
+		char szDebugTemp[128];
+		wsprintf(szDebugTemp, "VC1: CreateProcess failed with %d\n", GetLastError());
+		OutputDebugString(szDebugTemp);
 	}
 	Sleep(100);
 
@@ -237,13 +237,13 @@ DWORD WINAPI VC1DecoderThread(LPVOID lpv)
 		CloseHandle(hTextOutputFile);
 
 		// Get size
-		szSearch = strstr(pTextOutputFile, "Width = ");
+		szSearch = strstr((const char *)pTextOutputFile, "Width = ");
 		if (szSearch != NULL)
 			hd.x = atoi(&szSearch[8]);
-		szSearch = strstr(pTextOutputFile, "Height = ");
+		szSearch = strstr((const char *)pTextOutputFile, "Height = ");
 		if (szSearch != NULL)
 			hd.y = atoi(&szSearch[9]);
-		szSearch = strstr(pTextOutputFile, "INTERLACE: ");
+		szSearch = strstr((const char *)pTextOutputFile, "INTERLACE: ");
 		if (szSearch != NULL)
 			hd.interlaced = atoi(&szSearch[11]);
 		LocalFree(pTextOutputFile);

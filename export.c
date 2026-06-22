@@ -2,6 +2,7 @@
 #include <commctrl.h>
 #include <shlobj.h>
 #include <math.h>
+#include <strsafe.h>
 
 #include "TSReader.h"
 #include "bcdmux.h"
@@ -880,9 +881,9 @@ void XMLExport(HWND hDlg, HANDLE hXMLFile)
 						wsprintf(v->szSIFormatBuffer, "    <LENGTH>%d</LENGTH>", nThisDescriptorLength); WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
 						for (n = 0; n < nThisDescriptorLength; n++)
 						{
-							char szTemp[8];
-							wsprintf(szTemp, "0x%02x ", network_descriptors[n + 2]);
-							lstrcat(szDescriptorData, szTemp);
+							char szHexTemp[8];
+							wsprintf(szHexTemp, "0x%02x ", network_descriptors[n + 2]);
+							lstrcat(szDescriptorData, szHexTemp);
 						}
 						if (lstrlen(szDescriptorData))
 						{
@@ -1048,9 +1049,9 @@ void XMLExport(HWND hDlg, HANDLE hXMLFile)
 								wsprintf(v->szSIFormatBuffer, "    <LENGTH>%d</LENGTH>", pDescriptor[1]); WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
 								for (j = 0; j < pDescriptor[1]; j++)
 								{
-									char szTemp[8];
-									wsprintf(szTemp, "0x%02x ", pDescriptor[j + 2]);
-									lstrcat(szDescriptorData, szTemp);
+									char szHexTemp[8];
+									wsprintf(szHexTemp, "0x%02x ", pDescriptor[j + 2]);
+									lstrcat(szDescriptorData, szHexTemp);
 								}
 								if (lstrlen(szDescriptorData))
 								{
@@ -1072,8 +1073,6 @@ void XMLExport(HWND hDlg, HANDLE hXMLFile)
 	else if (v->nNetworkPID == 0x1ffb)
 	{
 		// TVCT for ATSC networks
-		int nServiceIndex;
-		
 		WriteHTMLLine(hXMLFile, " <TVCT>");
 		wsprintf(v->szSIFormatBuffer, "  <CRC-ERRORS>%d</CRC-ERRORS>", v->nSIParserCRCs[SI_PARSER_STATS_NIT]); 	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
 		wsprintf(v->szSIFormatBuffer, "  <VERSION>%d</VERSION>", v->nSIParserVersionNumbers[SI_PARSER_STATS_NIT]); 	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
@@ -1603,7 +1602,7 @@ void HTMLExport(HANDLE hHTMFile, int nExportSITables, char * szOutputFilename)
 
 						if (v->pat.pmt[nPMTIndex].es[nESIndex].pDescriptors)
 						{
-							char szTemp[128];
+							char szDescTemp[128];
 							BYTE * pDescriptorData = v->pat.pmt[nPMTIndex].es[nESIndex].pDescriptors;
 							int nDescriptorsLength = v->pat.pmt[nPMTIndex].es[nESIndex].nDescriptorsLength;
 							int nCurrentIndex = 0;
@@ -1615,8 +1614,8 @@ void HTMLExport(HANDLE hHTMFile, int nExportSITables, char * szOutputFilename)
 								int nThisDescriptorLength = (BYTE)pDescriptorData[nCurrentIndex + 1];
 
 								DecodeDescriptorNames(szDescriptor, pDescriptorData[nCurrentIndex]);
-								wsprintf(szTemp, "Descriptor: %s\r\n", szDescriptor);
-								lstrcat(v->szSIFormatBuffer, szTemp);
+								wsprintf(szDescTemp, "\r\nDescriptor: %s\r\n", szDescriptor);
+								lstrcat(v->szSIFormatBuffer, szDescTemp);
 
 								DecodeMPEG2Descriptor(&pDescriptorData[nCurrentIndex], FALSE);
 
@@ -1820,26 +1819,26 @@ void HTMLExport(HANDLE hHTMFile, int nExportSITables, char * szOutputFilename)
 			dPercent = ((double)v->pc[i].lnPackets / (double)v->lnCopyTotalTSPackets) * 100.0;
 			if (v->pc[i].dPIDRate)
 			{
-				wsprintf(szMask, "%s (%%.2f%%%% - %%.2f Mbps)", v->szOutputPIDFlags);
-				sprintf(szPID, szMask, v->pc[i].nPID, dPercent, v->pc[i].dPIDRate * 8.0 / 1000.0 / 1000.0);
+				StringCchPrintf(szMask, sizeof(szMask), "%s (%%.2f%%%% - %%.2f Mbps)", v->szOutputPIDFlags);
+				StringCchPrintf(szPID, sizeof(szPID), szMask, v->pc[i].nPID, dPercent, v->pc[i].dPIDRate * 8.0 / 1000.0 / 1000.0);
 			}
 			else
 			{
 				if (v->dDisplayMuxRate)
 				{
 					double dRate = (v->dDisplayMuxRate / (double)v->nMuxRateCounter) * 8.0;
-					wsprintf(szMask, "%s (%%.2f%%%% ~ %%.2f Mbps)", v->szOutputPIDFlags);
-					sprintf(szPID, szMask, v->pc[i].nPID, dPercent, ((dRate / 100.0) * dPercent) / 1000.0 / 1000.0);
+					StringCchPrintf(szMask, sizeof(szMask), "%s (%%.2f%%%% ~ %%.2f Mbps)", v->szOutputPIDFlags);
+					StringCchPrintf(szPID, sizeof(szPID), szMask, v->pc[i].nPID, dPercent, ((dRate / 100.0) * dPercent) / 1000.0 / 1000.0);
 				}
 				else
 				{
-					wsprintf(szMask, "%s (%%.3f%%%%)", v->szOutputPIDFlags);
-					sprintf(szPID, szMask, v->pc[i].nPID, dPercent);
+					StringCchPrintf(szMask, sizeof(szMask), "%s (%%.3f%%%%)", v->szOutputPIDFlags);
+					StringCchPrintf(szPID, sizeof(szPID), szMask, v->pc[i].nPID, dPercent);
 				}
 			}
 			if (v->pc[i].nPIDTEICount || v->pc[i].nPIDHasContinuityErrors)
 			{
-				wsprintf(szTemp, " *%d/%d", v->pc[i].nPIDHasContinuityErrors, v->pc[i].nPIDTEICount);
+				StringCchPrintf(szTemp, sizeof(szTemp), " *%d/%d", v->pc[i].nPIDHasContinuityErrors, v->pc[i].nPIDTEICount);
 				lstrcat(szPID, szTemp);
 			}
 

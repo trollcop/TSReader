@@ -43,7 +43,7 @@ DWORD WINAPI MPEG2DecoderThread(LPVOID lpv)
 	int nWriteBuffer = 0;
 	int nMaximumPictures = v->nMaximumMPEGPictures;
 	BYTE * buffer[2];
-    mpeg2_state_t state;
+    mpeg2_state_t state = 0;
 	char szStatus[256] = {0};
     mpeg2dec_t * mpeg2dec;
     const mpeg2_info_t * info;

@@ -138,18 +138,18 @@ unsigned int dump_table_b5(unsigned char *b, unsigned char len)
 	t_start = (b[2] << 8) | b[3];
 	tm_start = getStartTime(tm_base, t_start);	
 	atsctime = gmtime((time_t *)&tm_start);
-	thiseitevent.stStartTime.wYear = atsctime->tm_year + 1900;
-	thiseitevent.stStartTime.wMonth = atsctime->tm_mon + 1;
-	thiseitevent.stStartTime.wDay = atsctime->tm_mday;
-	thiseitevent.stStartTime.wHour = atsctime->tm_hour;
-	thiseitevent.stStartTime.wMinute = atsctime->tm_min;
-	thiseitevent.stStartTime.wSecond = atsctime->tm_sec;
+	thiseitevent.stStartTime.wYear = (WORD)(atsctime->tm_year + 1900);
+	thiseitevent.stStartTime.wMonth = (WORD)(atsctime->tm_mon + 1);
+	thiseitevent.stStartTime.wDay = (WORD)(atsctime->tm_mday);
+	thiseitevent.stStartTime.wHour = (WORD)(atsctime->tm_hour);
+	thiseitevent.stStartTime.wMinute = (WORD)(atsctime->tm_min);
+	thiseitevent.stStartTime.wSecond = (WORD)(atsctime->tm_sec);
 	nDuration = (b[4] << 8 | b[5]) * 2;
-	thiseitevent.stRunTime.wHour = nDuration / 3600;
+	thiseitevent.stRunTime.wHour = (WORD)(nDuration / 3600);
 	nDuration -= thiseitevent.stRunTime.wHour * 3600;
-	thiseitevent.stRunTime.wMinute = nDuration / 60;
+	thiseitevent.stRunTime.wMinute = (WORD)(nDuration / 60);
 	nDuration -= thiseitevent.stRunTime.wMinute * 60;
-	thiseitevent.stRunTime.wSecond = nDuration;
+	thiseitevent.stRunTime.wSecond = (WORD)(nDuration);
 
 	nServiceID = v->epg_map[epg_id];
 	if ( (nServiceID < MAX_EIT_CHANNEL_DATA) && (nServiceID > 0) )
@@ -173,7 +173,7 @@ unsigned int dump_table_b5(unsigned char *b, unsigned char len)
 				{
 					PEITEVENT pNewItem = v->pEvents[nServiceID];
 					memset(thiseitevent.szEventName, 0, sizeof(thiseitevent.szEventName));
-					sky_decode(&b[9], thiseitevent.szEventName, b[1]-7, sizeof(thiseitevent.szEventName));
+					sky_decode(&b[9], (unsigned char *)thiseitevent.szEventName, b[1]-7, sizeof(thiseitevent.szEventName));
 					memcpy(v->pEvents[nServiceID], &thiseitevent, sizeof(EITEVENT));
 					pNewEIT = v->pEvents[nServiceID];
 					fAddedNewEvent = TRUE;
@@ -207,7 +207,7 @@ unsigned int dump_table_b5(unsigned char *b, unsigned char len)
 						if (pNewEvent != NULL)
 						{
 							memset(thiseitevent.szEventName, 0, sizeof(thiseitevent.szEventName));
-							sky_decode(&b[9], thiseitevent.szEventName, b[1] - 7, sizeof(thiseitevent.szEventName));
+							sky_decode(&b[9], (unsigned char *)thiseitevent.szEventName, b[1] - 7, sizeof(thiseitevent.szEventName));
 							memcpy(pNewEvent, &thiseitevent, sizeof(EITEVENT));
 							pCurrent->dwNextEvent = (LONG_PTR)pNewEvent;
 							pNewEIT = pNewEvent;
@@ -264,7 +264,7 @@ unsigned int dump_table_b9(unsigned char *b, unsigned char len)
 						char decomp_str[4096];
 
 						memset(decomp_str, 0, sizeof(decomp_str));
-						sky_decode(&b[2], decomp_str, b[1], sizeof(decomp_str));
+						sky_decode(&b[2], (unsigned char *)decomp_str, b[1], sizeof(decomp_str));
 						if (lstrlen(decomp_str) > 0)
 						{
 							pCurrent->szShortEventDescription = LocalAlloc(LPTR, lstrlen(decomp_str) + 1);
@@ -563,12 +563,12 @@ void UpdateSkyEPGMap(int nBATID)
 						descriptor_length--;
 						while (descriptor_length > 9)
 						{
-							int flag = get_bits(BM_USER_THREAD, 8);
-							int service_id = get_bits(BM_USER_THREAD, 16);
-							int service_type = get_bits(BM_USER_THREAD, 8);
-							int bat_epg_id = get_bits(BM_USER_THREAD, 16);
-							int lcn = get_bits(BM_USER_THREAD, 16); // lcn 0xffff means hidden channel
-							int unknown = get_bits(BM_USER_THREAD, 8);
+							get_bits(BM_USER_THREAD, 8); /* flag */
+							uint16_t service_id = get_bits(BM_USER_THREAD, 16) & 0xffff;
+							get_bits(BM_USER_THREAD, 8); /* service_type */
+							uint16_t bat_epg_id = get_bits(BM_USER_THREAD, 16) & 0xffff;
+							uint16_t lcn = get_bits(BM_USER_THREAD, 16) & 0xffff; // lcn 0xffff means hidden channel
+							get_bits(BM_USER_THREAD, 8); /* unknown */
 
 							if (lcn != 0xffff)
 							{

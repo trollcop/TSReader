@@ -457,13 +457,13 @@ void sky_decode(unsigned char *src, unsigned char *dst, int max_input_length, in
 				if(dlen+strlen(&wdict[tmp].txt[0]) > (WORD)max_decode_length)
 				{
 					// make sure we fill the dest buf not overflow.
-					strncpy(dst,&wdict[tmp].txt[0],max_decode_length-dlen);
+					strncpy((char *)dst,&wdict[tmp].txt[0],max_decode_length-dlen);
 					dst=dst+(max_decode_length-dlen);
 					dlen=dlen+(max_decode_length-dlen);
 				}
 				else
 				{
-					strcpy(dst,&wdict[tmp].txt[0]);
+					strcpy((char *)dst,&wdict[tmp].txt[0]);
 					dst=dst+strlen(&wdict[tmp].txt[0]);
 					dlen=dlen+(int)strlen(&wdict[tmp].txt[0]);
 				}

@@ -69,12 +69,12 @@ void *INIT_RS(int symsize,int gfpoly,int fcr,int prim,
   }
 
   /* Generate Galois field lookup tables */
-  rs->index_of[0] = A0; /* log(zero) = -inf */
+  rs->index_of[0] = (unsigned char)A0; /* log(zero) = -inf */
   rs->alpha_to[A0] = 0; /* alpha**-inf = 0 */
   sr = 1;
   for(i=0;i<rs->nn;i++){
-    rs->index_of[sr] = i;
-    rs->alpha_to[i] = sr;
+    rs->index_of[sr] = (unsigned char)i;
+    rs->alpha_to[i] = (unsigned char)sr;
     sr <<= 1;
     if(sr & (1<<symsize))
       sr ^= gfpoly;

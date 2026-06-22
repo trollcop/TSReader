@@ -4,6 +4,7 @@
 #include "resource.h"
 
 #include "TSReader_Scheduler/TSReader_Scheduler.h"
+
 PEPGSCHEDULE pepgschedule;
 int nEPGScheduleItems;
 int nEPGScheduleMax;
@@ -18,7 +19,7 @@ extern char gszAppName[];
 #endif
 
 int __cdecl SortEITCompare(const void *elem1, const void *elem2);
-void CursorNormal();
+void CursorNormal(void);
 void CursorWait(HWND hWnd);
 void DecodeATSCContentAdvisoryDescriptor(char * szBuffer, BYTE * pDescriptor, BOOL fShortMode);
 BOOL QuickFormatNIT(char * szBuffer, int nTransportStreamID, BOOL fLongVersion);
@@ -29,6 +30,11 @@ BOOL EventInPast(PEITEVENT pEvent, BOOL fAllowPastEITData);
 int GetLogicalChannelNumber(int nProgramNumber);
 
 BOOL fShownScreenEventsWarning;
+
+static tdScheduler_EnsureServiceRunning Scheduler_EnsureServiceRunning;
+static tdScheduler_CreateNewTask Scheduler_CreateNewTask;
+static tdScheduler_EnumTasks Scheduler_EnumTasks;
+static tdSchedule_DeleteSchedule Schedule_DeleteSchedule;
 
 int GetEITOffset(int nProgramNumber)
 {
@@ -59,7 +65,7 @@ int GetEITOffset(int nProgramNumber)
 	return 0;
 }
 
-int GetMaxEITChannels()
+int GetMaxEITChannels(void)
 {
 	int nMAXEIT = 0;
 	int i;
@@ -808,7 +814,6 @@ EPGPaint_SelectedEvents:
 	{
 		int nRightLimit = 0;
 		SIZE sizeEventName, sizeEventDate, sizeEventDuration;
-		SYSTEMTIME stLocal;
 		char szStartDate[MAX_PATH];
 		char szStartTime[128];
 		char szEventSource[128] = {0};
@@ -969,12 +974,12 @@ EPGPaint_SelectedEvents:
 	if (v->fEPGTimeGrid == TRUE && v->fEPGTimeGridOnTop)
 	{
 		SIZE sizeText;
-		char szTemp[] = {"X"};
+		char szTempX[] = {"X"};
 
 		nCurrentX = 100;
 		nCurrentY = GRID_START_Y;
 		SelectObject(hDC, v->epg.hGridTextFont);
-		GetTextExtentPoint(hDC, szTemp, lstrlen(szTemp), &sizeText);
+		GetTextExtentPoint(hDC, szTempX, lstrlen(szTempX), &sizeText);
 		do
 		{
 			FileTimeToSystemTime((FILETIME *)&nCurrentDisplayTime, &st);
@@ -1683,7 +1688,7 @@ INT_PTR CALLBACK EPGManualScheduleDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 			SYSTEMTIME st;
 			char szSourceParameters[128];
 
-			BOOL (* GetDescription) (char * szDescription, char * szCommandLineParameters, BOOL * fCanBeStopped, int * nMaxPIDs, DWORD * dwCapabilities);
+			td_GetDescription GetDescription = NULL;
 			GetDescription = (td_GetDescription)GetProcAddress(v->hSource, "TSReader_GetDescription");
 			GetDescription(NULL, szSourceParameters, NULL, NULL, NULL);
 
@@ -2439,7 +2444,7 @@ void ScheduleRecording(HWND hWnd, LPARAM lParam, WORD wPreRoll, WORD wPostRoll)
 		PostMessage(v->hWndMainWindow, WM_CLOSE, 0, 0);
 }
 
-void DeletedSelectedScheduledRecording()
+void DeletedSelectedScheduledRecording(void)
 {
 	int nDuplicateEventIndex;
 
@@ -2489,8 +2494,8 @@ INT_PTR CALLBACK EPGScheduleSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 				nScheduleIndex = IsRecordingScheduled(v->epg.nSelectedEPGChannel, v->epg.pSelectedEvent);
 				if (nScheduleIndex != -1)
 				{
-					WORD wPreRoll = GetDlgItemInt(hDlg, IDC_EPG_PREROLL, NULL, FALSE);
-					WORD wPostRoll = GetDlgItemInt(hDlg, IDC_EPG_POSTROLL, NULL, FALSE);
+					WORD wPreRoll = (WORD)GetDlgItemInt(hDlg, IDC_EPG_PREROLL, NULL, FALSE);
+					WORD wPostRoll = (WORD)GetDlgItemInt(hDlg, IDC_EPG_POSTROLL, NULL, FALSE);
 
 					if (wPreRoll != pepgschedule[nScheduleIndex].wPreRoll ||
 						wPostRoll != pepgschedule[nScheduleIndex].wPostRoll)
@@ -2512,7 +2517,7 @@ INT_PTR CALLBACK EPGScheduleSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 	return FALSE;
 }
 
-void LoadEPGMaps()
+void LoadEPGMaps(void)
 {
 	HANDLE hInputFile;
 	BOOL fFoundStartTag = FALSE;
@@ -2636,12 +2641,12 @@ LRESULT FAR PASCAL EPGridWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 		v->fEPGDisplayActive = FALSE;
 		Sleep(100);
 		{
-			MSG msg;
+			MSG my_msg;
 
-			while (PeekMessage(&msg, hWnd, WM_USER + 2, WM_USER + 2, PM_REMOVE))
+			while (PeekMessage(&my_msg, hWnd, WM_USER + 2, WM_USER + 2, PM_REMOVE))
 			{
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
+				TranslateMessage(&my_msg);
+				DispatchMessage(&my_msg);
 			}
 		}
 
@@ -2848,7 +2853,7 @@ LRESULT FAR PASCAL EPGridWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 		}
 		else if (v->epg.pSelectedEvent != NULL)
 		{
-			ScheduleRecording(hWnd, lParam, v->nSchedulerDefaultPreRoll, v->nSchedulerDefaultPostRoll);
+			ScheduleRecording(hWnd, lParam, (WORD)v->nSchedulerDefaultPreRoll, (WORD)v->nSchedulerDefaultPostRoll);
 		}
 		break;
 	case WM_KEYDOWN:

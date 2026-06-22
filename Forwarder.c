@@ -83,7 +83,7 @@ typedef struct _tagForwarder
 
 PFORWARDER forwarder;
 
-void LoadForwarderSettings()
+void LoadForwarderSettings(void)
 {
 	DWORD dwDisposition;
 	DWORD dwDataSize;
@@ -172,7 +172,7 @@ void LoadForwarderSettings()
 	}
 }
 
-void SaveForwarderSettings()
+void SaveForwarderSettings(void)
 {
 	LONG lKey;
 	HKEY hkMainReg;
@@ -335,15 +335,15 @@ INT_PTR CALLBACK ForwarderSetupDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
 				while (pHost->h_addr_list[nAdapter]) 
 				{
 					int nItem;
-					char szTemp[128];
+					char szIpAddr[128];
 
-					wsprintf(szTemp, "%d.%d.%d.%d", 
+					wsprintf(szIpAddr, "%d.%d.%d.%d",
 						(BYTE)pHost->h_addr_list[nAdapter][0],
 						(BYTE)pHost->h_addr_list[nAdapter][1],
 						(BYTE)pHost->h_addr_list[nAdapter][2],
 						(BYTE)pHost->h_addr_list[nAdapter][3]);
-					nItem = (int)SendMessage(hCombo, CB_ADDSTRING, 0, (LPARAM)szTemp);
-					if (lstrcmp(szTemp, forwarder->szInterfaceAddress) == 0)
+					nItem = (int)SendMessage(hCombo, CB_ADDSTRING, 0, (LPARAM)szIpAddr);
+					if (lstrcmp(szIpAddr, forwarder->szInterfaceAddress) == 0)
 						SendMessage(hCombo, CB_SETCURSEL, nItem, 0);
 					nAdapter++;
 				}
@@ -496,7 +496,7 @@ int ReadFromForwarderPipe(HANDLE hPipe, BYTE * pBuffer, int nLength)
 	return nRequestedLength;
 }
 
-void GenerateForwarderPATs()
+void GenerateForwarderPATs(void)
 {
 	int nPMTIndex;
 
@@ -525,14 +525,14 @@ void AddPMTEntryToForwarderPIDList(int nPID, int nPMTIndex)
 
 		if (forwarder->nForwardPIDs[nPID][i] == 0)
 		{
-			forwarder->nForwardPIDs[nPID][i] = nPMTIndex + 1;
+			forwarder->nForwardPIDs[nPID][i] = (BYTE)(nPMTIndex + 1);
 			return;
 		}
 	}
 	MessageBox(v->hWndMainWindow, "OUT OF ROOM in AddPMTEntryToForwarderPIDList - tell support@tsreader.co.uk", gszAppName, MB_ICONSTOP);
 }
 
-void BuildForwarderPIDList()
+void BuildForwarderPIDList(void)
 {
 	// This initializes the nForwardPIDs[] list
 	// Each nForwardPIDs entry that's being recorded
@@ -648,7 +648,7 @@ void WriteForwarderBlockBuffer(int nPMTIndex, BYTE * pData, int nLength)
 			if (forwarder->fp[nPMTIndex]->sock[nSocket] == 0)
 				break;
 			nSend = sendto(forwarder->fp[nPMTIndex]->sock[nSocket],
-						   forwarder->fp[nPMTIndex]->bOutputBuffer,
+						   (const char *)forwarder->fp[nPMTIndex]->bOutputBuffer,
 						   nOutputBytes,
 						   0,
 						   (struct sockaddr *)&forwarder->fp[nPMTIndex]->server[nSocket],
@@ -778,7 +778,7 @@ void BuildIndividualSocket(int nPMTIndex, char * szDestination)
 //		forwarder->fp[nPMTIndex]->nPort = forwarder->nMuxPort;
 //	}
 	forwarder->fp[nPMTIndex]->server[nSocket].sin_addr.s_addr = inet_addr(szNewDestination);
-	forwarder->fp[nPMTIndex]->server[nSocket].sin_port = htons(nPort);
+	forwarder->fp[nPMTIndex]->server[nSocket].sin_port = htons((unsigned short)nPort);
 
 	nRet = setsockopt(forwarder->fp[nPMTIndex]->sock[nSocket], SOL_SOCKET, SO_SNDBUF, (char *)&nTransmitUDPBufferSize, sizeof(nTransmitUDPBufferSize));
 	if (nRet == SOCKET_ERROR)
@@ -839,7 +839,7 @@ void BuildSockets(int nPMTIndex, char * szDestination)
 	} while (*szCurrentInputDestination != '\0');
 }
 
-void OpenForwarderSockets()
+void OpenForwarderSockets(void)
 {
 	int nPMTIndex;
 
@@ -890,7 +890,7 @@ void ShutdownIndividualSocket(int nPMTIndex)
 	}
 }
 
-void ShutdownForwarderSockets()
+void ShutdownForwarderSockets(void)
 {
 	int nPMTIndex;
 
@@ -967,7 +967,7 @@ void BuildIndividualSAPMessage(int nPMTIndex)
 	forwarder->fp[nPMTIndex]->nSAPMessageLength = get_byte_pos(BM_USER_THREAD);
 }
 
-void SAPSetup()
+void SAPSetup(void)
 {
 	int nRet;
 	int nPMTIndex;
@@ -1028,7 +1028,7 @@ void SAPSetup()
 		BuildIndividualSAPMessage(MAX_PAT_ENTRIES);
 }
 
-void SAPShutdown()
+void SAPShutdown(void)
 {
 	BOOL fCloseSocket = TRUE;
 	int nRet;
@@ -1048,7 +1048,7 @@ void SAPShutdown()
 		{
 			forwarder->fp[nPMTIndex]->bSAPMessage[0] |= 0x04;
 			sendto(forwarder->SAPsock,
-							   forwarder->fp[nPMTIndex]->bSAPMessage,
+							   (const char *)forwarder->fp[nPMTIndex]->bSAPMessage,
 							   forwarder->fp[nPMTIndex]->nSAPMessageLength,
 							   0,
 							   (struct sockaddr *)&forwarder->SAPserver,
@@ -1059,7 +1059,7 @@ void SAPShutdown()
 	{
 		forwarder->fp[MAX_PAT_ENTRIES]->bSAPMessage[0] |= 0x04;
 		sendto(forwarder->SAPsock,
-						   forwarder->fp[MAX_PAT_ENTRIES]->bSAPMessage,
+						   (const char *)forwarder->fp[MAX_PAT_ENTRIES]->bSAPMessage,
 						   forwarder->fp[MAX_PAT_ENTRIES]->nSAPMessageLength,
 						   0,
 						   (struct sockaddr *)&forwarder->SAPserver,
@@ -1082,7 +1082,7 @@ void SAPShutdown()
 		closesocket(forwarder->SAPsock);
 }
 
-void SendSAP()
+void SendSAP(void)
 {
 	int nPMTIndex;
 
@@ -1098,7 +1098,7 @@ void SendSAP()
 		if (forwarder->fp[nPMTIndex]->fEnabled)
 		{
 			sendto(forwarder->SAPsock,
-							   forwarder->fp[nPMTIndex]->bSAPMessage,
+							   (const char *)forwarder->fp[nPMTIndex]->bSAPMessage,
 							   forwarder->fp[nPMTIndex]->nSAPMessageLength,
 							   0,
 							   (struct sockaddr *)&forwarder->SAPserver,
@@ -1108,7 +1108,7 @@ void SendSAP()
 	if (forwarder->fMuxEnabled)
 	{
 		sendto(forwarder->SAPsock,
-						   forwarder->fp[MAX_PAT_ENTRIES]->bSAPMessage,
+						   (const char *)forwarder->fp[MAX_PAT_ENTRIES]->bSAPMessage,
 						   forwarder->fp[MAX_PAT_ENTRIES]->nSAPMessageLength,
 						   0,
 						   (struct sockaddr *)&forwarder->SAPserver,

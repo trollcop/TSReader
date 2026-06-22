@@ -25,12 +25,12 @@ PPROFILELIST pl;
 
 // Forward declarations
 INT_PTR CALLBACK AboutDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-void CursorNormal();
+void CursorNormal(void);
 void CursorWait(HWND hWnd);
 int PopulateSourceList(HWND hDlg, HWND hWndLV);
 void GetSourceDispInfo(LV_DISPINFO *pnmv);
-void LoadSettings();
-void SaveSettings();
+void LoadSettings(void);
+void SaveSettings(void);
 
 // Stuff in settings.c
 INT_PTR CALLBACK SettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -39,7 +39,7 @@ INT_PTR CALLBACK SettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 INT_PTR CALLBACK CheckNewVersionDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 // Code
-void LoadProfileSettings()
+void LoadProfileSettings(void)
 {
 	DWORD dwDisposition;
 	DWORD dwDataSize;
@@ -274,7 +274,7 @@ void LoadProfiles(HWND hWnd)
 						hSource = LoadLibrary(pl[v->nProfileCount].szSourceName);
 						if (hSource != NULL)
 						{
-							BOOL (* GetDescription) (char * szDescription, char * szCommandLineParameters, BOOL * fCanBeStopped, int * nMaxPIDs, DWORD * dwCapabilities);
+							td_GetDescription GetDescription = NULL;
 							GetDescription = (td_GetDescription)GetProcAddress(hSource, "TSReader_GetDescription");
 							if (GetDescription != NULL)
 							{
@@ -387,7 +387,7 @@ void GetProfileDispInfo(LV_DISPINFO *pnmv)
 void SetProfileLVState(HWND hWnd)
 {
     DWORD dwStyle = GetWindowLong(v->hWndProfileLV, GWL_STYLE); 
-	DWORD dwView;
+	DWORD dwView = 0;
 	HMENU hMenu = GetMenu(hWnd);
 
 	CheckMenuRadioItem(hMenu, ID_VIEW_LARGEICONS, ID_VIEW_PROFILE_DETAILS, v->nProfileListViewState, MF_BYCOMMAND);
@@ -508,7 +508,7 @@ void CreateWin32DesktopShortcut(HWND hWnd, HINSTANCE hResources, char * szProfil
 	HKEY hCU;
 	DWORD lpType;
 	ULONG ulSize = MAX_PATH;
-	char * szEXEPtr;
+	char *szEXEPtr = NULL;
 	char szDesktop[MAX_PATH];
 	char szTSReaderFolder[MAX_PATH];
 	char szTSReaderEXE[MAX_PATH];
@@ -1242,13 +1242,13 @@ LRESULT FAR PASCAL ProfileWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 						}
 						else
 						{
-							char szTemp[256] = {0};
+							char szTempCmd[256] = {0};
 
 							GetModuleFileName(v->hInstance, szCommandLine, sizeof(szCommandLine));
 							if (lstrlen(v->szProfileName))
 							{
-								wsprintf(szTemp, " -L \"%s\"", v->szProfileName);
-								lstrcat(szCommandLine, szTemp);
+								wsprintf(szTempCmd, " -L \"%s\"", v->szProfileName);
+								lstrcat(szCommandLine, szTempCmd);
 							}
 							if (WinExec(szCommandLine, SW_SHOW) <= 31)
 								MessageBox(hWnd, "Unable to start TSReader profile running", gszAppName, MB_ICONSTOP);
@@ -1606,7 +1606,7 @@ HWND InitProfileInstance(HANDLE hInstance, int nCmdShow)
 	return hProfileWnd;
 }
 
-BOOL ShowProfileBrowser()
+BOOL ShowProfileBrowser(void)
 {
 	if (InitProfileApplication(v->hInstance) == FALSE)
 		return FALSE;

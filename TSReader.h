@@ -1984,7 +1984,7 @@ typedef struct tag_Variables
 	BYTE tempDescriptorBuffer[MAX_EIT_EXTRA_DESCRIPTORS][1024];
 
 	DWORD channel_maps[65536][32];		// sorted by LCN contains LOWORD: service_number HIWORD: epg_id (Sky only)
-	WORD epg_map[65535];				// sorted by EPG ID - contains service_number
+	uint16_t epg_map[65536];			// sorted by EPG ID - contains service_number
 
 	WORD wChartMenuItems[32];
 

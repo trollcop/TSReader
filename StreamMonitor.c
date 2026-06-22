@@ -17,7 +17,7 @@ extern char gszKeyName[];
 void GetSourceInfoLine(int nLine, char * szOutput);
 BOOL GetPIDTooltipInfo(int nPID, char * szString);
 
-double GetStreamMonitorTime()
+double GetStreamMonitorTime(void)
 {
 	double dRetVal = 0.0;
 
@@ -148,7 +148,7 @@ void TranslateAlarmCode(char * szText, int nAlarmCode, int nAlarmSubcode)
 	}
 }
 
-void OpenStreamMonitorLogFile()
+void OpenStreamMonitorLogFile(void)
 {
 	BOOL fNewFile = FALSE;
 	SYSTEMTIME stNow;
@@ -260,7 +260,7 @@ void MonitorAlarmOn(int nAlarmIndex, HWND hDlg, int nAlarmSubcode)
 	}
 }
 
-int GetTotalCRCErrors()
+int GetTotalCRCErrors(void)
 {
 	int nRetVal = 0;
 	int i;

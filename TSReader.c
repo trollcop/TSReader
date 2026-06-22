@@ -5370,11 +5370,10 @@ void CheckForESParsing(int nPID, int nES)
 	if (v->nESParsePID[nES] == nPID) 
 	{
 		int nAdaptation = (tv->pIncomingBuffer[tv->nBufferOffset + 3] >> 4) & 0x03;
-		BYTE * pWritePtr;
+		BYTE *pWritePtr = NULL;
 		int nWriteLen = 0;
 
-		switch(nAdaptation)
-		{
+		switch(nAdaptation) {
 		case 0:		// not allowed
 			break;	
 		case 1:		// no adaptation
@@ -10804,7 +10803,7 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 			}
 			else
 			{
-				HTREEITEM hInsertAfter;
+				HTREEITEM hInsertAfter = NULL;
 
 				for (i = 0; i < MAX_EIT_CHANNEL_DATA; i++)
 				{
@@ -16769,7 +16768,7 @@ void AddNetworkToINI(PNITENTRY pNITData, PNETWORKTOINILIST pNetworkToINIList)
 	int fADVMux = FALSE;
 	char szINIString[256] = {""};
 	char szFEC[32] = {""};
-	char cPolarity;
+	char cPolarity = 0;
 
 	switch(pNITData->dvbs.nPolarization)
 	{
@@ -17512,7 +17511,7 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		case ID_IDRIPPOPUP_SAVEPAYLOADXXXIPHEADERANDMPEHEADER:
 			if (v->pLastClickedIPEntry != NULL)
 			{
-				int nIPSaveMode;
+				int nIPSaveMode = 0;
 
 				switch(LOWORD(wParam))
 				{

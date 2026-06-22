@@ -194,7 +194,7 @@ BOOL OpenGPSSerialPort(int nBaudRate)
 	return TRUE;
 }
 
-BOOL CloseGPSSerialPort()
+BOOL CloseGPSSerialPort(void)
 {
 	v->fStopGPSSerialThread = TRUE;
 	CloseHandle(v->hGPSPort);
@@ -311,17 +311,17 @@ BOOL ParseGPSLine(char * szBuffer)
 						
 						szTemp[3] = '\0';
 						szTemp[0] = szElements[0][0]; szTemp[1] = szElements[0][1];
-						v->stGPS.wHour = atoi(szTemp);
+						v->stGPS.wHour = (WORD)atoi(szTemp);
 						szTemp[0] = szElements[0][2]; szTemp[1] = szElements[0][3];
-						v->stGPS.wMinute = atoi(szTemp);
+						v->stGPS.wMinute = (WORD)atoi(szTemp);
 						szTemp[0] = szElements[0][4]; szTemp[1] = szElements[0][5];
-						v->stGPS.wSecond = atoi(szTemp);
+						v->stGPS.wSecond = (WORD)atoi(szTemp);
 						szTemp[0] = szElements[8][0]; szTemp[1] = szElements[8][1];
-						v->stGPS.wDay = atoi(szTemp);
+						v->stGPS.wDay = (WORD)atoi(szTemp);
 						szTemp[0] = szElements[8][2]; szTemp[1] = szElements[8][3];
-						v->stGPS.wMonth = atoi(szTemp);
+						v->stGPS.wMonth = (WORD)atoi(szTemp);
 						szTemp[0] = szElements[8][4]; szTemp[1] = szElements[8][5];
-						v->stGPS.wYear = atoi(szTemp) + 2000;
+						v->stGPS.wYear = (WORD)atoi(szTemp) + 2000;
 					}
 				}
 
@@ -365,7 +365,7 @@ int LoadGPSPortList(HWND hDlg, BOOL fActuallyLoad)
 								   &dwValueName,
 								   NULL,
 								   &dwType,
-								   szValue,
+								   (LPBYTE)szValue,
 								   &dwValue);
 			if (lResult != ERROR_SUCCESS)
 				break;
