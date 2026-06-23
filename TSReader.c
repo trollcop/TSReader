@@ -6021,7 +6021,11 @@ void DispatchSIPacket(void)
 		case BUFFER_BIT:
 			if (v->nNetworkPID == 0x0010)		// must be at least DVB
 			{
-				ParseISDBBITPacket(v->bSIBuffer[tv->nBufferID], v->nFillPtr[tv->nBufferID]);
+				if (ParseISDBBITPacket(v->bSIBuffer[tv->nBufferID], v->nFillPtr[tv->nBufferID]) == TRUE) {
+					PostMessage(v->hDlgSIParser, WM_USER + 2, SI_PARSER_BIT, 0);
+					v->fDidBIT = TRUE;
+					PIDManagement(FALSE, 0x0024, FALSE);
+				}
 			}
 			break;
 		case BUFFER_CETT:
@@ -7138,6 +7142,17 @@ void CleanupMPEGParsingThread(HWND hDlg)
 		{
 			LocalFree(v->cat.pDescriptor[i]);
 			v->cat.pDescriptor[i] = NULL;
+		}
+	}
+
+#ifdef DEBUG_MESSAGES
+	OutputDebugString("CleanupMPEGParsingThread: BIT\n");
+#endif DEBUG_MESSAGES
+	UpdateMainStatusText("Unloading BIT data...");
+	for (i = 0; i < MAX_BIT_DESCRIPTORS; i++) {
+		if (v->bit.pDescriptor[i] != NULL) {
+			LocalFree(v->bit.pDescriptor[i]);
+			v->bit.pDescriptor[i] = NULL;
 		}
 	}
 
@@ -8460,25 +8475,32 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 		PIDManagement(TRUE, v->nHighlightPIDs[0], TRUE);
 		ForcePIDChartRepaint(hDlg);
 		break;
-	case SI_PARSER_CDT:	// Also the RRT
-		switch(v->nNetworkPID)
-		{
-		default:
-			nItemIndex = (int)tvi.lParam - SI_PARSER_CDT;
-			SetDlgItemText(hDlg, IDC_SI_TEXT, FormatCDTEntry(nItemIndex));
+	case SI_PARSER_CDT:	// Also the RRT, BIT
+		if (v->fISDB) {
+			/* BIT table */
+			SetDlgItemText(hDlg, IDC_SI_TEXT, FormatBIT(FALSE));
 			memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
-			v->nHighlightPIDs[0] = v->nNetworkPID;
-			PIDManagement(TRUE, v->nHighlightPIDs[0], TRUE);
+			v->nHighlightPIDs[0] = 0x0024;
 			ForcePIDChartRepaint(hDlg);
-			break;
-		case 0x1ffb:
-			nItemIndex = (int)tvi.lParam - SI_PARSER_RRT;
-			SetDlgItemText(hDlg, IDC_SI_TEXT, FormatRRTEntry(nItemIndex));
-			memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
-			v->nHighlightPIDs[0] = 0x1ffb;
-			PIDManagement(TRUE, v->nHighlightPIDs[0], TRUE);
-			ForcePIDChartRepaint(hDlg);
-			break;
+		} else {
+			switch (v->nNetworkPID) {
+				default:
+					nItemIndex = (int)tvi.lParam - SI_PARSER_CDT;
+					SetDlgItemText(hDlg, IDC_SI_TEXT, FormatCDTEntry(nItemIndex));
+					memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
+					v->nHighlightPIDs[0] = v->nNetworkPID;
+					PIDManagement(TRUE, v->nHighlightPIDs[0], TRUE);
+					ForcePIDChartRepaint(hDlg);
+					break;
+				case 0x1ffb:
+					nItemIndex = (int)tvi.lParam - SI_PARSER_RRT;
+					SetDlgItemText(hDlg, IDC_SI_TEXT, FormatRRTEntry(nItemIndex));
+					memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
+					v->nHighlightPIDs[0] = 0x1ffb;
+					PIDManagement(TRUE, v->nHighlightPIDs[0], TRUE);
+					ForcePIDChartRepaint(hDlg);
+					break;
+			}
 		}
 		break;
 	case SI_PARSER_TDT:
@@ -9792,6 +9814,7 @@ void SetupForNewStream(HWND hWnd)
 	memset(&v->pat, 0, sizeof(v->pat));
 	v->pat.nVersionNumber = (uint8_t)-1;
 	v->cat.nVersionNumber = (uint8_t)-1;
+	v->bit.nVersionNumber = (uint8_t)-1;
 	v->nCaptionPID = -1;
 	for (i = 0; i < MAX_CHARTS; i++)
 		v->nVideoCompositionPID[i] = -1;
@@ -11012,7 +11035,7 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 			}
 		}
 		break;
-	case SI_PARSER_CDT:		// also the RRT
+	case SI_PARSER_CDT:		// also the RRT and BIT
 		if (v->nNetworkPID == 0x1ffb)
 		{
 			int nRRTRegion = (int)lParam;
@@ -11027,8 +11050,32 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 			wsprintf(szTemp, "Region %d", nRRTRegion);
 			AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_RRT + nRRTRegion, 15, v->hRRTRootTreeItem, NULL);
 		}
-		else
+		else if (v->fISDB)
 		{
+			char szTemp[128], szMask[128];
+			int i;
+
+			if (v->bit.hBITTreeItem == NULL) {
+				wsprintf(szMask, "BIT PID %s", v->szOutputPIDFlags);
+				wsprintf(szTemp, szMask, 0x0024);
+				v->bit.hBITTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_BIT, 28, NULL, NULL);
+			}
+
+			for (i = 0; i < MAX_BIT_DESCRIPTORS; i++) {
+				char szDescriptor[128];
+
+				if (v->bit.pDescriptor[i] == NULL)
+					break;
+
+				DecodeDescriptorNames(szDescriptor, v->bit.pDescriptor[i][0]);
+				set_buf(BM_USER_THREAD, v->bit.pDescriptor[i], 0, FALSE);
+				{
+					uint8_t descriptor_tag = get_bits(BM_USER_THREAD, 8) & 0xff;
+					uint8_t descriptor_length = get_bits(BM_USER_THREAD, 8) & 0xff;
+				}
+				AddItemToSITree(hWndTV, szDescriptor, 2, SI_PARSER_NOP, 8, v->bit.hBITTreeItem, NULL);
+			}
+		} else {
 			int i;
 			char szTemp[128], szMask[128];
 
@@ -17263,10 +17310,11 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			}
 
 			memset(&v->pat, 0, sizeof(v->pat));
-			v->pat.nVersionNumber = -1;
+			v->pat.nVersionNumber = (uint8_t)-1;
+			v->bit.nVersionNumber = (uint8_t)-1;
 			for (j = 0; j < MAX_TS_BUFFERS; j++)
 			{
-				v->ss.tsb[j].pData = LocalAlloc(LPTR, TS_BUFFER_SIZE);			
+				v->ss.tsb[j].pData = LocalAlloc(LPTR, TS_BUFFER_SIZE);
 				if (v->ss.fTimestampPackets == TRUE)
 					v->ss.tsb[j].pTimestamps = LocalAlloc(LPTR, sizeof(DWORD) * TS_PACKETS_AT_A_TIME);
 			}
@@ -19976,8 +20024,9 @@ void InitVariables(HINSTANCE hInstance, int nCmdShow)
 	lstrcpy(v->szOutputPIDFlags, "0x%04x");
 	memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
 	v->nSelectedProgram	= -1;
-	v->pat.nVersionNumber = -1;
-	v->cat.nVersionNumber = -1;
+	v->pat.nVersionNumber = (uint8_t)-1;
+	v->cat.nVersionNumber = (uint8_t)-1;
+	v->bit.nVersionNumber = (uint8_t)-1;
 	v->nCaptionPID = -1;
 	for (i = 0; i < MAX_CHARTS; i++)
 		v->nVideoCompositionPID[i] = -1;

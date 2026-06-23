@@ -38,6 +38,7 @@ void FormatDefaultEITDescriptor(char * szBuffer, BYTE * pDescriptor, BOOL fXML);
 char * FormatNITEntry(int nTransportStreamID, BOOL fIncludeHTMLTags);
 char * FormatEITEntry(int nChannelNumber, int nEITFormat, BOOL fIncludeHTMLTags);
 char * FormatCAT(BOOL fHTMLMode);
+char * FormatBIT(BOOL fHTMLMode);
 char * FormatCVCT(int nCVCTIndex);
 char * FormatBAT(int nBATIndex);
 char * FormatMGT(void);

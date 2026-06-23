@@ -3379,19 +3379,101 @@ void ParseDVBRSTPacket(BYTE * pSectionPointer, int nPacketLength)
 	}
 }
 
-
-void ParseISDBBITPacket(BYTE * pSectionPointer, int nPacketLength)
+BOOL ParseISDBBITPacket(BYTE *pSectionPointer, int nPacketLength)
 {
 	BOOL fPriorISDBState;
 	int nSectionLength = ((pSectionPointer[1] << 8) + pSectionPointer[2]) & 0xfff;
+	uint8_t nVersionNumber = 0;
 	
 	// Check length, CRC and table_id
-	if ( (nSectionLength <= 0) || (nSectionLength > 65536) )
-			return;
+	if ((nSectionLength <= 0) || (nSectionLength > 4093))
+		return FALSE;
 	if (SourceHelper_CRC_Check(pSectionPointer, nSectionLength + 3) != TRUE)
-		return;
+		return FALSE;
 	if (pSectionPointer[0] != 0xc4)
-		return;
+		return FALSE;
+
+	if (v->fDidBIT == TRUE)
+		return FALSE;
+
+	set_buf(BM_PARSER_THREAD, pSectionPointer, 0, FALSE);
+	get_bits(BM_PARSER_THREAD, 8); /* table_id */
+	get_bits(BM_PARSER_THREAD, 1); /* section_syntax_indicator */
+	get_bits(BM_PARSER_THREAD, 1); /* reserved_future_use */
+	get_bits(BM_PARSER_THREAD, 2); /* reserved */
+	get_bits(BM_PARSER_THREAD, 12); /* section_length */
+	v->bit.nOriginalNetworkID = get_bits(BM_PARSER_THREAD, 16) & 0xffff;
+	get_bits(BM_PARSER_THREAD, 2); /* reserved */
+	nVersionNumber = get_bits(BM_PARSER_THREAD, 5) & 0x1f; /* version_number */
+
+	get_bits(BM_PARSER_THREAD, 1); /* current_next_indicator */
+	get_bits(BM_PARSER_THREAD, 8); /* section_number */
+	get_bits(BM_PARSER_THREAD, 8); /* last_section_number */
+	get_bits(BM_PARSER_THREAD, 3); /* reserved */
+	v->bit.fBroadcastViewProperty = get_bits(BM_PARSER_THREAD, 1) & 1;
+	uint16_t first_descriptors_length = get_bits(BM_PARSER_THREAD, 12) & 0xfff;
+
+	/* skip up to now */
+	pSectionPointer += 10;
+	nSectionLength -= 10;
+
+	/* update version */
+	if (v->bit.nVersionNumber != nVersionNumber)
+		v->bit.nVersionNumber = nVersionNumber;
+
+	/* loop 1st descriptors */
+	while (first_descriptors_length > 0) {
+		uint8_t nDescriptorLength, nDescriptorTag;
+		int i;
+
+		set_buf(BM_PARSER_THREAD, pSectionPointer, 0, FALSE);
+		nDescriptorTag = get_bits(BM_PARSER_THREAD, 8) & 0xff;
+		nDescriptorLength = (get_bits(BM_PARSER_THREAD, 8) & 0xff) + 2;
+		LogDescriptor(DESCRIPTOR_BIT, nDescriptorTag);
+
+		for (i = 0; i < MAX_BIT_DESCRIPTORS; i++) {
+			if (v->bit.pDescriptor[i] == NULL) {
+				v->bit.pDescriptor[i] = LocalAlloc(LPTR, nDescriptorLength + 4);
+				memcpy(v->bit.pDescriptor[i], pSectionPointer, nDescriptorLength);
+				break;
+			}
+		}
+		nSectionLength -= nDescriptorLength;
+		pSectionPointer += nDescriptorLength;
+		first_descriptors_length -= nDescriptorLength;
+	};
+
+	/* rest of loop */
+	while (nSectionLength > 1) {
+		set_buf(BM_PARSER_THREAD, pSectionPointer, 0, FALSE);
+		v->bit.nBroadcasterID = get_bits(BM_PARSER_THREAD, 8) & 0xff;
+		get_bits(BM_PARSER_THREAD, 4); /* reserved */
+		uint16_t second_descriptors_length = get_bits(BM_PARSER_THREAD, 12) & 0xfff;
+
+		pSectionPointer += 3;
+		nSectionLength -= 3;
+
+		while (second_descriptors_length > 0) {
+			uint8_t nDescriptorLength, nDescriptorTag;
+			int i;
+
+			set_buf(BM_PARSER_THREAD, pSectionPointer, 0, FALSE);
+			nDescriptorTag = get_bits(BM_PARSER_THREAD, 8) & 0xff;
+			nDescriptorLength = (get_bits(BM_PARSER_THREAD, 8) & 0xff) + 2;
+			LogDescriptor(DESCRIPTOR_BIT, nDescriptorTag);
+
+			for (i = 0; i < MAX_BIT_DESCRIPTORS; i++) {
+				if (v->bit.pDescriptor[i] == NULL) {
+					v->bit.pDescriptor[i] = LocalAlloc(LPTR, nDescriptorLength + 4);
+					memcpy(v->bit.pDescriptor[i], pSectionPointer, nDescriptorLength);
+					break;
+				}
+			}
+			nSectionLength -= nDescriptorLength;
+			pSectionPointer += nDescriptorLength;
+			second_descriptors_length -= nDescriptorLength;
+		}
+	}
 
 	fPriorISDBState = v->fISDB;
 	v->fISDB = TRUE;
@@ -3446,6 +3528,8 @@ void ParseISDBBITPacket(BYTE * pSectionPointer, int nPacketLength)
 			}
 		}
 	}
+
+	return TRUE;
 }
 
 void ParseDVBTDTPacket(BYTE * pSectionPointer, int nPacketLength)
@@ -3562,7 +3646,7 @@ void ParseDVBTDTPacket(BYTE * pSectionPointer, int nPacketLength)
 		}
 	} while (nPacketLength);
 }
-	
+
 void ParseDVBNITPacket(BYTE * pSectionPointer, int nPacketLength)
 {
 	uint8_t nTableID;

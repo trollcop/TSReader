@@ -20,5 +20,5 @@ void ParseDCIIECMPacket(BYTE * pSection, int nLength);
 void ParseDVBINTPacket(BYTE * pSection, int nLength);
 typedef void (* td_QuickParseUserData) (BYTE * pData, int user_data_len, int nESParsePMTIndex, int nESParseESIndex, int nES);
 void QuickParseUserData(BYTE * pData, int user_data_len, int nESParsePMTIndex, int nESParseESIndex, int nES);
-void ParseISDBBITPacket(BYTE * pSectionPointer, int nPacketLength);
+BOOL ParseISDBBITPacket(BYTE * pSectionPointer, int nPacketLength);
 void ParseATSCCETT(BYTE * pSectionPointer, int nPacketLength);

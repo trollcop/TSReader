@@ -1542,6 +1542,7 @@ void FormatCASystemName(int nCASystemID, char * szCAName)
 {
 	if (nCASystemID == 0x1234)						lstrcat(szCAName, "Echostar/Nagravision");
 	else if (nCASystemID == 0x0005)					lstrcat(szCAName, "ARIB CAS");
+	else if (nCASystemID == 0x000E)					lstrcat(szCAName, "ARIB Content Protection");
 	else if ((nCASystemID & 0xff00) == 0x0000)		lstrcat(szCAName, "Standardized");
 	else if ((nCASystemID & 0xff00) == 0x0100)		lstrcat(szCAName, "Canal Plus");
 	else if ((nCASystemID & 0xff00) == 0x0200)		lstrcat(szCAName, "CCETT");
@@ -4759,6 +4760,13 @@ byte 8 uimsbf
 		}
 		break;
 
+	case 0xcb:	// ISDB Contract Information 
+		if (!v->fISDB)
+			goto DecodeMPEG2Descriptor_Default;
+
+		/* TODO */
+		break;
+
 	case 0xcd:	// ISDB TS Information
 		if (!v->fISDB)
 			goto DecodeMPEG2Descriptor_Default;
@@ -4799,6 +4807,13 @@ byte 8 uimsbf
 				}
 			}
 		}
+		break;
+
+	case 0xce:	// ISDB Extended Broadcaster
+		if (!v->fISDB)
+			goto DecodeMPEG2Descriptor_Default;
+
+		/* TODO */
 		break;
 
 	case 0xcf:	// ISDB Logo Transmission
@@ -4869,6 +4884,13 @@ byte 8 uimsbf
 
 			lstrcat(v->szSIFormatBuffer, szTemp);
 		}
+		break;
+
+	case 0xd7:	// ISDB SI Parameter
+		if (!v->fISDB)
+			goto DecodeMPEG2Descriptor_Default;
+
+		/* TODO */
 		break;
 
 	case 0xde:	// ISDB Content Availability
@@ -6346,6 +6368,37 @@ char * FormatRRTEntry(int nRegion)
 				}
 			}
 		}
+	}
+
+	return v->szSIFormatBuffer;
+}
+
+char *FormatBIT(BOOL fHTMLMode)
+{
+	char szTemp[512];
+	int i;
+
+	wsprintf(v->szSIFormatBuffer, "BIT Version Number: %d\r\n", v->bit.nVersionNumber);
+
+	wsprintf(szTemp, "Original network id: 0x%04x (%d)\r\n", v->bit.nOriginalNetworkID, v->bit.nOriginalNetworkID);
+	lstrcat(v->szSIFormatBuffer, szTemp);
+	wsprintf(szTemp, "Broadcast view property: %s\r\n", TrueFalseString(v->bit.fBroadcastViewProperty));
+	lstrcat(v->szSIFormatBuffer, szTemp);
+	wsprintf(szTemp, "Broadcaster Id: 0x%02x (%d)\r\n", v->bit.nBroadcasterID, v->bit.nBroadcasterID);
+	lstrcat(v->szSIFormatBuffer, szTemp);
+	
+
+	for (i = 0; i < MAX_BIT_DESCRIPTORS; i++) {
+		char szDescriptor[128];
+
+		if (v->bit.pDescriptor[i] == NULL)
+			break;
+
+		DecodeDescriptorNames(szDescriptor, v->bit.pDescriptor[i][0]);
+		wsprintf(szTemp, "\r\nDescriptor: %s\r\n", szDescriptor);
+		lstrcat(v->szSIFormatBuffer, szTemp);
+
+		DecodeMPEG2Descriptor(v->bit.pDescriptor[i], fHTMLMode);
 	}
 
 	return v->szSIFormatBuffer;

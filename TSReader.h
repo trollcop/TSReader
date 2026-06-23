@@ -37,6 +37,7 @@
 #define SI_PARSER_MMT  0xa0000000
 #define SI_PARSER_CDT  0xb0000000		// Carrier Definition Table in DCII
 #define SI_PARSER_RRT  0xb0000000		// Region Rating Table in ATSC
+#define SI_PARSER_BIT  0xb0000000		// Broadcaster Information Table in ISDB
 #define SI_PARSER_SIT  0xc0000000
 #define SI_PARSER_TDT  0xd0000000		// Transponder Definition Table in DCII
 #define SI_PARSER_MGT  0xe0000000
@@ -80,6 +81,7 @@ enum
 #define MAX_EIT_EXTRA_DESCRIPTORS 64
 #define MAX_NIT_EXTRA_DESCRIPTORS 64
 #define MAX_CAT_DESCRIPTORS 256
+#define MAX_BIT_DESCRIPTORS 32
 #define MAX_MMT_ENTRIES 256
 #define MAX_CDT_ENTRIES 256
 #define MAX_SIT_ENTRIES 1024
@@ -349,7 +351,8 @@ enum EVENT_ICONS
 #define DESCRIPTOR_EIT 6
 #define DESCRIPTOR_VCT 7
 #define DESCRIPTOR_MGT 8
-#define MAX_DESCRIPTOR_TAG_ARRAY DESCRIPTOR_MGT + 1
+#define DESCRIPTOR_BIT 9
+#define MAX_DESCRIPTOR_TAG_ARRAY DESCRIPTOR_BIT + 1
 
 #define MANUAL_CHANNEL_PMT_PID	((uint16_t)-2)
 
@@ -774,6 +777,15 @@ typedef struct _tagCAT
 	BYTE * pDescriptor[MAX_CAT_DESCRIPTORS];
 	HTREEITEM hCATTreeItem;
 } CAT, *PCAT;
+
+typedef struct _tagBIT {
+	uint8_t nVersionNumber;
+	uint16_t nOriginalNetworkID;
+	uint8_t nBroadcasterID;
+	BOOL fBroadcastViewProperty;
+	BYTE *pDescriptor[MAX_BIT_DESCRIPTORS];
+	HTREEITEM hBITTreeItem;
+} BIT, *PBIT;
 
 typedef struct _tagMMT
 {
@@ -1498,6 +1510,7 @@ typedef struct tag_Variables
 	BOOL fDiscardNULLPIDs;
 	BOOL fIPDVBMode, fIPDVBModeChanged;
 	BOOL fDidCAT;
+	BOOL fDidBIT;
 	BOOL fTreeViewSelectedAtLeastOnce;
 	BOOL fDeletingAllTVItems;
 	BOOL fSortChartByPID;
@@ -1843,6 +1856,7 @@ typedef struct tag_Variables
 	PAT pat;
 	PMT editpmt;
 	CAT cat;
+	BIT bit;
 	MMT mmt[MAX_MMT_ENTRIES];
 	CDT cdt[MAX_CDT_ENTRIES];
 	SIT sit[MAX_SIT_ENTRIES];
