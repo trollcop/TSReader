@@ -23,7 +23,11 @@ typedef struct _tagH264Decode
 typedef int (* td_H264) (HANDLE hInPipe, PH264DECODE hd);
 
 //DWORD WINAPI H264DecoderThread_DEBUG(LPVOID lpv)
+#ifdef USE_FFMPEG
+DWORD WINAPI H264DecoderThread2(LPVOID lpv)
+#else
 DWORD WINAPI H264DecoderThread(LPVOID lpv)
+#endif
 {
 	PESPARSERINFO esparserinfo = (PESPARSERINFO)lpv;
 	H264DECODE hd = {0};

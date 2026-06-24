@@ -35,7 +35,11 @@ void save_ppm(int width, int height, uint8_t * buf, int num, char * szDebugName)
 #endif _DEBUG
 
 #define SIZE_TO_LIBMPEG2 4096
+#ifdef USE_FFMPEG
+DWORD WINAPI MPEG2DecoderThread2(LPVOID lpv)
+#else
 DWORD WINAPI MPEG2DecoderThread(LPVOID lpv)
+#endif
 {
 	PESPARSERINFO esparserinfo = (PESPARSERINFO)lpv;
 	int nPacketLength;

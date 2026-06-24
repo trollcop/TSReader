@@ -135,7 +135,7 @@ DWORD WINAPI H264DecoderThread(LPVOID lpv)
 {
 	PESPARSERINFO esparserinfo = (PESPARSERINFO)lpv;
 
-	VideoDecoderThread(esparserinfo, AV_CODEC_ID_H264, FALSE);
+	VideoDecoderThread(esparserinfo, AV_CODEC_ID_H264, TRUE);
 
 	return 0;
 }

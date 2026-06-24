@@ -17,7 +17,11 @@ typedef struct _tagMPEG4Decode
 
 typedef int (*td_MPEG4) (HANDLE hInPipe, PMPEG4DECODE hd);
 
+#ifdef USE_FFMPEG
+DWORD WINAPI MPEG4DecoderThread2(LPVOID lpv)
+#else
 DWORD WINAPI MPEG4DecoderThread(LPVOID lpv)
+#endif
 {
 	td_MPEG4 MPEG4 = NULL;
 

@@ -1034,6 +1034,7 @@ BOOL DecodeH264Video(BYTE * pPESPacket, int nPacketLength, int nES)
 		DWORD dwWritten;
 		int nActualLength = nPacketLength - nOffset;
 
+		WriteFile(v->hMPEGDecoderWritePipe[nES], &nActualLength, sizeof(nActualLength), &dwWritten, NULL);
 		WriteFile(v->hMPEGDecoderWritePipe[nES], &pPESPacket[nOffset], nActualLength, &dwWritten, NULL);
 		if (dwWritten != (DWORD)nActualLength)
 		{
