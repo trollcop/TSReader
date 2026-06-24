@@ -11,6 +11,8 @@
 
 extern PVARIABLES v;
 
+#define PES_BUFSIZ	(1024 * 1024)
+
 static void VideoDecoderThread(PESPARSERINFO esparserinfo, enum AVCodecID codec_id, BOOL incl_size)
 {
 	uint8_t *buffer = NULL;
@@ -33,7 +35,7 @@ static void VideoDecoderThread(PESPARSERINFO esparserinfo, enum AVCodecID codec_
 	ret = avcodec_open2(ctx, codec, NULL);
 
 	AVFrame *frame = av_frame_alloc();
-	buffer = LocalAlloc(LMEM_FIXED, 1024 * 1024);
+	buffer = LocalAlloc(LMEM_FIXED, PES_BUFSIZ);
 
 	do {
 		int nReadLength;
@@ -49,7 +51,7 @@ static void VideoDecoderThread(PESPARSERINFO esparserinfo, enum AVCodecID codec_
 			if (nReadLength == 0 || nReturned == 0)
 				break;
 		} else {
-			nReadLength = 0x100000; // arbitrary
+			nReadLength = PES_BUFSIZ;
 		}
 
 		nPacketLength = ReadFromMPEG2ESPipe(buffer, nReadLength, esparserinfo->nES);
@@ -73,6 +75,12 @@ static void VideoDecoderThread(PESPARSERINFO esparserinfo, enum AVCodecID codec_
 			int nDestHeight, nDestWidth;
 			int nSourceHeight = frame->height;
 
+			/* skip non-I frames for display, as those might have decoding garbage artifacts */
+			if (frame->pict_type != AV_PICTURE_TYPE_I) {
+				av_frame_unref(frame);
+				break;
+			}
+
 			GetNewThumbnailSize(&nSourceHeight, &nDestHeight, &nDestWidth);
 			struct SwsContext *sws_ctx = sws_getContext(ctx->width, ctx->height, ctx->pix_fmt, nDestWidth, nDestHeight, AV_PIX_FMT_BGR24, SWS_BILINEAR, NULL, NULL, NULL);
 
@@ -95,6 +103,7 @@ static void VideoDecoderThread(PESPARSERINFO esparserinfo, enum AVCodecID codec_
 			av_free(rgb_buffer);
 			sws_freeContext(sws_ctx);
 			av_frame_free(&rgb_frame);
+			av_frame_unref(frame);
 
 			nPictureCount++;
 			if (nPictureCount > nMaximumPictures) {
