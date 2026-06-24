@@ -239,21 +239,29 @@ void _ISResizeRGB(void * pSrc, int srcW, int srcH,
     rgb_dst = (unsigned char *)malloc(dstW * dstH * 3);
     if (!rgb_dst) { free(rgb_src); return; }
 
-    stbir_resize_uint8_linear(rgb_src, srcW, srcH, 0,
-                              rgb_dst, dstW, dstH, 0, STBIR_RGB);
+    stbir_resize_uint8_linear(rgb_src, srcW, srcH, 0, rgb_dst, dstW, dstH, 0, STBIR_RGB);
 
     /* Convert back to BGR bottom-up in the destination buffer */
     for (row = 0; row < dstH; row++)
     {
         unsigned char * src_row = rgb_dst + row * dstW * 3;
+#if 0
         BYTE * dst_row = (BYTE *)pDst + (dstH - 1 - row) * dstW * 3;
-        for (col = 0; col < dstW; col++)
-        {
+#else
+        BYTE * dst_row = (BYTE *)pDst + row * dstW * 3;
+#endif
+
+#if 0
+        for (col = 0; col < dstW; col++) {
             dst_row[col * 3 + 0] = src_row[col * 3 + 2]; /* B */
             dst_row[col * 3 + 1] = src_row[col * 3 + 1]; /* G */
             dst_row[col * 3 + 2] = src_row[col * 3 + 0]; /* R */
         }
+#else
+        memcpy(dst_row, src_row, dstW * 3);
+#endif
     }
+
     free(rgb_src);
     free(rgb_dst);
 }
