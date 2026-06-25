@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <commctrl.h>
 #include "TSReader.h"
+#include "util.h"
 #include "resource.h"
 
 #include "TSReader_Scheduler/TSReader_Scheduler.h"
