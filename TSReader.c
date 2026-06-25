@@ -7420,7 +7420,7 @@ void DrawThumbnail(HDC hDC, int nPMTIndex, int nESIndex, int yCurrent, int yEnd,
 					break;
 				}
 				if (pIcon != NULL)
-					_ISOverlayRGBTrans(v->pNewPicture, nThumbnailWidth, nThumbnailHeight, pIcon, 24, 13, nThumbnailWidth - 25, 1, 1.0, 0xff0000);
+					_ISOverlayRGBTrans(v->pNewPicture, nThumbnailWidth, nThumbnailHeight, pIcon, 24, 13, nThumbnailWidth - 25, 1, 1.0, 0x0000ff);
 			}
 		}
 	}
@@ -7451,7 +7451,7 @@ void DrawThumbnail(HDC hDC, int nPMTIndex, int nESIndex, int yCurrent, int yEnd,
 				break;
 			}					
 			if (pIcon != NULL)
-				_ISOverlayRGBTrans(v->pNewPicture, nThumbnailWidth, nThumbnailHeight, pIcon, 24, 13, nThumbnailWidth - 25, 1, 1.0, 0xff0000);
+				_ISOverlayRGBTrans(v->pNewPicture, nThumbnailWidth, nThumbnailHeight, pIcon, 24, 13, nThumbnailWidth - 25, 1, 1.0, 0x0000ff);
 		}
 	}
 
