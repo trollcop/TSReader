@@ -5372,8 +5372,6 @@ void GetNextECMPID(void)
 					int CA_PID = (v->pat.pmt[v->nDCIIECMPMTIndex].pProgramInfo[nOffset + 4] << 8 | v->pat.pmt[v->nDCIIECMPMTIndex].pProgramInfo[nOffset + 5]) & 0x1fff;
 					if (v->fPIDActive[CA_PID] != 0)
 					{
-						char szTemp2[128];
-
 						v->nDCIIECMDescriptorPID = CA_PID;
 						v->nDCIIECMDescriptorTimeout = 0;
 						wsprintf(szTemp, "Parsing DCII ECM for service %d on PID 0x%04x", v->pat.pmt[v->nDCIIECMPMTIndex].nProgramNumber, v->nDCIIECMDescriptorPID);
@@ -19531,8 +19529,6 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 				for (nTuneLoop = 0; nTuneLoop < v->nTunerLoops; nTuneLoop++)
 				{
-					char szTemp[128];
-
 					if (fOKToChangeQuietMode == TRUE)
 					{
 						if (nTuneLoop == v->nTunerLoops - 1)
@@ -21207,7 +21203,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 {
 	BOOL fOK;
 	char * szCmdLinePtr = lpszCmdLine;
-	char szTemp[128];
 	char szVersion[32];
 
 	// In memory of Rod Hewitt KG6TTD (G6TTD) - shows for 5 seconds, click/key to dismiss

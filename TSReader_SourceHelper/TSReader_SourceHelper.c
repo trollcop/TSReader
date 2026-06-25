@@ -62,7 +62,7 @@ char szCurrentSatFile[48] = {0};
 char szTypeName[4] = {"DVB"};
 char gszAppName[] = {"TSReader Source Helper"};
 
-void CursorNormal()
+void CursorNormal(void)
 {
 	ReleaseCapture();
 	SetCursor(LoadCursor(NULL, IDC_ARROW));
@@ -930,7 +930,7 @@ void SetupATSCListView(HWND hDlg, BOOL fInit)
 // A **VERY** crude routine to return a line!
 int SourceHelper_ReadLine(HANDLE hFile, char * szBuffer, int nMaxLength)
 {
-	int dwBytesRead;
+	DWORD dwBytesRead;
 	char szTemp[2];
 	int nOutputPosition = 0;
 
@@ -957,7 +957,7 @@ int SourceHelper_ReadLine(HANDLE hFile, char * szBuffer, int nMaxLength)
 // A **VERY** crude routine to return a line!
 int SourceHelper_ReadLineUnix(HANDLE hFile, char * szBuffer, int nMaxLength)
 {
-	int dwBytesRead;
+	DWORD dwBytesRead;
 	char szTemp[2];
 	int nOutputPosition = 0;
 
@@ -1017,7 +1017,7 @@ int __cdecl SortATSCCompareFunction(const void *elem1, const void *elem2)
 	return 0;
 }
 
-void LoadATSCQAMFile()
+void LoadATSCQAMFile(void)
 {
 	int i;
 	HANDLE hList;
@@ -1078,7 +1078,7 @@ void LoadATSCQAMFile()
 	}
 }
 
-void LoadCableFile()
+void LoadCableFile(void)
 {
 	int i;
 	HANDLE hList;
@@ -1141,7 +1141,7 @@ void LoadCableFile()
 	}
 }
 
-void SaveDVBTFile()
+void SaveDVBTFile(void)
 {
 	if (v->nTerrestrialMuxes)
 	{
@@ -1167,7 +1167,7 @@ void SaveDVBTFile()
 	}
 }
 
-void LoadDVBTFile()
+void LoadDVBTFile(void)
 {
 	int i;
 	HANDLE hList;
@@ -1350,7 +1350,7 @@ int SourceHelper_GetQAMChannelFromFrequency(int nFrequency)
 	return 0;
 }
 
-BOOL SourceHelper_GetQAMHRCStatus()
+BOOL SourceHelper_GetQAMHRCStatus(void)
 {
 	return v->fHRCQAM;
 }
@@ -1617,7 +1617,7 @@ void SetupDVBTBandplanCombo(HWND hDlg)
 
 DWORD WINAPI ScanDVBTThread(LPVOID lpv)
 {
-	BOOL (* Tune) ();
+	td_Tune Tune = NULL;
 	HWND hDlg = (HWND)lpv;
 	int nBandplanTable = -1;
 	int nIndex;
@@ -2087,7 +2087,7 @@ int SourceHelper_GetFrequencyFromATSCChannel(int nChannel)
 
 DWORD WINAPI ScanATSCQAMThread(LPVOID lpv)
 {
-	BOOL (* Tune) ();
+	td_Tune Tune = NULL;
 	HWND hDlg = (HWND)lpv;
 	int nChannel;
 	int nPriorFrequency = v->ss.nFrequency;
@@ -2690,7 +2690,7 @@ void GetMuxName(char * szMuxLine, char * szMuxName)
 	szMuxName[0] = 0;
 }
 
-void SortSatelliteList()
+void SortSatelliteList(void)
 {
 	int i;
 
@@ -2705,7 +2705,7 @@ void SortSatelliteList()
 		qsort(v->sats, i, sizeof(SATELLITE), SortSatelliteCompareFunctionEast);
 }
 
-void LoadSatelliteFiles()
+void LoadSatelliteFiles(void)
 {
 	HANDLE hFind;
     char szCurrentDir[MAX_PATH];
@@ -2925,7 +2925,7 @@ double factorial_div( double value, int x)
 	return value;
 }
 
-double powerd( double x, int y)
+static double powerd( double x, int y)
 {
 	int i=0;
 	double ans=1.0;
@@ -2943,7 +2943,7 @@ double powerd( double x, int y)
 	return ans;
 }
 
-double round(double x)
+static double ROUND(double x)
 {
 	double t;
 
@@ -3196,7 +3196,7 @@ void CalculateUSALSString(HWND hDlg, BYTE * msg)
 		//
 		// Northern Hemisphere
 		//
-		int tmp=(int)round( fabs( 180 - satHourAngle ) * 10.0 );
+		int tmp=(int)ROUND( fabs( 180 - satHourAngle ) * 10.0 );
 		RotorCmd = (tmp/10)*0x10 + gotoXTable[ tmp % 10 ];
 
 		if (satHourAngle < 180)  // the east
@@ -3211,13 +3211,13 @@ void CalculateUSALSString(HWND hDlg, BYTE * msg)
 		//
 		if (satHourAngle < 180)  // the east
 		{
-			int tmp=(int)round( fabs( satHourAngle ) * 10.0 );
+			int tmp=(int)ROUND( fabs( satHourAngle ) * 10.0 );
 			RotorCmd = (tmp/10)*0x10 + gotoXTable[ tmp % 10 ];
 			RotorCmd |= 0xD000;
 		}
 		else
 		{                     // west
-			int tmp=(int)round( fabs( 360 - satHourAngle ) * 10.0 );
+			int tmp=(int)ROUND( fabs( 360 - satHourAngle ) * 10.0 );
 			RotorCmd = (tmp/10)*0x10 + gotoXTable[ tmp % 10 ];
 			RotorCmd |= 0xE000;
 		}
@@ -3226,7 +3226,7 @@ void CalculateUSALSString(HWND hDlg, BYTE * msg)
 	msg[0]=0xE0;
 	msg[1]=0x31;
 	msg[2]=0x6E;
-	msg[3]=((RotorCmd & 0xFF00) / 0x100);
+	msg[3]=((RotorCmd & 0xFF00) / 0x100) & 0xff;
 	msg[4]=RotorCmd & 0xFF;
 
 	{
@@ -3495,13 +3495,13 @@ BOOL CALLBACK PositionerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 					if (LOWORD(wParam) == IDC_GOTO_POSITION)
 					{
 						BYTE bCommand[] = {0xE0, 0x31, 0x6B, 0x00};
-						bCommand[3] = nPosition;
+						bCommand[3] = nPosition & 0xff;
 						SendDiSEqC(bCommand, sizeof(bCommand));
 					}
 					else
 					{
 						BYTE bCommand[] = {0xE0, 0x31, 0x6A, 0x00};
-						bCommand[3] = nPosition;
+						bCommand[3] = nPosition & 0xff;
 						SendDiSEqC(bCommand, sizeof(bCommand));
 					}
 				}
@@ -4590,7 +4590,7 @@ void WriteSatelliteINIFile(int nSatelliteIndex)
 	v->sats[nSatelliteIndex].fDirty = FALSE;
 }
 
-void FlushDirtySatellites()
+void FlushDirtySatellites(void)
 {
 	if (v->nSatellites)
 	{
@@ -5402,14 +5402,14 @@ void SourceHelper_CheckContinuity(BYTE * pBuffer, int nLength)
 #endif _DEBUG
 }
 
-int FindSerialModuleIndex()
+int FindSerialModuleIndex(void)
 {
 	int nIndex;
 
 	for (nIndex = 0; nIndex < v->nSerialReceiverControlIndex; nIndex++)
 	{
-		typedef char * (* td_GetReceiverName) ();
-		char * (* GetReceiverName) ();
+		typedef char * (* td_GetReceiverName) (void);
+		td_GetReceiverName GetReceiverName = NULL;
 
 		GetReceiverName = (td_GetReceiverName)GetProcAddress(v->hSerialReceiverControl[nIndex], "GetReceiverName");
 		if (GetReceiverName != NULL)
@@ -5422,7 +5422,7 @@ int FindSerialModuleIndex()
 	return -1;
 }
 
-BOOL SourceHelper_InitSerialControl()
+BOOL SourceHelper_InitSerialControl(void)
 {
 	int nSerialIndex = FindSerialModuleIndex();
 	
@@ -5451,7 +5451,7 @@ BOOL SourceHelper_InitSerialControl()
 	return FALSE;
 }
 
-BOOL SourceHelper_DeInitSerialControl()
+BOOL SourceHelper_DeInitSerialControl(void)
 {
 	OutputDebugString("SourceHelper: SourceHelper_DeInitSerialControl()\n");
 	if (v->fSerialReceiverControlThreadRunning == TRUE)
@@ -5501,7 +5501,7 @@ BOOL SourceHelper_TuneSerialControl(char * szTunerString)
 	return FALSE;
 }
 
-void SourceHelper_SerialControlStart()
+void SourceHelper_SerialControlStart(void)
 {
 	typedef void (* td_StartSerial) (PSOURCESTRUCT ss);
 	void (* StartSerial) (PSOURCESTRUCT ss);
@@ -5518,7 +5518,7 @@ void SourceHelper_SerialControlStart()
 	return;
 }
 
-void SourceHelper_SerialControlStop()
+void SourceHelper_SerialControlStop(void)
 {
 	typedef void (* td_StopSerial) (PSOURCESTRUCT ss);
 	void (* StopSerial) (PSOURCESTRUCT ss);
@@ -5552,7 +5552,7 @@ BOOL SourceHelper_SerialControlGetSignal(char * szSignalString)
 	return FALSE;
 }
 
-void SourceHelper_ResetFirstTimeFlag()
+void SourceHelper_ResetFirstTimeFlag(void)
 {
 	int nIndex;
 
@@ -6719,7 +6719,7 @@ BOOL SourceHelper_StartSyncThread(PSOURCESTRUCT pss, BOOL fDSSMode)
 	return TRUE;
 }
 
-BOOL SourceHelper_StopSyncThread()
+BOOL SourceHelper_StopSyncThread(void)
 {
 	CloseHandle(v->hSyncThread_PipeWrite);
 	while (v->fSyncThread_PipeThreadTerminated == FALSE)

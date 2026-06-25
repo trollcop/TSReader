@@ -233,7 +233,7 @@ BOOL OpenSerialPort(int nBaudRate, int nByteSize, int nParity, int nStopBits, BO
 	return TRUE;
 }
 
-BOOL CloseSerialPort()
+BOOL CloseSerialPort(void)
 {
 	gfStopSerialThread = TRUE;
 	CloseHandle(ghPort);
