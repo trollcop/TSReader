@@ -6888,25 +6888,14 @@ void FormatAACAudioParse(PPARSEDAACAUDIO pAAC, char * szOutput)
 			 pAAC->num_front_channels, pAAC->num_side_channels, pAAC->num_back_channels, pAAC->num_lfe_channels);
 }
 
-void FormatH264VideoParse(int nPMTIndex, int nESIndex, char * szOutput)
+void FormatGenericVideoParse(int nPMTIndex, int nESIndex, char * szOutput, size_t len)
 {
-	PPARSEDH264VIDEO pH264 = (PPARSEDH264VIDEO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData;
+	PPARSEDGENERICVIDEO pVideo = (PPARSEDGENERICVIDEO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData;
+	if (pVideo->tag != PARSER_TAG)
+		return;
 	
-	wsprintf(szOutput, "H.264 Video: Resolution %d x %d Interlaced: %d\r\n", pH264->horizontal_size_value, pH264->vertical_size_value, pH264->interlaced);
-}
-
-void FormatMPEG4VideoParse(int nPMTIndex, int nESIndex, char * szOutput)
-{
-	PPARSEDMPEG4VIDEO pMPEG4 = (PPARSEDMPEG4VIDEO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData;
-	
-	wsprintf(szOutput, "MPEG-4 Video: Resolution %d x %d\r\n", pMPEG4->horizontal_size_value, pMPEG4->vertical_size_value);
-}
-
-void FormatVC1VideoParse(int nPMTIndex, int nESIndex, char * szOutput)
-{
-	PPARSEDVC1VIDEO pVC1 = (PPARSEDVC1VIDEO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData;
-	
-	wsprintf(szOutput, "VC-1 Video: Resolution %d x %d Interlaced: %d\r\n", pVC1->horizontal_size_value, pVC1->vertical_size_value, pVC1->interlaced);
+	/* TODO Aspect Ratio, Chroma subsampling etc */
+	StringCchPrintf(szOutput, len, "Video: Resolution %d x %d Interlaced: %d Frame Rate: %2.2f\r\n", pVideo->width, pVideo->height, pVideo->interlaced, pVideo->framerate);
 }
 
 void GetMPEG2VideoAspectRation(int aspect_ratio_information, char * szAspectRatio)
@@ -7027,63 +7016,6 @@ void GetAFDFormat(DWORD dwAFDData, char * szAFDFormat)
 	case 15:
 		lstrcpy(szAFDFormat, "16:9 (with shoot & protect 4:3 center)");
 		break;
-	}
-}
-
-void FormatMPEGVideoParse(int nPMTIndex, int nESIndex, char * szOutput)
-{
-	PPARSEDMPEGVIDEO pMPEG = (PPARSEDMPEGVIDEO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData;
-	int bit_rate;
-	int vbv_buffer_size;
-	int horizontal_size;
-	int vertical_size;
-	char szInterlacedOrProgressive[2];
-	char szFrameRate[20] = {0};
-	char szAspectRatio[20] = {0};
-	char szChromaFormat[20] = {0};
-
-	if (pMPEG->marker_bit2)
-	{
-		// we had an extension header
-		bit_rate = (pMPEG->bit_rate_extension << 18 | pMPEG->bit_rate_value) * 400;
-		vbv_buffer_size = (pMPEG->vbv_buffer_size_extension << 10 | pMPEG->vbv_buffer_size_value) * 2048;
-		horizontal_size = pMPEG->horizontal_size_extension << 12 | pMPEG->horizontal_size_value;
-		vertical_size = pMPEG->vertical_size_extension << 12 | pMPEG->vertical_size_value;
-	}
-	else
-	{
-		bit_rate = pMPEG->bit_rate_value * 400;
-		vbv_buffer_size = pMPEG->vbv_buffer_size_value * 2048;
-		horizontal_size = pMPEG->horizontal_size_value;
-		vertical_size = pMPEG->vertical_size_value;
-	}
-
-	if (pMPEG->progressive_sequence == 1)
-		lstrcpy(szInterlacedOrProgressive, "p");
-	else
-		lstrcpy(szInterlacedOrProgressive, "i");
-
-	GetMPEG2VideoAspectRation(pMPEG->aspect_ratio_information, szAspectRatio);
-	GetMPEG2FrameRate(pMPEG->frame_rate_code, szFrameRate);
-	GetMPEG2ChromaFormat(pMPEG->chroma_format, szChromaFormat);
-	sprintf(szOutput, "MPEG Video: Bitrate %.3f Mbps Resolution %d x %d%s\r\nMPEG Video: Framerate %s fps Aspect Ratio %s Chroma Format %s\r\n",
-		     (double)bit_rate / 1000.0 / 1000.0,
-			 horizontal_size,
-			 vertical_size,
-			 szInterlacedOrProgressive,
-			 szFrameRate,
-			 szAspectRatio,
-			 szChromaFormat);
-
-	// See about AFD
-	if (v->pat.pmt[nPMTIndex].es[nESIndex].nTeletextServices & VBI_SERVICE_AFD)
-	{
-		char szAFDFormat[128] = {0};
-		char szAFDString[256];
-
-		GetAFDFormat(v->pat.pmt[nPMTIndex].es[nESIndex].dwAFDData, szAFDFormat);
-		wsprintf(szAFDString, "AFD descriptor: %s\r\n", szAFDFormat);
-		lstrcat(szOutput, szAFDString);
 	}
 }
 
@@ -7430,8 +7362,13 @@ char * FormatESEntry(int nESPID)
 					switch(v->pat.pmt[nPMTIndex].es[nESIndex].nParseType)
 					{
 					case PARSE_ES_TYPE_MPEG2_VIDEO:
-						FormatMPEGVideoParse(nPMTIndex, nESIndex, szParseDecode);
+					case PARSE_ES_TYPE_H264_VIDEO:
+					case PARSE_ES_TYPE_MPEG4_VIDEO:
+					case PARSE_ES_TYPE_VC1_VIDEO:
+					case PARSE_ES_TYPE_H265_VIDEO:
+						FormatGenericVideoParse(nPMTIndex, nESIndex, szParseDecode, sizeof(szParseDecode));
 						break;
+
 					case PARSE_ES_TYPE_MPEG_AUDIO:
 						FormatMPEGAudioParse((PPARSEDMPEGAUDIO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData, szParseDecode);
 						break;
@@ -7441,15 +7378,6 @@ char * FormatESEntry(int nESPID)
 					case PARSE_ES_TYPE_MPEG2_AAC_AUDIO:
 					case PARSE_ES_TYPE_MPEG4_AAC_AUDIO:
 						FormatAACAudioParse((PPARSEDAACAUDIO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData, szParseDecode);
-						break;
-					case PARSE_ES_TYPE_H264_VIDEO:
-						FormatH264VideoParse(nPMTIndex, nESIndex, szParseDecode);
-						break;
-					case PARSE_ES_TYPE_MPEG4_VIDEO:
-						FormatMPEG4VideoParse(nPMTIndex, nESIndex, szParseDecode);
-						break;
-					case PARSE_ES_TYPE_VC1_VIDEO:
-						FormatVC1VideoParse(nPMTIndex, nESIndex, szParseDecode);
 						break;
 					}
 					if (lstrlen(szParseDecode))

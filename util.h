@@ -53,7 +53,6 @@ int GetProgramCount(void);
 void LoadVideoDecoderCrashThumbnail(int nESParsePMTIndex, int nESParseESIndex);
 void YUVtoRGB(BYTE * pImage, BYTE * pY, BYTE * pU, BYTE * pV, int x, int y);
 void GetNewThumbnailSize(int * nSourceHeight, int * nDestHeight, int * nDestWidth);
-void GenerateSizedThumbnail(BYTE * pImage, int nDestWidth, int nDestHeight, int x, int nSourceHeight, int nESParsePMTIndex, int nESParseESIndex);
 void GenerateThumbnail(BYTE *pImage, int width, int height, int nESParsePMTIndex, int nESParseESIndex);
 void GenerateAudioThumbnail(signed short * pSamples, int nAudioChannels, int nDestWidth, int nDestHeight, BYTE * pThumbnail, int nESParsePMTIndex, int nESParseESIndex);
 void SetupScrambledChannelThumbnail(int nESParsePMTIndex, int nESParseESIndex);
@@ -77,4 +76,7 @@ void GetBouquetName(int nBouquetIndex, char * szOutput);
 BOOL GetPIDTooltipInfo(int nPID, char * szString);
 void GetSourceInfoLine(int nLine, char * szOutput);
 char * FormatTooltipPID(int nPID);
+
+/* debug/output helpers */
 void dbg_printf(const char *fmt, ...);
+void MessageBoxFormat(HWND hWnd, UINT uType, const char *fmt, ...);

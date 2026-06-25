@@ -1091,7 +1091,7 @@ void GetNewThumbnailSize(int * nSourceHeight, int * nDestHeight, int * nDestWidt
 
 static void _imageflip(uint8_t *src, uint8_t *dest, int w, int h)
 {
-	int row, col;
+	int row;
 	for (row = 0; row < h; row++) {
 		uint8_t *dst_row = dest + row * w * 3;
 		uint8_t *src_row = src + (h - 1 - row) * w * 3;
@@ -1099,6 +1099,7 @@ static void _imageflip(uint8_t *src, uint8_t *dest, int w, int h)
 	}
 }
 
+/* Decoder thread already resizes final video to match thumbnail sizes. So here we just flip it */
 void GenerateThumbnail(BYTE *pImage, int nDestWidth, int nDestHeight, int nESParsePMTIndex, int nESParseESIndex)
 {
 	BYTE *pDestBuffer = NULL;
@@ -1123,49 +1124,6 @@ void GenerateThumbnail(BYTE *pImage, int nDestWidth, int nDestHeight, int nESPar
 
 	_imageflip(pImage, pDestBuffer, nDestWidth, nDestHeight);
 
-	v->pat.pmt[nESParsePMTIndex].es[nESParseESIndex].pRGBVideoFrame = pDestBuffer;
-
-	LeaveCriticalSection(&v->csThumbnails);
-	PostMessage(v->hDlgSIParser, WM_USER + 3, 0, 1);
-}
-
-void GenerateSizedThumbnail(BYTE * pImage, int nDestWidth, int nDestHeight, int x, int nSourceHeight, int nESParsePMTIndex, int nESParseESIndex)
-{
-	BYTE * pDestBuffer = NULL;
-
-	EnterCriticalSection(&v->csThumbnails);
-	pDestBuffer = v->pat.pmt[nESParsePMTIndex].es[nESParseESIndex].pRGBVideoFrame;
-	if (pDestBuffer != NULL)
-	{
-		if (nDestWidth != v->pat.pmt[nESParsePMTIndex].es[nESParseESIndex].nVideoWidth ||
-			nDestHeight != v->pat.pmt[nESParsePMTIndex].es[nESParseESIndex].nVideoHeight)
-		{
-			LocalFree(pDestBuffer);
-			pDestBuffer = NULL;
-		}
-	}
-	v->pat.pmt[nESParsePMTIndex].es[nESParseESIndex].fDecoderCrashed = FALSE;
-	v->pat.pmt[nESParsePMTIndex].es[nESParseESIndex].nVideoWidth = nDestWidth;
-	v->pat.pmt[nESParsePMTIndex].es[nESParseESIndex].nVideoHeight = nDestHeight;
-	if (pDestBuffer == NULL)
-	{
-		pDestBuffer = LocalAlloc(LPTR, nDestWidth * nDestHeight * 3);
-		v->nThumbnailImageCount++;
-	}
-	//if (nDestWidth < x || nDestHeight < nSourceHeight)
-		_ISResizeRGB(pImage,
-				   x,
-				   nSourceHeight,
-				   pDestBuffer,
-				   nDestWidth,
-				   nDestHeight);
-	/*else
-		_ISDecimateRGB(pImage,
-				   x,
-				   nSourceHeight,
-				   pDestBuffer,
-				   nDestWidth,
-				   nDestHeight);*/
 	v->pat.pmt[nESParsePMTIndex].es[nESParseESIndex].pRGBVideoFrame = pDestBuffer;
 
 	LeaveCriticalSection(&v->csThumbnails);
@@ -2059,11 +2017,25 @@ char * FormatTooltipPID(int nPID)
 
 void dbg_printf(const char *fmt, ...)
 {
+	char debug_buf[4096];
+
 	va_list args;
 	va_start(args, fmt);
-	char debug_buf[4096];
 
 	vsnprintf_s(debug_buf, sizeof(debug_buf), sizeof(debug_buf), fmt, args);
 	OutputDebugStringA(debug_buf);
+	va_end(args);
+}
+
+extern char gszAppName[32];
+
+void MessageBoxFormat(HWND hWnd, UINT uType, const char *fmt, ...)
+{
+	char szTemp[1024];
+	va_list args;
+	va_start(args, fmt);
+
+	vsnprintf_s(szTemp, sizeof(szTemp), sizeof(szTemp), fmt, args);
+	MessageBox(hWnd, szTemp, gszAppName, uType);
 	va_end(args);
 }

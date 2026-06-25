@@ -2,8 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "inttypes.h"
-#include "mpeg2.h"
-#include "convert.h"
 #include "SoftCSA.h"
 #include "sources.h"
 
@@ -290,20 +288,22 @@ typedef enum PSI_BUFFERS
 	MAX_SECTION_BUFFERS 
 } SECTION_BUFFERS;
 
-enum ES_PARSER_TYPES
+typedef enum ES_PARSER_TYPES
 {
 	PARSE_ES_TYPE_NONE = 0,
 	PARSE_ES_TYPE_MPEG2_VIDEO,
 	PARSE_ES_TYPE_MPEG4_VIDEO,
 	PARSE_ES_TYPE_H264_VIDEO,
+	PARSE_ES_TYPE_H265_VIDEO,
 	PARSE_ES_TYPE_VC1_VIDEO,
+	PARSE_ES_TYPE_AV1_VIDEO,
 	PARSE_ES_TYPE_MPEG_AUDIO,
 	PARSE_ES_TYPE_AC3_AUDIO,
 	PARSE_ES_TYPE_TELETEXT,
 	PARSE_ES_TYPE_MPEG2_AAC_AUDIO,
 	PARSE_ES_TYPE_MPEG4_AAC_AUDIO,
 	PARSE_ES_TYPE_AUDIO_TITLE
-};
+} ES_PARSER_TYPES;
 
 #define AUTO_RECORD_NONE 0
 #define AUTO_RECORD_PROGRAM 1
@@ -617,33 +617,6 @@ typedef struct _tagNITEntry
 	char szNetworkName[256];
 } NITENTRY, *PNITENTRY;
 
-typedef struct _tagParsedMPEGVideo
-{
-	int horizontal_size_value;
-	int vertical_size_value;
-	int aspect_ratio_information;
-	int frame_rate_code;
-	int bit_rate_value;
-	int marker_bit1;
-	int vbv_buffer_size_value;
-	int contrained_parameters_flag;
-	int load_intra_quantiser_matrix;
-	int load_non_intra_quantiser_matrix;
-
-	int extension_start_code_identifier;
-	int profile_and_level_indication;
-	int progressive_sequence;
-	int chroma_format;
-	int horizontal_size_extension;
-	int vertical_size_extension;
-	int bit_rate_extension;
-	int marker_bit2;
-	int vbv_buffer_size_extension;
-	int low_delay;
-	int frame_rate_extension_n;
-	int frame_rate_extension_d;
-} PARSEDMPEGVIDEO, *PPARSEDMPEGVIDEO;
-
 typedef struct _tagParsedMPEGAudio
 {
 	int layer;
@@ -679,26 +652,23 @@ typedef struct _tagParsedAACAudio
 	int num_lfe_channels;
 } PARSEDAACAUDIO, *PPARSEDAACAUDIO;
 
-typedef struct _tagParsedH264Video
-{
-	int horizontal_size_value;
-	int vertical_size_value;
-	int interlaced;
-} PARSEDH264VIDEO, *PPARSEDH264VIDEO;
+typedef enum _tagInterlacedType {
+	INT_PROGRESSIVE,
+	INT_TFF,
+	INT_BFF,
+} InterlacedType;
 
+#define PARSER_TAG	(0xDEADBEEF)
 
-typedef struct _tagParsedVC1Video
-{
-	int horizontal_size_value;
-	int vertical_size_value;
-	int interlaced;
-} PARSEDVC1VIDEO, *PPARSEDVC1VIDEO;
+typedef struct _tagParsedGenericVideo {
+	uint32_t tag; /* for legacy code */
+	uint32_t width;
+	uint32_t height;
+	InterlacedType interlaced;
+	float framerate;
+	uint32_t bitrate;
 
-typedef struct _tagParsedMPEG4Video
-{
-	int horizontal_size_value;
-	int vertical_size_value;
-} PARSEDMPEG4VIDEO, *PPARSEDMPEG4VIDEO;
+} PARSEDGENERICVIDEO, *PPARSEDGENERICVIDEO;
 
 enum BLACKLIST
 {
@@ -720,7 +690,7 @@ typedef struct _tagESLIST
 	uint8_t nStreamType;
 	uint16_t nESPID;
 	uint16_t nDescriptorsLength;
-	int nParseType;
+	ES_PARSER_TYPES nParseType;
 	int nVideoWidth, nVideoHeight;
 	int nTeletextServices;
 	int nBlacklisted;	
@@ -1160,10 +1130,21 @@ typedef struct _tagStreamMonitorLog
 #define MAX_RECORD_BUFFERS 64
 #define ACTUAL_MAX_RECORD_BUFFERS MAX_RECORD_BUFFERS;
 
+typedef enum _tagDecoderType {
+	DEC_MPEG2,
+	DEC_MPEG4,
+	DEC_H264,
+	DEC_H265,
+	DEC_VC1,
+	DEC_AV1,
+
+} DecoderType;
+
 typedef struct _tagESParserInfo
 {
 	int nES;
 	int nProgramNumber;
+	DecoderType eDecoder;
 	CRITICAL_SECTION csThreadSignal;
 } ESPARSERINFO, *PESPARSERINFO;
 
@@ -1737,6 +1718,7 @@ typedef struct tag_Variables
 	BYTE * pRGB_DCIIVideo, * pRGB_BL_DCIIVideo;
 	BYTE * pRGB_MPG4Video, * pRGB_BL_MPG4Video;
 	BYTE * pRGB_H264Video, * pRGB_BL_H264Video;
+	BYTE * pRGB_H265Video, * pRGB_BL_H265Video;
 	BYTE * pRGB_VC1Video, * pRGB_BL_VC1Video;
 	BYTE * pRGB_MPEGAudio, * pRGB_BL_MPEGAudio;
 	BYTE * pRGB_AC3Audio, * pRGB_BL_AC3Audio;
@@ -2096,6 +2078,8 @@ typedef BOOL (* td_GetMiscString) (char *szString);
 /* serial receiver control typedef */
 typedef char *(*td_GetReceiverName) (void);
 
+/* Video decoder start code parser typedef */
+typedef BOOL (*td_StartCodeParser)(BYTE *pPESPacket, int nPacketLength, int *nOffset);
 
 //////
 struct AC3frmsize

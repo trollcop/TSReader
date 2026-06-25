@@ -1,5 +1,0 @@
-LIBRARY TSReader_ForVid
-
-EXPORTS
-	ForVid						@1
-	H264						@2

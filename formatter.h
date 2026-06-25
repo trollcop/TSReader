@@ -53,9 +53,8 @@ char * FormatPMTEntry(int nPMTIndex, BOOL fHTMLMode);
 char * FormatSDTEntry(int nChannelNumber, BOOL fHTMLMode);
 char * FormatPAT(BOOL fIncludeHTMLTags, int nExportSITables);
 
-void FormatH264VideoParse(int nPMTIndex, int nESIndex, char * szOutput);
-void FormatMPEG4VideoParse(int nPMTIndex, int nESIndex, char * szOutput);
-void FormatMPEGVideoParse(int nPMTIndex, int nESIndex, char * szOutput);
+void FormatGenericVideoParse(int nPMTIndex, int nESIndex, char *szOutput, size_t len);
+
 void FormatMPEGAudioParse(PPARSEDMPEGAUDIO pMPEG, char * szOutput);
 void FormatAC3Parse(PPARSEDAC3AUDIO pAC3, char * szOutput);
 void FormatAACAudioParse(PPARSEDAACAUDIO pAAC, char * szOutput);
@@ -72,4 +71,3 @@ void GetAC3acmod(int acmod, char * szAudioCodingMode);
 void GetAC3cmixlev(int cmixlev, char * szCMixLev);
 void GetAC3surmixlev(int surmixlev, char * szSurMixLev);
 void GetAC3dsurmod(int dsurmod, char * szDSurMod);
-void FormatVC1VideoParse(int nPMTIndex, int nESIndex, char * szOutput);

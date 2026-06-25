@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <commctrl.h>
 #include <shlobj.h>
+#include <strsafe.h>
 #include <math.h>
 #include <strsafe.h>
 
@@ -74,46 +75,31 @@ void XMLExport__WriteESParserData(HANDLE hXMLFile, int nPMTIndex, int nESIndex)
 		switch(v->pat.pmt[nPMTIndex].es[nESIndex].nParseType)
 		{
 		case PARSE_ES_TYPE_MPEG2_VIDEO:
+		case PARSE_ES_TYPE_H264_VIDEO:
+		case PARSE_ES_TYPE_H265_VIDEO:
+		case PARSE_ES_TYPE_MPEG4_VIDEO:
+		case PARSE_ES_TYPE_VC1_VIDEO:
 			{
-				PPARSEDMPEGVIDEO pMPEG = (PPARSEDMPEGVIDEO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData;
-				int bit_rate;
-				int vbv_buffer_size;
-				int horizontal_size;
-				int vertical_size;
+				PPARSEDGENERICVIDEO pVideo = (PPARSEDGENERICVIDEO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData;
 				char szProgressive[8];
 				char szFrameRate[20] = {0};
 				char szAspectRatio[20] = {0};
 				char szChromaFormat[20] = {0};
 
-				if (pMPEG->marker_bit2)
-				{
-					// we had an extension header
-					bit_rate = (pMPEG->bit_rate_extension << 18 | pMPEG->bit_rate_value) * 400;
-					vbv_buffer_size = (pMPEG->vbv_buffer_size_extension << 10 | pMPEG->vbv_buffer_size_value) * 2048;
-					horizontal_size = pMPEG->horizontal_size_extension << 12 | pMPEG->horizontal_size_value;
-					vertical_size = pMPEG->vertical_size_extension << 12 | pMPEG->vertical_size_value;
-				}
-				else
-				{
-					bit_rate = pMPEG->bit_rate_value * 400;
-					vbv_buffer_size = pMPEG->vbv_buffer_size_value * 2048;
-					horizontal_size = pMPEG->horizontal_size_value;
-					vertical_size = pMPEG->vertical_size_value;
-				}
-
-				if (pMPEG->progressive_sequence == 1)
+				if (pVideo->interlaced == INT_PROGRESSIVE)
 					lstrcpy(szProgressive, "TRUE");
 				else
 					lstrcpy(szProgressive, "FALSE");
+
 				wsprintf(v->szSIFormatBuffer, "   <PROGRESSIVE>%s</PROGRESSIVE>", szProgressive);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
-				sprintf(v->szSIFormatBuffer,  "   <BITRATE>%d</BITRATE>", bit_rate);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
-				wsprintf(v->szSIFormatBuffer, "   <HORIZONTAL-RESOLUTION>%d</HORIZONTAL-RESOLUTION>", horizontal_size);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
-				wsprintf(v->szSIFormatBuffer, "   <VERTICAL-RESOLUTION>%d</VERTICAL-RESOLUTION>", vertical_size);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
-				GetMPEG2VideoAspectRation(pMPEG->aspect_ratio_information, szAspectRatio);
+				sprintf(v->szSIFormatBuffer,  "   <BITRATE>%d</BITRATE>", pVideo->bitrate);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
+				wsprintf(v->szSIFormatBuffer, "   <HORIZONTAL-RESOLUTION>%d</HORIZONTAL-RESOLUTION>", pVideo->width);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
+				wsprintf(v->szSIFormatBuffer, "   <VERTICAL-RESOLUTION>%d</VERTICAL-RESOLUTION>", pVideo->height);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
+
+				/* TODO GetMPEG2VideoAspectRation(pMPEG->aspect_ratio_information, szAspectRatio); */
 				wsprintf(v->szSIFormatBuffer, "   <ASPECT-RATIO>%s</ASPECT-RATIO>", szAspectRatio);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
-				GetMPEG2FrameRate(pMPEG->frame_rate_code, szFrameRate);
-				wsprintf(v->szSIFormatBuffer, "   <FRAME-RATE>%s</FRAME-RATE>", szFrameRate);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
-				GetMPEG2ChromaFormat(pMPEG->chroma_format, szChromaFormat);
+				StringCchPrintf(v->szSIFormatBuffer, sizeof(v->szSIFormatBuffer), "   <FRAME-RATE>%2.2f</FRAME-RATE>", pVideo->framerate);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
+				/* TODO GetMPEG2ChromaFormat(pMPEG->chroma_format, szChromaFormat); */
 				wsprintf(v->szSIFormatBuffer, "   <CHROMA-FORMAT>%s</CHROMA-FORMAT>", szChromaFormat);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
 
 				// See about AFD
@@ -208,42 +194,6 @@ void XMLExport__WriteESParserData(HANDLE hXMLFile, int nPMTIndex, int nESIndex)
 					nDialNorm = 31;
 				wsprintf(v->szSIFormatBuffer, "   <DIALOG-NORMALIZATION>-%d dB</DIALOG-NORMALIZATION>", nDialNorm);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
 				WriteAudioSampleXMLData(hXMLFile, nPMTIndex, nESIndex);
-			}
-			break;
-		case PARSE_ES_TYPE_H264_VIDEO:
-			{
-				PPARSEDH264VIDEO pH264 = (PPARSEDH264VIDEO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData;
-				char szProgressive[8];
-
-				if (pH264->interlaced == 0)
-					lstrcpy(szProgressive, "TRUE");
-				else
-					lstrcpy(szProgressive, "FALSE");
-				wsprintf(v->szSIFormatBuffer, "   <PROGRESSIVE>%s</PROGRESSIVE>", szProgressive);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
-				wsprintf(v->szSIFormatBuffer, "   <HORIZONTAL-RESOLUTION>%d</HORIZONTAL-RESOLUTION>", pH264->horizontal_size_value);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
-				wsprintf(v->szSIFormatBuffer, "   <VERTICAL-RESOLUTION>%d</VERTICAL-RESOLUTION>", pH264->vertical_size_value);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
-			}
-			break;
-		case PARSE_ES_TYPE_MPEG4_VIDEO:
-			{
-				PPARSEDMPEG4VIDEO pMPEG4 = (PPARSEDMPEG4VIDEO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData;			
-
-				wsprintf(v->szSIFormatBuffer, "   <HORIZONTAL-RESOLUTION>%d</HORIZONTAL-RESOLUTION>", pMPEG4->horizontal_size_value);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
-				wsprintf(v->szSIFormatBuffer, "   <VERTICAL-RESOLUTION>%d</VERTICAL-RESOLUTION>", pMPEG4->vertical_size_value);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
-			}
-			break;
-		case PARSE_ES_TYPE_VC1_VIDEO:
-			{
-				PPARSEDVC1VIDEO pVC1 = (PPARSEDVC1VIDEO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData;
-				char szProgressive[8];
-				
-				if (pVC1->interlaced == 0)
-					lstrcpy(szProgressive, "TRUE");
-				else
-					lstrcpy(szProgressive, "FALSE");
-				wsprintf(v->szSIFormatBuffer, "   <PROGRESSIVE>%s</PROGRESSIVE>", szProgressive);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
-				wsprintf(v->szSIFormatBuffer, "   <HORIZONTAL-RESOLUTION>%d</HORIZONTAL-RESOLUTION>", pVC1->horizontal_size_value);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
-				wsprintf(v->szSIFormatBuffer, "   <VERTICAL-RESOLUTION>%d</VERTICAL-RESOLUTION>", pVC1->vertical_size_value);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
 			}
 			break;
 		}
@@ -1570,7 +1520,11 @@ void HTMLExport(HANDLE hHTMFile, int nExportSITables, char * szOutputFilename)
 							switch(v->pat.pmt[nPMTIndex].es[nESIndex].nParseType)
 							{
 							case PARSE_ES_TYPE_MPEG2_VIDEO:
-								FormatMPEGVideoParse(nPMTIndex, nESIndex, szParseDecode);
+							case PARSE_ES_TYPE_H264_VIDEO:
+							case PARSE_ES_TYPE_H265_VIDEO:
+							case PARSE_ES_TYPE_MPEG4_VIDEO:
+							case PARSE_ES_TYPE_VC1_VIDEO:
+								FormatGenericVideoParse(nPMTIndex, nESIndex, szParseDecode, sizeof(szParseDecode));
 								break;
 							case PARSE_ES_TYPE_MPEG_AUDIO:
 								FormatMPEGAudioParse((PPARSEDMPEGAUDIO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData, szParseDecode);
@@ -1581,15 +1535,6 @@ void HTMLExport(HANDLE hHTMFile, int nExportSITables, char * szOutputFilename)
 							case PARSE_ES_TYPE_MPEG2_AAC_AUDIO:
 							case PARSE_ES_TYPE_MPEG4_AAC_AUDIO:
 								FormatAACAudioParse((PPARSEDAACAUDIO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData, szParseDecode);
-								break;
-							case PARSE_ES_TYPE_H264_VIDEO:
-								FormatH264VideoParse(nPMTIndex, nESIndex, szParseDecode);
-								break;
-							case PARSE_ES_TYPE_MPEG4_VIDEO:
-								FormatMPEG4VideoParse(nPMTIndex, nESIndex, szParseDecode);
-								break;
-							case PARSE_ES_TYPE_VC1_VIDEO:
-								FormatVC1VideoParse(nPMTIndex, nESIndex, szParseDecode);
 								break;
 							}
 							if (lstrlen(szParseDecode))

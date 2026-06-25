@@ -11,6 +11,39 @@
 
 extern PVARIABLES v;
 
+static float GetVideoFrameRate(AVCodecContext *ctx)
+{
+	AVRational fps_rational;
+
+	if (ctx->framerate.num != 0 && ctx->framerate.den != 0) {
+		/* codec context has the exact framerate */
+		fps_rational = ctx->framerate;
+	} else if (ctx->time_base.num != 0 && ctx->time_base.den != 0) {
+		/* fallback - invert time_base to get frame rate */
+		fps_rational.num = ctx->time_base.den;
+		fps_rational.den = ctx->time_base.num;
+	} else {
+		/* nothing provided at all */
+		fps_rational = (AVRational){ 0, 1 };
+	}
+
+	if (fps_rational.num > 0)
+		return (float)av_q2d(fps_rational);
+
+	return 0.0f;
+}
+
+static InterlacedType GetFrameInterlace(AVFrame *frame)
+{
+	if (frame->flags & AV_FRAME_FLAG_INTERLACED)
+		if (frame->flags & AV_FRAME_FLAG_TOP_FIELD_FIRST)
+			return INT_TFF;
+		else
+			return INT_BFF;
+	
+	return INT_PROGRESSIVE;
+}
+
 #define PES_BUFSIZ	(1024 * 1024)
 
 static void VideoDecoderThread(PESPARSERINFO esparserinfo, enum AVCodecID codec_id, BOOL incl_size)
@@ -67,7 +100,8 @@ static void VideoDecoderThread(PESPARSERINFO esparserinfo, enum AVCodecID codec_
 		pkt->size = nPacketLength;
 
 		ret = avcodec_send_packet(ctx, pkt);
-		dbg_printf("sent packet of %d bytes, avcodec_send_packet returned 0x%08x\n", nPacketLength, ret);
+		if (ret != 0)
+			dbg_printf("sent packet of %d bytes, avcodec_send_packet returned 0x%08x\n", nPacketLength, ret);
 		av_packet_unref(pkt);
 		av_packet_free(&pkt);
 
@@ -79,6 +113,19 @@ static void VideoDecoderThread(PESPARSERINFO esparserinfo, enum AVCodecID codec_
 			if (frame->pict_type != AV_PICTURE_TYPE_I) {
 				av_frame_unref(frame);
 				break;
+			}
+
+			/* add parsed video header for further display */
+			if (v->pat.pmt[v->nESParsePMTIndex[esparserinfo->nES]].es[v->nESParseESIndex[esparserinfo->nES]].pParsedData == NULL) {
+				PPARSEDGENERICVIDEO pVideo = LocalAlloc(LPTR, sizeof(PARSEDGENERICVIDEO));
+				if (pVideo) {
+					pVideo->tag = 0xdeadbeef;
+					pVideo->width = frame->width;
+					pVideo->height = frame->height;
+					pVideo->interlaced = GetFrameInterlace(frame);
+					pVideo->framerate = GetVideoFrameRate(ctx);
+					v->pat.pmt[v->nESParsePMTIndex[esparserinfo->nES]].es[v->nESParseESIndex[esparserinfo->nES]].pParsedData = (BYTE *)pVideo;
+				}
 			}
 
 			GetNewThumbnailSize(&nSourceHeight, &nDestHeight, &nDestWidth);
@@ -130,31 +177,39 @@ static void VideoDecoderThread(PESPARSERINFO esparserinfo, enum AVCodecID codec_
 	dbg_printf("%s (%d)- %d/%d\n", __FUNCTION__, codec_id, esparserinfo->nProgramNumber, esparserinfo->nES);
 }
 
-#ifdef USE_FFMPEG
-DWORD WINAPI MPEG2DecoderThread(LPVOID lpv)
+DWORD WINAPI GenericVideoDecoderThread(LPVOID lpv)
 {
 	PESPARSERINFO esparserinfo = (PESPARSERINFO)lpv;
 
-	VideoDecoderThread(esparserinfo, AV_CODEC_ID_MPEG2VIDEO, TRUE);
+	switch (esparserinfo->eDecoder) {
+		case DEC_MPEG2:
+			VideoDecoderThread(esparserinfo, AV_CODEC_ID_MPEG2VIDEO, TRUE);
+			break;
+
+		case DEC_H264:
+			VideoDecoderThread(esparserinfo, AV_CODEC_ID_H264, TRUE);
+			break;
+
+		case DEC_H265:
+			VideoDecoderThread(esparserinfo, AV_CODEC_ID_HEVC, TRUE);
+			break;
+
+		case DEC_MPEG4:
+			VideoDecoderThread(esparserinfo, AV_CODEC_ID_MPEG4, TRUE);
+			break;
+
+		case DEC_VC1:
+			VideoDecoderThread(esparserinfo, AV_CODEC_ID_VC1, TRUE);
+			break;
+
+		case DEC_AV1:
+			VideoDecoderThread(esparserinfo, AV_CODEC_ID_AV1, TRUE);
+			break;
+
+		default:
+			dbg_printf("GenericVideoDecoderThread: Unhandled decoder %d\n", esparserinfo->eDecoder);
+			break;
+	}
 
 	return 0;
 }
-
-DWORD WINAPI H264DecoderThread(LPVOID lpv)
-{
-	PESPARSERINFO esparserinfo = (PESPARSERINFO)lpv;
-
-	VideoDecoderThread(esparserinfo, AV_CODEC_ID_H264, TRUE);
-
-	return 0;
-}
-
-DWORD WINAPI MPEG4DecoderThread(LPVOID lpv)
-{
-	PESPARSERINFO esparserinfo = (PESPARSERINFO)lpv;
-
-	VideoDecoderThread(esparserinfo, AV_CODEC_ID_MPEG4, FALSE);
-
-	return 0;
-}
-#endif

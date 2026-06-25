@@ -1,4 +1,0 @@
-LIBRARY TSReader_VC1
-
-EXPORTS
-	VC1							@1

@@ -44,14 +44,8 @@ DWORD WINAPI RokuTelnetControlThread(LPVOID lpv);
 BOOL StartControlServer(void);
 BOOL TerminateControlServer(void);
 
-// Stuff in MPEG2Decoder.c
-DWORD WINAPI MPEG2DecoderThread(LPVOID lpv);
-
-// Stuff in H264Decoder.c
-DWORD WINAPI H264DecoderThread(LPVOID lpv);
-
-// Stuff in MPEG4Decoder.c
-DWORD WINAPI MPEG4DecoderThread(LPVOID lpv);
+/* Stuff in decoder.c */
+DWORD WINAPI GenericVideoDecoderThread(LPVOID lpv);
 
 // Audio decoders
 DWORD WINAPI MPEGAudioDecoderThread(LPVOID lpv);
@@ -74,9 +68,6 @@ int GetEITConnectionCount(void);
 // Stuff in CCDecoder.c
 void ClosedCaptionDecoderToggle(HWND hWnd);
 void InputCCData(BYTE * pPESPacket, int nPESLength, int nChartIndex);
-
-// Stuff in VC1Decoder.c
-DWORD WINAPI VC1DecoderThread(LPVOID lpv);
 
 // Stuff in archive.c
 BOOL StartArchivePrograms(HWND hWnd);
@@ -346,9 +337,7 @@ void LoadSettings_New(HKEY hkReg)
 		RegQueryValueEx(hkReg, rl[nOffset].szDescription, NULL, &dwType, (BYTE *)v + rl[nOffset].dwOffset, &dwDataSize);
 		if (dwType != rl[nOffset].dwType)
 		{
-			char szTemp[MAX_PATH];
-			wsprintf(szTemp, "TSReader: Registry type requested %d, got %d for %s\n", rl[nOffset].dwType, dwType, rl[nOffset].szDescription);
-			OutputDebugString(szTemp);
+			dbg_printf("TSReader: Registry type requested %d, got %d for %s\n", rl[nOffset].dwType, dwType, rl[nOffset].szDescription);
 		}
 		nOffset++;
 	};
@@ -773,10 +762,7 @@ int GetNextESPID(BOOL fReset, int nES)
 			}
 			if (v->fPIDActive[v->pat.pmt[nPMTIndex].es[nESIndex].nESPID] == FALSE)
 			{
-				char szTemp2[256];
-				wsprintf(szTemp2, "TSReader: Ignore program %d (ES PID 0x%04x) - PID not active\n",
-					v->pat.pmt[nPMTIndex].nProgramNumber, v->pat.pmt[nPMTIndex].es[nESIndex].nESPID);
-				OutputDebugString(szTemp2);
+				dbg_printf("TSReader: Ignore program %d (ES PID 0x%04x) - PID not active\n", v->pat.pmt[nPMTIndex].nProgramNumber, v->pat.pmt[nPMTIndex].es[nESIndex].nESPID);
 				continue;	// ignore empty streams
 			}
 			if (v->pat.pmt[nPMTIndex].es[nESIndex].nBlacklisted)
@@ -847,6 +833,12 @@ int GetNextESPID(BOOL fReset, int nES)
 				v->fESParseDecoderStartedLibMPEG[nES] = FALSE;
 				v->fESParseDecoderCompletedLibMPEG[nES] = FALSE;
 				break;
+			case 0x24:	// HEVC/H265 video
+				v->nESParseType[nES] = PARSE_ES_TYPE_H265_VIDEO;
+				v->fESParseDecodedHeader[nES] = FALSE;
+				v->fESParseDecoderStartedLibMPEG[nES] = FALSE;
+				v->fESParseDecoderCompletedLibMPEG[nES] = FALSE;
+				break;
 			case 0xea:	// VC1 video
 				v->nESParseType[nES] = PARSE_ES_TYPE_VC1_VIDEO;
 				v->fESParseDecodedHeader[nES] = FALSE;
@@ -904,6 +896,12 @@ int GetNextESPID(BOOL fReset, int nES)
 	case PARSE_ES_TYPE_H264_VIDEO:
 		wsprintf(szTemp, "Parsing H.264 video stream from program %d on PID %s", v->pat.pmt[v->nESParsePMTIndex[nES]].nProgramNumber, FormatTooltipPID(v->nESParsePID[nES]));
 		break;
+	case PARSE_ES_TYPE_H265_VIDEO:
+		wsprintf(szTemp, "Parsing H.265 video stream from program %d on PID %s", v->pat.pmt[v->nESParsePMTIndex[nES]].nProgramNumber, FormatTooltipPID(v->nESParsePID[nES]));
+		break;
+	case PARSE_ES_TYPE_AV1_VIDEO:
+		wsprintf(szTemp, "Parsing AV1 video stream from program %d on PID %s", v->pat.pmt[v->nESParsePMTIndex[nES]].nProgramNumber, FormatTooltipPID(v->nESParsePID[nES]));
+		break;
 	case PARSE_ES_TYPE_MPEG4_VIDEO:
 		wsprintf(szTemp, "Parsing MPEG-4 video stream from program %d on PID %s", v->pat.pmt[v->nESParsePMTIndex[nES]].nProgramNumber, FormatTooltipPID(v->nESParsePID[nES]));
 		break;
@@ -934,12 +932,12 @@ int GetNextESPID(BOOL fReset, int nES)
 		wsprintf(szTemp, " - ES thread %d", nES);
 		lstrcat(szTemp2, szTemp);
 		lstrcat(szTemp2, "\n"); 
-		OutputDebugString(szTemp2);
+		dbg_printf(szTemp2);
 	}
 	if (v->nESParseType[nES])
 		v->lnESParseStartTime[nES] = v->lnMuxRatePCR;
 
-#ifdef PROx /* TODO research this */
+	/* draw cyan border around the thumbnail */
 	if (v->pat.pmt[v->nESParsePMTIndex[nES]].es[v->nESParseESIndex[nES]].pRGBVideoFrame != NULL)
 	{
 		BYTE * pThumbnail = v->pat.pmt[v->nESParsePMTIndex[nES]].es[v->nESParseESIndex[nES]].pRGBVideoFrame;
@@ -961,376 +959,159 @@ int GetNextESPID(BOOL fReset, int nES)
 					*(pThumbnail++) = 0x00;
 				}
 				else
-					pThumbnail += 3;		
+					pThumbnail += 3;
 			}
 		}
-		//PostMessage(v->hDlgSIParser, WM_USER + 3, 0, 1);
+#if 0
+		PostMessage(v->hDlgSIParser, WM_USER + 3, 0, 1);
+#endif
 	}
 
-#endif PROx
 	return v->nESParsePID[nES];
 }
 
-BOOL DecodeH264Video(BYTE * pPESPacket, int nPacketLength, int nES)
+static BOOL StartCodeH264(BYTE *pPESPacket, int nPacketLength, int *pnOffset)
+{
+	int nOffset = 0;
+
+	if (!pnOffset)
+		return FALSE;
+
+	for (nOffset = 0; nOffset < nPacketLength - 5; nOffset++) {
+		if ((pPESPacket[nOffset + 0] == 0x00)
+			&& (pPESPacket[nOffset + 1] == 0x00)
+			&& (pPESPacket[nOffset + 2] == 0x00)
+			&& (pPESPacket[nOffset + 3] == 0x01)
+			&& ((pPESPacket[nOffset + 4] & 0x0f) == 0x07)) {
+
+			*pnOffset = nOffset;
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+static BOOL StartCodeMPEG4(BYTE *pPESPacket, int nPacketLength, int *pnOffset)
+{
+	int nOffset = 0;
+
+	if (!pnOffset)
+		return FALSE;
+
+	for (nOffset = 0; nOffset < nPacketLength - 4; nOffset++) {
+		if ((pPESPacket[nOffset + 0] == 0x00)
+			&& (pPESPacket[nOffset + 1] == 0x00)
+			&& (pPESPacket[nOffset + 2] == 0x01)
+			&& (pPESPacket[nOffset + 3] == 0xb6)) {
+
+			*pnOffset = nOffset;
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+static BOOL StartCodeMPEG2(BYTE *pPESPacket, int nPacketLength, int *pnOffset)
+{
+	int nOffset = 0;
+
+	if (!pnOffset)
+		return FALSE;
+
+	for (nOffset = 0; nOffset < nPacketLength - 4; nOffset++) {
+		if ((pPESPacket[nOffset + 0] == 0x00) && (pPESPacket[nOffset + 1] == 0x00) && (pPESPacket[nOffset + 2] == 0x01) && (pPESPacket[nOffset + 3] == 0xB3)) {
+
+			*pnOffset = nOffset;
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+static BOOL StartCodeVC1(BYTE *pPESPacket, int nPacketLength, int *pnOffset)
+{
+	int nOffset = 0;
+
+	if (!pnOffset)
+		return FALSE;
+
+	for (nOffset = 0; nOffset < nPacketLength - 4; nOffset++) {
+		if ((pPESPacket[nOffset + 0] == 0x00)
+			&& (pPESPacket[nOffset + 1] == 0x00)
+			&& (pPESPacket[nOffset + 2] == 0x01)
+			&& (pPESPacket[nOffset + 3] == 0x0f)) {
+
+			*pnOffset = nOffset;
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+BOOL DecodeGenericVideo(BYTE *pPESPacket, int nPacketLength, int nES, DecoderType eDecoder, td_StartCodeParser pParser)
 {
 	int nOffset = 0;
 	BOOL fRetVal = FALSE;
 
-	if (v->fESParseDecodedHeader[nES] == FALSE)
-	{
-		for (nOffset = 0; nOffset < nPacketLength - 5; nOffset++)
-		{
-			if (    (pPESPacket[nOffset + 0] == 0x00)
-				 && (pPESPacket[nOffset + 1] == 0x00)
-				 && (pPESPacket[nOffset + 2] == 0x00)
-				 && (pPESPacket[nOffset + 3] == 0x01)
-				 && ((pPESPacket[nOffset + 4] & 0x0f) == 0x07) )
-			{
-				v->fESParseDecodedHeader[nES] = TRUE;
-				break;
-			}
-		}
+	if (v->fESParseDecodedHeader[nES] == FALSE && pParser) {
+		if (pParser(pPESPacket, nPacketLength, &nOffset))
+			v->fESParseDecodedHeader[nES] = TRUE;
 	}
+
+	/* packet sequence header not found or startcode parser missing, skip */
 	if (v->fESParseDecodedHeader[nES] == FALSE)
 		return FALSE;
 
-	// Decode the video for a thumbnail view
+	/* do we bother doing thumbnails at all */
 	if (v->nThumbnailProcessingThreadPriority == 3)
-		return TRUE;	// disabled
+		return TRUE;
 
+	/* open ES pipe, start decoder thread, etc */
 	EnterCriticalSection(&v->esparserinfo[nES].csThreadSignal);
-	if (v->fESParseDecoderStartedLibMPEG[nES] == FALSE)
-	{
-		DWORD dwThreadID;
-		HANDLE hThread;
-		
+	if (v->fESParseDecoderStartedLibMPEG[nES] == FALSE) {
+		DWORD dwThreadID = 0;
+		HANDLE hThread = NULL;
+
 		v->fESParseDecoderStartedLibMPEG[nES] = TRUE;
 		CreatePipe(&v->hMPEGDecoderReadPipe[nES], &v->hMPEGDecoderWritePipe[nES], NULL, v->nThumbnailPipeSize * 1024 * 1024);
 		v->esparserinfo[nES].nProgramNumber = v->pat.pmt[v->nESParsePMTIndex[nES]].nProgramNumber;
 		v->esparserinfo[nES].nES = nES;
-		hThread = CreateThread(NULL, 0, H264DecoderThread, (LPVOID)&v->esparserinfo[nES], 0, &dwThreadID);
-		switch(v->nThumbnailProcessingThreadPriority)
-		{
-		case 0:
-			SetThreadPriority(hThread, THREAD_PRIORITY_NORMAL);
-			break;
-		case 1:
-			SetThreadPriority(hThread, THREAD_PRIORITY_HIGHEST);
-			break;
-		case 2:
-			SetThreadPriority(hThread, THREAD_PRIORITY_IDLE);
-			break;
+		v->esparserinfo[nES].eDecoder = eDecoder;
+		hThread = CreateThread(NULL, 0, GenericVideoDecoderThread, (LPVOID)&v->esparserinfo[nES], 0, &dwThreadID);
+		if (hThread) {
+			switch (v->nThumbnailProcessingThreadPriority) {
+				case 0:
+					SetThreadPriority(hThread, THREAD_PRIORITY_NORMAL);
+					break;
+				case 1:
+					SetThreadPriority(hThread, THREAD_PRIORITY_HIGHEST);
+					break;
+				case 2:
+					SetThreadPriority(hThread, THREAD_PRIORITY_IDLE);
+					break;
+			}
+			CloseHandle(hThread);
 		}
-		CloseHandle(hThread);
-	}
-	else
-	{
+	} else {
 		if (v->fESParseDecoderCompletedLibMPEG[nES] == TRUE)
 			fRetVal = TRUE;
 	}
 	LeaveCriticalSection(&v->esparserinfo[nES].csThreadSignal);
-	if (!fRetVal)
-	{
+
+	if (!fRetVal) {
 		DWORD dwWritten;
 		int nActualLength = nPacketLength - nOffset;
 
 		WriteFile(v->hMPEGDecoderWritePipe[nES], &nActualLength, sizeof(nActualLength), &dwWritten, NULL);
 		WriteFile(v->hMPEGDecoderWritePipe[nES], &pPESPacket[nOffset], nActualLength, &dwWritten, NULL);
 		if (dwWritten != (DWORD)nActualLength)
-		{
-			char szTemp[128];
-			wsprintf(szTemp, "TSReader: DecodeH264: Bad data write to pipe (nPacketLength = %d dwWritten = %d)\n", nPacketLength, dwWritten);
-			OutputDebugString(szTemp);
-		}
-	}
-	return fRetVal;
-}
-
-BOOL DecodeMPEG4Video(BYTE * pPESPacket, int nPacketLength, int nES)
-{
-	int nOffset = 0;
-	BOOL fRetVal = FALSE;
-
-	if (v->fESParseDecodedHeader[nES] == FALSE)
-	{
-		for (nOffset = 0; nOffset < nPacketLength - 5; nOffset++)
-		{
-			if (    (pPESPacket[nOffset + 0] == 0x00)
-				 && (pPESPacket[nOffset + 1] == 0x00)
-				 && (pPESPacket[nOffset + 2] == 0x01)
-				 && (pPESPacket[nOffset + 3] == 0xb6) )
-			{
-				v->fESParseDecodedHeader[nES] = TRUE;
-				break;
-			}
-		}
-	}
-	if (v->fESParseDecodedHeader[nES] == FALSE)
-		return FALSE;
-
-	// Decode the video for a thumbnail view
-	if (v->nThumbnailProcessingThreadPriority == 3)
-		return TRUE;	// disabled
-
-	EnterCriticalSection(&v->esparserinfo[nES].csThreadSignal);
-	if (v->fESParseDecoderStartedLibMPEG[nES] == FALSE)
-	{
-		DWORD dwThreadID;
-		HANDLE hThread;
-		
-		v->fESParseDecoderStartedLibMPEG[nES] = TRUE;
-		CreatePipe(&v->hMPEGDecoderReadPipe[nES], &v->hMPEGDecoderWritePipe[nES], NULL, v->nThumbnailPipeSize * 1024 * 1024);
-		v->esparserinfo[nES].nProgramNumber = v->pat.pmt[v->nESParsePMTIndex[nES]].nProgramNumber;
-		v->esparserinfo[nES].nES = nES;
-		hThread = CreateThread(NULL, 0, MPEG4DecoderThread, (LPVOID)&v->esparserinfo[nES], 0, &dwThreadID);
-		switch(v->nThumbnailProcessingThreadPriority)
-		{
-		case 0:
-			SetThreadPriority(hThread, THREAD_PRIORITY_NORMAL);
-			break;
-		case 1:
-			SetThreadPriority(hThread, THREAD_PRIORITY_HIGHEST);
-			break;
-		case 2:
-			SetThreadPriority(hThread, THREAD_PRIORITY_IDLE);
-			break;
-		}
-		CloseHandle(hThread);
-	}
-	else
-	{
-		if (v->fESParseDecoderCompletedLibMPEG[nES] == TRUE)
-			fRetVal = TRUE;
-	}
-	LeaveCriticalSection(&v->esparserinfo[nES].csThreadSignal);
-	if (!fRetVal)
-	{
-		DWORD dwWritten;
-		int nActualLength = nPacketLength - nOffset;
-
-		WriteFile(v->hMPEGDecoderWritePipe[nES], &pPESPacket[nOffset], nActualLength, &dwWritten, NULL);
-		if (dwWritten != (DWORD)nActualLength)
-		{
-			char szTemp[128];
-			wsprintf(szTemp, "TSReader: DecodeMPEG4: Bad data write to pipe (nPacketLength = %d dwWritten = %d)\n", nPacketLength, dwWritten);
-			OutputDebugString(szTemp);
-		}
-	}
-	return fRetVal;
-}
-
-BOOL DecodeVC1Video(BYTE * pPESPacket, int nPacketLength, int nES)
-{
-	int nOffset = 0;
-	BOOL fRetVal = FALSE;
-
-	if (v->fESParseDecodedHeader[nES] == FALSE)
-	{
-		for (nOffset = 0; nOffset < nPacketLength - 5; nOffset++)
-		{
-			if (    (pPESPacket[nOffset + 0] == 0x00)
-				 && (pPESPacket[nOffset + 1] == 0x00)
-				 && (pPESPacket[nOffset + 2] == 0x01)
-				 && (pPESPacket[nOffset + 3] == 0x0f) )
-			{
-				v->fESParseDecodedHeader[nES] = TRUE;
-				break;
-			}
-		}
-	}
-	if (v->fESParseDecodedHeader[nES] == FALSE)
-		return FALSE;
-
-	// Decode the video for a thumbnail view
-	if (v->nThumbnailProcessingThreadPriority == 3)
-		return TRUE;	// disabled
-
-	EnterCriticalSection(&v->esparserinfo[nES].csThreadSignal);
-	if (v->fESParseDecoderStartedLibMPEG[nES] == FALSE)
-	{
-		DWORD dwThreadID;
-		HANDLE hThread;
-		
-		v->fESParseDecoderStartedLibMPEG[nES] = TRUE;
-		CreatePipe(&v->hMPEGDecoderReadPipe[nES], &v->hMPEGDecoderWritePipe[nES], NULL, v->nThumbnailPipeSize * 1024 * 1024);
-		v->esparserinfo[nES].nProgramNumber = v->pat.pmt[v->nESParsePMTIndex[nES]].nProgramNumber;
-		v->esparserinfo[nES].nES = nES;
-		hThread = CreateThread(NULL, 0, VC1DecoderThread, (LPVOID)&v->esparserinfo[nES], 0, &dwThreadID);
-		switch(v->nThumbnailProcessingThreadPriority)
-		{
-		case 0:
-			SetThreadPriority(hThread, THREAD_PRIORITY_NORMAL);
-			break;
-		case 1:
-			SetThreadPriority(hThread, THREAD_PRIORITY_HIGHEST);
-			break;
-		case 2:
-			SetThreadPriority(hThread, THREAD_PRIORITY_IDLE);
-			break;
-		}
-		CloseHandle(hThread);
-	}
-	else
-	{
-		if (v->fESParseDecoderCompletedLibMPEG[nES] == TRUE)
-			fRetVal = TRUE;
-	}
-	LeaveCriticalSection(&v->esparserinfo[nES].csThreadSignal);
-	if (!fRetVal)
-	{
-		DWORD dwWritten;
-		int nActualLength = nPacketLength - nOffset;
-
-		WriteFile(v->hMPEGDecoderWritePipe[nES], &pPESPacket[nOffset], nActualLength, &dwWritten, NULL);
-		if (dwWritten != (DWORD)nActualLength)
-		{
-			char szTemp[128];
-			wsprintf(szTemp, "TSReader: DecodeVC1: Bad data write to pipe (nPacketLength = %d dwWritten = %d)\n", nPacketLength, dwWritten);
-			OutputDebugString(szTemp);
-		}
-	}
-	return fRetVal;
-}
-
-BOOL DecodeMPEG2Video(BYTE * pPESPacket, int nPacketLength, int nES)
-{
-	int nOffset;
-	BOOL fRetVal = FALSE;
-
-	if (v->fESParseDecodedHeader[nES] == FALSE)
-	{
-		for (nOffset = 0; nOffset < nPacketLength - 4; nOffset++)
-		{
-			if (    (pPESPacket[nOffset + 0] == 0x00)
-				 && (pPESPacket[nOffset + 1] == 0x00)
-				 && (pPESPacket[nOffset + 2] == 0x01)
-				 && (pPESPacket[nOffset + 3] == 0xB3) )
-			{
-				// Decode the sequence header
-				BYTE * pSequenceHeader = &pPESPacket[nOffset + 0];
-				PPARSEDMPEGVIDEO pMPEG;
-
-				int horizontal_size_value = (((pSequenceHeader[4] << 8) | pSequenceHeader[5]) >> 4);
-				int vertical_size_value = (((pSequenceHeader[5] & 0x0f) << 8) | pSequenceHeader[6]);
-				int aspect_ratio_information = pSequenceHeader[7] >> 4;
-				int frame_rate_code = pSequenceHeader[7] & 0x0f;
-				int bit_rate_value = pSequenceHeader[8] << 10 | pSequenceHeader[9] << 2 | ((pSequenceHeader[10] >> 6) & 0x03);
-				int marker_bit = (pSequenceHeader[10] >> 5) & 0x01;
-				int vbv_buffer_size_value = ((pSequenceHeader[10] & 0x1f) << 5) | (pSequenceHeader[11] >> 3);
-				int contrained_parameters_flag = (pSequenceHeader[11] >> 2) & 0x01;
-				int load_intra_quantiser_matrix = (pSequenceHeader[11] >> 1) & 0x01;
-				int load_non_intra_quantiser_matrix = pSequenceHeader[11 + (load_intra_quantiser_matrix * 64)] & 0x01;
-				BYTE * pNextHeader = &pSequenceHeader[12 + (load_intra_quantiser_matrix * 64) + (load_non_intra_quantiser_matrix * 64)];
-				{
-					
-					pMPEG = LocalAlloc(LPTR, sizeof(PARSEDMPEGVIDEO));
-					if (v->pat.pmt[v->nESParsePMTIndex[nES]].es[v->nESParseESIndex[nES]].pParsedData)
-						LocalFree(v->pat.pmt[v->nESParsePMTIndex[nES]].es[v->nESParseESIndex[nES]].pParsedData);
-					v->pat.pmt[v->nESParsePMTIndex[nES]].es[v->nESParseESIndex[nES]].pParsedData = (BYTE *)pMPEG;
-
-					pMPEG->horizontal_size_value = horizontal_size_value;
-					pMPEG->vertical_size_value = vertical_size_value;
-					pMPEG->aspect_ratio_information = aspect_ratio_information;
-					pMPEG->frame_rate_code = frame_rate_code;
-					pMPEG->bit_rate_value = bit_rate_value;
-					pMPEG->marker_bit1 = marker_bit;
-					pMPEG->vbv_buffer_size_value = vbv_buffer_size_value;
-					pMPEG->contrained_parameters_flag = contrained_parameters_flag;
-					pMPEG->load_intra_quantiser_matrix = load_intra_quantiser_matrix;
-					pMPEG->load_non_intra_quantiser_matrix = load_non_intra_quantiser_matrix;
-
-					// See if we've got an MPEG-2 extension
-					if (   (pNextHeader[0] == 0x00)
-						&& (pNextHeader[1] == 0x00)
-						&& (pNextHeader[2] == 0x01)
-					    && (pNextHeader[3] == 0xb5) )
-					{
-						BYTE * pExtensionHeader = pNextHeader;
-
-						pMPEG->extension_start_code_identifier = pExtensionHeader[4] >> 4;
-						pMPEG->profile_and_level_indication = ((pExtensionHeader[4] & 0x0f) << 4) | (pExtensionHeader[5] >> 4);
-						pMPEG->progressive_sequence = (pExtensionHeader[5] >> 3) & 0x01;
-						pMPEG->chroma_format = (pExtensionHeader[5] >> 1) & 0x03;
-						pMPEG->horizontal_size_extension = ((pExtensionHeader[5] & 0x01) << 1) | (pExtensionHeader[6] >> 7);
-						pMPEG->vertical_size_extension = (pExtensionHeader[6] >> 5) & 0x03;
-						pMPEG->bit_rate_extension = ((pExtensionHeader[6] & 0x1f) << 7) | (pExtensionHeader[7] >> 1);
-						pMPEG->marker_bit2 = pExtensionHeader[7] & 0x01;
-						pMPEG->vbv_buffer_size_extension = pExtensionHeader[8];
-						pMPEG->low_delay = (pExtensionHeader[9] >> 7) & 0x01;
-						pMPEG->frame_rate_extension_n = (pExtensionHeader[9] >> 5) & 0x03;
-						pMPEG->frame_rate_extension_d = pExtensionHeader[9] & 0x1f;
-					}
-					v->fESParseDecodedHeader[nES] = TRUE;
-				}
-				break;
-			}
-		}
+			dbg_printf("TSReader: %s: Bad data write to pipe (nPacketLength = %d dwWritten = %d)\n", __FUNCTION__, nPacketLength, dwWritten);
 	}
 
-	// Make sure it's a profile libmpeg2 can handle
-	{
-		PPARSEDMPEGVIDEO pMPEG = (PPARSEDMPEGVIDEO)v->pat.pmt[v->nESParsePMTIndex[nES]].es[v->nESParseESIndex[nES]].pParsedData;
-		if (pMPEG == NULL)
-			return FALSE;
-	}
-
-	// Decode the video for a thumbnail view
-	if (v->nThumbnailProcessingThreadPriority == 3)
-		return TRUE;	// disabled
-
-	EnterCriticalSection(&v->esparserinfo[nES].csThreadSignal);
-	if (v->fESParseDecoderStartedLibMPEG[nES] == FALSE)
-	{
-		DWORD dwThreadID;
-		HANDLE hThread;
-		
-		v->fESParseDecoderStartedLibMPEG[nES] = TRUE;
-		CreatePipe(&v->hMPEGDecoderReadPipe[nES], &v->hMPEGDecoderWritePipe[nES], NULL, v->nThumbnailPipeSize * 1024 * 1024);
-		v->esparserinfo[nES].nProgramNumber = v->pat.pmt[v->nESParsePMTIndex[nES]].nProgramNumber;
-		v->esparserinfo[nES].nES = nES;
-		hThread = CreateThread(NULL, 0, MPEG2DecoderThread, (LPVOID)&v->esparserinfo[nES], 0, &dwThreadID);
-		switch(v->nThumbnailProcessingThreadPriority)
-		{
-		case 0:
-			SetThreadPriority(hThread, THREAD_PRIORITY_NORMAL);
-			break;
-		case 1:
-			SetThreadPriority(hThread, THREAD_PRIORITY_HIGHEST);
-			break;
-		case 2:
-			SetThreadPriority(hThread, THREAD_PRIORITY_IDLE);
-			break;
-		}
-		CloseHandle(hThread);
-	}
-	else
-	{
-		if (v->fESParseDecoderCompletedLibMPEG[nES] == TRUE)
-			fRetVal = TRUE;
-	}
-	LeaveCriticalSection(&v->esparserinfo[nES].csThreadSignal);
-	if (!fRetVal)
-	{
-		DWORD dwWritten;
-
-		while (*pPESPacket == 0xff && nPacketLength)
-		{
-			pPESPacket++;
-			nPacketLength--;
-		}
-
-		if (nPacketLength > 0)
-		{
-			WriteFile(v->hMPEGDecoderWritePipe[nES], &nPacketLength, sizeof(nPacketLength), &dwWritten, NULL);
-			WriteFile(v->hMPEGDecoderWritePipe[nES], pPESPacket, nPacketLength, &dwWritten, NULL);
-			if (dwWritten != (DWORD)nPacketLength)
-			{
-				char szTemp[128];
-				wsprintf(szTemp, "TSReader: DecodeMPEG2Video: Bad data write to pipe (nPacketLength = %d dwWritten = %d)\n", nPacketLength, dwWritten);
-				OutputDebugString(szTemp);
-			}
-		}
-	}
 	return fRetVal;
 }
 
@@ -1433,9 +1214,7 @@ BOOL DecodeAC3AudioHeader(BYTE * pPESPacket, int nPacketLength, int nES)
 		WriteFile(v->hMPEGDecoderWritePipe[nES], pPESPacket, nPacketLength, &dwWritten, NULL);
 		if (dwWritten != (DWORD)nPacketLength)
 		{
-			char szTemp[128];
-			wsprintf(szTemp, "TSReader: DecodeAC3AudioHeader: Bad data write to pipe (nPacketLength = %d dwWritten = %d)\n", nPacketLength, dwWritten);
-			OutputDebugString(szTemp);
+			dbg_printf("TSReader: DecodeAC3AudioHeader: Bad data write to pipe (nPacketLength = %d dwWritten = %d)\n", nPacketLength, dwWritten);
 		}
 	}
 	
@@ -1465,11 +1244,6 @@ BOOL DecodeTeletextVBIHeader(BYTE * pPESPacket, int nPESPacketLength, int nES)
 			int data_unit_id = get_bits(BM_PARSER_THREAD, 8);
 			nPESPacketLength--;
 			data_unit_length = get_bits(BM_PARSER_THREAD, 8);
-			/*{
-				char szTemp[128];
-				wsprintf(szTemp, "TSReader: Teletext PMT Index %d type %02x length %d\n", v->nESParsePMTIndex, data_unit_id, data_unit_length);
-				OutputDebugString(szTemp);
-			}*/
 			nPESPacketLength--;
 			if (   data_unit_id == 0x02
 				|| data_unit_id == 0x03
@@ -1679,9 +1453,7 @@ BOOL DecodeMPEGAACAudio(BYTE * pPESPacket, int nPacketLength, int nES)
 		WriteFile(v->hMPEGDecoderWritePipe[nES], &pPESPacket[nOffset], nPacketLength - nOffset, &dwWritten, NULL);
 		if (dwWritten != (DWORD)nPacketLength - nOffset)
 		{
-			char szTemp[128];
-			wsprintf(szTemp, "TSReader: DecodeAACAudioHeader: Bad data write to pipe (nPacketLength = %d dwWritten = %d)\n", nPacketLength, dwWritten);
-			OutputDebugString(szTemp);
+			dbg_printf("TSReader: DecodeAACAudioHeader: Bad data write to pipe (nPacketLength = %d dwWritten = %d)\n", nPacketLength, dwWritten);
 		}
 	}
 	return fRetVal;
@@ -1767,9 +1539,7 @@ BOOL DecodeMPEGAudioHeader(BYTE * pPESPacket, int nPacketLength, int nES)
 		WriteFile(v->hMPEGDecoderWritePipe[nES], pPESPacket, nPacketLength, &dwWritten, NULL);
 		if (dwWritten != (DWORD)nPacketLength)
 		{
-			char szTemp[128];
-			wsprintf(szTemp, "TSReader: DecodeMPEGAudioHeader: Bad data write to pipe (nPacketLength = %d dwWritten = %d)\n", nPacketLength, dwWritten);
-			OutputDebugString(szTemp);
+			dbg_printf("TSReader: DecodeMPEGAudioHeader: Bad data write to pipe (nPacketLength = %d dwWritten = %d)\n", nPacketLength, dwWritten);
 		}
 	}
 	
@@ -1804,7 +1574,7 @@ void AutoRecord(void)
 			return;
 		}
 	}
-	OutputDebugString("TSReader: No auto record program found\n");
+	dbg_printf("TSReader: No auto record program found\n");
 	v->nAutoRecord = AUTO_RECORD_NONE;
 	v->nAutoRecordSeconds = 0;
 	if (!v->fDontWarnAboutInccorectAutoRecordProgram)
@@ -3293,7 +3063,7 @@ void SetupPriorToProgramRecording(void)
 	if (v->pat.hPATTreeItem != NULL || GetTotalPMTChannels())
 	{
 		int i;
-		PPARSEDMPEGVIDEO pMPEG;
+		PPARSEDGENERICVIDEO pVideo;
 		
 		v->nRecordPCRPID = v->pat.pmt[v->nSelectedProgram].nPCRPID;
 		if (v->nRecordVideoESIndex != -1)
@@ -3303,10 +3073,10 @@ void SetupPriorToProgramRecording(void)
 		v->fStradisPAL = FALSE;
 		if (v->nRecordVideoESIndex != -1)
 		{
-			pMPEG = (PPARSEDMPEGVIDEO)v->pat.pmt[v->nSelectedProgram].es[v->nRecordVideoESIndex].pParsedData;
-			if (pMPEG != NULL)
-			{
-				if ( (pMPEG->frame_rate_code == 3) || (pMPEG->frame_rate_code == 6) )
+			pVideo = (PPARSEDGENERICVIDEO)v->pat.pmt[v->nSelectedProgram].es[v->nRecordVideoESIndex].pParsedData;
+			if (pVideo) {
+				/* TODO fix this */
+				if ( (pVideo->framerate == 25.0f) || (pVideo->framerate == 50.0f) )
 					v->fStradisPAL = TRUE;
 			}
 		}
@@ -4237,10 +4007,7 @@ DWORD WINAPI AdvancedRecordFreeSpaceMonitorThread(LPVOID lpv)
 					// Now szOldestFile has the oldest record file
 					if (lstrlen(szOldestFile))
 					{
-						char szTemp[128 + MAX_PATH];
-
-						wsprintf(szTemp, "TSReader: Free-up %s\n", szOldestFile);
-						OutputDebugString(szTemp);
+						dbg_printf("TSReader: Free-up %s\n", szOldestFile);
 						DeleteFile(szOldestFile);
 					}
 					else
@@ -4366,7 +4133,7 @@ BOOL CheckForFileSplit(void)
 				// rollover of the PCR - just reset for now
 				// todo - do this right
 				v->lnRecordSplitPCR = v->lnMuxRatePCR;
-				OutputDebugString("TSReader: PCR rollover\n");
+				dbg_printf("TSReader: PCR rollover\n");
 			}
 			if (v->lnMuxRatePCR > (v->lnRecordSplitPCR + (__int64)v->nSplitFileSize * (__int64)27000000))
 			{
@@ -4778,9 +4545,7 @@ void DSSMuxrateProcessing(int nPID)
 			v->nDSSRTCOffset = 0;
 			if (nPID != 0)
 			{
-				char szTemp[128];
-				wsprintf(szTemp, "TSReader: Chose SCID %s for bitrate calculation PCR = %d\n", FormatTooltipPID(v->nMuxRatePID), (DWORD)v->lnMuxRatePCR);
-				OutputDebugString(szTemp);
+				dbg_printf("TSReader: Chose SCID %s for bitrate calculation PCR = %d\n", FormatTooltipPID(v->nMuxRatePID), (DWORD)v->lnMuxRatePCR);
 			}
 		}
 	}
@@ -4815,7 +4580,7 @@ void DSSMuxrateProcessing(int nPID)
 					}
 					else
 					{
-						OutputDebugString("TSReader: Reset mux rate calculation SCID - negative PCR\n");
+						dbg_printf("TSReader: Reset mux rate calculation SCID - negative PCR\n");
 						v->nMuxRatePID = v->nNullPID;
 						return;
 					}
@@ -4857,9 +4622,7 @@ void MPEG2MuxrateProcessing(int nPID)
 			v->nMuxRateBytes = 0;
 			if (nPID != 0x1fff)
 			{
-				char szTemp[128];
-				wsprintf(szTemp, "TSReader: Chose PID %s for bitrate calculation PCR = %d\n", FormatTooltipPID(v->nMuxRatePID), (DWORD)v->lnMuxRatePCR);
-				OutputDebugString(szTemp);
+				dbg_printf("TSReader: Chose PID %s for bitrate calculation PCR = %d\n", FormatTooltipPID(v->nMuxRatePID), (DWORD)v->lnMuxRatePCR);
 			}
 		}
 	}
@@ -4901,7 +4664,7 @@ void MPEG2MuxrateProcessing(int nPID)
 						}
 						else
 							v->nMuxRatePID = v->nNullPID;
-						OutputDebugString("TSReader: Reset mux rate calculation PID - dRate too small\n");
+						dbg_printf("TSReader: Reset mux rate calculation PID - dRate too small\n");
 						return;
 					}
 				}
@@ -5330,7 +5093,7 @@ void CheckForESParsing(int nPID, int nES)
 			v->nDecodeNoPIDTrafficCounter[nES]++;
 		if (v->nDecodeNoPIDTrafficCounter[nES] > MAX_DECODE_NO_PID_COUNTER)
 		{
-			OutputDebugString("TSReader: ES blacklisted - nDecodeNoPIDTrafficCounter > MAX_DECODE_NO_PID_COUNTER\n");
+			dbg_printf("TSReader: ES blacklisted - nDecodeNoPIDTrafficCounter > MAX_DECODE_NO_PID_COUNTER\n");
 			if (v->fArchiveRunning == FALSE)
 				v->pat.pmt[v->nESParsePMTIndex[nES]].es[v->nESParseESIndex[nES]].nBlacklisted = BLACKLIST_NO_TRAFFIC;
 			tv->nPESLength[nES] = 0;
@@ -5353,9 +5116,7 @@ void CheckForESParsing(int nPID, int nES)
 
 		if (v->lnMuxRatePCR > v->lnESParseStartTime[nES] + (lnTimeoutSeconds * (__int64)27000000) && !v->fDisableBlacklisting)
 		{
-			char szTemp[128];
-			wsprintf(szTemp, "TSReader: ES PID 0x%04x blacklisted - no appreciable data for %d seconds\n", v->pat.pmt[v->nESParsePMTIndex[nES]].es[v->nESParseESIndex[nES]].nESPID, (int)lnTimeoutSeconds);
-			OutputDebugString(szTemp);
+			dbg_printf("TSReader: ES PID 0x%04x blacklisted - no appreciable data for %d seconds\n", v->pat.pmt[v->nESParsePMTIndex[nES]].es[v->nESParseESIndex[nES]].nESPID, (int)lnTimeoutSeconds);
 			if (v->fArchiveRunning == FALSE)
 				v->pat.pmt[v->nESParsePMTIndex[nES]].es[v->nESParseESIndex[nES]].nBlacklisted = BLACKLIST_NO_DATA;
 			tv->nPESLength[nES] = 0;
@@ -5397,7 +5158,7 @@ void CheckForESParsing(int nPID, int nES)
 			v->nDecodeNoPESLengthCounter[nES]++;
 			if (v->nDecodeNoPESLengthCounter[nES] > MAX_DECODE_NO_PES_COUNTER)
 			{
-				OutputDebugString("ES blacklisted - nDecodeNoPESLengthCounter[nES] > MAX_DECODE_NO_PES_COUNTER\n");
+				dbg_printf("ES blacklisted - nDecodeNoPESLengthCounter[nES] > MAX_DECODE_NO_PES_COUNTER\n");
 				if (v->fArchiveRunning == FALSE)
 					v->pat.pmt[v->nESParsePMTIndex[nES]].es[v->nESParseESIndex[nES]].nBlacklisted = BLACKLISTED_NO_PES_PACKETS;
 				tv->nPESLength[nES] = 0;
@@ -5426,26 +5187,32 @@ void CheckForESParsing(int nPID, int nES)
 							tv->nPESLength[nES] = tv->nESFillPtr[nES];
 						switch(v->nESParseType[nES])
 						{
+							/* video types */
 						case PARSE_ES_TYPE_MPEG2_VIDEO:
-							fRetVal = DecodeMPEG2Video(tv->bESBuffer[nES], tv->nPESLength[nES], nES);
+							fRetVal = DecodeGenericVideo(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_MPEG2, StartCodeMPEG2);
+							break;
+						case PARSE_ES_TYPE_MPEG4_VIDEO:
+							fRetVal = DecodeGenericVideo(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_MPEG4, StartCodeMPEG4);
 							break;
 						case PARSE_ES_TYPE_VC1_VIDEO:
-							fRetVal = DecodeVC1Video(tv->bESBuffer[nES], tv->nPESLength[nES], nES);
+							fRetVal = DecodeGenericVideo(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_VC1, StartCodeVC1);
 							break;
-						case PARSE_ES_TYPE_AUDIO_TITLE:
-							fRetVal = DecodeAudioTitleData(tv->bESBuffer[nES], tv->nPESLength[nES], nES);
+						case PARSE_ES_TYPE_H264_VIDEO:
+							fRetVal = DecodeGenericVideo(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_H264, StartCodeH264);
 							break;
+						case PARSE_ES_TYPE_H265_VIDEO:
+							fRetVal = DecodeGenericVideo(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_H265, NULL);
+							break;
+						case PARSE_ES_TYPE_AV1_VIDEO:
+							fRetVal = DecodeGenericVideo(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_AV1, NULL);
+							break;
+
+							/* audio types */
 						case PARSE_ES_TYPE_MPEG2_AAC_AUDIO:
 							fRetVal = DecodeMPEGAACAudio(tv->bESBuffer[nES], tv->nPESLength[nES], nES);
 							break;
 						case PARSE_ES_TYPE_MPEG4_AAC_AUDIO:
 							fRetVal = DecodeMPEGAACAudio(tv->bESBuffer[nES], tv->nPESLength[nES], nES);
-							break;
-						case PARSE_ES_TYPE_H264_VIDEO:
-							fRetVal = DecodeH264Video(tv->bESBuffer[nES], tv->nPESLength[nES], nES);
-							break;
-						case PARSE_ES_TYPE_MPEG4_VIDEO:
-							fRetVal = DecodeMPEG4Video(tv->bESBuffer[nES], tv->nPESLength[nES], nES);
 							break;
 						case PARSE_ES_TYPE_MPEG_AUDIO:
 							fRetVal = DecodeMPEGAudioHeader(tv->bESBuffer[nES], tv->nPESLength[nES], nES);
@@ -5455,6 +5222,9 @@ void CheckForESParsing(int nPID, int nES)
 							break;
 						case PARSE_ES_TYPE_TELETEXT:
 							fRetVal = DecodeTeletextVBIHeader(tv->bESBuffer[nES], tv->nPESLength[nES], nES);
+							break;
+						case PARSE_ES_TYPE_AUDIO_TITLE:
+							fRetVal = DecodeAudioTitleData(tv->bESBuffer[nES], tv->nPESLength[nES], nES);
 							break;
 						}
 					}
@@ -5586,14 +5356,13 @@ void GetNextECMPID(void)
 						v->nDCIIECMDescriptorTimeout = 0;
 						wsprintf(szTemp, "Parsing DCII ECM for service %d on PID 0x%04x", v->pat.pmt[v->nDCIIECMPMTIndex].nProgramNumber, v->nDCIIECMDescriptorPID);
 						UpdateMainStatusText(szTemp);
-						wsprintf(szTemp2, "TSReader: %s\n", szTemp);
-						OutputDebugString(szTemp2);
+						dbg_printf("TSReader: %s\n", szTemp);
 						return;		// ready to process
 					}
 				}
 			}
 			nOffset += nDescriptorLength + 2;
-			nProgramInfoLength -= nDescriptorLength + 2;			
+			nProgramInfoLength -= nDescriptorLength + 2;
 		}
 	} while (TRUE);
 }
@@ -5712,7 +5481,7 @@ retry_pmt:
 		{
 			char szTemp[128];
 			wsprintf(szTemp, "TSReader: Reading PMT for program %d from PID %s\n", v->pat.pmt[v->nPMTProgramIndex].nProgramNumber, FormatTooltipPID(v->nPMTPID));
-			OutputDebugString(szTemp);
+			dbg_printf(szTemp);
 			UpdateMainStatusText(szTemp);
 		}
 	}
@@ -5794,8 +5563,7 @@ void PostPATProcessing(void)
 		v->nPMTTimeoutCounter = 0;
 		if (v->nPMTPID != 0x1fff)
 		{
-			wsprintf(szTemp, "TSReader: Reading PMT for program %d from PID %s\n", v->pat.pmt[v->nPMTProgramIndex].nProgramNumber, FormatTooltipPID(v->nPMTPID));
-			OutputDebugString(szTemp);
+			dbg_printf("TSReader: Reading PMT for program %d from PID %s\n", v->pat.pmt[v->nPMTProgramIndex].nProgramNumber, FormatTooltipPID(v->nPMTPID));
 		}
 		else
 			lstrcpy(szTemp, "No channels defined in mux");
@@ -5842,9 +5610,7 @@ BOOL CheckPATVersionNumber(BYTE * pSectionPointer, int nPacketLength)
 	// If it's a different version, let's re-generate the PMT in memory
 	if (nVersionNumber != v->pat.nVersionNumber)
 	{
-		char szTemp[128];
-		wsprintf(szTemp, "TSReader: PAT Version changed from %d to %d\n", nVersionNumber, v->pat.nVersionNumber);
-		OutputDebugString(szTemp);
+		dbg_printf("TSReader: PAT Version changed from %d to %d\n", nVersionNumber, v->pat.nVersionNumber);
 		v->pat.nVersionNumber = nVersionNumber;
 		return TRUE;		// need a restart!
 	}
@@ -5948,11 +5714,7 @@ void RecordTableData(int nRecordIndex, BYTE * pPacket, int nPacketLength)
 void DispatchSIPacket(void)
 {
 #ifdef DEBUG_MESSAGES
-	{
-		char szTemp[128];
-		wsprintf(szTemp, "TSReader: DispatchSIPacket+ %d\n", tv->nBufferID);
-		OutputDebugString(szTemp);
-	}
+	dbg_printf("TSReader: DispatchSIPacket+ %d\n", tv->nBufferID);
 #endif DEBUG_MESSAGES
 	if (tv->nBufferID >= BUFFER_EIT0 && tv->nBufferID <= BUFFER_EIT63)
 		ParseATSCEITPacket(v->bSIBuffer[tv->nBufferID], v->nFillPtr[tv->nBufferID], tv->nBufferID - BUFFER_EIT0);
@@ -6113,7 +5875,7 @@ void DispatchSIPacket(void)
 	}
 	memset(v->bSIBuffer[tv->nBufferID], 0, sizeof(v->bSIBuffer[tv->nBufferID]));
 #ifdef DEBUG_MESSAGES
-	OutputDebugString("TSReader: DispatchSIPacket-\n");
+	dbg_printf("TSReader: DispatchSIPacket-\n");
 #endif DEBUG_MESSAGES
 }
 
@@ -6144,7 +5906,7 @@ void PMTListenPMTParser(BYTE * pSectionBuffer, int nSectionLength, int nPMTListe
 			wsprintf(szTemp, "TSReader: Completed PMT for program %d on PID 0x%04x - %d %s left to process", v->pmtlisten[nPMTListenIndex].nProgramNumber, v->pmtlisten[nPMTListenIndex].nPID, nOutstanding, szPMTString);
 		UpdateMainStatusText(szTemp);
 		lstrcat(szTemp, "\n");
-		OutputDebugString(szTemp);
+		dbg_printf(szTemp);
 	}
 	else
 	{
@@ -6162,9 +5924,7 @@ void PMTListenParser(int nPMTListenIndex, int nPID, BYTE * pPacket)
 		if (nPointer > 188 || nPointer < 0)
 		{
 #ifdef DEBUG_MESSAGES
-			char szTemp[128];
-			wsprintf(szTemp, "TSReader: nPointer out of range = %d PMT PID = 0x%04x\n", nPointer, nPID);
-			OutputDebugString(szTemp);
+			dbg_printf("TSReader: nPointer out of range = %d PMT PID = 0x%04x\n", nPointer, nPID);
 #endif DEBUG_MESSAGES
 		}
 		else
@@ -6186,9 +5946,7 @@ void PMTListenParser(int nPMTListenIndex, int nPID, BYTE * pPacket)
 				|| (v->pmtlisten[nPMTListenIndex].nFillPtr + (188 - 5 - nPointer) < 1) )
 			{
 #ifdef DEBUG_MESSAGES
-				char szTemp[128];
-				wsprintf(szTemp, "TSReader: Out of range nPointer = %d nFillPtr = %d PMT PID = 0x%04x\n", nPointer, v->pmtlisten[nPMTListenIndex].nFillPtr, nPID);
-				OutputDebugString(szTemp);
+				dbg_printf("TSReader: Out of range nPointer = %d nFillPtr = %d PMT PID = 0x%04x\n", nPointer, v->pmtlisten[nPMTListenIndex].nFillPtr, nPID);
 #endif DEBUG_MESSAGES
 				v->nFillPtr[tv->nBufferID] = 0;
 			}
@@ -6219,9 +5977,7 @@ void BufferSections(int nPID)
 		if ( (tv->nPointer > tv->nPacketLength) || (tv->nPointer < 0) )
 		{
 #ifdef DEBUG_MESSAGES
-			char szTemp[128];
-			wsprintf(szTemp, "TSReader: tv->nPointer out of range = %d buffer = %d\n", tv->nPointer, tv->nBufferID);
-			OutputDebugString(szTemp);
+			dbg_printf("TSReader: tv->nPointer out of range = %d buffer = %d\n", tv->nPointer, tv->nBufferID);
 #endif DEBUG_MESSAGES
 			return;
 		}
@@ -6245,9 +6001,7 @@ void BufferSections(int nPID)
 			|| (v->nFillPtr[tv->nBufferID] + (tv->nPacketLength - 5 - tv->nPointer) < 1) )
 		{
 #ifdef DEBUG_MESSAGES
-			char szTemp[128];
-			wsprintf(szTemp, "TSReader: Out of range nPointer = %d Buffer = %d\n", v->nFillPtr[tv->nBufferID], tv->nBufferID);
-			OutputDebugString(szTemp);
+			dbg_printf("TSReader: Out of range nPointer = %d Buffer = %d\n", v->nFillPtr[tv->nBufferID], tv->nBufferID);
 #endif DEBUG_MESSAGES
 			v->nFillPtr[tv->nBufferID] = 0;
 			return;
@@ -6300,7 +6054,7 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 	tv->nActualMaxRecordBuffers = ACTUAL_MAX_RECORD_BUFFERS;
 
 #ifdef DEBUG_MESSAGES
-	OutputDebugString("TSReader: +ParseIncomingTSDataThread()\n");
+	dbg_printf("TSReader: +ParseIncomingTSDataThread()\n");
 #endif DEBUG_MESSAGES
 
 	if (v->fParserDisabled)
@@ -6339,7 +6093,7 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 		
 		if (WaitForNextTSBuffer())
 		{
-			OutputDebugString("TSReader: quitting main processing loop\n");
+			dbg_printf("TSReader: quitting main processing loop\n");
 			break;
 		}
 		v->fDataReceviedInParseIncomingDataThread = TRUE;
@@ -6359,7 +6113,7 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 		{
 			if (tv->nPacketLength == 188)
 			{
-				OutputDebugString("TSReader: Switching to DSS packet mode\n");
+				dbg_printf("TSReader: Switching to DSS packet mode\n");
 				tv->nPacketLength = 131;
 				v->nNullPID = 0;
 				v->nMuxRatePID = 0;
@@ -6551,9 +6305,7 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 				{
 					if (v->nPMTTimeoutCounter >= PMT_TIMEOUT)
 					{
-						char szTemp[128];
-						wsprintf(szTemp, "TSReader: Timeout on PMT for program %d\n", v->pat.pmt[v->nPMTProgramIndex].nProgramNumber);
-						OutputDebugString(szTemp);
+						dbg_printf("TSReader: Timeout on PMT for program %d\n", v->pat.pmt[v->nPMTProgramIndex].nProgramNumber);
 						SetupForNextPMTEntry();
 					}
 				}
@@ -6758,7 +6510,7 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 														 v->pmtlisten[nPMTListenIndex].nPID);
 												UpdateMainStatusText(szTemp);
 												lstrcat(szTemp, "\n");
-												OutputDebugString(szTemp);
+												dbg_printf(szTemp);
 												v->pmtlisten[nPMTListenIndex].fOutstanding = FALSE;
 											}
 										}
@@ -6818,7 +6570,7 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 		LocalFree(tv->bVideoESBuffer[i]);
 	CloseHandle(v->hStreamProcessingThread);
 	LocalFree(tv);
-	OutputDebugString("TSReader: ParseIncomingTSDataThread-\n");
+	dbg_printf("TSReader: ParseIncomingTSDataThread-\n");
 	v->fParseThreadRunning = FALSE;
 	return 0;
 }
@@ -6918,7 +6670,6 @@ void ReadPersistantEPG(void)
 			}
 		} while (TRUE);
 
-		OutputDebugString("\n");
 		CloseHandle(hEITFile);
 		//DeleteFile(szPersistantFile);	
 	}
@@ -7006,7 +6757,7 @@ void CleanupMPEGParsingThread(HWND hDlg)
 	CursorWait(hDlg);
 
 #ifdef DEBUG_MESSAGES
-	OutputDebugString("CleanupMPEGParsingThread: EIT\n");
+	dbg_printf("CleanupMPEGParsingThread: EIT\n");
 #endif DEBUG_MESSAGES
 	UpdateMainStatusText("Unloading EIT data...");
 	if (1) // fPersistantEPG
@@ -7021,11 +6772,7 @@ void CleanupMPEGParsingThread(HWND hDlg)
 		if (pCurrent != NULL)
 		{
 #ifdef DEBUG_MESSAGES
-			{
-				char szTemp[128];
-				wsprintf(szTemp, "CleanupMPEGParsingThread: EIT extra descriptors channel %d\n", i);
-				OutputDebugString(szTemp);
-			}
+			dbg_printf("CleanupMPEGParsingThread: EIT extra descriptors channel %d\n", i);
 #endif DEBUG_MESSAGES
 			do
 			{
@@ -7054,11 +6801,6 @@ void CleanupMPEGParsingThread(HWND hDlg)
 			{
 				if (v->pChannelData[i]->pExtraDescriptors[j] != NULL)
 				{
-					/*{
-						char szTemp[128];
-						wsprintf(szTemp, "v->pChannelData[%d]->pExtraDescriptors[%d] = %08x\n", i, j, v->pChannelData[i]->pExtraDescriptors[j]);
-						OutputDebugString(szTemp);
-					}*/
 					LocalFree(v->pChannelData[i]->pExtraDescriptors[j]);
 					v->pChannelData[i]->pExtraDescriptors[j] = NULL;
 				}
@@ -7070,7 +6812,7 @@ void CleanupMPEGParsingThread(HWND hDlg)
 	}
 
 #ifdef DEBUG_MESSAGES
-	OutputDebugString("CleanupMPEGParsingThread: PMT\n");
+	dbg_printf("CleanupMPEGParsingThread: PMT\n");
 #endif DEBUG_MESSAGES
 	UpdateMainStatusText("Unloading PMT data...");
 	for (nPMTIndex = 0; nPMTIndex < MAX_PAT_ENTRIES; nPMTIndex++)
@@ -7112,7 +6854,7 @@ void CleanupMPEGParsingThread(HWND hDlg)
 	}
 
 #ifdef DEBUG_MESSAGES
-	OutputDebugString("CleanupMPEGParsingThread: NIT\n");
+	dbg_printf("CleanupMPEGParsingThread: NIT\n");
 #endif DEBUG_MESSAGES
 	UpdateMainStatusText("Unloading NIT data...");
 	for (i = 0; i < MAX_TS_ENTRIES; i++)
@@ -7134,7 +6876,7 @@ void CleanupMPEGParsingThread(HWND hDlg)
 	}
 
 #ifdef DEBUG_MESSAGES
-	OutputDebugString("CleanupMPEGParsingThread: CAT\n");
+	dbg_printf("CleanupMPEGParsingThread: CAT\n");
 #endif DEBUG_MESSAGES
 	UpdateMainStatusText("Unloading CAT data...");
 	for (i = 0; i < MAX_CAT_DESCRIPTORS; i++)
@@ -7147,7 +6889,7 @@ void CleanupMPEGParsingThread(HWND hDlg)
 	}
 
 #ifdef DEBUG_MESSAGES
-	OutputDebugString("CleanupMPEGParsingThread: BIT\n");
+	dbg_printf("CleanupMPEGParsingThread: BIT\n");
 #endif DEBUG_MESSAGES
 	UpdateMainStatusText("Unloading BIT data...");
 	for (i = 0; i < MAX_BIT_DESCRIPTORS; i++) {
@@ -7158,7 +6900,7 @@ void CleanupMPEGParsingThread(HWND hDlg)
 	}
 
 #ifdef DEBUG_MESSAGES
-	OutputDebugString("CleanupMPEGParsingThread: MGT\n");
+	dbg_printf("CleanupMPEGParsingThread: MGT\n");
 #endif DEBUG_MESSAGES
 	UpdateMainStatusText("Unloading MGT data...");
 	for (i = 0; i < MAX_MGT_ENTRIES; i++)
@@ -7175,7 +6917,7 @@ void CleanupMPEGParsingThread(HWND hDlg)
 	}
 
 #ifdef DEBUG_MESSAGES
-	OutputDebugString("CleanupMPEGParsingThread: CVCT\n");
+	dbg_printf("CleanupMPEGParsingThread: CVCT\n");
 #endif DEBUG_MESSAGES
 	UpdateMainStatusText("Unloading CVCT data...");
 	for (i = 0; i < MAX_CVCT_ENTRIES; i++)
@@ -7195,7 +6937,7 @@ void CleanupMPEGParsingThread(HWND hDlg)
 	}
 
 #ifdef DEBUG_MESSAGES
-	OutputDebugString("CleanupMPEGParsingThread: BAT\n");
+	dbg_printf("CleanupMPEGParsingThread: BAT\n");
 #endif DEBUG_MESSAGES
 	UpdateMainStatusText("Unloading BAT data...");
 	for (i = 0; i < MAX_BAT_ENTRIES; i++)
@@ -7211,7 +6953,7 @@ void CleanupMPEGParsingThread(HWND hDlg)
 	}
 
 #ifdef DEBUG_MESSAGES
-	OutputDebugString("CleanupMPEGParsingThread: TOT\n");
+	dbg_printf("CleanupMPEGParsingThread: TOT\n");
 #endif DEBUG_MESSAGES
 	UpdateMainStatusText("Unloading TOT data...");
 	if (v->dvbtot.pDescriptors != NULL)
@@ -7219,7 +6961,7 @@ void CleanupMPEGParsingThread(HWND hDlg)
 	memset(&v->dvbtot, 0, sizeof(v->dvbtot));
 
 #ifdef DEBUG_MESSAGES
-	OutputDebugString("CleanupMPEGParsingThread: RRT\n");
+	dbg_printf("CleanupMPEGParsingThread: RRT\n");
 #endif DEBUG_MESSAGES
 	UpdateMainStatusText("Unloading RRT data...");	
 	for (i = 0; i < 256; i++)
@@ -7244,7 +6986,7 @@ int AddSITreeIcon(int nResource)
 	nRetVal = ImageList_AddIcon(v->hSIParserImageList, hiconItem); 
 	if (nRetVal == -1)
 	{
-		OutputDebugString("TSReader: Image not loaded\n");
+		dbg_printf("TSReader: Image not loaded\n");
 	}
 	DestroyIcon(hiconItem);
 	return nRetVal;
@@ -7549,7 +7291,7 @@ void DrawThumbnail(HDC hDC, int nPMTIndex, int nESIndex, int yCurrent, int yEnd,
 	else
 	{
 		nThumbnailWidth = nThumbnailHeight = 0;
-		OutputDebugString("TSReader: Image thumbnail too big!\n");
+		dbg_printf("TSReader: Image thumbnail too big!\n");
 	}
 	LeaveCriticalSection(&v->csThumbnails);
 	if (nThumbnailWidth == 0 || nThumbnailHeight == 0)
@@ -7593,9 +7335,10 @@ void DrawThumbnail(HDC hDC, int nPMTIndex, int nESIndex, int yCurrent, int yEnd,
 					  &v->logfontChannelFont,
 					  1,
 					  1,
-					  dwChannelTextColor);				
+					  dwChannelTextColor);
 	if (   v->pat.pmt[nPMTIndex].es[nESIndex].nParseType == PARSE_ES_TYPE_MPEG2_VIDEO
 		|| v->pat.pmt[nPMTIndex].es[nESIndex].nParseType == PARSE_ES_TYPE_H264_VIDEO
+		|| v->pat.pmt[nPMTIndex].es[nESIndex].nParseType == PARSE_ES_TYPE_H265_VIDEO
 		|| v->pat.pmt[nPMTIndex].es[nESIndex].nParseType == PARSE_ES_TYPE_VC1_VIDEO
 		|| v->pat.pmt[nPMTIndex].es[nESIndex].nParseType == PARSE_ES_TYPE_MPEG4_VIDEO)
 	{
@@ -7608,7 +7351,7 @@ void DrawThumbnail(HDC hDC, int nPMTIndex, int nESIndex, int yCurrent, int yEnd,
 							  &v->logfontChannelFont,
 							  1,
 							  v->textsizeChannelFont.cy,
-							  dwChannelTextColor);				
+							  dwChannelTextColor);
 		}
 		if (!v->fHideThumbnailIcons)
 		{
@@ -7656,6 +7399,12 @@ void DrawThumbnail(HDC hDC, int nPMTIndex, int nESIndex, int yCurrent, int yEnd,
 						pIcon = v->pRGB_H264Video;
 					else
 						pIcon = v->pRGB_BL_H264Video;
+					break;
+				case PARSE_ES_TYPE_H265_VIDEO:
+					if (!v->pat.pmt[nPMTIndex].es[nESIndex].nBlacklisted)
+						pIcon = v->pRGB_H265Video;
+					else
+						pIcon = v->pRGB_BL_H265Video;
 					break;
 				case PARSE_ES_TYPE_MPEG4_VIDEO:
 					if (!v->pat.pmt[nPMTIndex].es[nESIndex].nBlacklisted)
@@ -8223,11 +7972,7 @@ void UpdatePIDChart(HWND hDlg)
 	DeleteObject(hBrUnscrambledInactive);
 
 #ifdef _DEBUG_MESSAGES
-	{
-		char szTemp[128];
-		sprintf(szTemp, "TSReader: PID chart total bps = %f\n", dTotalMbps);
-		OutputDebugString(szTemp);
-	}
+	dbg_printf("TSReader: PID chart total bps = %f\n", dTotalMbps);
 #endif _DEBUG_MESSAGES
 }
 
@@ -9791,9 +9536,9 @@ void WaitForThumbnailThread(HWND hWnd)
 		Sleep(10);
 	}
 	if (nMPEGWaitCount < 100)
-		OutputDebugString("TSReader: Thumbnail decoder thread completed\n");
+		dbg_printf("TSReader: Thumbnail decoder thread completed\n");
 	else
-		OutputDebugString("TSReader: Thumbnail decoder thread timeout\n");
+		dbg_printf("TSReader: Thumbnail decoder thread timeout\n");
 }
 
 void SetupForNewStream(HWND hWnd)
@@ -10032,8 +9777,7 @@ void SIParserExportNIT(HWND hWnd)
 	else
 	{
 #ifdef DEBUG_MESSAGES
-		wsprintf(szTemp, "Handle %x\n", hHTMFile);
-		OutputDebugString(szTemp);
+		dbg_printf("Handle %x\n", hHTMFile);
 #endif DEBUG_MESSAGES
 	}
 	CursorWait(hWnd);
@@ -10496,12 +10240,7 @@ void XMLLogCheckItemCount(void)
 		v->XMLLog = pNewLog;
 		v->nXMLLogMax += 1000;
 #ifdef _DEBUG
-		{
-			char szTemp[128];
-
-			wsprintf(szTemp, "TSReader: XML Log has space for %d items\n", v->nXMLLogMax);
-			OutputDebugString(szTemp);
-		}
+		dbg_printf("TSReader: XML Log has space for %d items\n", v->nXMLLogMax);
 #endif _DEBUG
 	}
 }
@@ -10565,11 +10304,7 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 				}
 				v->pat.pmt[nPMTIndex].hPMTTreeItem = AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_PMT + nPMTIndex, 1, v->pat.hPATTreeItem, NULL);
 #ifdef DEBUG_MESSAGES				
-				{
-					char szTemp2[128];
-					wsprintf(szTemp2, "TSReader: PMT for %s item #%d\n", szTemp, nPMTIndex);
-					OutputDebugString(szTemp2);
-				}
+				dbg_printf("TSReader: PMT for %s item #%d\n", szTemp, nPMTIndex);
 #endif DEBUG_MESSAGES
 				if (v->pChannelData[v->pat.pmt[nPMTIndex].nProgramNumber] != NULL)
 				{
@@ -11789,7 +11524,7 @@ void RestartTSReader_Stop(HWND hWnd)
 	{
 		if (v->fStradisActive)
 		{
-			OutputDebugString("Shutdown stream decoder\n");
+			dbg_printf("Shutdown stream decoder\n");
 			StreamDecoder(hWnd);
 		}
 	}
@@ -12206,11 +11941,7 @@ void SaveThumbnails(HWND hDlg, BOOL fContinuous)
 		{
 			int nPMTIndex, nESIndex;
 
-			{
-				char szTemp[MAX_PATH];
-				wsprintf(szTemp, "TSReader: Thumbnail base file %s\n", v->szThumbnailBaseFilename);
-				OutputDebugString(szTemp);
-			}
+			dbg_printf("TSReader: Thumbnail base file %s\n", v->szThumbnailBaseFilename);
 			for (nPMTIndex = 0; nPMTIndex < MAX_PAT_ENTRIES; nPMTIndex++)
 			{
 				for (nESIndex = 0; nESIndex < MAX_ESLIST_ENTRIES; nESIndex++)
@@ -12236,11 +11967,7 @@ void SaveThumbnails(HWND hDlg, BOOL fContinuous)
 							wsprintf(szChannelTag, "_%d.%s", v->pat.pmt[nPMTIndex].nProgramNumber, szSavedExtension);
 							lstrcat(szRealFilename, szChannelTag);
 							hDestinationObject = _ISOpenFileDest(szRealFilename);
-							{
-								char szTemp[MAX_PATH];
-								wsprintf(szTemp, "TSReader: Thumbnail current file %s hDestinationObject = %08x\n", szRealFilename, hDestinationObject);
-								OutputDebugString(szTemp);
-							}
+							dbg_printf("TSReader: Thumbnail current file %s hDestinationObject = %08x\n", szRealFilename, hDestinationObject);
 							if (hDestinationObject != NULL)
 							{
 								_ISWriteRGBToJPG(hDestinationObject,
@@ -12256,9 +11983,7 @@ void SaveThumbnails(HWND hDlg, BOOL fContinuous)
 					}
 					else
 					{
-						char szTemp[256];
-						wsprintf(szTemp, "TSReader: Thumbnail v->pat.pmt[nPMTIndex=%d].es[nESIndex=%d].pRGBVideoFrame == NULL\n", nPMTIndex, nESIndex);
-						OutputDebugString(szTemp);
+						dbg_printf("TSReader: Thumbnail v->pat.pmt[nPMTIndex=%d].es[nESIndex=%d].pRGBVideoFrame == NULL\n", nPMTIndex, nESIndex);
 					}
 					LeaveCriticalSection(&v->csThumbnails);
 				}
@@ -13075,8 +12800,8 @@ INT_PTR CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam
 						if (v->fDecimalPIDs)
 							lstrcpy(szMask, "%02x: %d");
 						else
-							lstrcpy(szMask, "%02x: %04x");						
-						wsprintf(szTemp, szMask, v->editpmt.es[nESIndex].nStreamType, v->editpmt.es[nESIndex].nESPID);							
+							lstrcpy(szMask, "%02x: %04x");
+						wsprintf(szTemp, szMask, v->editpmt.es[nESIndex].nStreamType, v->editpmt.es[nESIndex].nESPID);
 						SendDlgItemMessage(hDlg, IDC_MANUAL_ES_LIST, LB_ADDSTRING, 0, (LPARAM)szTemp);
 						SetDlgItemText(hDlg, IDC_MANUAL_CHANNEL_ES_TYPE, "");
 						SetDlgItemText(hDlg, IDC_MANUAL_CHANNEL_ES_PID, "");
@@ -13312,20 +13037,14 @@ BOOL LoadManualChannels(HWND hWnd, char * szInputFile)
 					wsprintf(szTemp, "Manual - Program %d", v->pat.pmt[nPMTIndex].nProgramNumber);
 					v->pat.pmt[nPMTIndex].hPMTTreeItem = AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_PMT + nPMTIndex, 1, v->pat.hPATTreeItem, NULL);
 #ifdef DEBUG_MESSAGES
-					{
-						char szTemp2[128];
-						wsprintf(szTemp2, "TSReader: PMT for %s item #%d\n", szTemp, nPMTIndex);
-						OutputDebugString(szTemp2);
-					}
+					dbg_printf("TSReader: PMT for %s item #%d\n", szTemp, nPMTIndex);
 #endif DEBUG_MESSAGES
 					PostMessage(v->hDlgSIParser, WM_USER + 2, SI_PARSER_PMT, nPMTIndex);
 					break;
 				}
 				if (v->pat.pmt[nPMTIndex].nProgramNumber == newpmt.nProgramNumber)
 				{
-					char szTemp[128];
-					wsprintf(szTemp, "Program %d already exists - manual channel skipped", newpmt.nProgramNumber);
-					MessageBox(hWnd, szTemp, gszAppName, MB_ICONWARNING);
+					dbg_printf("Program %d already exists - manual channel skipped", newpmt.nProgramNumber);
 					break;
 				}
 			}
@@ -14116,6 +13835,7 @@ void SetupServiceBitmaps(HWND hDlg, BOOL fLoad)
 		v->pRGB_DCIIVideo = GetBitmapPtr(MAKEINTRESOURCE(IDB_VID_DCII), hDC);
 		v->pRGB_MPG4Video = GetBitmapPtr(MAKEINTRESOURCE(IDB_VID_MPEG4), hDC);
 		v->pRGB_H264Video = GetBitmapPtr(MAKEINTRESOURCE(IDB_VID_H264), hDC);
+		v->pRGB_H265Video = GetBitmapPtr(MAKEINTRESOURCE(IDB_VID_H265), hDC);
 		v->pRGB_VC1Video = GetBitmapPtr(MAKEINTRESOURCE(IDB_VID_VC1), hDC);
 		v->pRGB_BL_MPEGAudio = GetBitmapPtr(MAKEINTRESOURCE(IDB_BAUD_MPEG), hDC);
 		v->pRGB_BL_AC3Audio = GetBitmapPtr(MAKEINTRESOURCE(IDB_BAUD_AC3), hDC);
@@ -14124,6 +13844,7 @@ void SetupServiceBitmaps(HWND hDlg, BOOL fLoad)
 		v->pRGB_BL_DCIIVideo = GetBitmapPtr(MAKEINTRESOURCE(IDB_BVID_DCII), hDC);
 		v->pRGB_BL_MPG4Video = GetBitmapPtr(MAKEINTRESOURCE(IDB_BVID_MPEG4), hDC);
 		v->pRGB_BL_H264Video = GetBitmapPtr(MAKEINTRESOURCE(IDB_BVID_H264), hDC);
+		v->pRGB_BL_H265Video = GetBitmapPtr(MAKEINTRESOURCE(IDB_BVID_H265), hDC);
 		v->pRGB_BL_VC1Video = GetBitmapPtr(MAKEINTRESOURCE(IDB_BVID_VC1), hDC);
 
 		ReleaseDC(hDlg, hDC);
@@ -14151,6 +13872,7 @@ void SetupServiceBitmaps(HWND hDlg, BOOL fLoad)
 		GlobalFree(v->pRGB_DCIIVideo);
 		GlobalFree(v->pRGB_MPG4Video);
 		GlobalFree(v->pRGB_H264Video);
+		GlobalFree(v->pRGB_H265Video);
 		GlobalFree(v->pRGB_VC1Video);
 		GlobalFree(v->pRGB_BL_MPEGAudio);
 		GlobalFree(v->pRGB_BL_AC3Audio);
@@ -14159,6 +13881,7 @@ void SetupServiceBitmaps(HWND hDlg, BOOL fLoad)
 		GlobalFree(v->pRGB_BL_DCIIVideo);
 		GlobalFree(v->pRGB_BL_MPG4Video);
 		GlobalFree(v->pRGB_BL_H264Video);
+		GlobalFree(v->pRGB_BL_H265Video);
 		GlobalFree(v->pRGB_BL_VC1Video);
 	}
 }
@@ -14552,11 +14275,7 @@ BOOL LoadSource(HWND hWnd)
 
 			GetDescription(v->szSourceModuleDescription, NULL, &v->fSourceCanBeStopped, &v->nMaxSourcePIDs, &v->dwSourceCapabilities);
 			SetupProcessorAffinity();
-			{
-				char szTemp[128 + MAX_PATH];
-				wsprintf(szTemp, "TSReader: Source \"%s\"\n", v->szSourceName);
-				OutputDebugString(szTemp);
-			}
+			dbg_printf("TSReader: Source \"%s\"\n", v->szSourceName);
 
 			return TRUE;
 		}
@@ -14627,11 +14346,7 @@ INT_PTR CALLBACK IPDeviceDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				lstrcpy(szFullNamePtr, szDeviceName);
 				SendDlgItemMessage(hDlg, IDC_IP_DEVICE_LIST, LB_SETITEMDATA, nIndex, (LPARAM)szFullNamePtr);
 				nCount++;
-				{
-					char szTemp[512];
-					wsprintf(szTemp, "TSReader: %s\nTSReader: %s\n", szDeviceDescription, szDeviceName);
-					OutputDebugString(szTemp);
-				}
+				dbg_printf("TSReader: %s\nTSReader: %s\n", szDeviceDescription, szDeviceName);
 			}
 			if (nCount == 0)
 			{
@@ -15226,11 +14941,7 @@ void RetuneToThisMux(HWND hDlg)
 	if (v->nNITRightClickIndex != -1)
 	{
 		GetRetuneCommandLineParameters(v->szNewCommandLine, v->nNITRightClickIndex);
-		{
-			char szTemp[1024];
-			wsprintf(szTemp, "TSReader: New command line: '%s'\n", v->szNewCommandLine);
-			OutputDebugString(szTemp);
-		}
+		dbg_printf("TSReader: New command line: '%s'\n", v->szNewCommandLine);
 		if (ParseSourceModuleCommandLine(&v->ss, v->szNewCommandLine, FALSE) == TRUE)
 			RestartTSReader(hDlg);
 		v->szNewCommandLine[0] = '\0';
@@ -16556,15 +16267,12 @@ INT_PTR CALLBACK TableViewerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				}
 				if (nMonitorPID < 0 || nMonitorPID > 8190)
 				{
-					char szTemp2[256];
-					wsprintf(szTemp2, "TSReader: Invalid PID value '%s' -> 0x%08x\n", szTemp, nMonitorPID);
-					OutputDebugString(szTemp2);
+					dbg_printf("TSReader: Invalid PID value '%s' -> 0x%08x\n", szTemp, nMonitorPID);
 
 					if (v->fDecimalPIDs)
-						wsprintf(szTemp, "Invalid PID value %d (0 - 8192 accepted)", nMonitorPID);
+						MessageBoxFormat(hDlg, MB_ICONSTOP, "Invalid PID value %d (0 - 8192 accepted)", nMonitorPID);
 					else
-						wsprintf(szTemp, "Invalid PID value 0x%x (0 - 1ffe accepted)", nMonitorPID);
-					MessageBox(hDlg, szTemp, gszAppName, MB_ICONSTOP);
+						MessageBoxFormat(hDlg, MB_ICONSTOP, "Invalid PID value 0x%x (0 - 1ffe accepted)", nMonitorPID);
 					SetFocus(GetDlgItem(hDlg, IDC_TABLE_VIEWER_PID));
 					break;
 				}
@@ -17379,7 +17087,7 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			}
 			DestroyIcon(v->hDialogIcon);
 			SetupServiceBitmaps(hDlg, FALSE);
-			OutputDebugString("TSReader: WM_DESTROY done for dlg\n");
+			dbg_printf("TSReader: WM_DESTROY done for dlg\n");
 		}
 		break;
 	case WM_DROPFILES:
@@ -17778,9 +17486,7 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 						}
 						else
 						{
-							char szTemp[128];
-							wsprintf(szTemp, "TSReader: Unable to open HTML/XML file for output - GLE = %d\n", GetLastError());
-							OutputDebugString(szTemp);
+							dbg_printf("TSReader: Unable to open HTML/XML file for output - GLE = %d\n", GetLastError());
 						}
 						PostMessage(v->hWndMainWindow, WM_CLOSE, 0, 0);
 					}
@@ -17984,19 +17690,19 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			{
 				if (v->fStradisActive)
 				{
-					OutputDebugString("Shutdown stream decoder\n");
+					dbg_printf("Shutdown stream decoder\n");
 					StreamDecoder(v->hWndMainWindow);
 				}
 				else
 				{
-					OutputDebugString("Shutdown recording\n");
+					dbg_printf("Shutdown recording\n");
 					RecordStream(v->hWndMainWindow, FALSE, -1);
 				}
 			}
 			v->nGotKeys = GOT_DISABLE;
 
 			// Shut the TS source down
-			OutputDebugString("+Stop\n");
+			dbg_printf("+Stop\n");
 			if (v->fRunning)
 			{
 				Stop();
@@ -18011,10 +17717,10 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				}
 				Sleep(10);
 			}
-			OutputDebugString("-Stop\n");
+			dbg_printf("-Stop\n");
 
 			// Make sure MPEG-2 decoder is shutdown
-			OutputDebugString("TSReader: Waiting for thumbnail decoder thread\n");
+			dbg_printf("TSReader: Waiting for thumbnail decoder thread\n");
 			WaitForThumbnailThread(hDlg);
 
 			// Let any outstanding messages from the SI parser thread
@@ -18079,7 +17785,7 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			wsprintf(szFailureMessage, "Unable to record to D-VHS\n\n%s", v->szDVHSRecordFailureReason);
 			MessageBox(hDlg, szFailureMessage, gszAppName, MB_ICONSTOP);
 			lstrcat(szFailureMessage, "\n");
-			OutputDebugString(szFailureMessage);
+			dbg_printf(szFailureMessage);
 		}
 		break;
 	case WM_USER + 5:
@@ -19159,10 +18865,7 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 									v->hRecordPIDFile[nPID] = CreateFile(szFileName, GENERIC_WRITE, FILE_SHARE_READ, (LPSECURITY_ATTRIBUTES)NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, (HANDLE)NULL);
 								if (v->hRecordPIDFile[nPID] == INVALID_HANDLE_VALUE)
 								{
-									char szTemp[MAX_PATH];
-
-									wsprintf(szTemp, "Unable to open PID record file %s\n\nPID %s will not be recorded", szFileName, FormatTooltipPID(nPID));
-									MessageBox(hWnd, szTemp, gszAppName, MB_ICONSTOP);
+									MessageBoxFormat(hWnd, MB_ICONSTOP, "Unable to open PID record file %s\n\nPID %s will not be recorded", szFileName, FormatTooltipPID(nPID));
 								}
 							}
 							else
@@ -19175,10 +18878,7 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 						v->hRecordPIDFile[0] = CreateFile(v->szRecordPIDFolder, GENERIC_WRITE, FILE_SHARE_READ, (LPSECURITY_ATTRIBUTES)NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, (HANDLE)NULL);
 						if (v->hRecordPIDFile[0] == INVALID_HANDLE_VALUE)
 						{
-							char szTemp[MAX_PATH];
-
-							wsprintf(szTemp, "Unable to open PID(s) record file %s", v->szRecordPIDFolder);
-							MessageBox(hWnd, szTemp, gszAppName, MB_ICONSTOP);
+							MessageBoxFormat(hWnd, MB_ICONSTOP, "Unable to open PID(s) record file %s", v->szRecordPIDFolder);
 							break;
 						}
 					}
@@ -19766,7 +19466,7 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 					CursorNormal();
 					if (TuneDialog(hWnd) == FALSE)
 					{
-						OutputDebugString("TSReader: TuneDialog() returned FALSE - returning to source selection\n");
+						dbg_printf("TSReader: TuneDialog() returned FALSE - returning to source selection\n");
 						if ( (v->dwSourceCapabilities & CAPABILITIES_SERIAL_CONTROL) && (v->ss.fSerialReceiverControlEnabled == TRUE) )
 							SourceHelper_DeInitSerialControl();
 
@@ -19820,9 +19520,7 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 							v->ss.fQuietMode = TRUE;
 					}
 					fLocked = Tune();
-					wsprintf(szTemp, "TSReader: TuneLoop = %d fLocked = %d v->ss.fQuietMode = %d\n",
-						nTuneLoop, fLocked, v->ss.fQuietMode);
-					OutputDebugString(szTemp);
+					dbg_printf("TSReader: TuneLoop = %d fLocked = %d v->ss.fQuietMode = %d\n", nTuneLoop, fLocked, v->ss.fQuietMode);
 					if (fLocked)
 						break;
 					if (!fLocked && v->fQuietFromCommandLine)
@@ -19840,7 +19538,7 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				}
 			} while (!fLocked);
 			v->fTuneFromControlServer = FALSE;
-			OutputDebugString("TSReader: Past tune section - ready to run\n");
+			dbg_printf("TSReader: Past tune section - ready to run\n");
 			CursorNormal();
 			if (fAborted == FALSE)
 			{
@@ -19859,7 +19557,7 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				SetTimer(v->hDlgSIParser, 1, 1000, NULL);
 				SetTimer(v->hDlgSIParser, 2, 100, NULL);
 				SetTimer(v->hDlgSIParser, 6, v->nPIDDataRefreshRate, NULL);
-				OutputDebugString("TSReader: Running!\n");
+				dbg_printf("TSReader: Running!\n");
 				if (lstrlen(v->szAutoLoadPIDListFilename))
 				{
 					LoadPIDListFile(v->szAutoLoadPIDListFilename);
@@ -20008,11 +19706,7 @@ void InitVariables(HINSTANCE hInstance, int nCmdShow)
 
 	srand( (unsigned)time( NULL ) );
 #ifdef _DEBUG
-	{
-		char szTemp[128];
-		wsprintf(szTemp, "TSReader: Variable storage required = %d\n", sizeof(VARIABLES));
-		OutputDebugString(szTemp);
-	}
+	dbg_printf("TSReader: Variable storage required = %d\n", sizeof(VARIABLES));
 #endif _DEBUG
 
 	// Setup variables
@@ -21441,7 +21135,7 @@ void DoNormalTSReaderWindow(char * szCmdLinePtr)
 	}
 	if (fBombed)
 	{
-		OutputDebugString("TSReader: Main GetMessage() loop crashed\n");
+		dbg_printf("TSReader: Main GetMessage() loop crashed\n");
 		//if (v->fDontShowBombDialog == FALSE)
 		//	DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_BOMB_WARNING), NULL, BombWarningDlgProc);
 	}
@@ -21499,31 +21193,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	ShowMemorialSplash(hInstance);
 
 	nTSReaderReturnValue = 0;
-	wsprintf(szTemp, "%s: Version %s Built %s %s\n", gszAppName, GetTSRVersion(szVersion), __DATE__, __TIME__);
-	OutputDebugString(szTemp);
+	dbg_printf("%s: Version %s Built %s %s\n", gszAppName, GetTSRVersion(szVersion), __DATE__, __TIME__);
 
 	lstrcat(gszRestartNeeded, gszAppName);
 
-	{
-		char szTemp2[1024];
-		wsprintf(szTemp2, "TSReader: Commandline: %s\n", lpszCmdLine);
-		OutputDebugString(szTemp2);
-	}
-#ifdef BETA
-	{
-		SYSTEMTIME systime;
-			
-		GetLocalTime(&systime);
-		if (systime.wYear >= BETA_EXPIRE_YEAR)
-		{
-			if ( (systime.wMonth > BETA_EXPIRE_MONTH) || (systime.wYear > BETA_EXPIRE_YEAR) )
-			{
-				MessageBox(NULL, TEXT("This beta release has expired.\n\nPlease visit https://tsreader.co.uk to obtain an up to\ndate version of this product"), gszAppName, MB_OK | MB_ICONSTOP);
-				return 0;
-			}
-		}
-	}
-#endif BETA
+	dbg_printf("TSReader: Commandline: %s\n", lpszCmdLine);
 
 	// Some setup stuff
 	_ISInitialize("{4E3E4954-F9B5-11d2-A085-00500402F30B}");

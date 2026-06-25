@@ -774,6 +774,8 @@
 #define IDC_GPS_PC_UTC_TIME             1376
 #define IDC_GPS_ERROR_LOG_ENABLED       1377
 #define IDC_GPS_ERROR_LOG_MS            1378
+#define IDB_VID_H265                    1379
+#define IDB_BVID_H265                   1380
 #define ID_FILE_EXIT                    50001
 #define ID_PLAYBACK_DIRECTSHOW          50003
 #define ID_FILE_TUNE                    50005
