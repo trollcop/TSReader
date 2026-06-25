@@ -5739,7 +5739,7 @@ char * FormatEITEntry(int nChannelNumber, int nEITFormat, BOOL fIncludeHTMLTags)
 
 			pSortList = LocalAlloc(LPTR, nEITItems * sizeof(EITEVENT));
 			if (pSortList == NULL)
-				OutputDebugString("TSReader_formatter.c: LocalAlloc == NULL when copying EIT\n");
+				dbg_printf("TSReader_formatter.c: LocalAlloc == NULL when copying EIT\n");
 			else
 			{
 				pCurrent = v->pEvents[nChannelNumber];

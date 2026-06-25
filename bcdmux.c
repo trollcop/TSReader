@@ -2,6 +2,7 @@
 #include <commctrl.h>
 #include <time.h>
 #include "TSReader.h"
+#include "util.h"
 #include "bcdmux.h"
 
 #define PACKETSIZE		(2048)						// MPEG Program stream block size
@@ -25,16 +26,12 @@ extern BOOL CheckForFileSplit(void);
 
 static void error(char* errorstr)
 {
-	char szTemp[1024];
-	wsprintf(szTemp, "TSReaderMux: ERROR: %s\n", errorstr);
-	OutputDebugString(szTemp);
+	dbg_printf("TSReaderMux: ERROR: %s\n", errorstr);
 }
 
 static void warning(char* errorstr)
 {
-	char szTemp[1024];
-	wsprintf(szTemp, "TSReaderMux: WARNING: %s\n", errorstr);
-	OutputDebugString(szTemp);
+	dbg_printf("TSReaderMux: WARNING: %s\n", errorstr);
 }
 
 // ------------------------------------------------------------------------------------
@@ -743,12 +740,8 @@ int PS__TranslateToProgramStream(BYTE * pPacketData, int nLength)
 					error("Couldn't write pack header!");
 					return 1;
 				}
-				/*
-				{
-					char temp[100];
-					wsprintf(temp, "packet_time = %d (0x%08x)\n", (int)packet_time, (int)packet_time);
-					OutputDebugString(temp);
-				}*/
+
+				/* dbg_printf("packet_time = %d (0x%08x)\n", (int)packet_time, (int)packet_time); */
 
 				if (pid == v->nRecordAudioPID[0])
 					packetbuf[curstream][pos + 3] = streamid[AUDIO];

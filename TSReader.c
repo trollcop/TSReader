@@ -992,6 +992,28 @@ static BOOL StartCodeH264(BYTE *pPESPacket, int nPacketLength, int *pnOffset)
 	return FALSE;
 }
 
+static BOOL StartCodeH265(BYTE *pPESPacket, int nPacketLength, int *pnOffset)
+{
+	int nOffset = 0;
+
+	if (!pnOffset)
+		return FALSE;
+
+	for (nOffset = 0; nOffset < nPacketLength - 5; nOffset++) {
+		if ((pPESPacket[nOffset + 0] == 0x00)
+			&& (pPESPacket[nOffset + 1] == 0x00)
+			&& (pPESPacket[nOffset + 2] == 0x00)
+			&& (pPESPacket[nOffset + 3] == 0x01)
+			&& ((pPESPacket[nOffset + 4] & 0x0f) == 0x07)) {
+
+			*pnOffset = nOffset;
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
 static BOOL StartCodeMPEG4(BYTE *pPESPacket, int nPacketLength, int *pnOffset)
 {
 	int nOffset = 0;
@@ -4742,7 +4764,7 @@ void MPEG2MuxrateProcessing(int nPID)
 		sprintf(szTemp, "%.10f %.10f | %.10f %.10f\n", 
 			     dCurrentPCRTime, dDeltaPCR,
 			     dCurrentSystemTime, dDeltaSystem);
-		OutputDebugString(szTemp);	
+		dbg_printf(szTemp);	
 	}*/
 }
 
@@ -5201,7 +5223,7 @@ void CheckForESParsing(int nPID, int nES)
 							fRetVal = DecodeGenericVideo(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_H264, StartCodeH264);
 							break;
 						case PARSE_ES_TYPE_H265_VIDEO:
-							fRetVal = DecodeGenericVideo(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_H265, NULL);
+							fRetVal = DecodeGenericVideo(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_H265, StartCodeH265);
 							break;
 						case PARSE_ES_TYPE_AV1_VIDEO:
 							fRetVal = DecodeGenericVideo(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_AV1, NULL);
@@ -7480,7 +7502,6 @@ void DrawThumbnail(HDC hDC, int nPMTIndex, int nESIndex, int yCurrent, int yEnd,
 		v->pat.pmt[nPMTIndex].es[nESIndex].rcThumbnail.right = xStart + nDrawWidth + xStartOffset;
 		v->pat.pmt[nPMTIndex].es[nESIndex].rcThumbnail.bottom = yCurrent + nDrawHeight + yStartOffset;
 	}
-
 }
 
 void UpdateVideoPix(HWND hDlg)

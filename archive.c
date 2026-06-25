@@ -1645,7 +1645,6 @@ void CALLBACK FileIOCompletionRoutine(DWORD dwErrorCode, DWORD dwNumberOfBytesTr
 {
 	int nPMTIndex = (int)(LONG_PTR)lpOverlapped->hEvent;
 	int nAyncBufferIndex;
-	char szTemp[128];
 	(void)dwNumberOfBytesTransfered;
 	(void)dwErrorCode;
 
@@ -1659,8 +1658,7 @@ void CALLBACK FileIOCompletionRoutine(DWORD dwErrorCode, DWORD dwNumberOfBytesTr
 			return;
 		}
 	}
-	wsprintf(szTemp, "?Unable to locate overlapped I/O channel %d\n", v->pat.pmt[nPMTIndex].nProgramNumber);
-	OutputDebugString(szTemp);
+	dbg_printf("?Unable to locate overlapped I/O channel %d\n", v->pat.pmt[nPMTIndex].nProgramNumber);
 }
 
 BOOL FlushBufferData(int nPMTIndex)
@@ -1677,9 +1675,7 @@ BOOL FlushBufferData(int nPMTIndex)
 					FileIOCompletionRoutine) == FALSE)
 	{
 		int nGLE = GetLastError();
-		char szTemp[128];
-		wsprintf(szTemp, "WriteFileEx returned %d on channel %d\n", nGLE, v->pat.pmt[nPMTIndex].nProgramNumber);
-		OutputDebugString(szTemp);
+		dbg_printf("WriteFileEx returned %d on channel %d\n", nGLE, v->pat.pmt[nPMTIndex].nProgramNumber);
 		archive->ap[nPMTIndex]->nWriteBufferOffset[archive->ap[nPMTIndex]->nCurrentAsyncIO] = 0;
 		return FALSE;
 	}
@@ -1692,9 +1688,7 @@ BOOL FlushBufferData(int nPMTIndex)
 		archive->ap[nPMTIndex]->nCurrentAsyncIO = 0;
 	if (archive->ap[nPMTIndex]->nWriteBufferOffset[archive->ap[nPMTIndex]->nCurrentAsyncIO] != 0)
 	{
-		char szTemp[128];
-		wsprintf(szTemp, "No async I/O channel %d nCurrentAsyncIO = %d\n", v->pat.pmt[nPMTIndex].nProgramNumber, archive->ap[nPMTIndex]->nCurrentAsyncIO);
-		OutputDebugString(szTemp);
+		dbg_printf("No async I/O channel %d nCurrentAsyncIO = %d\n", v->pat.pmt[nPMTIndex].nProgramNumber, archive->ap[nPMTIndex]->nCurrentAsyncIO);
 		return FALSE;
 	}
 	//archive->ap[nPMTIndex]->nWriteBufferOffset = 0;
@@ -1948,7 +1942,6 @@ static BOOL MoveArchiveFile(char * szKillFilename)
 	BOOL fRetVal;
 	int nIndex;
 	char szNewFile[MAX_PATH];
-	char szTemp[MAX_PATH * 2];
 
 	for (nIndex = lstrlen(szKillFilename); nIndex > 0; nIndex--)
 	{
@@ -1962,8 +1955,7 @@ static BOOL MoveArchiveFile(char * szKillFilename)
 		lstrcat(szNewFile, "\\");
 	lstrcat(szNewFile, &szKillFilename[nIndex + 1]);
 
-	wsprintf(szTemp, "Archiver: Moving %s to %s\n", szKillFilename, szNewFile);
-	OutputDebugString(szTemp);
+	dbg_printf("Archiver: Moving %s to %s\n", szKillFilename, szNewFile);
 	DeleteFile(szNewFile);
 	fRetVal = MoveFile(szKillFilename, szNewFile);
 	if (!fRetVal)
@@ -3962,9 +3954,7 @@ void WriteXMLFile(int nPMTIndex)
 	}
 	else
 	{
-		char szTemp[128 + MAX_PATH];
-		wsprintf(szTemp, "TSReader: Archive.c: Unable to open XML file %s\n", szXMLName);
-		OutputDebugString(szTemp);
+		dbg_printf("TSReader: Archive.c: Unable to open XML file %s\n", szXMLName);
 	}
 }
 
@@ -4024,13 +4014,11 @@ BOOL EPGDataWithin15SecondsPresent(int nPMTIndex)
 			SystemTimeToFileTime(&pCurrent->stStartTime, (FILETIME *)&lnProgramStart);
 			lnDifference = (lnProgramStart - lnNow) / lnMultiplier;
 			{
-				char szTemp[256];
-				wsprintf(szTemp, "TSReader: %02d:%02d:%02d %02d:%02d:%02d %d %s\n",
+				dbg_printf("TSReader: %02d:%02d:%02d %02d:%02d:%02d %d %s\n",
 					pCurrent->stStartTime.wHour, pCurrent->stStartTime.wMinute, pCurrent->stStartTime.wSecond,
 					stSystemTime.wHour, stSystemTime.wMinute, stSystemTime.wSecond,
 					(int)lnDifference,
 					pCurrent->szEventName);
-				OutputDebugString(szTemp);
 			}
 			
 			if (lnDifference <= 15)
@@ -4224,9 +4212,7 @@ void CheckOutstandingFileCloses(void)
 					CloseHandle(archive->ap[nPMTIndex]->hPriorOutputFile);
 					archive->ap[nPMTIndex]->hPriorOutputFile = NULL;
 					{
-						char szTemp[128];
-						wsprintf(szTemp, "TSReader: Closed prior file on channel %d\n", v->pat.pmt[nPMTIndex].nProgramNumber);
-						OutputDebugString(szTemp);
+						dbg_printf("TSReader: Closed prior file on channel %d\n", v->pat.pmt[nPMTIndex].nProgramNumber);
 					}
 				}
 			}
@@ -4255,7 +4241,7 @@ void AllocateOrDeAllocateThumbnailBuffers(BOOL fAllocate)
 						archive->ap[nPMTIndex]->tl[i] = LocalAlloc(LPTR, sizeof(THUMBNAILLIST));
 						if (archive->ap[nPMTIndex]->tl[i] == NULL)
 						{
-							OutputDebugString("TSReader: Archive - can't allocate thumbnail buffer\n");
+							dbg_printf("TSReader: Archive - can't allocate thumbnail buffer\n");
 						}
 					}
 					else
@@ -4418,7 +4404,7 @@ DWORD WINAPI ArchiveThread(LPVOID lpv)
 
 	//AllocateOrDeAllocateThumbnailBuffers(FALSE);
 	
-	OutputDebugString("ArchiveThread-\n");
+	dbg_printf("ArchiveThread-\n");
 	return 0;
 }
 
@@ -4431,7 +4417,7 @@ void ArchiveProgramData(BYTE * pData, int nLength)
 		WriteFile(v->hArchiveWritePipe, pData, nLength, &dwWritten, NULL);
 		if (dwWritten != (DWORD)nLength)
 		{
-			OutputDebugString("*************ARCHIVE BUFFER WRITE PROBLEM**************\n");
+			dbg_printf("*************ARCHIVE BUFFER WRITE PROBLEM**************\n");
 		}
 		EnterCriticalSection(&archive->csPipeBytes);
 		archive->nPipeBytes += dwWritten;
@@ -4572,7 +4558,7 @@ BOOL GetArchiveThumbnailName(int nPMTIndex, char * szThumbnailName)
 	}
 	LeaveCriticalSection(&archive->ap[nPMTIndex]->csThumbnailList);
 	if (nThumbnailIndex == MAX_THUMBNAILS)
-		OutputDebugString("No space left for thumbnails\n");
+		dbg_printf("No space left for thumbnails\n");
 
 	return TRUE;
 }
@@ -5042,7 +5028,7 @@ INT_PTR CALLBACK ViewArchiveDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM 
 					GlobalUnlock(szBuffer);  
 					EmptyClipboard();
 					if (SetClipboardData(CF_TEXT, szBuffer) == NULL)
-						OutputDebugString("Archive: copy to clipboard failed\n");
+						dbg_printf("Archive: copy to clipboard failed\n");
 					CloseClipboard();
 					GlobalFree(szBuffer);
 				}

@@ -185,7 +185,6 @@ int CheckForDuplicateRecording(PEITEVENT pEvent)
 
 		nScheduledEnd = pepgschedule[nIndex].nStartTime + ((__int64)pepgschedule[nIndex].nDuration * (__int64)10000000);
 		/*{
-			char szTemp[256];
 			char szEventStart[64], szEventEnd[64];
 			char szScheduleStart[64], szScheduleEnd[64];
 
@@ -193,11 +192,7 @@ int CheckForDuplicateRecording(PEITEVENT pEvent)
 			FormatFILETIME(szEventEnd, nEventEnd);
 			FormatFILETIME(szScheduleStart, pepgschedule[nIndex].nStartTime);
 			FormatFILETIME(szScheduleEnd, nScheduledEnd);
-			wsprintf(szTemp, "event: %s->%s schedule: %s->%s\n", 
-				     szEventStart, szEventEnd,
-					 szScheduleStart, szScheduleEnd);
-
-			OutputDebugString(szTemp);
+			dbg_printf("event: %s->%s schedule: %s->%s\n", szEventStart, szEventEnd, szScheduleStart, szScheduleEnd);
 		}*/
 		if (pepgschedule[nIndex].nStartTime <= nEventEnd)
 		{
@@ -258,7 +253,7 @@ void EPGPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	v->epg.screenevents = LocalAlloc(LPTR, sizeof(SCREENEVENTS) * MAX_SCREEN_EVENTS);
 	if (v->epg.screenevents == NULL)
 	{
-		OutputDebugString("EPGGrid.c: LocalAlloc(LPTR, sizeof(SCREENEVENTS) * MAX_SCREEN_EVENTS) failed\n");
+		dbg_printf("EPGGrid.c: LocalAlloc(LPTR, sizeof(SCREENEVENTS) * MAX_SCREEN_EVENTS) failed\n");
 		return;
 	}
 
@@ -637,7 +632,7 @@ void EPGPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 					pSortList = LocalAlloc(LPTR, nEITItems * sizeof(EITEVENTWITHPTR));
 					if (pSortList == NULL)
 					{
-						OutputDebugString("EPGGrid.c: LocalAlloc(LPTR, nEITItems * sizeof(EITEVENTWITHPTR)) failed\n");
+						dbg_printf("EPGGrid.c: LocalAlloc(LPTR, nEITItems * sizeof(EITEVENTWITHPTR)) failed\n");
 						return;
 					}
 					pCurrent = v->pEvents[nProgramNumber];
@@ -1241,17 +1236,13 @@ BOOL SearchNextEPGEntry(HWND hWndParent)
 					v->epg.pSelectedEvent = pCurrent;
 					v->epg.nSelectedChannel = -1;
 #ifdef DEBUG_OUTPUT
-					{
-						char szTemp[256];
-						wsprintf(szTemp, "TSReader EPG: Found %s %04d/%02d/%02d %02d:%02d:%02d prog %d (%d %s)\n",
+					dbg_printf("TSReader EPG: Found %s %04d/%02d/%02d %02d:%02d:%02d prog %d (%d %s)\n",
 							     pCurrent->szEventName,
 								 pCurrent->stStartTime.wYear, pCurrent->stStartTime.wMonth, pCurrent->stStartTime.wDay,
 								 pCurrent->stStartTime.wHour, pCurrent->stStartTime.wMinute, pCurrent->stStartTime.wSecond,
 								 v->pChannelData[v->epg.nSearchChannel]->nChannelNumber,
 								 v->pChannelData[v->epg.nSearchChannel]->nLogicalChannelNumber,
 								 v->pChannelData[v->epg.nSearchChannel]->szShortName);
-						OutputDebugString(szTemp);
-					}
 #endif DEBUG_OUTPUT
 
 					// If event is currently on screen, it'll be highlighted when we repaint
@@ -2305,11 +2296,7 @@ void ScheduleRecording(HWND hWnd, LPARAM lParam, WORD wPreRoll, WORD wPostRoll)
 		nDuration -= 4;
 		fRunNow = TRUE;
 		FileTimeToSystemTime((FILETIME *)&dwRemainingTime, &stRemaining);
-		{
-			char szTemp[128];
-			wsprintf(szTemp, "Remaining: %02d:%02d:%02d\n", stRemaining.wHour, stRemaining.wMinute, stRemaining.wSecond);
-			OutputDebugString(szTemp);
-		}
+		dbg_printf("Remaining: %02d:%02d:%02d\n", stRemaining.wHour, stRemaining.wMinute, stRemaining.wSecond);
 	}
 
 	// Come up with the recording filename

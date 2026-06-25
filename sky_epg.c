@@ -2,6 +2,7 @@
 #include <commctrl.h>
 #include <time.h>
 #include "TSReader.h"
+#include "util.h"
 #include "sky_genres.h"
 #include "bcdmux.h"
 
@@ -13,7 +14,6 @@ void sky_decode(unsigned char *s, unsigned char *d, int max_input_length, int ma
 
 // from tsreader.c
 void ExpireOldEITData(int nServiceID);
-BOOL EventInPast(PEITEVENT pEvent);
 void SaveEPGData(PEITEVENT pEITItem, int nChannelNumber);
 
 time_t tm_base;
@@ -110,7 +110,7 @@ unsigned int dump_raw_bytes(unsigned char *b, unsigned char len)
 		lstrcat(szTemp2, szTemp3);
 	}
 	wsprintf(szTemp, "SkyEPG: %s\n", szTemp2);
-	OutputDebugString(szTemp);
+	dbg_printf(szTemp);
 
 	return len;*/
 }
@@ -166,7 +166,7 @@ unsigned int dump_table_b5(unsigned char *b, unsigned char len)
 		if (v->pEvents[nServiceID] == NULL)
 		{
 			// No EIT data for this channel
-			if (EventInPast(&thiseitevent) == FALSE)
+			if (EventInPast(&thiseitevent, FALSE) == FALSE)
 			{
 				v->pEvents[nServiceID] = LocalAlloc(LPTR, sizeof(EITEVENT));
 				if (v->pEvents[nServiceID] != NULL)
@@ -201,7 +201,7 @@ unsigned int dump_table_b5(unsigned char *b, unsigned char len)
 				{
 					// end of the list without a match on the service ID
 					// so add this new item to the end of the list
-					if (EventInPast(&thiseitevent) == FALSE)
+					if (EventInPast(&thiseitevent, FALSE) == FALSE)
 					{
 						PEITEVENT pNewEvent = LocalAlloc(LPTR, sizeof(EITEVENT));
 						if (pNewEvent != NULL)
@@ -502,9 +502,7 @@ void ParseSkyEPG(BYTE * pSectionPointer, int nPacketLength, BOOL fPrimaryEPGPID)
 			if (v->nSkyEPGPIDs[1] > 0x47)
 				v->nSkyEPGPIDs[1] = 0x40;
 			{
-				char szTemp[128];
-				wsprintf(szTemp, "Sky_EPG: PIDS 0x%04x 0x%04x New events from prior %d\n", v->nSkyEPGPIDs[0], v->nSkyEPGPIDs[1], nLocalEITCount);
-				OutputDebugString(szTemp);
+				dbg_printf("Sky_EPG: PIDS 0x%04x 0x%04x New events from prior %d\n", v->nSkyEPGPIDs[0], v->nSkyEPGPIDs[1], nLocalEITCount);
 			}
 			nLocalEITCount = 0;
 		}

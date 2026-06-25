@@ -210,7 +210,7 @@ void XMLExport(HWND hDlg, HANDLE hXMLFile)
 	char szDescriptorData[10 * 1024] = {0};
 
 #ifdef DEBUG_MESSAGES
-	OutputDebugString("XML Export\n");
+	dbg_printf("XML Export\n");
 #endif DEBUG_MESSAGES
 	UpdateMainStatusText("XML Export");
 

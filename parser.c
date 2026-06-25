@@ -335,7 +335,7 @@ ParseATSCEITPacket_Windup:
 void ParseATSCETTPacket(BYTE * pSectionPointer, int nPacketLength)
 {
 #ifdef DEBUG_MESSAGES
-	OutputDebugString("TSReader:ParseATSCETTPacket+\n");
+	dbg_printf("TSReader:ParseATSCETTPacket+\n");
 #endif DEBUG_MESSAGES
 
 	if (v->fEPGSaveEnabled == FALSE)
@@ -438,7 +438,7 @@ void ParseATSCETTPacket(BYTE * pSectionPointer, int nPacketLength)
 	}
 ParseATSCETTPacket_Windup:
 #ifdef DEBUG_MESSAGES
-	OutputDebugString("TSReader:ParseATSCETTPacket-\n");
+	dbg_printf("TSReader:ParseATSCETTPacket-\n");
 #endif DEBUG_MESSAGES
 	return;
 }
@@ -961,7 +961,7 @@ int ParseDVBBAT(BYTE * pSectionPointer, int nSectionLength)
 		}
 		if (nBATIndex == MAX_BAT_ENTRIES)
 		{
-			OutputDebugString("TSReader: Out of BAT space\n");
+			dbg_printf("TSReader: Out of BAT space\n");
 			return nSectionLength + 4;
 		}
 		if (!fAlreadyGotBAT)
@@ -1015,7 +1015,7 @@ int ParseDVBBAT(BYTE * pSectionPointer, int nSectionLength)
 				}
 				if (nTransportIndex == MAX_BAT_TRANSPORT_ITEMS)
 				{
-					OutputDebugString("TSReader: Out of BAT TS space\n");
+					dbg_printf("TSReader: Out of BAT TS space\n");
 					break;
 				}
 
@@ -1080,9 +1080,7 @@ void ParseDVBSDTPacket(BYTE * pSectionPointer, int nPacketLength)
 		if ( (nSectionLength <= 0) || (nSectionLength > 65536) || (nSectionLength > nPacketLength) )
 		{
 #ifdef DEBUG_MESSAGES
-			char szTemp[128];
-			wsprintf(szTemp, "ParseSDT: nSection out of range = %d nPacketLength = %d\n", nSectionLength, nPacketLength);
-			OutputDebugString(szTemp);
+			dbg_printf("ParseSDT: nSection out of range = %d nPacketLength = %d\n", nSectionLength, nPacketLength);
 #endif DEBUG_MESSAGES
 			return;
 		}
@@ -1107,7 +1105,7 @@ void ParseDVBSDTPacket(BYTE * pSectionPointer, int nPacketLength)
 		if (SourceHelper_CRC_Check(pSectionPointer, nSectionLength + 3) != TRUE)
 		{
 #ifdef DEBUG_MESSAGES
-			OutputDebugString("ParseSDT: CRC failure\n");
+			dbg_printf("ParseSDT: CRC failure\n");
 #endif DEBUG_MESSAGES
 			v->nSIParserCRCs[SI_PARSER_STATS_SDT]++;
 			if (!v->fIgnoreTableCRCErrors)
@@ -1461,7 +1459,7 @@ BOOL ParsePMTPacket(BYTE * pSectionPointer, int nPacketLength, int nCurrentProgr
 	int nCILength;
 
 #ifdef DEBUG_MESSAGES
-	OutputDebugString("TSReader:ParsePMTPacket+\n");
+	dbg_printf("TSReader:ParsePMTPacket+\n");
 #endif DEBUG_MESSAGES
 
 	if (nCurrentProgramNumber == 0)
@@ -1612,11 +1610,8 @@ BOOL ParsePMTPacket(BYTE * pSectionPointer, int nPacketLength, int nCurrentProgr
 						{
 							// PMT change!
 							int nESIndex;
-							char szTemp[128];
 
-							wsprintf(szTemp, "TSReader: PMT version change from %d to %d for program %d\n", 
-								     v->pat.pmt[nPMTIndex].nVersionNumber, nVersionNumber, nProgramNumber);
-							OutputDebugString(szTemp);
+							dbg_printf("TSReader: PMT version change from %d to %d for program %d\n", v->pat.pmt[nPMTIndex].nVersionNumber, nVersionNumber, nProgramNumber);
 
 							for (nESIndex = 0; nESIndex < MAX_ESLIST_ENTRIES; nESIndex++)
 							{
@@ -1700,7 +1695,7 @@ BOOL ParsePMTPacket(BYTE * pSectionPointer, int nPacketLength, int nCurrentProgr
 				}
 				else
 				{
-					OutputDebugString("Should never get here in PMT parsing\n");
+					dbg_printf("Should never get here in PMT parsing\n");
 				}
 			}
 ParsePMTPacket_SkipES:
@@ -1718,7 +1713,7 @@ ParsePMTPacket_SkipES:
 
 ParsePMTPacket_Windup:
 #ifdef DEBUG_MESSAGES
-	OutputDebugString("TSReader:ParsePMTPacket-\n");
+	dbg_printf("TSReader:ParsePMTPacket-\n");
 #endif DEBUG_MESSAGES
 	return fRetVal;
 }
@@ -1844,7 +1839,7 @@ void ParseIPPacket(BYTE * pSectionPointer, int nPacketLength, int nPID, int nBuf
 					 mpe.IPHeader_TotalLength,
 					 szHex,
 					 szASCII);
-			OutputDebugString(szDebug);
+			dbg_printf(szDebug);
 			WriteFile(v->hDebugFile, szDebug, lstrlen(szDebug), &dwWritten, NULL);
 		}
 		*/
@@ -2029,7 +2024,7 @@ void ParseIPPacket(BYTE * pSectionPointer, int nPacketLength, int nPID, int nBuf
 							{
 								if (nEthernetLength == sizeof(pEthernetBuffer))
 								{
-									OutputDebugString("TSReader: Ethernet packet buffer too small\n");
+									dbg_printf("TSReader: Ethernet packet buffer too small\n");
 									break;
 								}
 								pEthernetBuffer[nEthernetLength++] = pSectionPointer[i + 12 + llc_snap_offset];
@@ -2106,7 +2101,7 @@ BOOL ParsePATPacket(BYTE * pSectionPointer, int nPacketLength)
 	BOOL fRetVal = TRUE;
 
 #ifdef DEBUG_MESSAGES
-	OutputDebugString("TSReader: ParsePATPacket+\n");
+	dbg_printf("TSReader: ParsePATPacket+\n");
 #endif DEBUG_MESSAGES
 
 	// Check for stuffing
@@ -2225,11 +2220,7 @@ BOOL ParsePATPacket(BYTE * pSectionPointer, int nPacketLength)
 		{
 			if (v->pat.pmt[i].nPMTPID == 0)
 			{
-				{
-					char szTemp[128];
-					wsprintf(szTemp, "TSReader: Program = %d PMTPID = %x Item #%d\n", nProgramNumber, nPMTPID, i);
-					OutputDebugString(szTemp);
-				}
+				dbg_printf("TSReader: Program = %d PMTPID = %x Item #%d\n", nProgramNumber, nPMTPID, i);
 				v->pat.pmt[i].nPMTPID = nPMTPID;
 				v->pat.pmt[i].nProgramNumber = nProgramNumber;
 				if (nProgramNumber == 0)
@@ -2248,7 +2239,7 @@ BOOL ParsePATPacket(BYTE * pSectionPointer, int nPacketLength)
 
 ParsePATPacket_Windup:
 #ifdef DEBUG_MESSAGES
-	OutputDebugString("TSReader: ParsePATPacket-\n");
+	dbg_printf("TSReader: ParsePATPacket-\n");
 #endif DEBUG_MESSAGES
 	return fRetVal;
 }
@@ -2511,7 +2502,7 @@ BOOL ParsePSIPPacket(BYTE * pSectionPointer, int nPacketLength)
 				}
 				if (nCVCTIndex == MAX_CVCT_ENTRIES)
 				{
-					OutputDebugString("TSReader: No space available in CVCT\n");
+					dbg_printf("TSReader: No space available in CVCT\n");
 					return FALSE;	// no more room
 				}
 				v->cvct[nCVCTIndex].transport_stream_id = transport_stream_id;
@@ -2562,7 +2553,7 @@ BOOL ParsePSIPPacket(BYTE * pSectionPointer, int nPacketLength)
 						}
 						if (j == MAX_CVCT_CHANNEL_ENTRIES)
 						{
-							OutputDebugString("TSReader: Out of room for channel CVCT\n");
+							dbg_printf("TSReader: Out of room for channel CVCT\n");
 							return FALSE;
 						}
 
@@ -2747,13 +2738,7 @@ BOOL ParsePSIPPacket(BYTE * pSectionPointer, int nPacketLength)
 			}
 			break;
 		default:
-	//#ifdef DEBUG_MESSAGES
-			{
-				char szTemp[128];
-				wsprintf(szTemp, "TSReader: ATSC PSIP table 0x%02x\n", nTableID);
-				OutputDebugString(szTemp);
-			}
-	//#endif DEBUG_MESSAGES
+			dbg_printf("TSReader: ATSC PSIP table 0x%02x\n", nTableID);
 			break;
 		}
 	}
@@ -2936,7 +2921,7 @@ void ParseDCIINetworkPacket(BYTE * pSectionPointer, int nPacketLength)
 							if (j == MAX_SIT_ENTRIES)
 							{
 #ifdef DEBUG_MESSAGES
-								OutputDebugString("SIT overflow!!\n");
+								dbg_printf("SIT overflow!!\n");
 #endif DEBUG_MESSAGES
 								break;
 							}
@@ -2979,7 +2964,7 @@ void ParseDCIINetworkPacket(BYTE * pSectionPointer, int nPacketLength)
 							if (j == MAX_TDT_ENTRIES)
 							{
 #ifdef DEBUG_MESSAGES
-								OutputDebugString("TDT overflow!!\n");
+								dbg_printf("TDT overflow!!\n");
 #endif DEBUG_MESSAGES
 								break;
 							}
@@ -3319,12 +3304,9 @@ void ParseDCIINetworkPacket(BYTE * pSectionPointer, int nPacketLength)
 				int a=1;
 			}
 			break;*/
+
 		default:
-			/*{
-				char szTemp[100];
-				wsprintf(szTemp, "DCII Network table_id = %02x\n", nTableID);
-				OutputDebugString(szTemp);
-			}*/
+			/* dbg_printf("DCII Network table_id = %02x\n", nTableID); */
 			break;
 		}
 		
@@ -4000,16 +3982,12 @@ ParseDVBNIT_AddDescriptor:
 
 void ParseDCIIECMPacket(BYTE * pSection, int nLength)
 {
-	/*{
-		char szTemp[128];
-		wsprintf(szTemp, "+ParseDCIIECMPacket program %d\n", v->pat.pmt[v->nDCIIECMPMTIndex].nProgramNumber);
-		OutputDebugString(szTemp);
-	}*/
+	/* dbg_printf("+ParseDCIIECMPacket program %d\n", v->pat.pmt[v->nDCIIECMPMTIndex].nProgramNumber); */
 
 	if (v->nDCIIECMDescriptorTimeout++ == 10)
 	{
 		// we've got no channel name for this program so try the next
-		//OutputDebugString("DCII ECM parsing timeout\n");
+		// dbg_printf("DCII ECM parsing timeout\n");
 		GetNextECMPID();
 		return;
 	}
@@ -4053,19 +4031,15 @@ void ParseDCIIECMPacket(BYTE * pSection, int nLength)
 								v->pChannelData[service_number] = LocalAlloc(LPTR, sizeof(EITCHANNELDATA) + 4);
 								if (v->pChannelData[service_number] != NULL)
 								{
-									{
-										char szTemp[512];
-										wsprintf(szTemp, "TSReader: ParseDCIIECMPacket service %d adding string \"%s\"\n", service_number, szProgramName);
-										OutputDebugString(szTemp);
-									}
+									dbg_printf("TSReader: ParseDCIIECMPacket service %d adding string \"%s\"\n", service_number, szProgramName);
 									lstrcpy(v->pChannelData[service_number]->szShortName, szProgramName);
 									v->pChannelData[service_number]->nChannelNumber = service_number;
 									v->pat.pmt[v->nDCIIECMPMTIndex].fSetupSDTName = TRUE;
 								}
 							}
 							GetNextECMPID();
-							//OutputDebugString("-ParseDCIIECMPacket 1\n");
-							//return;
+							// dbg_printf("-ParseDCIIECMPacket 1\n");
+							// return;
 						}
 					}
 				}
@@ -4086,14 +4060,14 @@ void ParseDCIIECMPacket(BYTE * pSection, int nLength)
 					lstrcat(szTemp, szTemp2);
 				}
 				lstrcat(szTemp, "\n");
-				OutputDebugString(szTemp);
+				dbg_printf(szTemp);
 			}
 			break;*/
 		}
 		nLength -= nSectionLength + 3;
 		pSection += nSectionLength + 3;
 	} while (nLength > 4);
-	//OutputDebugString("-ParseDCIIECMPacket 2\n");
+	// dbg_printf("-ParseDCIIECMPacket 2\n");
 
 }
 
