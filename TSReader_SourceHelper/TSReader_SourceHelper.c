@@ -13,10 +13,10 @@
 #include "isdbbandplans.h"
 
 PVARIABLES v;
-PSOURCESTRUCT ss;
-HANDLE hInstance;
-BOOL fTuneDialogFirstTime;
-int nATSCQAMScanRangeStart, nATSCQAMScanRangeEnd;
+static PSOURCESTRUCT ss;
+static HANDLE hInstance;
+static BOOL fTuneDialogFirstTime;
+static int nATSCQAMScanRangeStart, nATSCQAMScanRangeEnd;
 
 static int nSwitchButtons[] = {IDC_DISEQC1, IDC_DISEQC2, IDC_DISEQC3, IDC_DISEQC4, IDC_INPUT_TB_A, IDC_INPUT_TB_B};
 
@@ -2785,7 +2785,7 @@ void LoadSatelliteFiles(void)
 									   &v->sats[nIndex].mux[nMux].nSymbolRate,
 									   &v->sats[nIndex].mux[nMux].nCodeRate);
 								GetMuxName(szMuxLine, v->sats[nIndex].mux[nMux].szMuxName);
-								strupr(v->sats[nIndex].mux[nMux].szPolarity);
+								_strupr(v->sats[nIndex].mux[nMux].szPolarity);
 
 								// Check for SLT exported INI files
 								if (v->sats[nIndex].mux[nMux].nFrequency > 99999)
@@ -2836,7 +2836,7 @@ void LoadSatelliteFiles(void)
 										   &v->sats[nIndex].mux[nDVBMuxCount + nMux].nModulationMode);
 									GetMuxName(szMuxLine, v->sats[nIndex].mux[nDVBMuxCount + nMux].szMuxName);
 									v->sats[nIndex].mux[nDVBMuxCount + nMux].fADVModulation = TRUE;
-									strupr(v->sats[nIndex].mux[nDVBMuxCount + nMux].szPolarity);
+									_strupr(v->sats[nIndex].mux[nDVBMuxCount + nMux].szPolarity);
 									v->sats[nIndex].mux[nDVBMuxCount + nMux].nTuneType = MUX_TUNE_TYPE_ADV;
 								}
 							}
@@ -5204,18 +5204,18 @@ BOOL CALLBACK TuneDVBSatelliteDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARA
 				NMLVDISPINFO * pnmv = (NMLVDISPINFO *)lParam;
 				if (pnmv->hdr.hwndFrom == GetDlgItem(hDlg, IDC_TUNER_SATELLITE_LIST))
 				{
-					LPNMLISTVIEW pnmv = (LPNMLISTVIEW)lParam;
-					if (pnmv->uNewState & LVIS_SELECTED)
+					LPNMLISTVIEW pnmlv = (LPNMLISTVIEW)lParam;
+					if (pnmlv->uNewState & LVIS_SELECTED)
 					{
-						UpdateMuxList(hDlg, pnmv->iItem);
+						UpdateMuxList(hDlg, pnmlv->iItem);
 						v->nCurrentlySelectedMux = -1;
 					}
 				}
 				else if (pnmv->hdr.hwndFrom == GetDlgItem(hDlg, IDC_TUNER_MUX_LIST))
 				{
-					LPNMLISTVIEW pnmv = (LPNMLISTVIEW)lParam;
-					if (pnmv->uNewState & LVIS_SELECTED)
-						UpdateSatelliteMux(hDlg, pnmv->iItem);
+					LPNMLISTVIEW pnmlv = (LPNMLISTVIEW)lParam;
+					if (pnmlv->uNewState & LVIS_SELECTED)
+						UpdateSatelliteMux(hDlg, pnmlv->iItem);
 				}
 			}
 			break;
@@ -5339,22 +5339,21 @@ BOOL SourceHelper_TCPTuneDialog(HWND hWnd)
 }
 
 #ifdef _DEBUG
-int nContinuity[8192];
-int nPID;
-int nContinuityErrors = 0;
-int nPackets = 0;
-int nPreviousContinuityErrors = -1;
-double dMBReceived = 0.0;
-double dNextMBReceivedDisplay = 0.0;
+static int nContinuity[8192];
+static int nContinuityErrors = 0;
+static int nPackets = 0;
+static int nPreviousContinuityErrors = -1;
+static double dMBReceived = 0.0;
+static double dNextMBReceivedDisplay = 0.0;
 #endif _DEBUG
 
 void SourceHelper_Init(PVARIABLES pv)
 {
 #ifdef _DEBUG
-	int nPID;
+	int i;
 
-	for (nPID = 0; nPID < 8192; nPID++)
-		nContinuity[nPID] = -1;
+	for (i = 0; i < 8192; i++)
+		nContinuity[i] = -1;
 #endif _DEBUG
 	v = pv;
 }
@@ -5587,7 +5586,7 @@ BOOL SourceHelper_ValidateSourceContainer(PSOURCESTRUCT pss)
 		}
 	}
 
-	strlwr(szExecutableName);
+	_strlwr(szExecutableName);
 	if (lstrcmp(szExecutableName, "dvbapps.viewer.exe") == 0)
 		return TRUE;
 	if (lstrcmp(szExecutableName, "tsreaderpro.exe") == 0)
@@ -5708,9 +5707,9 @@ void WriteINIFiles(HWND hDlg, PSDXBUILDLIST pSDX, int nItemCount)
 	int nCurrentOrbital = -1;
 	int nStartItem = 0;
 	int nSortCount = 0;
-	int nDVBMuxCount;
-	int nADVMuxCount;
-	int nDSSMuxCount;
+	int nDVBMuxCount = 0;
+	int nADVMuxCount = 0;
+	int nDSSMuxCount = 0;
 	char szOutputDirectory[MAX_PATH];
 	char szTSReaderDir[MAX_PATH];
 	char szCurrentINIFile[MAX_PATH];
@@ -5970,7 +5969,7 @@ DWORD WINAPI ImportCSVThread(LPVOID lpv)
 			if (nSymbolRate == 0)
 				continue;
 
-			strupr(szCommaValue[DVB_POLARITY]);
+			_strupr(szCommaValue[DVB_POLARITY]);
 			if (szCommaValue[DVB_POLARITY][0] == 'V')
 				nPolarity = 0;
 			else if (szCommaValue[DVB_POLARITY][0] == 'H')
@@ -6059,7 +6058,7 @@ DWORD WINAPI ImportCSVThread(LPVOID lpv)
 				int nOrbital;
 				int nModulationMode = 0;
 
-				strupr(szCommaValue[DCII_POLARITY]);
+				_strupr(szCommaValue[DCII_POLARITY]);
 				if (szCommaValue[DCII_POLARITY][0] == 'V')
 					nPolarity = 0;
 				else if (szCommaValue[DCII_POLARITY][0] == 'H')
@@ -6086,7 +6085,7 @@ DWORD WINAPI ImportCSVThread(LPVOID lpv)
 				else if (strstr(szCommaValue[DCII_FEC], "7/8") != NULL)
 					nCodeRate = 7;
 
-				strupr(szCommaValue[DCII_BITSTREAM]);
+				_strupr(szCommaValue[DCII_BITSTREAM]);
 				if ( (szCommaValue[DCII_BITSTREAM][0] == 'B') && (atoi(szCommaValue[DCII_SR]) >= 19510) )
 					nModulationMode = 0x400; // DCII QPSK C
 				else if (szCommaValue[DCII_BITSTREAM][0] == 'I')
@@ -6376,7 +6375,7 @@ DWORD WINAPI ImportSDXThread(LPVOID lpv)
 						{
 							char szTemp[128];
 							lstrcpy(szTemp, szChannelName);
-							strupr(szTemp);
+							_strupr(szTemp);
 							if (lstrcmp(szTemp, "DIRECTV") == 0)
 								pSDX[nIndex].nModulationType = 2;
 							else if (lstrcmp(szTemp, "DIRECTTV") == 0)
@@ -6384,7 +6383,7 @@ DWORD WINAPI ImportSDXThread(LPVOID lpv)
 							else
 							{
 								lstrcpy(szTemp, szSatelliteName);
-								strupr(szTemp);
+								_strupr(szTemp);
 								if (strstr(szTemp, "DIRECTV") != NULL)
 									pSDX[nIndex].nModulationType = 2;
 							}
@@ -6538,7 +6537,6 @@ DWORD WINAPI ReadPipeThread(LPVOID lpv)
 			while (nSync == 0 && !fAbort)
 			{
 				int nOffset = 0;
-				int nRead;
 
 				nRead = ReadFromPipe(syncbuffer, SYNCSIZE);
 				if (nRead == 0)
@@ -6566,14 +6564,14 @@ DWORD WINAPI ReadPipeThread(LPVOID lpv)
 
 										if (nLength1 == nLength2)
 										{
-											int nPackets;
+											int nPackets2;
 											int nCompletePacketBytes;
 											int nRemainder;
 											int nJunkBytes;
 
 											nSync = nLength1;
-											nPackets = (SYNCSIZE - nOffset) / nSync;
-											nCompletePacketBytes = nSync * nPackets;
+											nPackets2 = (SYNCSIZE - nOffset) / nSync;
+											nCompletePacketBytes = nSync * nPackets2;
 											nRemainder = (SYNCSIZE - nOffset) - nCompletePacketBytes;
 											nJunkBytes = nSync - nRemainder;
 											ReadFromPipe(syncbuffer, nJunkBytes);
@@ -6747,11 +6745,11 @@ int SourceHelper_GetSyncLossCount(BOOL fReset)
 	return v->nSyncThread_SyncLossCount;
 }
 
-void SourceHelper_GetTSReaderEXEDirectory(HINSTANCE hInstance, char * szCurrentDir, int nCurrentDirLength)
+void SourceHelper_GetTSReaderEXEDirectory(HINSTANCE hInst, char * szCurrentDir, int nCurrentDirLength)
 {
 	int i;
 
-	GetModuleFileName(hInstance, szCurrentDir, nCurrentDirLength);
+	GetModuleFileName(hInst, szCurrentDir, nCurrentDirLength);
 	for (i = lstrlen(szCurrentDir); i > 0; i--)
 	{
 		if (szCurrentDir[i] == '\\')

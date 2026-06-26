@@ -208,13 +208,13 @@ BOOL OpenSerialPort(int nBaudRate, int nByteSize, int nParity, int nStopBits, BO
 	PortDCB.fRtsControl     = FALSE; //RTS_CONTROL_HANDSHAKE;
 	PortDCB.fAbortOnError   = FALSE;
 
-	PortDCB.ByteSize        = nByteSize;
-	PortDCB.Parity          = nParity;
+	PortDCB.ByteSize        = (BYTE)nByteSize;
+	PortDCB.Parity          = (BYTE)nParity;
 	if (PortDCB.Parity == NOPARITY)
 		PortDCB.fParity = FALSE;
 	else
 		PortDCB.fParity = TRUE;
-	PortDCB.StopBits        = nStopBits;
+	PortDCB.StopBits        = (BYTE)nStopBits;
 
 	SetCommState(ghPort, &PortDCB);
 	if (fDTR)

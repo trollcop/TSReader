@@ -13,8 +13,7 @@ void FormatDVBCInnerFEC(char * szFECInner, int nFECInner);
 void FormatDVBTBandwidth(char * szBandwidth, int nBandwidth);
 void FormatDVBTConstellation(char * szConstellation, int nConstellation);
 void FormatDVBTHierarchyInformation(char * szHierarchyInformation, int nHierarchyInformation);
-void DecodeDescriptorNames(char * szDescriptor, int nDescriptorID);
-
+void DecodeDescriptorNames(char * szDescriptor, BYTE nDescriptorID);
 void FormatCASystemName(int nCASystemID, char * szCAName);
 void DecodeDTSAudioDescriptor(BYTE * pDescriptorData, char * szBuffer);
 void DecodeVBIDataServiceDescription(int data_service_id, char * szBuffer);
@@ -61,7 +60,7 @@ void FormatAACAudioParse(PPARSEDAACAUDIO pAAC, char * szOutput);
 
 void GetMPEG2VideoAspectRation(int aspect_ratio_information, char * szAspectRatio);
 void GetMPEG2FrameRate(int frame_rate_code, char * szFrameRate);
-void GetMPEG2ChromaFormat(int chroma_format, char * szChromaFormat);
+void GetChromaFormat(ChromaFormat chroma_format, char *szChromaFormat, size_t len);
 void GetAFDFormat(DWORD dwAFDData, char * szAFDFormat);
 void GetMPEGAudioMode(int mode, char * szMode);
 void GetMPEGAudioSamplingFrequency(int sampling_frequency, char * szSamplingRate);

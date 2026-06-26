@@ -15,7 +15,6 @@ extern char gszKeyName[];
 
 // in TSReader.c
 void GetSourceInfoLine(int nLine, char * szOutput);
-BOOL GetPIDTooltipInfo(int nPID, char * szString);
 
 double GetStreamMonitorTime(void)
 {
@@ -560,7 +559,7 @@ DWORD WINAPI StreamMonitorThread(LPVOID lpv)
 								continue;
 						}
 
-						if (GetPIDTooltipInfo(v->pc[i].nPID, szTemp) == FALSE)
+						if (GetPIDTooltipInfo(v->pc[i].nPID, szTemp, sizeof(szTemp)) == FALSE)
 						{
 							if (v->sm[nIndex].nStatus != 2)
 								MonitorAlarmOn(nIndex, hDlg, 0);

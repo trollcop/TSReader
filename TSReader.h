@@ -12,12 +12,6 @@
 #define VERSION_MINOR 8
 #define VERSION_EDIT 53
 #define VERSION_SUB_EDIT 'h'
-//#define BETA
-#ifdef BETA
-#define BETA_EXPIRE_MONTH 2
-#define BETA_EXPIRE_YEAR 2008
-#endif BETA
-
 #define EIT_FORMAT_PLAIN 0
 #define EIT_FORMAT_XML 1
 #define EIT_FORMAT_XMLTV 2
@@ -297,6 +291,7 @@ typedef enum ES_PARSER_TYPES
 	PARSE_ES_TYPE_H265_VIDEO,
 	PARSE_ES_TYPE_VC1_VIDEO,
 	PARSE_ES_TYPE_AV1_VIDEO,
+
 	PARSE_ES_TYPE_MPEG_AUDIO,
 	PARSE_ES_TYPE_AC3_AUDIO,
 	PARSE_ES_TYPE_TELETEXT,
@@ -372,8 +367,8 @@ typedef struct _tagConnection
 #define MAX_RECORD_TABLES 16
 typedef struct _tagRecordTables
 {
-	int nPID;
-	int nStartTable, nEndTable;
+	uint16_t nPID;
+	uint8_t nStartTable, nEndTable;
 	int nTableCount;
 	DWORD dwPriorTickCount;
 	HANDLE hFile;
@@ -658,6 +653,13 @@ typedef enum _tagInterlacedType {
 	INT_BFF,
 } InterlacedType;
 
+typedef enum _tagChromaFormat {
+	CHROMA_RESERVED,
+	CHROMA_420,
+	CHROMA_422,
+	CHROMA_444,
+} ChromaFormat;
+
 #define PARSER_TAG	(0xDEADBEEF)
 
 typedef struct _tagParsedGenericVideo {
@@ -666,7 +668,10 @@ typedef struct _tagParsedGenericVideo {
 	uint32_t height;
 	InterlacedType interlaced;
 	float framerate;
-	uint32_t bitrate;
+	ChromaFormat chroma;
+	/* aspect ratio dar_num:dar_den */
+	int dar_num;
+	int dar_den;
 
 } PARSEDGENERICVIDEO, *PPARSEDGENERICVIDEO;
 
@@ -810,7 +815,7 @@ typedef struct _tagPIDCounter
 {
 	BOOL fPIDHasBeenActive;
 	BOOL fScrambled;
-	int nPID;
+	uint16_t nPID;
 	int nPIDHasContinuityErrors;
 	int nPIDTEICount;
 	__int64 lnPackets;
@@ -1148,13 +1153,18 @@ typedef struct _tagESParserInfo
 	CRITICAL_SECTION csThreadSignal;
 } ESPARSERINFO, *PESPARSERINFO;
 
-// Forwarder definitions for Pro
+typedef BOOL(* td_Fwd_Init)(HWND hWnd, int nPacketLength, int nBitRate);
+typedef BOOL(* td_Fwd_DeInit)(void);
+typedef BOOL(* td_Fwd_Data)(BYTE *pBuffer, int nLength);
+typedef BOOL(* td_Fwd_GetDescription)(char *szDeviceNameBuffer);
+
+// Forwarder definitions
 typedef struct _tagFwdFunctions
 {
-	BOOL (* Fwd_Init) (HWND hWnd, int nPacketLength, int nBitRate);
-	BOOL (* Fwd_DeInit) (void);
-	BOOL (* Fwd_Data) (BYTE * pBuffer, int nLength);
-	BOOL (* Fwd_GetDescription) (char * szDeviceNameBuffer);
+	td_Fwd_Init Fwd_Init;
+	td_Fwd_DeInit Fwd_DeInit;
+	td_Fwd_Data Fwd_Data;
+	td_Fwd_GetDescription Fwd_GetDescription;
 } FWDFUNCTIONS, *PFWDFUNCTIONS;
 
 #define MAX_FWD_DLLS 16
@@ -1236,7 +1246,7 @@ typedef struct tag_Variables
 	int nExportSITables;
 	int nEITChannels;
 	int nFillPtr[MAX_SECTION_BUFFERS];
-	int nPMTPID;
+	uint16_t nPMTPID;
 	int nPMTProgramIndex;
 	int nActivePIDCount;
 	int nLastSecondByteCounter;
@@ -1255,7 +1265,8 @@ typedef struct tag_Variables
 	int nIPMonitorPID[8192];
 	int nPIDContinuity[8192];
 	int nContinuityErrors, nTEIErrors;
-	int nMuxRatePID, nMuxRateBytes;
+	uint16_t nMuxRatePID;
+	int nMuxRateBytes;
 	int nMuxRateCounter;
 	int nSplitFileNumber, nSplitFileSize;
 	int nAutoRecordProgram;
@@ -1264,7 +1275,7 @@ typedef struct tag_Variables
 	int nESParseType[REAL_MAX_ES_PARSERS];
 	int nESParsePMTIndex[REAL_MAX_ES_PARSERS];
 	int nESParseESIndex[REAL_MAX_ES_PARSERS];
-	int nESParsePID[REAL_MAX_ES_PARSERS];
+	uint16_t nESParsePID[REAL_MAX_ES_PARSERS];
 	int nPATRecordCounter;
 	int nESParsingCounter, nESParsingCounterReload;
 	int nDecodeNoPIDTrafficCounter[REAL_MAX_ES_PARSERS], nDecodeNoPESLengthCounter[REAL_MAX_ES_PARSERS];
@@ -1301,7 +1312,7 @@ typedef struct tag_Variables
 	int nPIDHasContinuityErrors[8192];
 	int nPIDTEICount[8192];
 	int nAutoVLCConfiguration;
-	int nNullPID;
+	uint16_t nNullPID;
 	int nATSCEITPID[64], nATSCETTPID[64];
 	int nATSCCETTPID;
 	int nControlServerPort;
@@ -1428,7 +1439,7 @@ typedef struct tag_Variables
 	int nCurrentlySelectedMux;
 	int nInitialMuxIndex, nInitialSatelliteIndex;
 	int nPIDUsageStackedAreaChartIndex;
-	int nSelectedPCRPID;
+	uint16_t nSelectedPCRPID;
 	int nTableMonitorSectionTable;
 	int nAutoHTMLExportFlags;
 	int nStatusNotDirtyCounter;

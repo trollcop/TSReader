@@ -50,17 +50,12 @@ BOOL CALLBACK AudioThumbnailSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam,
 		{
 		case IDOK:
 			{
-				char * szMask;
 				char szPMTValue[128], szTableValue[128];
 
-				if (v->fDecimalPIDs)
-					szMask = "%d";
-				else
-					szMask = "%x";
 				GetDlgItemText(hDlg, IDC_AUDIO_TITLE_PMT_TYPE, szPMTValue, sizeof(szPMTValue));
 				GetDlgItemText(hDlg, IDC_AUDIO_TITLE_MPEG_TABLE_NUMBER, szTableValue, sizeof(szTableValue));
-				sscanf(szPMTValue, szMask, &v->nSongTitleParserPMT);
-				sscanf(szTableValue, szMask, &v->nSongTitleParserTable);
+				v->nSongTitleParserPMT = ParseNumber(szPMTValue, FALSE);
+				v->nSongTitleParserTable = ParseNumber(szTableValue, FALSE);
 				v->fAudioThumbnails = IsDlgButtonChecked(hDlg, IDC_AUDIO_THUMBNAILS_ENABLED);
 
 				EndDialog(hDlg, TRUE);

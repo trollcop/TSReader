@@ -79,6 +79,7 @@ void XMLExport__WriteESParserData(HANDLE hXMLFile, int nPMTIndex, int nESIndex)
 		case PARSE_ES_TYPE_H265_VIDEO:
 		case PARSE_ES_TYPE_MPEG4_VIDEO:
 		case PARSE_ES_TYPE_VC1_VIDEO:
+		case PARSE_ES_TYPE_AV1_VIDEO:
 			{
 				PPARSEDGENERICVIDEO pVideo = (PPARSEDGENERICVIDEO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData;
 				char szProgressive[8];
@@ -92,14 +93,12 @@ void XMLExport__WriteESParserData(HANDLE hXMLFile, int nPMTIndex, int nESIndex)
 					lstrcpy(szProgressive, "FALSE");
 
 				wsprintf(v->szSIFormatBuffer, "   <PROGRESSIVE>%s</PROGRESSIVE>", szProgressive);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
-				sprintf(v->szSIFormatBuffer,  "   <BITRATE>%d</BITRATE>", pVideo->bitrate);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
 				wsprintf(v->szSIFormatBuffer, "   <HORIZONTAL-RESOLUTION>%d</HORIZONTAL-RESOLUTION>", pVideo->width);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
 				wsprintf(v->szSIFormatBuffer, "   <VERTICAL-RESOLUTION>%d</VERTICAL-RESOLUTION>", pVideo->height);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
 
-				/* TODO GetMPEG2VideoAspectRation(pMPEG->aspect_ratio_information, szAspectRatio); */
-				wsprintf(v->szSIFormatBuffer, "   <ASPECT-RATIO>%s</ASPECT-RATIO>", szAspectRatio);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
+				wsprintf(v->szSIFormatBuffer, "   <ASPECT-RATIO>%d:%d</ASPECT-RATIO>", pVideo->dar_num, pVideo->dar_den);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
 				StringCchPrintf(v->szSIFormatBuffer, sizeof(v->szSIFormatBuffer), "   <FRAME-RATE>%2.2f</FRAME-RATE>", pVideo->framerate);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
-				/* TODO GetMPEG2ChromaFormat(pMPEG->chroma_format, szChromaFormat); */
+				GetChromaFormat(pVideo->chroma, szChromaFormat, sizeof(szChromaFormat));
 				wsprintf(v->szSIFormatBuffer, "   <CHROMA-FORMAT>%s</CHROMA-FORMAT>", szChromaFormat);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
 
 				// See about AFD
@@ -195,6 +194,11 @@ void XMLExport__WriteESParserData(HANDLE hXMLFile, int nPMTIndex, int nESIndex)
 				wsprintf(v->szSIFormatBuffer, "   <DIALOG-NORMALIZATION>-%d dB</DIALOG-NORMALIZATION>", nDialNorm);	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
 				WriteAudioSampleXMLData(hXMLFile, nPMTIndex, nESIndex);
 			}
+			break;
+
+		case PARSE_ES_TYPE_NONE:
+		case PARSE_ES_TYPE_TELETEXT:
+		case PARSE_ES_TYPE_AUDIO_TITLE:
 			break;
 		}
 	}
@@ -949,6 +953,10 @@ void XMLExport(HWND hDlg, HANDLE hXMLFile)
 						wsprintf(v->szSIFormatBuffer, "   <INNER-FEC-RAW>%d</INNER-FEC-RAW>", v->pNITData[nNITIndex]->dvbc.nFECInner); 	WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
 					}
 					break;
+				case NIT_ISDBS:
+				case NIT_ISDBT:
+					/* TODO */
+					break;
 				}
 
 				nTSDescriptors = 0;
@@ -1193,7 +1201,7 @@ void XMLExport(HWND hDlg, HANDLE hXMLFile)
 
 	for (i = 0; i < 8192; i++)
 	{
-		v->pc[i].nPID = i;
+		v->pc[i].nPID = (uint16_t)i;
 		v->pc[i].lnPackets = v->lnPIDCounter[i];
 		v->pc[i].fScrambled = v->fPIDScrambled[i];
 		if (v->lnPIDRateSamples[i])
@@ -1235,7 +1243,7 @@ void XMLExport(HWND hDlg, HANDLE hXMLFile)
 		{
 			sprintf(v->szSIFormatBuffer, "   <RATE-MbPS>%.4f</RATE-MbPS>", dRate); WriteHTMLLine(hXMLFile, v->szSIFormatBuffer);
 		}
-		GetPIDTooltipInfo(i, szPIDDescription);
+		GetPIDTooltipInfo((uint16_t)i, szPIDDescription, sizeof(szPIDDescription));
 		szPIDDescriptionOutput = strstr(szPIDDescription, " ");
 		if (szPIDDescriptionOutput == NULL)
 			szPIDDescriptionOutput = szPIDDescription;	
@@ -1421,12 +1429,12 @@ void HTMLExport(HANDLE hHTMFile, int nExportSITables, char * szOutputFilename)
 
 						while (nProgramInfoLength)
 						{
-							int nDescriptor = v->pat.pmt[nPMTIndex].pProgramInfo[nOffset];
+							uint8_t nDescriptor = v->pat.pmt[nPMTIndex].pProgramInfo[nOffset];
 							int nDescriptorLength = v->pat.pmt[nPMTIndex].pProgramInfo[nOffset + 1];
 							char szDescriptor[128];
 
 							DecodeDescriptorNames(szDescriptor, nDescriptor);
-							wsprintf(szTemp, "Descriptor: %s<BR>", szDescriptor);
+							StringCchPrintf(szTemp, sizeof(szTemp), "Descriptor: %s<BR>", szDescriptor);
 							lstrcat(v->szSIFormatBuffer, szTemp);
 
 							DecodeMPEG2Descriptor(&v->pat.pmt[nPMTIndex].pProgramInfo[nOffset], FALSE);
@@ -1524,6 +1532,7 @@ void HTMLExport(HANDLE hHTMFile, int nExportSITables, char * szOutputFilename)
 							case PARSE_ES_TYPE_H265_VIDEO:
 							case PARSE_ES_TYPE_MPEG4_VIDEO:
 							case PARSE_ES_TYPE_VC1_VIDEO:
+							case PARSE_ES_TYPE_AV1_VIDEO:
 								FormatGenericVideoParse(nPMTIndex, nESIndex, szParseDecode, sizeof(szParseDecode));
 								break;
 							case PARSE_ES_TYPE_MPEG_AUDIO:
@@ -1535,6 +1544,11 @@ void HTMLExport(HANDLE hHTMFile, int nExportSITables, char * szOutputFilename)
 							case PARSE_ES_TYPE_MPEG2_AAC_AUDIO:
 							case PARSE_ES_TYPE_MPEG4_AAC_AUDIO:
 								FormatAACAudioParse((PPARSEDAACAUDIO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData, szParseDecode);
+								break;
+
+							case PARSE_ES_TYPE_NONE:
+							case PARSE_ES_TYPE_TELETEXT:
+							case PARSE_ES_TYPE_AUDIO_TITLE:
 								break;
 							}
 							if (lstrlen(szParseDecode))
@@ -1731,7 +1745,7 @@ void HTMLExport(HANDLE hHTMFile, int nExportSITables, char * szOutputFilename)
 
 	if ((nExportSITables & 0x80) == 0x80)
 	{
-		int i;
+		uint16_t i;
 
 		WriteHTMLLine(hHTMFile, "<H3>PID Usage Chart</H3>");
 
@@ -1796,7 +1810,7 @@ void HTMLExport(HANDLE hHTMFile, int nExportSITables, char * szOutputFilename)
 				sprintf(szTemp, "   <TD WIDTH=\"60%%\" HEIGHT=\"1\"><FONT SIZE=\"-1\"><HR ALIGN=LEFT COLOR=\"#00ff00\" SIZE=\"5\" WIDTH=\"%.1f%%\" NOSHADE></FONT SIZE></TD>", dPercent);
 			WriteHTMLLine(hHTMFile, szTemp);
 
-			GetPIDTooltipInfo(i, szPIDDescription);
+			GetPIDTooltipInfo((uint16_t)i, szPIDDescription, sizeof(szPIDDescription));
 			wsprintf(szTemp, "  <TD WIDTH=\"20%%\" HEIGHT=\"1\"><FONT SIZE=\"-2\">%s</FONT SIZE></TD>", szPIDDescription);
 			WriteHTMLLine(hHTMFile, szTemp);
 

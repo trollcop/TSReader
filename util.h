@@ -73,10 +73,18 @@ void ExtractSignalData(int nSignalChartMode, float * fNewValues0, float * fNewVa
 
 int GetLogicalChannelNumber(int nProgramNumber);
 void GetBouquetName(int nBouquetIndex, char * szOutput);
-BOOL GetPIDTooltipInfo(int nPID, char * szString);
 void GetSourceInfoLine(int nLine, char * szOutput);
-char * FormatTooltipPID(int nPID);
+
+BOOL GetPIDTooltipInfo(uint16_t nPID, char *szString, size_t len);
+char *FormatTooltipPID(uint16_t nPID);
+char *FormatPID(char *szPID, size_t len, uint16_t nPID);
+char *FormatPIDMask(char *szDest, size_t len, const char *szFormat, uint16_t nPID);
+uint32_t ParseNumber(const char *szInput, BOOL bForceHex);
 
 /* debug/output helpers */
 void dbg_printf(const char *fmt, ...);
 void MessageBoxFormat(HWND hWnd, UINT uType, const char *fmt, ...);
+
+/* qsort helper functions */
+int SortPIDsByPackets(const void *elem1, const void *elem2);
+int SortPIDsByPID(const void *elem1, const void *elem2);

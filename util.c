@@ -3,6 +3,7 @@
 #include <time.h>
 #include <winsock.h>
 #include <shlobj.h>
+#include <strsafe.h>
 #include "TSReader.h"
 #include "bcdmux.h"
 #include "util.h"
@@ -1597,7 +1598,7 @@ void GetBouquetName(int nBouquetIndex, char * szOutput)
 	}
 }
 
-BOOL GetPIDTooltipInfo(int nPID, char * szString)
+BOOL GetPIDTooltipInfo(uint16_t nPID, char *szString, size_t len)
 {
 	int nESIndex, nPMTIndex, nCATIndex, nIPIndex;
 
@@ -1606,26 +1607,27 @@ BOOL GetPIDTooltipInfo(int nPID, char * szString)
 	{
 	case 0x0000:
 		if (v->nNullPID == 0x0000)
-			wsprintf(szString, "%s DSS NULL Packet", FormatTooltipPID(0x0000));
+			StringCchPrintf(szString, len, "%s DSS NULL Packet", FormatTooltipPID(0x0000));
 		else
-			wsprintf(szString, "%s MPEG-2 Program Assocation Table", FormatTooltipPID(0x0000));
+			StringCchPrintf(szString, len, "%s MPEG-2 Program Assocation Table", FormatTooltipPID(0x0000));
 		return TRUE;
 	case 0x0001:
 		if (v->nNullPID == 0x0000)
-			wsprintf(szString, "%s DSS Master Guide Table", FormatTooltipPID(0x0001));
+			StringCchPrintf(szString, len, "%s DSS Master Guide Table", FormatTooltipPID(0x0001));
 		else
-			wsprintf(szString, "%s MPEG-2 Conditional Access Table", FormatTooltipPID(0x0001));
+			StringCchPrintf(szString, len, "%s MPEG-2 Conditional Access Table", FormatTooltipPID(0x0001));
 		return TRUE;
 	case 0x1fff:
 		if (v->nNullPID != 0x0000)
-			wsprintf(szString, "%s MPEG-2 NULL Packet", FormatTooltipPID(0x1fff));
+			StringCchPrintf(szString, len, "%s MPEG-2 NULL Packet", FormatTooltipPID(0x1fff));
 		return TRUE;
 	}
 
 	// Don't bother if it's DSS
 	if (v->nNullPID == 0x0000)
 	{
-		wsprintf(szString, "%s DSS Packet", FormatTooltipPID(nPID));
+		StringCchPrintf(szString, len, "%s DSS Packet", FormatTooltipPID(nPID));
+
 		return TRUE;
 	}
 
@@ -1644,7 +1646,7 @@ BOOL GetPIDTooltipInfo(int nPID, char * szString)
 				char szCAName[50] = {0};
 
 				FormatCASystemName(nCASystemID, szCAName);
-				wsprintf(szString, "%s EMM for system ID 0x%04x (%d) %s", FormatTooltipPID(nPID), nCASystemID, nCASystemID, szCAName);
+				StringCchPrintf(szString, len, "%s EMM for system ID 0x%04x (%d) %s", FormatTooltipPID(nPID), nCASystemID, nCASystemID, szCAName);
 				return TRUE;
 			}
 		}
@@ -1657,7 +1659,7 @@ BOOL GetPIDTooltipInfo(int nPID, char * szString)
 		switch(nPID)
 		{
 		case 0x0002:
-			wsprintf(szString, "%s DVB Transport Stream Descriptor Table", FormatTooltipPID(0x0002));
+			StringCchPrintf(szString, len, "%s DVB Transport Stream Descriptor Table", FormatTooltipPID(0x0002));
 			return TRUE;
 		case 0x0003:
 		case 0x0004:
@@ -1672,25 +1674,25 @@ BOOL GetPIDTooltipInfo(int nPID, char * szString)
 		case 0x000d:
 		case 0x000e:
 		case 0x000f:
-			wsprintf(szString, "%s DVB Reserved", FormatTooltipPID(nPID));
+			StringCchPrintf(szString, len, "%s DVB Reserved", FormatTooltipPID(nPID));
 			return TRUE;
 		case 0x0010:
-			wsprintf(szString, "%s DVB Network Information Table", FormatTooltipPID(0x0010));
+			StringCchPrintf(szString, len, "%s DVB Network Information Table", FormatTooltipPID(0x0010));
 			return TRUE;
 		case 0x0011:
-			wsprintf(szString, "%s DVB Service Definition Table", FormatTooltipPID(0x0011));
+			StringCchPrintf(szString, len, "%s DVB Service Definition Table", FormatTooltipPID(0x0011));
 			return TRUE;
 		case 0x0012:
-			wsprintf(szString, "%s DVB Event Information Table", FormatTooltipPID(0x0012));
+			StringCchPrintf(szString, len, "%s DVB Event Information Table", FormatTooltipPID(0x0012));
 			return TRUE;
 		case 0x0013:
-			wsprintf(szString, "%s DVB Running Status Table", FormatTooltipPID(0x0013));
+			StringCchPrintf(szString, len, "%s DVB Running Status Table", FormatTooltipPID(0x0013));
 			return TRUE;
 		case 0x0014:
-			wsprintf(szString, "%s DVB Time Definition and Offset Tables", FormatTooltipPID(0x0014));
+			StringCchPrintf(szString, len, "%s DVB Time Definition and Offset Tables", FormatTooltipPID(0x0014));
 			return TRUE;
 		case 0x0015:
-			wsprintf(szString, "%s DVB Network Synchronization", FormatTooltipPID(0x0015));
+			StringCchPrintf(szString, len, "%s DVB Network Synchronization", FormatTooltipPID(0x0015));
 			return TRUE;
 		case 0x0016:
 		case 0x0017:
@@ -1698,20 +1700,26 @@ BOOL GetPIDTooltipInfo(int nPID, char * szString)
 		case 0x0019:
 		case 0x001a:
 		case 0x001b:
-			wsprintf(szString, "%s DVB Reserved for Future Use", FormatTooltipPID(nPID));
+			StringCchPrintf(szString, len, "%s DVB Reserved for Future Use", FormatTooltipPID(nPID));
 			return TRUE;
 		case 0x001c:
-			wsprintf(szString, "%s DVB In-Band Signalling", FormatTooltipPID(nPID));
+			StringCchPrintf(szString, len, "%s DVB In-Band Signalling", FormatTooltipPID(nPID));
 			return TRUE;
 		case 0x001d:
-			wsprintf(szString, "%s DVB Measurement", FormatTooltipPID(nPID));
+			StringCchPrintf(szString, len, "%s DVB Measurement", FormatTooltipPID(nPID));
 			return TRUE;
 		case 0x001e:
-			wsprintf(szString, "%s DVB DIT", FormatTooltipPID(nPID));
+			StringCchPrintf(szString, len, "%s DVB DIT", FormatTooltipPID(nPID));
 			return TRUE;
 		case 0x001f:
-			wsprintf(szString, "%s DVB SIT", FormatTooltipPID(nPID));
+			StringCchPrintf(szString, len, "%s DVB SIT", FormatTooltipPID(nPID));
 			return TRUE;
+		case 0x0024:
+			if (v->fISDB) {
+				StringCchPrintf(szString, len, "%s ISDB-T Broadcaster Information Table", FormatTooltipPID(nPID));
+				return TRUE;
+			}
+			break;
 		}
 	}
 	else if (v->nNetworkPID == 0x1ffb)
@@ -1721,7 +1729,7 @@ BOOL GetPIDTooltipInfo(int nPID, char * szString)
 		// ATSC system
 		if (nPID == 0x1ffb)
 		{
-			wsprintf(szString, "%s ATSC Base PID (TVCT, MGT, RT, STT)", FormatTooltipPID(nPID));
+			StringCchPrintf(szString, len, "%s ATSC Base PID (TVCT, MGT, RT, STT)", FormatTooltipPID(nPID));
 			return TRUE;
 		}
 
@@ -1756,7 +1764,7 @@ BOOL GetPIDTooltipInfo(int nPID, char * szString)
 				else
 					lstrcpy(szTableName, "Reserved for future ATSC use");
 
-				wsprintf(szString, "%s ATSC %s", FormatTooltipPID(nPID), szTableName);
+				StringCchPrintf(szString, len, "%s ATSC %s", FormatTooltipPID(nPID), szTableName);
 				return TRUE;
 			}
 		}
@@ -1766,7 +1774,7 @@ BOOL GetPIDTooltipInfo(int nPID, char * szString)
 		// DCII system
 		if (nPID == 0x0ffe)
 		{
-			wsprintf(szString, "%s DCII Network Tables", FormatTooltipPID(nPID));
+			StringCchPrintf(szString, len, "%s DCII Network Tables", FormatTooltipPID(nPID));
 			return TRUE;
 		}
 	}
@@ -1782,7 +1790,7 @@ BOOL GetPIDTooltipInfo(int nPID, char * szString)
 			char szLogicalChannelNumber[64] = {0};
 			if (nLCN != 0)
 				wsprintf(szLogicalChannelNumber, "%d/", nLCN);
-			wsprintf(szString, "%s MPEG-2 PMT for program %s%d", FormatTooltipPID(nPID), szLogicalChannelNumber, v->pat.pmt[nPMTIndex].nProgramNumber);
+			StringCchPrintf(szString, len, "%s MPEG-2 PMT for program %s%d", FormatTooltipPID(nPID), szLogicalChannelNumber, v->pat.pmt[nPMTIndex].nProgramNumber);
 			return TRUE;
 		}
 		for (nESIndex = 0; nESIndex < MAX_ESLIST_ENTRIES; nESIndex++)
@@ -1798,7 +1806,7 @@ BOOL GetPIDTooltipInfo(int nPID, char * szString)
 				DecodeStreamType(v->pat.pmt[nPMTIndex].es[nESIndex].nStreamType, szStreamTypeEnglish, nPMTIndex, nESIndex);
 				if (nLCN != 0)
 					wsprintf(szLogicalChannelNumber, "%d/", nLCN);
-				wsprintf(szString, "%s %s for program %s%d", FormatTooltipPID(nPID), szStreamTypeEnglish, szLogicalChannelNumber, v->pat.pmt[nPMTIndex].nProgramNumber);
+				StringCchPrintf(szString, len, "%s %s for program %s%d", FormatTooltipPID(nPID), szStreamTypeEnglish, szLogicalChannelNumber, v->pat.pmt[nPMTIndex].nProgramNumber);
 				return TRUE;
 			}
 
@@ -1826,7 +1834,7 @@ BOOL GetPIDTooltipInfo(int nPID, char * szString)
 							FormatCASystemName(nCASystemID, szCAName);
 							if (nLCN != 0)
 								wsprintf(szLogicalChannelNumber, "%d/", nLCN);
-							wsprintf(szString, "%s ECM for system ID 0x%04x (%d) %s for program %s%d", FormatTooltipPID(nPID), nCASystemID, nCASystemID, szCAName, szLogicalChannelNumber, v->pat.pmt[nPMTIndex].nProgramNumber);
+							StringCchPrintf(szString, len, "%s ECM for system ID 0x%04x (%d) %s for program %s%d", FormatTooltipPID(nPID), nCASystemID, nCASystemID, szCAName, szLogicalChannelNumber, v->pat.pmt[nPMTIndex].nProgramNumber);
 							return TRUE;				
 						}
 					}
@@ -1843,7 +1851,7 @@ BOOL GetPIDTooltipInfo(int nPID, char * szString)
 
 			if (nLCN != 0)
 				wsprintf(szLogicalChannelNumber, "%d/", nLCN);
-			wsprintf(szString, "%s MPEG-2 PCR for program %s%d", FormatTooltipPID(nPID), szLogicalChannelNumber, v->pat.pmt[nPMTIndex].nProgramNumber);
+			StringCchPrintf(szString, len, "%s MPEG-2 PCR for program %s%d", FormatTooltipPID(nPID), szLogicalChannelNumber, v->pat.pmt[nPMTIndex].nProgramNumber);
 			return TRUE;
 		}
 	}
@@ -1874,7 +1882,7 @@ BOOL GetPIDTooltipInfo(int nPID, char * szString)
 							char szCAName[50] = {0};
 
 							FormatCASystemName(nCASystemID, szCAName);
-							wsprintf(szString, "%s ECM for system ID 0x%04x (%d) %s for program %d", FormatTooltipPID(nPID), nCASystemID, nCASystemID, szCAName, v->pat.pmt[nPMTIndex].nProgramNumber);
+							StringCchPrintf(szString, len, "%s ECM for system ID 0x%04x (%d) %s for program %d", FormatTooltipPID(nPID), nCASystemID, nCASystemID, szCAName, v->pat.pmt[nPMTIndex].nProgramNumber);
 							return TRUE;				
 						}
 					}
@@ -1889,13 +1897,13 @@ BOOL GetPIDTooltipInfo(int nPID, char * szString)
 	{
 		if (v->ippid[nIPIndex].nPID == nPID)
 		{
-			wsprintf(szString, "%s IP/DVB Traffic", FormatTooltipPID(nPID));
+			StringCchPrintf(szString, len, "%s IP/DVB Traffic", FormatTooltipPID(nPID));
 			return TRUE;
 		}
 	}
 
 	// Unknown use
-	wsprintf(szString, "%s Unknown usage", FormatTooltipPID(nPID));
+	StringCchPrintf(szString, len, "%s Unknown usage", FormatTooltipPID(nPID));
 	return FALSE;
 }
 
@@ -2007,12 +2015,39 @@ void GetSourceInfoLine(int nLine, char * szOutput)
 	}
 }
 
-char * FormatTooltipPID(int nPID)
+char *FormatTooltipPID(uint16_t nPID)
 {
-	static char szResult[32];
+	static char szResult[32] = { 0, };
 
-	wsprintf(szResult, v->szOutputPIDFlags, nPID);
+	StringCchPrintf(szResult, sizeof(szResult), v->szOutputPIDFlags, nPID);
 	return szResult;
+}
+
+char *FormatPID(char *szPID, size_t len, uint16_t nPID)
+{
+	StringCchPrintf(szPID, len, v->szOutputPIDFlags, nPID);
+	return szPID;
+}
+
+char *FormatPIDMask(char *szDest, size_t len, const char *szFormat, uint16_t nPID)
+{
+	char szMask[64];
+	StringCchPrintf(szMask, sizeof(szMask), szFormat, v->szOutputPIDFlags);
+	StringCchPrintf(szDest, len, szMask, nPID);
+
+	return szDest;
+}
+
+uint32_t ParseNumber(const char *szInput, BOOL bForceHex)
+{
+	long val = 0;
+	char *endptr;
+	
+	val = strtol(szInput, &endptr, bForceHex ? 16 : 0);
+	if ((errno == ERANGE) || (endptr == szInput))
+		return 0;
+
+	return (uint32_t)val;
 }
 
 void dbg_printf(const char *fmt, ...)
@@ -2038,4 +2073,28 @@ void MessageBoxFormat(HWND hWnd, UINT uType, const char *fmt, ...)
 	vsnprintf_s(szTemp, sizeof(szTemp), sizeof(szTemp), fmt, args);
 	MessageBox(hWnd, szTemp, gszAppName, uType);
 	va_end(args);
+}
+
+int SortPIDsByPackets(const void *elem1, const void *elem2)
+{
+	PPIDCOUNTER pPID1 = (PPIDCOUNTER)elem1;
+	PPIDCOUNTER pPID2 = (PPIDCOUNTER)elem2;
+
+	if (pPID1->lnPackets > pPID2->lnPackets)
+		return -1;
+	if (pPID1->lnPackets < pPID2->lnPackets)
+		return 1;
+	return 0;
+}
+
+int SortPIDsByPID(const void *elem1, const void *elem2)
+{
+	PPIDCOUNTER pPID1 = (PPIDCOUNTER)elem1;
+	PPIDCOUNTER pPID2 = (PPIDCOUNTER)elem2;
+
+	if (pPID1->nPID < pPID2->nPID)
+		return -1;
+	if (pPID1->nPID > pPID2->nPID)
+		return 1;
+	return 0;
 }

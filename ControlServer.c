@@ -20,7 +20,6 @@ BOOL LoadSource(HWND hWnd);
 void CloseExistingChart(HWND hDlg, DWORD dwMenuID);
 void GetSourceInfoLine(int nLine, char * szOutput);
 int __cdecl SortPIDsByPID(const void *elem1, const void *elem2);
-BOOL GetPIDTooltipInfo(int nPID, char * szString);
 void GetNextECMPID(void);
 HTREEITEM AddItemToSITree(HWND hwndTV, LPTSTR lpszItem, int nLevel, LPARAM lParam, int nIconIndex, HTREEITEM hParent, HTREEITEM hInsertAfter);
 
@@ -348,7 +347,7 @@ void CS__PIDs(char * szParameters)
 			char szResponse[512];
 			char szPIDUsage[256] = {0};
 
-			GetPIDTooltipInfo(pc[i].nPID, szPIDUsage);
+			GetPIDTooltipInfo(pc[i].nPID, szPIDUsage, sizeof(szPIDUsage));
 			szPIDFirstSpace = strstr(szPIDUsage, " ") + 1;
 
 			dPercent = ((double)pc[i].lnPackets / (double)v->lnCopyTotalTSPackets) * 100.0;

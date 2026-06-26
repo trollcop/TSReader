@@ -17,12 +17,6 @@ extern char gszAppName[];
 
 int __cdecl SortPIDsByPackets(const void *elem1, const void *elem2);
 int __cdecl SortPIDsByPID(const void *elem1, const void *elem2);
-BOOL GetPIDTooltipInfo(int nPID, char * szString);
-char * FormatTooltipPID(int nPID);
-BOOL IsAC3AudioStream(int nPMTProgramIndex, int nESIndex);
-BOOL IsPCMAudioStream(int nPMTProgramIndex, int nESIndex);
-BOOL IsDTSAudioStream(int nPMTProgramIndex, int nESIndex);
-void GetSourceInfoLine(int nLine, char * szOutput);
 
 // Stuff in CCDecoder (why there?)
 void bs_init(bs_t* b, uint8_t* buf, int size);
@@ -171,12 +165,11 @@ void SetupPIEGraphData(int nChartIndex)
 		char szPointLabel[128];
 		float f = (float)pc[i].lnPackets;
 		PEvsetcellEx(v->m_hPE[nChartIndex], PEP_faXDATA, 0, i, &f);
-		GetPIDTooltipInfo(pc[i].nPID, szPointLabel);
+		GetPIDTooltipInfo(pc[i].nPID, szPointLabel, sizeof(szPointLabel));
 		PEvsetcell(v->m_hPE[nChartIndex], PEP_szaPOINTLABELS, i, szPointLabel);
 		if (v->fSaveChartDataEnabled)
 		{
-			sprintf(szSaveData, "PID=%04x,Packets=%d",
-				    pc[i].nPID, (int)f);
+			sprintf(szSaveData, "PID=%04x,Packets=%d", pc[i].nPID, (int)f);
 			SaveChartData(nChartIndex, szSaveData);
 		}
 	}
@@ -872,7 +865,7 @@ void ProgramUsageCheckMaxRate(int nChartIndex, float * fBandwidth)
 void SetupProgramUsageData(int nChartIndex)
 {
 	int nPMTIndex, nESIndex;
-	int nESPID;
+	uint16_t nESPID;
 	int s = 0;
 	float fPercent;
 	float fPIDRate;
@@ -976,7 +969,7 @@ void SetupProgramUsageData(int nChartIndex)
 				fPIDRate = ((float)v->dDisplayMuxRate / (float)v->nMuxRateCounter) * 8.0f;
 				fPIDRate  = ((fPIDRate / 100.0f) * fPercent);
 			}
-			if (GetPIDTooltipInfo(nESPID, szTemp) == TRUE)
+			if (GetPIDTooltipInfo(nESPID, szTemp, sizeof(szTemp)) == TRUE)
 				fBandwidth[4] += fPIDRate;
 			else
 				fGhostBandwidth[4] += fPIDRate;

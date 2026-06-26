@@ -33,6 +33,38 @@ static float GetVideoFrameRate(AVCodecContext *ctx)
 	return 0.0f;
 }
 
+static ChromaFormat GetChromaSubsampling(AVCodecContext *ctx)
+{
+	const char *pix_fmt_name = av_get_pix_fmt_name(ctx->pix_fmt);
+	if (pix_fmt_name) {
+		dbg_printf("%s pixel format: %s\n", __FUNCTION__, pix_fmt_name);
+
+		if (strstr(pix_fmt_name, "420"))
+			return CHROMA_420;
+		else if (strstr(pix_fmt_name, "422"))
+			return CHROMA_422;
+		else if (strstr(pix_fmt_name, "444"))
+			return CHROMA_444;
+	}
+
+	return CHROMA_RESERVED;
+}
+
+static void GetAspectRatio(const AVFrame *frame, int *dar_num, int *dar_den)
+{
+	AVRational sar = frame->sample_aspect_ratio;
+	/* if it wasn't specified */
+	if (sar.num == 0 || sar.den == 0) {
+		sar.num = 1;
+		sar.den = 1;
+	}
+
+	av_reduce(dar_num, dar_den,
+		frame->width * sar.num,
+		frame->height * sar.den,
+		1024 * 1024);
+}
+
 static InterlacedType GetFrameInterlace(AVFrame *frame)
 {
 	if (frame->flags & AV_FRAME_FLAG_INTERLACED)
@@ -119,11 +151,13 @@ static void VideoDecoderThread(PESPARSERINFO esparserinfo, enum AVCodecID codec_
 			if (v->pat.pmt[v->nESParsePMTIndex[esparserinfo->nES]].es[v->nESParseESIndex[esparserinfo->nES]].pParsedData == NULL) {
 				PPARSEDGENERICVIDEO pVideo = LocalAlloc(LPTR, sizeof(PARSEDGENERICVIDEO));
 				if (pVideo) {
-					pVideo->tag = 0xdeadbeef;
+					pVideo->tag = PARSER_TAG;
 					pVideo->width = frame->width;
 					pVideo->height = frame->height;
 					pVideo->interlaced = GetFrameInterlace(frame);
 					pVideo->framerate = GetVideoFrameRate(ctx);
+					pVideo->chroma = GetChromaSubsampling(ctx);
+					GetAspectRatio(frame, &pVideo->dar_num, &pVideo->dar_den);
 					v->pat.pmt[v->nESParsePMTIndex[esparserinfo->nES]].es[v->nESParseESIndex[esparserinfo->nES]].pParsedData = (BYTE *)pVideo;
 				}
 			}

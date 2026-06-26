@@ -2113,7 +2113,7 @@ BOOL LoadTableList(HWND hDlg, char * szInputFile)
 	while (ListView_DeleteItem(GetDlgItem(hDlg, IDC_RECORD_TABLES_PID_TABLE_LIST), 0) == TRUE)
 		;
 	for (nItemIndex = 0; nItemIndex < MAX_RECORD_TABLES - 1; nItemIndex++)
-		v->record_tables[nItemIndex].nPID = -1;
+		v->record_tables[nItemIndex].nPID = (uint16_t)-1;
 	nItemIndex = 0;
 
 	do
@@ -2138,18 +2138,10 @@ BOOL LoadTableList(HWND hDlg, char * szInputFile)
 
 		if (memcmp(szInputLine, "0x", 2) == 0)
 			fHex = TRUE;
-		if (fHex)
-		{
-			sscanf(&szInputLine[2], "%x", &v->record_tables[nItemIndex].nPID);
-			sscanf(&szTab1[2], "%x", &v->record_tables[nItemIndex].nStartTable);
-			sscanf(&szTab2[2], "%x", &v->record_tables[nItemIndex].nEndTable);
-		}
-		else
-		{
-			sscanf(szInputLine, "%d", &v->record_tables[nItemIndex].nPID);
-			sscanf(szTab1, "%d", &v->record_tables[nItemIndex].nStartTable);
-			sscanf(szTab2, "%d", &v->record_tables[nItemIndex].nEndTable);
-		}
+
+		v->record_tables[nItemIndex].nPID = (uint16_t)ParseNumber(szInputLine, fHex);
+		v->record_tables[nItemIndex].nStartTable = (uint8_t)ParseNumber(szTab1, fHex);
+		v->record_tables[nItemIndex].nEndTable = (uint8_t)ParseNumber(szTab2, fHex);
 
 		memset(&lvi, 0, sizeof(lvi));
 		lvi.pszText = LPSTR_TEXTCALLBACK;   // app. maintains text 
@@ -2201,10 +2193,7 @@ BOOL SaveTableList(HWND hDlg, char * szOutputFile)
 		if (v->record_tables[nItemIndex].nPID == -1)
 			continue;
 
-		if (v->fDecimalPIDs)
-			wsprintf(szTemp, "%d\t%d\t%d\r\n", v->record_tables[nItemIndex].nPID, v->record_tables[nItemIndex].nStartTable, v->record_tables[nItemIndex].nEndTable);
-		else
-			wsprintf(szTemp, "0x%04x\t0x%02x\t0x%02x\r\n", v->record_tables[nItemIndex].nPID, v->record_tables[nItemIndex].nStartTable, v->record_tables[nItemIndex].nEndTable);
+		StringCchPrintf(szTemp, sizeof(szTemp), v->fDecimalPIDs ? "%d\t%d\t%d\r\n" : "0x%04x\t0x%02x\t0x%02x\r\n", v->record_tables[nItemIndex].nPID, v->record_tables[nItemIndex].nStartTable, v->record_tables[nItemIndex].nEndTable);
 		WriteFile(hOutputFile, szTemp, lstrlen(szTemp), &dwWritten, NULL);
 	}
 	CloseHandle(hOutputFile);
@@ -2291,8 +2280,7 @@ INT_PTR CALLBACK RecordAdvancedMuxDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, L
 				{
 					int nIndex;
 					char szPID[64];
-
-					wsprintf(szPID, "%s", FormatTooltipPID(v->pc[i].nPID));
+					FormatPID(szPID, sizeof(szPID), v->pc[i].nPID);
 					nIndex = (int)SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_ADDSTRING, 0, (LPARAM)szPID);
 					if (v->bAdvancedDropPID[v->pc[i].nPID])
 						SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_SETSEL, TRUE, nIndex);
@@ -3972,7 +3960,7 @@ DWORD WINAPI AdvancedRecordFreeSpaceMonitorThread(LPVOID lpv)
 				ULARGE_INTEGER ulOldestFile;
 				HANDLE hFind;
 				WIN32_FIND_DATA fd;
-				char * szExtensionPointer;
+				char *szExtensionPointer = NULL;
 				char szSearchPath[MAX_PATH];
 				char szOldestFile[MAX_PATH] = {0};
 				char szOutputFolder[MAX_PATH];
@@ -4537,7 +4525,7 @@ __int64 DecodeDSSRTC(BYTE * pRTC)
 	return ((__int64)pRTC[0] << 24 | (__int64)pRTC[1] << 16 | (__int64)pRTC[2] << 8 | (__int64)pRTC[3]);
 }
 
-void DSSMuxrateProcessing(int nPID)
+void DSSMuxrateProcessing(uint16_t nPID)
 {
 	// Multiplex bitrate calculation
 	if (v->nMuxRatePID == v->nNullPID)
@@ -4615,7 +4603,7 @@ void DSSMuxrateProcessing(int nPID)
 double dPriorPCR = -1.0;
 double dPriorSystem = -1.0;
 
-void MPEG2MuxrateProcessing(int nPID)
+void MPEG2MuxrateProcessing(uint16_t nPID)
 {
 	// Multiplex bitrate calculation
 	if (v->nMuxRatePID == v->nNullPID)
@@ -4896,7 +4884,7 @@ void CheckForGeneralESParsing(int nPID, int nComparePID, BYTE * bESBuffer, int *
 	if (nComparePID == nPID)
 	{
 		int nAdaptation = (tv->pIncomingBuffer[tv->nBufferOffset + 3] >> 4) & 0x03;
-		BYTE * pWritePtr;
+		BYTE *pWritePtr = NULL;
 		int nWriteLen = 0;
 
 		switch(nAdaptation)
@@ -6202,7 +6190,7 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 		// Loop for each packet
 		do
 		{
-			int nPID;
+			uint16_t nPID;
 			
 			tv->fIgnoreContinuity = FALSE;
 
@@ -6353,12 +6341,10 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 							tv->nBufferID = BUFFER_PSIP;
 						else if (nPID == v->nNetworkPID)
 							tv->nBufferID = BUFFER_NETWORK;
-						else if (v->nPMTPID == v->nNullPID && nPID == 0x0000)
-						{
+						else if (v->nPMTPID == v->nNullPID && nPID == 0x0000) {
 							// done with PAT/PMT parsing but we keep an eye on the PAT for changes
-							tv->nBufferID = BUFFER_PAT_PMT;		
-						}
-						else if (nPID == 0x0011 && (v->nNetworkPID == 0x0010 || v->nNetworkPID == -1) && !v->fIgnoreEIT)
+							tv->nBufferID = BUFFER_PAT_PMT;
+						} else if (nPID == 0x0011 && (v->nNetworkPID == 0x0010 || v->nNetworkPID == -1) && !v->fIgnoreEIT)
 							tv->nBufferID = BUFFER_SDT;
 						else if (v->nNetworkPID == 0x0ffe && v->nDCIIECMDescriptorPID == nPID)
 							tv->nBufferID = BUFFER_SDT;
@@ -6384,19 +6370,19 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 						else if (nPID == v->nATSCEITPID[8] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT8;
 						else if (nPID == v->nATSCEITPID[9] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT9;
 						else if (nPID == v->nATSCEITPID[10] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT10;
-						else if (nPID == v->nATSCEITPID[11] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT11;						
-						else if (nPID == v->nATSCEITPID[12] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT12;						
-						else if (nPID == v->nATSCEITPID[13] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT13;						
-						else if (nPID == v->nATSCEITPID[14] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT14;						
-						else if (nPID == v->nATSCEITPID[15] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT15;						
-						else if (nPID == v->nATSCEITPID[16] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT16;						
-						else if (nPID == v->nATSCEITPID[17] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT17;						
-						else if (nPID == v->nATSCEITPID[18] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT18;						
-						else if (nPID == v->nATSCEITPID[19] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT19;						
-						else if (nPID == v->nATSCEITPID[20] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT20;						
-						else if (nPID == v->nATSCEITPID[21] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT21;						
-						else if (nPID == v->nATSCEITPID[22] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT22;						
-						else if (nPID == v->nATSCEITPID[23] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT23;												
+						else if (nPID == v->nATSCEITPID[11] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT11;
+						else if (nPID == v->nATSCEITPID[12] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT12;
+						else if (nPID == v->nATSCEITPID[13] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT13;
+						else if (nPID == v->nATSCEITPID[14] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT14;
+						else if (nPID == v->nATSCEITPID[15] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT15;
+						else if (nPID == v->nATSCEITPID[16] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT16;
+						else if (nPID == v->nATSCEITPID[17] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT17;
+						else if (nPID == v->nATSCEITPID[18] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT18;
+						else if (nPID == v->nATSCEITPID[19] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT19;
+						else if (nPID == v->nATSCEITPID[20] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT20;
+						else if (nPID == v->nATSCEITPID[21] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT21;
+						else if (nPID == v->nATSCEITPID[22] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT22;
+						else if (nPID == v->nATSCEITPID[23] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT23;
 						else if (nPID == v->nATSCEITPID[24] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT24;
 						else if (nPID == v->nATSCEITPID[25] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT25;
 						else if (nPID == v->nATSCEITPID[26] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT26;
@@ -6408,18 +6394,18 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 						else if (nPID == v->nATSCEITPID[32] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT32;
 						else if (nPID == v->nATSCEITPID[33] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT33;
 						else if (nPID == v->nATSCEITPID[34] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT34;
-						else if (nPID == v->nATSCEITPID[35] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT35;						
-						else if (nPID == v->nATSCEITPID[36] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT36;						
-						else if (nPID == v->nATSCEITPID[37] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT37;						
-						else if (nPID == v->nATSCEITPID[38] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT38;						
-						else if (nPID == v->nATSCEITPID[39] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT39;						
-						else if (nPID == v->nATSCEITPID[40] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT40;						
-						else if (nPID == v->nATSCEITPID[41] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT41;						
-						else if (nPID == v->nATSCEITPID[42] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT42;						
-						else if (nPID == v->nATSCEITPID[43] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT43;						
-						else if (nPID == v->nATSCEITPID[44] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT44;						
-						else if (nPID == v->nATSCEITPID[45] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT45;						
-						else if (nPID == v->nATSCEITPID[46] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT46;						
+						else if (nPID == v->nATSCEITPID[35] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT35;
+						else if (nPID == v->nATSCEITPID[36] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT36;
+						else if (nPID == v->nATSCEITPID[37] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT37;
+						else if (nPID == v->nATSCEITPID[38] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT38;
+						else if (nPID == v->nATSCEITPID[39] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT39;
+						else if (nPID == v->nATSCEITPID[40] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT40;
+						else if (nPID == v->nATSCEITPID[41] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT41;
+						else if (nPID == v->nATSCEITPID[42] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT42;
+						else if (nPID == v->nATSCEITPID[43] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT43;
+						else if (nPID == v->nATSCEITPID[44] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT44;
+						else if (nPID == v->nATSCEITPID[45] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT45;
+						else if (nPID == v->nATSCEITPID[46] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT46;
 						else if (nPID == v->nATSCEITPID[47] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT47;
 						else if (nPID == v->nATSCEITPID[48] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT48;
 						else if (nPID == v->nATSCEITPID[49] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_EIT49;
@@ -6472,19 +6458,19 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 						else if (nPID == v->nATSCETTPID[32] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT32;
 						else if (nPID == v->nATSCETTPID[33] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT33;
 						else if (nPID == v->nATSCETTPID[34] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT34;
-						else if (nPID == v->nATSCETTPID[35] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT35;						
-						else if (nPID == v->nATSCETTPID[36] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT36;						
-						else if (nPID == v->nATSCETTPID[37] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT37;						
-						else if (nPID == v->nATSCETTPID[38] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT38;						
-						else if (nPID == v->nATSCETTPID[39] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT39;						
-						else if (nPID == v->nATSCETTPID[40] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT40;						
-						else if (nPID == v->nATSCETTPID[41] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT41;						
-						else if (nPID == v->nATSCETTPID[42] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT42;						
-						else if (nPID == v->nATSCETTPID[43] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT43;						
-						else if (nPID == v->nATSCETTPID[44] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT44;						
-						else if (nPID == v->nATSCETTPID[45] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT45;						
-						else if (nPID == v->nATSCETTPID[46] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT46;						
-						else if (nPID == v->nATSCETTPID[47] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT47;												
+						else if (nPID == v->nATSCETTPID[35] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT35;
+						else if (nPID == v->nATSCETTPID[36] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT36;
+						else if (nPID == v->nATSCETTPID[37] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT37;
+						else if (nPID == v->nATSCETTPID[38] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT38;
+						else if (nPID == v->nATSCETTPID[39] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT39;
+						else if (nPID == v->nATSCETTPID[40] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT40;
+						else if (nPID == v->nATSCETTPID[41] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT41;
+						else if (nPID == v->nATSCETTPID[42] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT42;
+						else if (nPID == v->nATSCETTPID[43] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT43;
+						else if (nPID == v->nATSCETTPID[44] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT44;
+						else if (nPID == v->nATSCETTPID[45] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT45;
+						else if (nPID == v->nATSCETTPID[46] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT46;
+						else if (nPID == v->nATSCETTPID[47] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT47;
 						else if (nPID == v->nATSCETTPID[48] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT48;
 						else if (nPID == v->nATSCETTPID[49] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT49;
 						else if (nPID == v->nATSCETTPID[50] && !v->fIgnoreEIT)  tv->nBufferID = BUFFER_ETT50;
@@ -6542,12 +6528,12 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 								}
 								else if (v->nPMTPID == v->nNullPID && !v->fContinuousPMTParserDisabled)
 								{
-									int nPMTListenIndex;
+									int index;
 
-									for (nPMTListenIndex = 0; nPMTListenIndex < MAX_PAT_ENTRIES; nPMTListenIndex++)
+									for (index = 0; index < MAX_PAT_ENTRIES; index++)
 									{
-										if (v->pmtlisten[nPMTListenIndex].nPID == nPID)
-											PMTListenParser(nPMTListenIndex, nPID, &tv->pIncomingBuffer[tv->nBufferOffset]);
+										if (v->pmtlisten[index].nPID == nPID)
+											PMTListenParser(index, nPID, &tv->pIncomingBuffer[tv->nBufferOffset]);
 									}
 								}
 							}
@@ -7117,30 +7103,6 @@ HTREEITEM AddItemToSITree(HWND hwndTV, LPTSTR lpszItem, int nLevel, LPARAM lPara
  
     return hPrev; 
 } 
-
-int __cdecl SortPIDsByPackets(const void *elem1, const void *elem2)
-{
-	PPIDCOUNTER pPID1 = (PPIDCOUNTER)elem1;
-	PPIDCOUNTER pPID2 = (PPIDCOUNTER)elem2;
-
-	if (pPID1->lnPackets > pPID2->lnPackets)
-		return -1;
-	if (pPID1->lnPackets < pPID2->lnPackets)
-		return 1;
-	return 0;
-}
-
-int __cdecl SortPIDsByPID(const void *elem1, const void *elem2)
-{
-	PPIDCOUNTER pPID1 = (PPIDCOUNTER)elem1;
-	PPIDCOUNTER pPID2 = (PPIDCOUNTER)elem2;
-
-	if (pPID1->nPID < pPID2->nPID)
-		return -1;
-	if (pPID1->nPID > pPID2->nPID)
-		return 1;
-	return 0;
-}
 
 int GetPMTOffsetFromThumbnailScrollOffset(void)
 {
@@ -9111,7 +9073,7 @@ void UpdatePIDChartingData(HWND hDlg)
 	EnterCriticalSection(&v->ss.csPIDCounter);//zz
 	for (i = 0; i < 8192; i++)
 	{
-		v->pc[nOutputPIDCounter].nPID = i;
+		v->pc[nOutputPIDCounter].nPID = (uint16_t)i;
 		v->pc[nOutputPIDCounter].lnPackets = v->lnPIDCounter[i];
 		if (v->fRealtimeCharting)
 			v->lnPIDCounter[i] = 0;
@@ -9703,7 +9665,7 @@ void SetupForNewStream(HWND hWnd)
 	{
 		int nTableIndex;
 		for (nTableIndex = 0; nTableIndex < MAX_RECORD_TABLES; nTableIndex++)
-			v->record_tables[nTableIndex].nPID = -1;
+			v->record_tables[nTableIndex].nPID = (uint16_t)-1;
 	}
 	if (v->fStreamingXMLMode)
 	{
@@ -10624,8 +10586,6 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 					nProgramNumber = v->pat.pmt[i].nProgramNumber;
 					if (v->pChannelData[nProgramNumber] != NULL && v->pat.pmt[i].hPMTTreeItem != NULL)
 					{
-						int nIcon;
-
 						v->pat.pmt[i].fSetupSDTName = TRUE;
 						if (wParam == SI_PARSER_SDT)
 						{
@@ -10915,8 +10875,7 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 					if (v->dvbtot.hRootTreeItem == NULL)
 					{
 						char szTemp2[128];
-						wsprintf(szMask, "TOT PID %s", v->szOutputPIDFlags);
-						wsprintf(szTemp2, szMask, 0x0014);
+						FormatPIDMask(szTemp2, sizeof(szTemp2), "TOT PID %s", 0x0014);
 						v->dvbtot.hRootTreeItem = AddItemToSITree(hWndTV, szTemp2, 1, SI_PARSER_NOP, 13, NULL, v->pat.hPATTreeItem);
 						v->dvbtot.hTreeItem = AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_TDT + 1, 13, v->dvbtot.hRootTreeItem, NULL);
 						TreeView_Expand(hWndTV, v->dvbtot.hRootTreeItem, TVE_EXPAND);
@@ -11075,7 +11034,7 @@ INT_PTR CALLBACK IPDVBPIDSelectDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
 						int nIndex;
 						int j = 0;
 
-						wsprintf(szPID, "%s", FormatTooltipPID(v->pc[i].nPID));			
+						FormatPID(szPID, sizeof(szPID), v->pc[i].nPID);
 						nIndex = (int)SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_ADDSTRING, 0, (LPARAM)szPID);
 						for (j = 0; j < MAX_RECORD_BUFFERS; j++)
 						{
@@ -11277,13 +11236,6 @@ INT_PTR CALLBACK AboutDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 			SetDlgItemText(hDlg, IDC_VERSION, szTemp);
 
 			wsprintf(szTemp, "Built %s %s", __DATE__, __TIME__);
-#ifdef BETA
-			{
-				char szTemp2[64];
-				wsprintf(szTemp2, " Expires %02d/%04d", BETA_EXPIRE_MONTH, BETA_EXPIRE_YEAR);
-				lstrcat(szTemp, szTemp2);
-			}
-#endif BETA
 			SetDlgItemText(hDlg, IDC_BUILT, szTemp);
 
 			if (GetDescription != NULL)
@@ -12267,7 +12219,7 @@ INT_PTR CALLBACK PIDListDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 						continue;
 				}
 
-				GetPIDTooltipInfo(v->pc[i].nPID, szToolTip);
+				GetPIDTooltipInfo(v->pc[i].nPID, szToolTip, sizeof(szToolTip));
 				SendDlgItemMessage(hDlg, IDC_PID_LISTBOX, LB_ADDSTRING, 0, (LPARAM)szToolTip);
 				nActivePIDs++;
 			}
@@ -12730,7 +12682,7 @@ INT_PTR CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam
 						{
 							HWND hWndTV = GetDlgItem(v->hDlgSIParser, IDC_SI_TREE);
 							LV_ITEM lvi; 
-							char szTemp[128];
+							char szTemp2[128];
 
 							// add this channel to the end
 							v->editpmt.nProgramNumber = nProgramNumber;
@@ -12739,15 +12691,12 @@ INT_PTR CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam
 
 							if (v->pat.hPATTreeItem == NULL)
 							{
-								char szMask[64];
-
-								wsprintf(szMask, "PAT PID %s", v->szOutputPIDFlags);
-								wsprintf(szTemp, szMask, 0);
-								v->pat.hPATTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_PAT, 0, NULL, TVI_FIRST);
+								FormatPIDMask(szTemp2, sizeof(szTemp2), "PAT PID %s", 0);
+								v->pat.hPATTreeItem = AddItemToSITree(hWndTV, szTemp2, 1, SI_PARSER_PAT, 0, NULL, TVI_FIRST);
 							}
 
-							wsprintf(szTemp, "Manual - Program %d", v->pat.pmt[nPMTIndex].nProgramNumber);
-							v->pat.pmt[nPMTIndex].hPMTTreeItem = AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_PMT + nPMTIndex, 1, v->pat.hPATTreeItem, NULL);
+							wsprintf(szTemp2, "Manual - Program %d", v->pat.pmt[nPMTIndex].nProgramNumber);
+							v->pat.pmt[nPMTIndex].hPMTTreeItem = AddItemToSITree(hWndTV, szTemp2, 2, SI_PARSER_PMT + nPMTIndex, 1, v->pat.hPATTreeItem, NULL);
 							PostMessage(v->hDlgSIParser, WM_USER + 2, SI_PARSER_PMT, nPMTIndex);
 
 							memset(&lvi, 0, sizeof(lvi));
@@ -12777,18 +12726,15 @@ INT_PTR CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam
 			break;
 		case IDC_MANUAL_ES_ADD:
 			{
-				int nESType = 0;
-				int nESPID = 0;
+				uint8_t nESType = 0;
+				uint16_t nESPID = 0;
 				int nESIndex;
 				char szTemp[16];
 
 				GetDlgItemText(hDlg, IDC_MANUAL_CHANNEL_ES_TYPE, szTemp, sizeof(szTemp));
-				sscanf(szTemp, "%x", &nESType);
+				nESType = (uint8_t)ParseNumber(szTemp, TRUE);
 				GetDlgItemText(hDlg, IDC_MANUAL_CHANNEL_ES_PID, szTemp, sizeof(szTemp));
-				if (v->fDecimalPIDs)
-					sscanf(szTemp, "%d", &nESPID);
-				else
-					sscanf(szTemp, "%x", &nESPID);
+				nESPID = (uint16_t)ParseNumber(szTemp, FALSE);
 				if (nESPID == 0 || nESType == 0)
 				{
 					MessageBox(hDlg, "Set the ES type and ES PID before using this function", gszAppName, MB_ICONSTOP);
@@ -12811,17 +12757,12 @@ INT_PTR CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam
 				{
 					if (v->editpmt.es[nESIndex].nStreamType == 0)
 					{
-						char szTemp[32];
-						char szMask[32];
+						char szESList[32];
 
 						v->editpmt.es[nESIndex].nStreamType = nESType & 0xff;
 						v->editpmt.es[nESIndex].nESPID = nESPID & 0x1fff;
-						if (v->fDecimalPIDs)
-							lstrcpy(szMask, "%02x: %d");
-						else
-							lstrcpy(szMask, "%02x: %04x");
-						wsprintf(szTemp, szMask, v->editpmt.es[nESIndex].nStreamType, v->editpmt.es[nESIndex].nESPID);
-						SendDlgItemMessage(hDlg, IDC_MANUAL_ES_LIST, LB_ADDSTRING, 0, (LPARAM)szTemp);
+						StringCchPrintf(szESList, sizeof(szESList), v->fDecimalPIDs ? "%02x: %d" : "%02x: %04x", v->editpmt.es[nESIndex].nStreamType, v->editpmt.es[nESIndex].nESPID);
+						SendDlgItemMessage(hDlg, IDC_MANUAL_ES_LIST, LB_ADDSTRING, 0, (LPARAM)szESList);
 						SetDlgItemText(hDlg, IDC_MANUAL_CHANNEL_ES_TYPE, "");
 						SetDlgItemText(hDlg, IDC_MANUAL_CHANNEL_ES_PID, "");
 						SetFocus(GetDlgItem(hDlg, IDC_MANUAL_CHANNEL_ES_TYPE));
@@ -13789,7 +13730,7 @@ INT_PTR CALLBACK DescriptorUsageDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
 			break;
 		case NM_DBLCLK:
 			{
-				int nDescriptorTag;
+				uint8_t nDescriptorTag;
 				char szDescriptor[256];
 				char szTemp[1024];
 				char szOutput[10 * 1024] = {0};
@@ -14062,7 +14003,7 @@ void MouseMoveTooltips(HWND hDlg, WPARAM wParam, LPARAM lParam)
 				ti.rect.right = x + 100;
 				ti.rect.bottom = y + 100;
 
-				GetPIDTooltipInfo(v->pc[i].nPID, szTemp);
+				GetPIDTooltipInfo(v->pc[i].nPID, szTemp, sizeof(szTemp));
 				SendMessage(v->hWndTT, TTM_ADDTOOL, 0, (LPARAM) (LPTOOLINFO) &ti);
 				break;
 			}
@@ -14139,7 +14080,6 @@ void ResizeDialogWindow(HWND hDlg, WPARAM wParam, LPARAM lParam)
 				int nPIDsBoxHeight;
 				RECT rcSourceBox;
 				RECT rcStatisticsBox;
-				RECT rcParent;
 				RECT rcSITree;
 				RECT rcPIDsBox;
 				RECT rcPIDsScroll;
@@ -14945,6 +14885,10 @@ void GetRetuneCommandLineParameters(char * szCommandLine, int nNITIndex)
 				tsid);
 		}
 		break;
+
+		case NIT_ISDBT:
+			/* TODO */
+			break;
 	}
 }
 
@@ -15663,10 +15607,10 @@ void GetTableMonitorDispInfo(LV_DISPINFO *pnmv)
 void AddRecordTable(HWND hDlg)
 {
 	int nPIDIndex = (int)SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_GETCURSEL, 0, 0);
-	int nPID;
-	int nStartTable, nEndTable;
+	uint16_t nPID;
+	uint8_t nStartTable, nEndTable;
 	int nTableIndex;
-	char * szHyphen;
+	char *szHyphen;
 	char szTableNumbers[256];
 	char szPID[64];
 	
@@ -15678,10 +15622,7 @@ void AddRecordTable(HWND hDlg)
 		return;
 	}
 	SendDlgItemMessage(hDlg, IDC_IPDVB_PID_LIST, LB_GETTEXT, (WPARAM)nPIDIndex, (LPARAM)szPID);
-	if (v->fDecimalPIDs == FALSE)
-		sscanf(&szPID[2], "%x", &nPID);
-	else
-		sscanf(szPID, "%d", &nPID);
+	nPID = (uint16_t)ParseNumber(szPID, FALSE);
 
 	// Get the table range
 	GetDlgItemText(hDlg, IDC_RECORD_TABLE_TABLE_NUMBER, szTableNumbers, sizeof(szTableNumbers));
@@ -15694,18 +15635,12 @@ void AddRecordTable(HWND hDlg)
 	szHyphen = strstr(szTableNumbers, "-");
 	if (szHyphen != NULL)
 		*szHyphen = '\0';
-	if (v->fDecimalPIDs == FALSE)
-		sscanf(szTableNumbers, "%x", &nStartTable);
-	else
-		sscanf(szTableNumbers, "%d", &nStartTable);
+	nStartTable = (uint8_t)ParseNumber(szTableNumbers, TRUE);
 	if (szHyphen == NULL)
 		nEndTable = nStartTable;
 	else
 	{
-		if (v->fDecimalPIDs == FALSE)
-			sscanf(&szHyphen[1], "%x", &nEndTable);
-		else
-			sscanf(&szHyphen[1], "%d", &nEndTable);
+		nEndTable = (uint8_t)ParseNumber(&szHyphen[1], TRUE);
 	}
 
 	if (nStartTable == 0xff || nEndTable == 0xff)
@@ -15733,7 +15668,7 @@ void AddRecordTable(HWND hDlg)
 				}
 			}
 		}
-		else if (v->record_tables[nTableIndex].nPID == -1)
+		else if (v->record_tables[nTableIndex].nPID == (uint16_t)-1)
 		{
 			LV_ITEM lvi; 
 
@@ -15775,7 +15710,7 @@ void RemoveRecordTable(HWND hDlg)
 			ListView_DeleteItem(GetDlgItem(hDlg, IDC_RECORD_TABLES_PID_TABLE_LIST), i);
 			for (nItemIndex = i; nItemIndex < MAX_RECORD_TABLES - 1; nItemIndex++)
 				memcpy(&v->record_tables[nItemIndex], &v->record_tables[nItemIndex + 1], sizeof(v->record_tables[nItemIndex]));
-			v->record_tables[nItemIndex].nPID = -1;
+			v->record_tables[nItemIndex].nPID = (uint16_t)-1;
 			return;
 		}
 	}
@@ -17376,22 +17311,6 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		switch(wParam)
 		{
 		case 1:			// 1Hz constant running
-#ifdef BETA
-			{
-				SYSTEMTIME systime;
-					
-				GetLocalTime(&systime);
-				if (systime.wYear >= BETA_EXPIRE_YEAR)
-				{
-					if ( (systime.wMonth > BETA_EXPIRE_MONTH) || (systime.wYear > BETA_EXPIRE_YEAR) )
-					{
-						PostMessage(hDlg, WM_CLOSE, 0, 0);
-						break;
-					}
-				}
-			}
-#endif BETA
-
 			{
 				static HANDLE hTeleTextPlugin = NULL;
 				HANDLE hWndCheck = FindWindow("MDTeleText", "MDTeleText");
@@ -17995,25 +17914,25 @@ void DecodeSkyLCN(void)
 								int service_id = get_bits(BM_USER_THREAD, 16);
 								int service_type = get_bits(BM_USER_THREAD, 8);
 								int epg_id = get_bits(BM_USER_THREAD, 16);
-								int lcn = get_bits(BM_USER_THREAD, 16);
+								int lcn_id = get_bits(BM_USER_THREAD, 16);
 								int unknown = get_bits(BM_USER_THREAD, 8);
 
 								descriptor_length -= 9;
 
-								if (lcn != 0xffff)
+								if (lcn_id != 0xffff)
 								{
 									int j;
 
 									for (j = 0; j < 32; j++)
 									{
-										if (v->channel_maps[lcn][j] == 0)
+										if (v->channel_maps[lcn_id][j] == 0)
 										{
-											v->channel_maps[lcn][j] = service_id | (epg_id << 16);
+											v->channel_maps[lcn_id][j] = service_id | (epg_id << 16);
 											break;
 										}
 										else
 										{
-											if ((int)(v->channel_maps[lcn][j] & 0xffff) == service_id)
+											if ((int)(v->channel_maps[lcn_id][j] & 0xffff) == service_id)
 												break;
 										}
 									}
@@ -18027,20 +17946,17 @@ void DecodeSkyLCN(void)
 			}
 		}
 
-
 		// Now we can output
 		wsprintf(szTemp, "BAT %s\r\n", szBouquetName);
 		WriteFile(hDebug, szTemp, lstrlen(szTemp), &dwWritten, NULL);
-		for (lcn = 0; lcn < 65535; lcn++)
-		{
-			if (v->channel_maps[lcn][0] & 0xffff)
-			{
+
+		for (lcn = 0; lcn < 65535; lcn++) {
+			if (v->channel_maps[lcn][0] & 0xffff) {
 				int j;
-				char szTemp[256];
+				char szSkyLCN[256];
 				
-				for (j = 0; j < 32; j++)
-				{
-					char szTemp2[32];
+				for (j = 0; j < 32; j++) {
+					char szDebugOut[32];
 					char szLCNString[4] = {"LCN"};
 
 					if ((v->channel_maps[lcn][j] & 0xffff) == 0)
@@ -18049,20 +17965,19 @@ void DecodeSkyLCN(void)
 					if (j)
 						lstrcpy(szLCNString, " + ");
 					if (v->pChannelData[v->channel_maps[lcn][j] & 0xffff] != NULL)
-						wsprintf(szTemp, "%s %5d (%s):", szLCNString, lcn, v->pChannelData[v->channel_maps[lcn][j] & 0xffff]->szShortName);
+						wsprintf(szSkyLCN, "%s %5d (%s):", szLCNString, lcn, v->pChannelData[v->channel_maps[lcn][j] & 0xffff]->szShortName);
 					else
-						wsprintf(szTemp, "%s %5d:", szLCNString, lcn);
-					while (lstrlen(szTemp) < 50)
-						lstrcat(szTemp, " ");
-					wsprintf(szTemp2, "sn: %05d epg: %05d\r\n", v->channel_maps[lcn][j] & 0xffff, v->channel_maps[lcn][j] >> 16);
-					lstrcat(szTemp, szTemp2);
-					WriteFile(hDebug, szTemp, lstrlen(szTemp), &dwWritten, NULL);
+						wsprintf(szSkyLCN, "%s %5d:", szLCNString, lcn);
+					while (lstrlen(szSkyLCN) < 50)
+						lstrcat(szSkyLCN, " ");
+					wsprintf(szDebugOut, "sn: %05d epg: %05d\r\n", v->channel_maps[lcn][j] & 0xffff, v->channel_maps[lcn][j] >> 16);
+					lstrcat(szSkyLCN, szDebugOut);
+					WriteFile(hDebug, szSkyLCN, lstrlen(szSkyLCN), &dwWritten, NULL);
 				}
 			}
 		}
 		lstrcpy(szTemp, "-----------------------------------------------------------------------------------------------------\r\n");
 		WriteFile(hDebug, szTemp, lstrlen(szTemp), &dwWritten, NULL);
-
 	}
 
 	CloseHandle(hDebug);
@@ -18847,7 +18762,7 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 				if (DialogBoxParam(v->hInstance, MAKEINTRESOURCE(IDD_RECORD_PID_SELECT), hWnd, IPDVBPIDSelectDlgProc, TRUE) == TRUE)
 				{
 					//
-					int nPID;
+					uint16_t nPID;
 
 					if (v->fRecordPIDsOneFile == FALSE)
 					{
@@ -19280,10 +19195,10 @@ void LoadForwardDLLs(HWND hWnd)
 			{
 				char szForwarderDescription[MAX_PATH];
 
-				v->fwd.functions[v->fwd.nForwarderDLLCount].Fwd_Init = (void *)GetProcAddress(v->fwd.hDLL[v->fwd.nForwarderDLLCount], "TSReader_Fwd_Init");
-				v->fwd.functions[v->fwd.nForwarderDLLCount].Fwd_DeInit = (void *)GetProcAddress(v->fwd.hDLL[v->fwd.nForwarderDLLCount], "TSReader_Fwd_DeInit");
-				v->fwd.functions[v->fwd.nForwarderDLLCount].Fwd_Data = (void *)GetProcAddress(v->fwd.hDLL[v->fwd.nForwarderDLLCount], "TSReader_Fwd_Data");
-				v->fwd.functions[v->fwd.nForwarderDLLCount].Fwd_GetDescription = (void *)GetProcAddress(v->fwd.hDLL[v->fwd.nForwarderDLLCount], "TSReader_Fwd_GetDescription");
+				v->fwd.functions[v->fwd.nForwarderDLLCount].Fwd_Init = (td_Fwd_Init)GetProcAddress(v->fwd.hDLL[v->fwd.nForwarderDLLCount], "TSReader_Fwd_Init");
+				v->fwd.functions[v->fwd.nForwarderDLLCount].Fwd_DeInit = (td_Fwd_DeInit)GetProcAddress(v->fwd.hDLL[v->fwd.nForwarderDLLCount], "TSReader_Fwd_DeInit");
+				v->fwd.functions[v->fwd.nForwarderDLLCount].Fwd_Data = (td_Fwd_Data)GetProcAddress(v->fwd.hDLL[v->fwd.nForwarderDLLCount], "TSReader_Fwd_Data");
+				v->fwd.functions[v->fwd.nForwarderDLLCount].Fwd_GetDescription = (td_Fwd_GetDescription)GetProcAddress(v->fwd.hDLL[v->fwd.nForwarderDLLCount], "TSReader_Fwd_GetDescription");
 
 				v->fwd.functions[v->fwd.nForwarderDLLCount].Fwd_GetDescription(szForwarderDescription);
 				AppendMenu(hForwardMenu, MF_BYPOSITION | MF_POPUP | MF_ENABLED, (unsigned int)ID_FORWARD_DLL_BASE + v->fwd.nForwarderDLLCount, (LPCTSTR)szForwarderDescription);
@@ -19811,7 +19726,7 @@ void InitVariables(HINSTANCE hInstance, int nCmdShow)
 	{
 		int nTableIndex;
 		for (nTableIndex = 0; nTableIndex < MAX_RECORD_TABLES; nTableIndex++)
-			v->record_tables[nTableIndex].nPID = -1;
+			v->record_tables[nTableIndex].nPID = (uint16_t)-1;
 	}
 	QueryPerformanceFrequency((LARGE_INTEGER *)&v->lnTicksPerSecond);
 
@@ -20993,9 +20908,6 @@ HWND NEAR InitInstance(int nCmdShow)
 	if (lstrlen(v->szProfileName))
 		lstrcpy(szProfileName, v->szProfileName);
 	wsprintf(szTitle, "%s -- %s %s", szProfileName, gszAppName, GetTSRVersion(NULL));
-#ifdef BETA
-	lstrcat(szTitle, " BETA");
-#endif BETA
 	fMaximizedFlag = v->fMaximizedFlag; // save as it gets reset on the first WM_SIZE
 	v->hAccel = LoadAccelerators(v->hInstance, MAKEINTRESOURCE(IDR_ACCELERATOR_TOP));
 

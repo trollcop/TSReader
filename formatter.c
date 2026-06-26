@@ -11,6 +11,7 @@
 #include "Md/MULTIDEC/Globals.h"
 #include "MDInterface.h"
 #include "TSID.h"
+#include "formatter.h"
 
 // Stuff in ATSC_huffman.c
 void ATSCHuffmanDecode(int nBitBufferIndex, int type, int bytes, char * outtext);
@@ -1820,7 +1821,7 @@ BOOL QuickFormatNIT(char * szBuffer, int nTransportStreamID, BOOL fLongVersion)
 	return FALSE;
 }
 
-static void DecodeCADescriptor(char *szBuffer, BYTE *pDescriptor)
+void DecodeCADescriptor(char *szBuffer, BYTE *pDescriptor)
 {
 	set_buf(BM_USER_THREAD, pDescriptor, 0, FALSE);
 	{
@@ -6894,8 +6895,16 @@ void FormatGenericVideoParse(int nPMTIndex, int nESIndex, char * szOutput, size_
 	if (pVideo->tag != PARSER_TAG)
 		return;
 	
-	/* TODO Aspect Ratio, Chroma subsampling etc */
-	StringCchPrintf(szOutput, len, "Video: Resolution %d x %d Interlaced: %d Frame Rate: %2.2f\r\n", pVideo->width, pVideo->height, pVideo->interlaced, pVideo->framerate);
+	char szChroma[32];
+
+	GetChromaFormat(pVideo->chroma, szChroma, sizeof(szChroma));
+	StringCchPrintf(szOutput, len,
+		" Resolution %d x %d%c\r\n"
+		" Framerate %2.2f fps Aspect Ratio %d:%d\r\n"
+		" Chroma Format %s\r\n",
+		pVideo->width, pVideo->height, (pVideo->interlaced == INT_PROGRESSIVE) ? 'p' : 'i',
+		pVideo->framerate, pVideo->dar_num, pVideo->dar_den,
+		szChroma);
 }
 
 void GetMPEG2VideoAspectRation(int aspect_ratio_information, char * szAspectRatio)
@@ -6960,21 +6969,21 @@ void GetMPEG2FrameRate(int frame_rate_code, char * szFrameRate)
 	}
 }
 
-void GetMPEG2ChromaFormat(int chroma_format, char * szChromaFormat)
+void GetChromaFormat(ChromaFormat chroma_format, char *szChromaFormat, size_t len)
 {
 	switch(chroma_format)
 	{
 	case 0:
-		lstrcpy(szChromaFormat, "reserved");
+		StringCchCopy(szChromaFormat, len, "reserved");
 		break;
 	case 1:
-		lstrcpy(szChromaFormat, "4:2:0");
+		StringCchCopy(szChromaFormat, len, "4:2:0");
 		break;
 	case 2:
-		lstrcpy(szChromaFormat, "4:2:2");
+		StringCchCopy(szChromaFormat, len, "4:2:2");
 		break;
 	case 3:
-		lstrcpy(szChromaFormat, "4:4:4");
+		StringCchCopy(szChromaFormat, len,  "4:4:4");
 		break;
 	}
 }
@@ -7366,6 +7375,7 @@ char * FormatESEntry(int nESPID)
 					case PARSE_ES_TYPE_MPEG4_VIDEO:
 					case PARSE_ES_TYPE_VC1_VIDEO:
 					case PARSE_ES_TYPE_H265_VIDEO:
+					case PARSE_ES_TYPE_AV1_VIDEO:
 						FormatGenericVideoParse(nPMTIndex, nESIndex, szParseDecode, sizeof(szParseDecode));
 						break;
 
@@ -7378,6 +7388,12 @@ char * FormatESEntry(int nESPID)
 					case PARSE_ES_TYPE_MPEG2_AAC_AUDIO:
 					case PARSE_ES_TYPE_MPEG4_AAC_AUDIO:
 						FormatAACAudioParse((PPARSEDAACAUDIO)v->pat.pmt[nPMTIndex].es[nESIndex].pParsedData, szParseDecode);
+						break;
+
+					case PARSE_ES_TYPE_NONE:
+					case PARSE_ES_TYPE_TELETEXT:
+					case PARSE_ES_TYPE_AUDIO_TITLE:
+						/* TODO currently no formatter for this */
 						break;
 					}
 					if (lstrlen(szParseDecode))
