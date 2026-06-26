@@ -43,20 +43,20 @@ BOOL AC3Init(int nES)
 	}
 	if (drivers[i].open == NULL)
 	{
-		OutputDebugString("Can't locate null output driver\n");
+		dbg_printf("Can't locate null output driver\n");
 		return FALSE;
 	}
     output[nES] = ao_open(drivers[i].open);
     if (output[nES] == NULL)
 	{
-		OutputDebugString("Can not open output\n");
+		dbg_printf("Can not open output\n");
 		return FALSE;
     }
 
     state[nES] = a52_init(MM_ACCEL_DJBFFT);
     if (state[nES] == NULL)
 	{
-		OutputDebugString("A52 init failed\n");
+		dbg_printf("A52 init failed\n");
 		return FALSE;
     }
 
@@ -143,14 +143,9 @@ BOOL a52_decode_data(uint8_t * start, uint8_t * end, int nES, int nDestWidth, in
 							if (nSampleWriteIndex[nES] == SAMPLES_REQUIRED)
 							{
 								int nAudioChannels = 2;
-								GenerateAudioThumbnail(pSamples[nES], nAudioChannels, nDestWidth, nDestHeight, pThumbnail[nES],
-									                   v->nESParsePMTIndex[nES], v->nESParseESIndex[nES]);
-								{
-									char szTemp[128];
-									wsprintf(szTemp, "TSReader: Completed AC-3 parser for program %d ES thread %d\n",
-										     v->pat.pmt[v->nESParsePMTIndex[nES]].nProgramNumber, nES);
-									OutputDebugString(szTemp);
-								}
+								GenerateAudioThumbnail(pSamples[nES], nAudioChannels, nDestWidth, nDestHeight, pThumbnail[nES], v->nESParsePMTIndex[nES], v->nESParseESIndex[nES]);
+								dbg_printf("TSReader: Completed AC-3 parser for program %d ES thread %d\n", v->pat.pmt[v->nESParsePMTIndex[nES]].nProgramNumber, nES);
+
 								return TRUE;
 							}
 						}
@@ -232,11 +227,7 @@ DWORD WINAPI AC3AudioDecoderThread(LPVOID lpv)
 	v->fESParseDecoderCompletedLibMPEG[esparserinfo->nES] = TRUE;
 	v->fMPEG2DecoderThreadRunning[esparserinfo->nES] = FALSE;
 	LeaveCriticalSection(&v->esparserinfo[esparserinfo->nES].csThreadSignal);
-	{
-		char szTemp[1024];
-		wsprintf(szTemp, "TSReader: Completed AC-3 audio for program %d ES thread %d\n",
-				 esparserinfo->nProgramNumber, esparserinfo->nES);
-		OutputDebugString(szTemp);
-	}
+	dbg_printf("TSReader: Completed AC-3 audio for program %d ES thread %d\n", esparserinfo->nProgramNumber, esparserinfo->nES);
+
 	return 0;
 }

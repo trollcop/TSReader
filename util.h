@@ -88,3 +88,7 @@ void MessageBoxFormat(HWND hWnd, UINT uType, const char *fmt, ...);
 /* qsort helper functions */
 int SortPIDsByPackets(const void *elem1, const void *elem2);
 int SortPIDsByPID(const void *elem1, const void *elem2);
+
+/* utf8-related */
+int mywcstombs(char *dest, int len, const wchar_t *src);
+int mymbstowcs(wchar_t *dest, int len, const char *src);

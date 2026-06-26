@@ -2098,3 +2098,29 @@ int SortPIDsByPID(const void *elem1, const void *elem2)
 		return 1;
 	return 0;
 }
+
+int mywcstombs(char *dest, int len, const wchar_t *src)
+{
+	int bytes_needed = WideCharToMultiByte(CP_UTF8, 0, src, -1, NULL, 0, NULL, NULL);
+
+	if (!bytes_needed)
+		return 0;
+
+	/* trim */
+	if (bytes_needed > len)
+		bytes_needed = len - 1;
+
+	return WideCharToMultiByte(CP_UTF8, 0, src, -1, dest, bytes_needed, NULL, NULL);
+}
+
+int mymbstowcs(wchar_t *dest, int len, const char *src)
+{
+	int wchars_needed = MultiByteToWideChar(CP_UTF8, 0, src, -1, NULL, 0);
+	if (wchars_needed == 0)
+		return 0;
+
+	if (wchars_needed > len)
+		wchars_needed = len - 1;
+
+	return MultiByteToWideChar(CP_UTF8, 0, src, -1, dest, wchars_needed);
+}

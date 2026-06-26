@@ -74,13 +74,13 @@ void CursorWait(HWND hWnd)
 	SetCursor(LoadCursor(NULL, IDC_WAIT));
 }
 	
-BOOL SourceHelper_myGetOpenFileName(LPOPENFILENAME lpofn)
+BOOL SourceHelper_myGetOpenFileName(LPOPENFILENAMEA lpofn)
 {
 	int i;
 	char * szFileName = lpofn->lpstrFile;
 	char * szInitialDir = (char *)lpofn->lpstrInitialDir;
 
-	if (GetOpenFileName(lpofn) == FALSE)
+	if (GetOpenFileNameA(lpofn) == FALSE)
 		return FALSE;
 
 	strcpy(szInitialDir, szFileName);
@@ -90,6 +90,25 @@ BOOL SourceHelper_myGetOpenFileName(LPOPENFILENAME lpofn)
 			break;
 		szInitialDir[i] = 0;
 	}
+	return TRUE;
+}
+
+BOOL SourceHelper_myGetOpenFileNameW(LPOPENFILENAMEW lpofn)
+{
+	int i;
+	wchar_t *szFileName = lpofn->lpstrFile;
+	wchar_t *szInitialDir = (wchar_t *)lpofn->lpstrInitialDir;
+
+	if (GetOpenFileNameW(lpofn) == FALSE)
+		return FALSE;
+
+	lstrcpyW(szInitialDir, szFileName);
+	for (i = lstrlenW(szInitialDir); i > 0; i--) {
+		if (szInitialDir[i] == L'\\')
+			break;
+		szInitialDir[i] = 0;
+	}
+	
 	return TRUE;
 }
 
@@ -6849,15 +6868,11 @@ int SourceHelper_ReadLineW(HANDLE hFile, wchar_t * szBuffer, int nMaxLength)
 	return 0;
 }
 
-BOOL SourceHelper_myGetOpenFileNameW(void * lpofn)
-{
-	(void)lpofn;
-	return FALSE;
-}
-
 BOOL SourceHelper_RunningOnWine(void)
 {
-	return FALSE;
+	HMODULE dll = GetModuleHandle("ntdll.dll");
+
+	return GetProcAddress(dll, "wine_get_version") != NULL;
 }
 
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)

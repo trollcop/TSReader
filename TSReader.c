@@ -7670,29 +7670,32 @@ void UpdateSourceInfo(HWND hDlg)
 		HANDLE hBackgroundBrush;
 		DWORD dwForegroundColor, dwBackgroundColor;
 		char szOutput[128];
+		wchar_t szOutputW[128];
 	
 		if ((nLine & 1) == 0)
 		{
 			dwForegroundColor = SOURCE_INFO_COLOR_1;
 			dwBackgroundColor = SOURCE_INFO_COLOR_2;
 			hBackgroundBrush = v->hSourceInfoBrush2;
-dwForegroundColor = RGB(0xff, 0xff, 0xff);
+			dwForegroundColor = RGB(0xff, 0xff, 0xff);
 		}
 		else
 		{
 			dwForegroundColor = SOURCE_INFO_COLOR_2;
 			dwBackgroundColor = SOURCE_INFO_COLOR_1;
 			hBackgroundBrush = v->hSourceInfoBrush1;
-dwForegroundColor = RGB(0x00, 0x00, 0x00);
+			dwForegroundColor = RGB(0x00, 0x00, 0x00);
 		}
 		SetTextColor(hDC, dwForegroundColor);
 		SetBkColor(hDC, dwBackgroundColor);
 		
 		GetSourceInfoLine(nLine, szOutput);
+		mymbstowcs(szOutputW, _countof(szOutputW), szOutput);
+
 		rcFill.top = yCurrent; rcFill.bottom = yCurrent + textsize.cy;
 		rcFill.left = xStart; rcFill.right = rcFill.left + xWidth;
 		FillRect(hDC, &rcFill, hBackgroundBrush);
-		TextOut(hDC, xStart, yCurrent, szOutput, lstrlen(szOutput));
+		TextOutW(hDC, xStart, yCurrent, szOutputW, lstrlenW(szOutputW));
 		yCurrent += textsize.cy;
 	}
 	

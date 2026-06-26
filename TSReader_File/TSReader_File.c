@@ -57,26 +57,70 @@ static ULARGE_INTEGER g_nCurrentReadSize;
 /* how many times have we looped */
 uint32_t g_nFileLoops = 0;
 #endif
-/* currently loaded filename (full path) */
-static char szAlternateFilename[MAX_PATH] = { 0 };
 
-static char szFileModeFilename[MAX_PATH];
+/* currently loaded filename (full path) */
+static wchar_t szAlternateFilename[MAX_PATH] = { 0 };
+static wchar_t szFileModeFilename[MAX_PATH] = { 0, };
+static wchar_t szCmdLineW[MAX_PATH] = { 0, };
+static wchar_t *szCmdLinePtr = NULL;
+static wchar_t szShortFileName[MAX_PATH] = { 0, };
 static char szSearchFailureReason[MAX_PATH + 128];
 
-static char *szCmdLinePtr;
+static CRITICAL_SECTION g_csFileAccess;
+
 #ifndef LOOP
 #ifndef CONTINUOUS
-char gszSourceName[] = {"Transport Stream File"};
+wchar_t gszSourceNameW[] = { L"Transport Stream File" };
+wchar_t gszSourceName[] = { "Transport Stream File" };
 #else CONTINUOUS
-char gszSourceName[] = {"Transport Stream File-continuous"};
+wchar_t gszSourceNameW[] = { L"Transport Stream File-continuous" };
+char_t gszSourceName[] = { "Transport Stream File-continuous" };
 #endif CONTINUOUS
 #else LOOP
-char gszSourceName[] = {"Transport Stream File-loop"};
+wchar_t gszSourceNameW[] = { L"Transport Stream File-loop" };
+char gszSourceName[] = { "Transport Stream File-loop" };
 #endif LOOP
 
-static char gszKeyName[] = TEXT("Software\\COOL.STF\\TSReader\\FileSource");
+static char gszKeyName[] = "Software\\COOL.STF\\TSReader\\FileSource";
 
 BOOL __cdecl SourceHelper_ValidateSourceContainer(PSOURCESTRUCT pss);
+
+static void dbg_printf(const char *fmt, ...)
+{
+	char debug_buf[4096];
+
+	va_list args;
+	va_start(args, fmt);
+
+	vsnprintf_s(debug_buf, sizeof(debug_buf), sizeof(debug_buf), fmt, args);
+	OutputDebugStringA(debug_buf);
+	va_end(args);
+}
+
+static void FormatLongFileName(const wchar_t *szFileName)
+{
+	const wchar_t *ptr;
+	wchar_t szTemp[MAX_PATH] = { 0, };
+
+	/* look for path separator in reverse - basically strrchr() */
+	ptr = &szFileName[lstrlenW(szFileName)];
+	if (ptr != szFileName) {
+		while (*ptr != L'\\') {
+			if (--ptr == szFileName)
+				break;
+		}
+		lstrcpyW(szTemp, ptr + 1);
+	}
+
+#define MAX_LEN (27)
+	if (lstrlenW(szTemp)) {
+		if (lstrlenW(szTemp) >= MAX_LEN)
+			wcscpy(&szTemp[MAX_LEN - 3], L"...");
+		EnterCriticalSection(&g_csFileAccess);
+		lstrcpyW(szShortFileName, szTemp);
+		LeaveCriticalSection(&g_csFileAccess);
+	}
+}
 
 BOOL CALLBACK ReachedEndDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -262,7 +306,7 @@ DWORD WINAPI ReadRateControlledThread(LPVOID lpv)
 	double dTicksPerPacket;
 	BYTE *pConversionBuffer = NULL;
 
-	OutputDebugString("ReadRateControlledThread+\n");
+	dbg_printf("ReadRateControlledThread+\n");
 
 	ss->fReadThreadTerminated = FALSE;
 	ss->fTerminateReadThread = FALSE;
@@ -384,7 +428,7 @@ DWORD WINAPI ReadRateControlledThread(LPVOID lpv)
 	if (nPacketLength != nNonRSPacketLength)
 		LocalFree(pConversionBuffer);
 	ThreadTerminateCleanup();
-	OutputDebugString("ReadRateControlledThread-\n");
+	dbg_printf("ReadRateControlledThread-\n");
 	return 0;
 }
 
@@ -531,7 +575,7 @@ DWORD WINAPI ReadUncontrolledThread(LPVOID lpv)
 #endif CONTINUOUS
 	ThreadTerminateCleanup();
 	LocalFree(tsbuffer);
-	OutputDebugString("ReadUncontrolledThread-\n");
+	dbg_printf("ReadUncontrolledThread-\n");
 	return 0;
 }
 
@@ -584,6 +628,7 @@ BOOL TSReader_Init(PSOURCESTRUCT pss)
 	nStartOffsetPercentage = 0;
 #endif LOOP
 
+	InitializeCriticalSection(&g_csFileAccess);
 	DragAcceptFiles(ss->hWndTSReader, TRUE);
 
 	lKey = RegCreateKeyEx(HKEY_CURRENT_USER,
@@ -644,6 +689,7 @@ BOOL TSReader_DeInit(void)
 #endif LOOP
 		RegCloseKey(hkMainReg);
 	}
+	DeleteCriticalSection(&g_csFileAccess);
 	return TRUE;
 }
 
@@ -719,12 +765,13 @@ UINT FAR PASCAL GetMPEGFileNameHookProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
 	return FALSE; 
 } 
 
-BOOL GetInputMPEGFilename(HWND hDlg, char * szFilename)
+BOOL GetInputMPEGFilename(HWND hDlg, wchar_t *szFilename)
 {
-	OPENFILENAME ofn;
+	OPENFILENAMEW ofn = { 0, };
+	wchar_t szTemp[MAX_PATH];
+	BOOL rv;
 
-	memset( &(ofn), 0, sizeof(ofn));
-	ofn.lStructSize	= sizeof(ofn);
+	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = hDlg;
 	if (ofn.hwndOwner == NULL)
 		ofn.hwndOwner = GetDesktopWindow();
@@ -733,33 +780,37 @@ BOOL GetInputMPEGFilename(HWND hDlg, char * szFilename)
 	switch(ss->fLastFileTS)
 	{
 	case TRUE:
-		ofn.lpstrFilter = TEXT("Transport Stream Files(*.ts)\0*.ts\0MPEG Files(*.mpg)\0*.mpg\0MyHD .TP Files (*.tp)\0*.tp\0All Files(*.*)\0*.*\0\0");	
-		ofn.lpstrDefExt = TEXT("ts");
+		ofn.lpstrFilter = L"Transport Stream Files(*.ts)\0*.ts\0MPEG Files(*.mpg)\0*.mpg\0MyHD .TP Files (*.tp)\0*.tp\0All Files(*.*)\0*.*\0\0";	
+		ofn.lpstrDefExt = L"ts";
 		break;
 	case FALSE:
-		ofn.lpstrFilter = TEXT("MPEG Files(*.mpg)\0*.mpg\0Transport Stream Files(*.ts)\0*.ts\0MyHD .TP Files (*.tp)\0*.tp\0All Files(*.*)\0*.*\0\0");	
-		ofn.lpstrDefExt = TEXT("mpg");
+		ofn.lpstrFilter = L"MPEG Files(*.mpg)\0*.mpg\0Transport Stream Files(*.ts)\0*.ts\0MyHD .TP Files (*.tp)\0*.tp\0All Files(*.*)\0*.*\0\0";
+		ofn.lpstrDefExt = L"mpg";
 		break;
 	case 2:
-		ofn.lpstrFilter = TEXT("MyHD .TP Files (*.tp)\0*.tp\0MPEG Files(*.mpg)\0*.mpg\0Transport Stream Files(*.ts)\0*.ts\0All Files(*.*)\0*.*\0\0");	
-		ofn.lpstrDefExt = TEXT("tp");
+		ofn.lpstrFilter = L"MyHD .TP Files (*.tp)\0*.tp\0MPEG Files(*.mpg)\0*.mpg\0Transport Stream Files(*.ts)\0*.ts\0All Files(*.*)\0*.*\0\0";	
+		ofn.lpstrDefExt = L"tp";
 		break;
 	case 3:
-		ofn.lpstrFilter = TEXT("All Files(*.*)\0*.*\0MPEG Files(*.mpg)\0*.mpg\0Transport Stream Files(*.ts)\0*.ts\0MyHD .TP Files (*.tp)\0*.tp\0\0");	
-		ofn.lpstrDefExt = TEXT("*");
+		ofn.lpstrFilter = L"All Files(*.*)\0*.*\0MPEG Files(*.mpg)\0*.mpg\0Transport Stream Files(*.ts)\0*.ts\0MyHD .TP Files (*.tp)\0*.tp\0\0";	
+		ofn.lpstrDefExt = L"*";
 		break;
 	}
 #ifndef LOOP
-	ofn.lpstrTitle = TEXT("Select Transport Stream File");
+	ofn.lpstrTitle = L"Select Transport Stream File";
 #else LOOP
-	ofn.lpstrTitle = TEXT("Select Transport Stream File to loop");
+	ofn.lpstrTitle = L"Select Transport Stream File to loop";
 #endif LOOP
 	ofn.Flags =  OFN_HIDEREADONLY | OFN_ENABLEHOOK | OFN_ENABLETEMPLATE | OFN_EXPLORER;
-	ofn.lpstrInitialDir = ss->szTransportStreamInitialDir;
+	mbstowcs(szTemp, ss->szTransportStreamInitialDir, strlen(ss->szTransportStreamInitialDir));
+	ofn.lpstrInitialDir = szTemp;
 	ofn.lpfnHook = GetMPEGFileNameHookProc;
-	ofn.lpTemplateName = MAKEINTRESOURCE(IDD_RATE_CONTROL_HOOK);
+	ofn.lpTemplateName = MAKEINTRESOURCEW(IDD_RATE_CONTROL_HOOK);
 	ofn.hInstance = (HINSTANCE)hInstance;
-	return SourceHelper_myGetOpenFileName(&ofn);
+	rv = SourceHelper_myGetOpenFileNameW(&ofn);
+	wcstombs(ss->szTransportStreamInitialDir, szTemp, lstrlenW(szTemp));
+
+	return rv;
 }
 
 int CalculateMPEGBitrate(HWND hDlg)
@@ -815,11 +866,8 @@ int CalculateMPEGBitrate(HWND hDlg)
 			BitDifference = (float)(pcr[1].nRecord - pcr[0].nRecord) * nPacketLength * 8;
 			BitRate = 1 / ((TimeDifference / BitDifference) / 27000000);
 			nBitRate[0] = (unsigned int)BitRate;
-			{
-				char szTemp[128];
-				wsprintf(szTemp, "File: Rate controlled calculated rate %d\n", nBitRate[0]);
-				OutputDebugString(szTemp);
-			}
+			dbg_printf("File: Rate controlled calculated rate %d\n", nBitRate[0]);
+
 			return nBitRate[0];
 		}
 	} while (!fAbortSearchThread);
@@ -880,11 +928,8 @@ int CalculateDSSBitrate(HWND hDlg)
 			BitDifference = (float)(rtc[1].nRecord - rtc[0].nRecord) * nPacketLength * 8;
 			BitRate = 1 / ((TimeDifference / BitDifference) / 27000000);
 			nBitRate[0] = (unsigned int)BitRate;
-			{
-				char szTemp[128];
-				wsprintf(szTemp, "File: Rate controlled calculated rate %d\n", nBitRate[0]);
-				OutputDebugString(szTemp);
-			}
+			dbg_printf("File: Rate controlled calculated rate %d\n", nBitRate[0]);
+
 			return nBitRate[0];
 		}
 	} while (!fAbortSearchThread);
@@ -916,7 +961,7 @@ DWORD WINAPI SearchMPEGFileForSyncThread(LPVOID lpv)
 	memcpy(&dwFileSize, &ft, sizeof(DWORD64));
 	if (dwFileSize == 0)
 	{
-		lstrcpy(szSearchFailureReason, "Zero length files are not accepted");
+		StringCchCopy(szSearchFailureReason, sizeof(szSearchFailureReason), "Zero length files are not accepted");
 		fSearchThreadRunning = FALSE;
 		PostMessage(hDlg, WM_USER + 1, 0, 0);
 		return 0;
@@ -936,7 +981,7 @@ DWORD WINAPI SearchMPEGFileForSyncThread(LPVOID lpv)
 	hMap = CreateFileMapping(hInputStream, NULL, PAGE_READONLY | SEC_COMMIT, 0,  (DWORD)dwMapSize, NULL);
 	if (hMap == NULL)
 	{
-		wsprintf(szSearchFailureReason, "Unable to create mapping file - %d (size = 0x%x)", GetLastError(), (DWORD)dwMapSize);
+		StringCchPrintf(szSearchFailureReason, sizeof(szSearchFailureReason), "Unable to create mapping file - %d (size = 0x%x)", GetLastError(), (DWORD)dwMapSize);
 		fSearchThreadRunning = FALSE;
 		PostMessage(hDlg, WM_USER + 1, 0, 0);
 		return 0;
@@ -944,7 +989,7 @@ DWORD WINAPI SearchMPEGFileForSyncThread(LPVOID lpv)
 	pFile = (BYTE *)MapViewOfFile(hMap, FILE_MAP_READ, ft.dwHighDateTime, ft.dwLowDateTime, (DWORD)dwMapSize);
 	if (pFile == NULL)
 	{
-		wsprintf(szSearchFailureReason, "Unable to create memory view - %d (size = 0x%x)", GetLastError(), (DWORD)dwMapSize);
+		StringCchPrintf(szSearchFailureReason, sizeof(szSearchFailureReason), "Unable to create memory view - %d (size = 0x%x)", GetLastError(), (DWORD)dwMapSize);
 		CloseHandle(hMap);
 		fSearchThreadRunning = FALSE;
 		PostMessage(hDlg, WM_USER + 1, 0, 0);
@@ -983,7 +1028,7 @@ DWORD WINAPI SearchMPEGFileForSyncThread(LPVOID lpv)
 					fReedSolomonIncluded = FALSE;
 					fDSSMode = FALSE;
 					fTimestampsIncluded = FALSE;
-					OutputDebugString("File: Synced with 188 byte MPEG-2\n");
+					dbg_printf("File: Synced with 188 byte MPEG-2\n");
 					break;
 				}
 
@@ -999,7 +1044,7 @@ DWORD WINAPI SearchMPEGFileForSyncThread(LPVOID lpv)
 					fReedSolomonIncluded = TRUE;
 					fDSSMode = FALSE;
 					fTimestampsIncluded = FALSE;
-					OutputDebugString("File: Synced with 204 byte MPEG-2\n");
+					dbg_printf("File: Synced with 204 byte MPEG-2\n");
 					break;
 				}
 
@@ -1015,7 +1060,7 @@ DWORD WINAPI SearchMPEGFileForSyncThread(LPVOID lpv)
 					fReedSolomonIncluded = FALSE;
 					fDSSMode = FALSE;
 					fTimestampsIncluded = TRUE;
-					OutputDebugString("File: Synced with 192 byte MPEG-2\n");
+					dbg_printf("File: Synced with 192 byte MPEG-2\n");
 					break;
 				}
 			}
@@ -1034,7 +1079,7 @@ DWORD WINAPI SearchMPEGFileForSyncThread(LPVOID lpv)
 					fReedSolomonIncluded = FALSE;
 					fDSSMode = TRUE;
 					fTimestampsIncluded = FALSE;
-					OutputDebugString("File: Synced with 131 byte DSS\n");
+					dbg_printf("File: Synced with 131 byte DSS\n");
 					break;
 				}
 
@@ -1050,7 +1095,7 @@ DWORD WINAPI SearchMPEGFileForSyncThread(LPVOID lpv)
 					fReedSolomonIncluded = TRUE;
 					fDSSMode = TRUE;
 					fTimestampsIncluded = FALSE;
-					OutputDebugString("File: Synced with 147 byte DSS\n");
+					dbg_printf("File: Synced with 147 byte DSS\n");
 					break;
 				}
 			}
@@ -1061,7 +1106,7 @@ DWORD WINAPI SearchMPEGFileForSyncThread(LPVOID lpv)
 		} while (dwFileStartOffset < (dwMapSize - (204 * 2)) && !fAbortSearchThread);
 	}
 
-	OutputDebugString("File: out of sync search loop\n");
+	dbg_printf("File: out of sync search loop\n");
 	UnmapViewOfFile(pFile);
 	CloseHandle(hMap);
 
@@ -1087,7 +1132,7 @@ DWORD WINAPI SearchMPEGFileForSyncThread(LPVOID lpv)
 
 	if (fProgramStream)
 	{
-		lstrcpy(szSearchFailureReason, "This file appears to be an MPEG-2 Program Stream. TSReader only works with MPEG-2 Transport Streams");
+		StringCchCopy(szSearchFailureReason, sizeof(szSearchFailureReason), "This file appears to be an MPEG-2 Program Stream. TSReader only works with MPEG-2 Transport Streams");
 		fSearchThreadRunning = FALSE;
 		PostMessage(hDlg, WM_USER + 1, 0, 0);
 		return 0;
@@ -1095,7 +1140,7 @@ DWORD WINAPI SearchMPEGFileForSyncThread(LPVOID lpv)
 
 	if (fAbortSearchThread)
 	{
-		lstrcpy(szSearchFailureReason, "Sync search aborted");
+		StringCchCopy(szSearchFailureReason, sizeof(szSearchFailureReason), "Sync search aborted");
 		fSearchThreadRunning = FALSE;
 		PostMessage(hDlg, WM_USER + 1, 0, 0);
 		return 0;
@@ -1104,7 +1149,7 @@ DWORD WINAPI SearchMPEGFileForSyncThread(LPVOID lpv)
 	if (dwFileStartOffset == (dwMapSize - (204 * 2)))
 	{
 		// Couldn't determine file type
-		lstrcpy(szSearchFailureReason, "Unable to determine type of file. Ensure this is an MPEG-2 or DSS transport stream file");
+		StringCchCopy(szSearchFailureReason, sizeof(szSearchFailureReason), "Unable to determine type of file. Ensure this is an MPEG-2 or DSS transport stream file");
 		fSearchThreadRunning = FALSE;
 		PostMessage(hDlg, WM_USER + 1, 0, 0);
 		return 0;
@@ -1122,9 +1167,9 @@ DWORD WINAPI SearchMPEGFileForSyncThread(LPVOID lpv)
 		if (nTemp == -1)
 		{
 			if (fAbortSearchThread)
-				lstrcpy(szSearchFailureReason, "Bitrate calculation aborted");
+				StringCchCopy(szSearchFailureReason, sizeof(szSearchFailureReason), "Bitrate calculation aborted");
 			else
-				lstrcpy(szSearchFailureReason, "Unable to calculate bitrate - please use the manual bitrate function");
+				StringCchCopy(szSearchFailureReason, sizeof(szSearchFailureReason), "Unable to calculate bitrate - please use the manual bitrate function");
 			fSearchThreadRunning = FALSE;
 			PostMessage(hDlg, WM_USER + 1, 0, 0);
 			return 0;
@@ -1200,15 +1245,15 @@ BOOL CALLBACK SearchSyncDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 	return FALSE;
 }
 
-BOOL OpenTransportFile(char * szMPEGTSFilename)
+BOOL OpenTransportFile(wchar_t *szMPEGTSFilename)
 {
 	BOOL fRetVal;
-	char szTemp[MAX_PATH];
+	wchar_t szTemp[MAX_PATH];
 
-	hInputStream = CreateFile(szMPEGTSFilename, GENERIC_READ, FILE_SHARE_READ, (LPSECURITY_ATTRIBUTES)NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, (HANDLE)NULL);
+	hInputStream = CreateFileW(szMPEGTSFilename, GENERIC_READ, FILE_SHARE_READ, (LPSECURITY_ATTRIBUTES)NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, (HANDLE)NULL);
 	if (hInputStream == INVALID_HANDLE_VALUE)
 	{
-		char szMessage[MAX_PATH + 100];
+		wchar_t szMessage[MAX_PATH + 100];
 		char szMsgBuf[MAX_PATH];
 		
 		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -1218,9 +1263,9 @@ BOOL OpenTransportFile(char * szMPEGTSFilename)
 					  szMsgBuf,
 					  sizeof(szMsgBuf),
 					  NULL);
-		StringCchPrintf(szMessage, sizeof(szMessage), "Unable to open file:\n\n%s\n\n%s", szMPEGTSFilename, szMsgBuf);
+		StringCchPrintfW(szMessage, _countof(szMessage), L"Unable to open file:\n\n%s\n\n%S", szMPEGTSFilename, szMsgBuf);
 		if (!ss->fQuietMode)
-			MessageBox(ss->hWndTSReader, szMessage, gszSourceName, MB_OK | MB_ICONSTOP);
+			MessageBoxW(ss->hWndTSReader, szMessage, gszSourceNameW, MB_OK | MB_ICONSTOP);
 		return FALSE;
 	}
 
@@ -1228,20 +1273,22 @@ BOOL OpenTransportFile(char * szMPEGTSFilename)
 	g_nInputFileSize.LowPart = GetFileSize(hInputStream, &g_nInputFileSize.HighPart);
 	g_nCurrentReadSize.QuadPart = 0;
 
+	FormatLongFileName(szMPEGTSFilename);
+
 	// Flag if this is a .ts file
-	lstrcpy(szTemp, szMPEGTSFilename);
-	_strlwr(szTemp);
-	if (strstr(szTemp, ".ts") != NULL)
+	lstrcpyW(szTemp, szMPEGTSFilename);
+	_wcslwr(szTemp);
+	if (wcsstr(szTemp, L".ts") != NULL)
 		ss->fLastFileTS = TRUE;
-	else if (strstr(szTemp, ".mpg") != NULL)
+	else if (wcsstr(szTemp, L".mpg") != NULL)
 		ss->fLastFileTS = FALSE;
-	else if (strstr(szTemp, ".tp") != NULL)
+	else if (wcsstr(szTemp, L".tp") != NULL)
 		ss->fLastFileTS = 2;
 	else
 		ss->fLastFileTS = 3;
 
 	// Save filename for later in case we have a .TS file
-	lstrcpy(szFileModeFilename, szMPEGTSFilename);
+	lstrcpyW(szFileModeFilename, szMPEGTSFilename);
 
 	fRetVal = DialogBox((HINSTANCE)hInstance, MAKEINTRESOURCE(IDD_SEARCH_SYNC), NULL, SearchSyncDlgProc);
 	if (fRetVal == FALSE)
@@ -1257,20 +1304,19 @@ BOOL TSReader_Tune(void)
 BOOL TSReader_TuneDialog(HWND hWnd)
 {
 #ifndef DIALOG_TEST
-	szAlternateFilename[0] = '\0';
+	szAlternateFilename[0] = L'\0';
 	if (lstrlen(ss->szDropFilename) == 0)
 	{
-		if (lstrlen(szCmdLinePtr) == 0)
+		if (lstrlenW(szCmdLinePtr) == 0)
 		{
-
 			if (GetInputMPEGFilename(hWnd, szAlternateFilename) == FALSE)
 				return FALSE;
-			szCmdLinePtr = szAlternateFilename;			
+			szCmdLinePtr = szAlternateFilename;
 		}
 	}
 	else
 	{
-		lstrcpy(szAlternateFilename, ss->szDropFilename);
+		mbstowcs(szAlternateFilename, ss->szDropFilename, lstrlenA(ss->szDropFilename));
 		ss->szDropFilename[0] = 0;
 		szCmdLinePtr = szAlternateFilename;
 	}
@@ -1314,13 +1360,18 @@ BOOL TSReader_GetDescription(char * szDescription, char * szCommandLineParameter
 	return TRUE;
 }
 
-BOOL TSReader_ParseCommandLine(PSOURCESTRUCT pss, char * szCommandLine, BOOL fQuiet)
+BOOL TSReader_ParseCommandLine(PSOURCESTRUCT pss, char *szCommandLine, BOOL fQuiet)
 {
-	szCmdLinePtr = szCommandLine;
-	if (*szCmdLinePtr == '"')
-		szCmdLinePtr++;
-	if (szCmdLinePtr[lstrlen(szCmdLinePtr) - 1] == '"')
-		szCmdLinePtr[lstrlen(szCmdLinePtr) - 1] = '\0';
+	if (lstrlenA(szCommandLine)) {
+		mbstowcs(szCmdLineW, szCommandLine, lstrlenA(szCommandLine));
+		szCmdLinePtr = szCmdLineW;
+
+		if (szCmdLinePtr[0] == '"')
+			szCmdLinePtr++;
+		if (szCmdLinePtr[lstrlenW(szCmdLinePtr) - 1] == L'"')
+			szCmdLinePtr[lstrlenW(szCmdLinePtr) - 1] = L'\0';
+	}
+
 	return TRUE;
 }
 
@@ -1346,11 +1397,25 @@ BOOL TSReader_GetSignalString(char * szString)
 	return TRUE;
 }
 
-BOOL TSReader_GetTunerString(char * szString)
+static int mywcstombs(char *dest, int len, const wchar_t *src)
 {
-	StringCchCopy(szString, 64, PathFindFileName(szAlternateFilename));
-	if (lstrlen(szString) > 27)
-		lstrcpy(&szString[27], "...");
+	int bytes_needed = WideCharToMultiByte(CP_UTF8, 0, src, -1, NULL, 0, NULL, NULL);
+
+	if (!bytes_needed)
+		return 0;
+
+	/* trim */
+	if (bytes_needed > len)
+		bytes_needed = len - 1;
+
+	return WideCharToMultiByte(CP_UTF8, 0, src, -1, dest, bytes_needed, NULL, NULL);
+}
+
+BOOL TSReader_GetTunerString(char *szString)
+{
+	EnterCriticalSection(&g_csFileAccess);
+	mywcstombs(szString, MAX_PATH, szShortFileName);
+	LeaveCriticalSection(&g_csFileAccess);
 
 	return TRUE;
 }
@@ -1364,7 +1429,7 @@ BOOL TSReader_GetMiscString(char *szString)
 	return TRUE;
 }
 
-BOOL TSReader_SendDiSEqC(BYTE * bCommand, int nLength)
+BOOL TSReader_SendDiSEqC(BYTE *bCommand, int nLength)
 {
 	return TRUE;
 }

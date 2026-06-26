@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <commctrl.h>
 #include <winsock.h>
+#include <strsafe.h>
 
 #include "TSReader.h"
 #include "bcdmux.h"
@@ -171,14 +172,14 @@ DWORD WINAPI EmailThread(LPVOID pPtr)
 
 	if (FillAddr(&sin, pEventEmailData->szSMTPServer, 25) == FALSE)
 	{
-		OutputDebugString("Email: FillAddr() failed\n");
+		dbg_printf("Email: FillAddr() failed\n");
 		goto EmailThreadWindup;
 	}
 
 	nStatus = connect(mysocket, (PSOCKADDR)&sin, sizeof(sin));
 	if (nStatus == SOCKET_ERROR)
 	{
-		OutputDebugString("Email: Unable to connect to SMTP server\n");
+		dbg_printf("Email: Unable to connect to SMTP server\n");
 		goto EmailThreadWindup;
 	}
 
@@ -187,13 +188,13 @@ DWORD WINAPI EmailThread(LPVOID pPtr)
 		// Read the signon message from the SMTP server
 		if (ReadSMTPSocket(mysocket, szBuffer, sizeof(szBuffer)) == FALSE)
 		{
-			OutputDebugString("Email: Socket error expecting 220 after connect\n");
+			dbg_printf("Email: Socket error expecting 220 after connect\n");
 			break;
 		}
 		szBuffer[3] = '\0';
 		if (lstrcmp(szBuffer, "220") != 0)
 		{
-			OutputDebugString("Email: no 220 after connect\n");
+			dbg_printf("Email: no 220 after connect\n");
 			break;
 		}
 
@@ -218,11 +219,11 @@ DWORD WINAPI EmailThread(LPVOID pPtr)
 			} while (TRUE);
 			if (fError)
 			{
-				OutputDebugString("Email: Socket error reading data after EHLO\n");
+				dbg_printf("Email: Socket error reading data after EHLO\n");
 				break;
 			}
 
-			wsprintf(szTemp, "AUTH LOGIN\r\n");
+			StringCchPrintf(szTemp, sizeof(szTemp), "AUTH LOGIN\r\n");
 			send(mysocket, szTemp, lstrlen(szTemp), 0);
 			
 			do
@@ -243,14 +244,14 @@ DWORD WINAPI EmailThread(LPVOID pPtr)
 					{
 						memset(szBuffer, 0, sizeof(szBuffer));
 						Base64Encode(szBuffer, v->szSMTPUsername);
-						wsprintf(szTemp, "%s\r\n", szBuffer);
+						StringCchPrintf(szTemp, sizeof(szTemp), "%s\r\n", szBuffer);
 						send(mysocket, szTemp, lstrlen(szTemp), 0);
 					}
 					else if (strstr(szTemp, "password") != NULL)
 					{
 						memset(szBuffer, 0, sizeof(szBuffer));
 						Base64Encode(szBuffer, v->szSMTPPassword);
-						wsprintf(szTemp, "%s\r\n", szBuffer);
+						StringCchPrintf(szTemp, sizeof(szTemp), "%s\r\n", szBuffer);
 						send(mysocket, szTemp, lstrlen(szTemp), 0);
 					}
 					else
@@ -268,7 +269,7 @@ DWORD WINAPI EmailThread(LPVOID pPtr)
 		}
 
 		// Send "MAIL FROM:"
-		wsprintf(szTemp, "MAIL FROM:<%s>\r\n", pEventEmailData->szEmailFrom);
+		StringCchPrintf(szTemp, sizeof(szTemp), "MAIL FROM:<%s>\r\n", pEventEmailData->szEmailFrom);
 		send(mysocket, szTemp, lstrlen(szTemp), 0);
 		if (ReadSMTPSocket(mysocket, szBuffer, sizeof(szBuffer)) == FALSE)
 			break;
@@ -277,7 +278,7 @@ DWORD WINAPI EmailThread(LPVOID pPtr)
 			break;
 
 		// Send "RCPT TO:" (errors and warnings address)
-		wsprintf(szTemp, "RCPT TO:<%s>\r\n", pEventEmailData->szEmailAddress);
+		StringCchPrintf(szTemp, sizeof(szTemp), "RCPT TO:<%s>\r\n", pEventEmailData->szEmailAddress);
 		send(mysocket, szTemp, lstrlen(szTemp), 0);
 		if (ReadSMTPSocket(mysocket, szBuffer, sizeof(szBuffer)) == FALSE)
 			break;
@@ -294,9 +295,9 @@ DWORD WINAPI EmailThread(LPVOID pPtr)
 			break;
 		
 		// Send the email header
-		wsprintf(szTemp, "From: %s\r\n", pEventEmailData->szEmailFrom);
+		StringCchPrintf(szTemp, sizeof(szTemp), "From: %s\r\n", pEventEmailData->szEmailFrom);
 		send(mysocket, szTemp, lstrlen(szTemp), 0);
-		wsprintf(szTemp, "To: %s\r\n", pEventEmailData->szEmailAddress);
+		StringCchPrintf(szTemp, sizeof(szTemp), "To: %s\r\n", pEventEmailData->szEmailAddress);
 		send(mysocket, szTemp, lstrlen(szTemp), 0);
 
 		if (pEventEmailData->el.nEventType != EVENT_ICON_BODY_ONLY)
@@ -306,27 +307,27 @@ DWORD WINAPI EmailThread(LPVOID pPtr)
 			switch(pEventEmailData->el.nEventType)
 			{
 			case EVENT_ICON_INFORMATION:
-				lstrcpy(szTemp2, "Info");
+				StringCchCopy(szTemp2, sizeof(szTemp2), "Info");
 				break;
 			case EVENT_ICON_WARNING:
-				lstrcpy(szTemp2, "Warning");
+				StringCchCopy(szTemp2, sizeof(szTemp2), "Warning");
 				break;
 			case EVENT_ICON_STOP:
-				lstrcpy(szTemp2, "Error");
+				StringCchCopy(szTemp2, sizeof(szTemp2), "Error");
 				break;
 			}
-			wsprintf(szTemp, "Subject: %s\r\n", szTemp2);
+			StringCchPrintf(szTemp, sizeof(szTemp), "Subject: %s\r\n", szTemp2);
 			send(mysocket, szTemp, lstrlen(szTemp), 0);
 			if (pEventEmailData->el.nEventType != EVENT_ICON_INFORMATION)
 			{
-				lstrcpy(szTemp, "Importance: High\r\n");
+				StringCchCopy(szTemp, sizeof(szTemp), "Importance: High\r\n");
 				send(mysocket, szTemp, lstrlen(szTemp), 0);
 			}
 			send(mysocket, "\r\n", 2, 0);
 			
 			// Send the message
 			SystemTimeToTzSpecificLocalTime(NULL, &pEventEmailData->el.stEvent, &stLocal);		
-			wsprintf(szTemp, "%04d/%02d/%02d %02d:%02d:%02d\r\n", 
+			StringCchPrintf(szTemp, sizeof(szTemp), "%04d/%02d/%02d %02d:%02d:%02d\r\n",
 					 stLocal.wYear, stLocal.wMonth, stLocal.wDay,
 					 stLocal.wHour, stLocal.wMinute, stLocal.wSecond);
 			send(mysocket, szTemp, lstrlen(szTemp), 0);

@@ -151,7 +151,8 @@ BYTE __cdecl SourceHelper_ReceiveReceiverSerial(int * nTimeout);
 int  __cdecl SourceHelper_SendReceiverSerial(unsigned char * lpByte, DWORD dwBytesToWrite);
 
 BOOL __cdecl SourceHelper_GetQAMHRCStatus(void);
-BOOL __cdecl SourceHelper_myGetOpenFileName(LPOPENFILENAME lpofn);
+BOOL __cdecl SourceHelper_myGetOpenFileName(LPOPENFILENAMEA lpofn);
+BOOL __cdecl SourceHelper_myGetOpenFileNameW(LPOPENFILENAMEW lpofn);
 BOOL __cdecl SourceHelper_GetTSReaderVersion(int * nMajor, int * nMinor, int * nBuild);
 BOOL __cdecl SourceHelper_GetProfileName(char * szBuffer);
 

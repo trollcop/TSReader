@@ -119,12 +119,7 @@ DWORD WINAPI AACAudioDecoderThread(LPVOID lpv)
 					GenerateAudioThumbnail(pSamples[esparserinfo->nES], nAudioChannels, nDestWidth, nDestHeight, pThumbnail[esparserinfo->nES],
 									       v->nESParsePMTIndex[esparserinfo->nES], v->nESParseESIndex[esparserinfo->nES]);
 					fGeneratedThumbnail = TRUE;
-					{
-						char szTemp[128];
-						wsprintf(szTemp, "TSReader: Completed AAC parser for program %d ES thread %d\n",
-								 v->pat.pmt[v->nESParsePMTIndex[esparserinfo->nES]].nProgramNumber, esparserinfo->nES);
-						OutputDebugString(szTemp);
-					}
+					dbg_printf("TSReader: Completed AAC parser for program %d ES thread %d\n", v->pat.pmt[v->nESParsePMTIndex[esparserinfo->nES]].nProgramNumber, esparserinfo->nES);
 					
 					pAAC = LocalAlloc(LPTR, sizeof(PARSEDAACAUDIO));
 					pAAC->channels = hInfo.channels;
@@ -144,11 +139,9 @@ DWORD WINAPI AACAudioDecoderThread(LPVOID lpv)
 			}
 			else if (hInfo.error != 0)
 			{
-				char szTemp[256];
-				char * error = NeAACDecGetErrorMessage(hInfo.error);
+				const char *error = NeAACDecGetErrorMessage(hInfo.error);
 
-				wsprintf(szTemp, "TSReader: AAC: %02X%02X%02X%02X%02X%02X%02X%02X%02X loop=%d %s\n", bBuffer[0], bBuffer[1], bBuffer[2], bBuffer[3], bBuffer[4], bBuffer[5], bBuffer[6], bBuffer[7], bBuffer[8], nLoop, error);
-				OutputDebugString(szTemp);
+				dbg_printf("TSReader: AAC: %02X%02X%02X%02X%02X%02X%02X%02X%02X loop=%d %s\n", bBuffer[0], bBuffer[1], bBuffer[2], bBuffer[3], bBuffer[4], bBuffer[5], bBuffer[6], bBuffer[7], bBuffer[8], nLoop, error);
 				nLoop += 50;
 			}
 		} while (nLoop++ < 100);		
@@ -165,11 +158,7 @@ aac_windup:
 	v->fESParseDecoderCompletedLibMPEG[esparserinfo->nES] = TRUE;
 	v->fMPEG2DecoderThreadRunning[esparserinfo->nES] = FALSE;
 	LeaveCriticalSection(&v->esparserinfo[esparserinfo->nES].csThreadSignal);
-	{
-		char szTemp[1024];
-		wsprintf(szTemp, "TSReader: Completed AAC audio for program %d ES thread %d\n",
-				 esparserinfo->nProgramNumber, esparserinfo->nES);
-		OutputDebugString(szTemp);
-	}
+	dbg_printf("TSReader: Completed AAC audio for program %d ES thread %d\n", esparserinfo->nProgramNumber, esparserinfo->nES);
+
 	return 0;
 }
