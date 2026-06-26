@@ -16,3 +16,4 @@ EXPORTS
 	TSReader_GetSignalString		@13
 	TSReader_GetTunerString			@14
 	TSReader_SendDiSEqC				@15
+	TSReader_GetMiscString			@16

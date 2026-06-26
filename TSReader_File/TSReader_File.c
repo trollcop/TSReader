@@ -4,9 +4,12 @@
 
 #include <windows.h>
 #include <commctrl.h>
+#include <stdint.h>
+#include <strsafe.h>
+#include <shlwapi.h>
 #include "initguid.h"
 #include "winioctl.h"
-#include "setupapi.h"	// VC++ 5 one is out of date
+#include <setupapi.h>
 #include <stdio.h>
 
 #include "..\sources.h"
@@ -25,32 +28,42 @@ typedef struct tRTC
 	int nRecord;
 } tRTC;
 
-PSOURCESTRUCT ss;
-BOOL fReedSolomonIncluded;
-BOOL fTimestampsIncluded;
-BOOL fDSSMode;
-BOOL fSearchThreadRunning;
-BOOL fAbortSearchThread;
-BOOL fNoEOFPrompt;
-int nPacketLength;
-DWORD dwFileStartOffset;
+static PSOURCESTRUCT ss;
+static BOOL fReedSolomonIncluded;
+static BOOL fTimestampsIncluded;
+static BOOL fDSSMode;
+static BOOL fSearchThreadRunning;
+static BOOL fAbortSearchThread;
+static BOOL fNoEOFPrompt;
+static int nPacketLength;
+static DWORD dwFileStartOffset;
 
-BOOL fProgramStream;
-BOOL fRateControlled;
-BOOL fRateControlAuto;
-int nRateManual;
+static BOOL fProgramStream;
+static BOOL fRateControlled;
+static BOOL fRateControlAuto;
+static int nRateManual;
 #ifndef LOOP
-BOOL fCloseOnEOF;
-int nStartOffsetPercentage;
+static BOOL fCloseOnEOF;
+static int nStartOffsetPercentage;
 #endif LOOP
 
-HANDLE hInstance;
-HANDLE hInputStream;
+static HANDLE hInstance;
+/* handle to current filename */
+static HANDLE hInputStream;
+/* currently loaded file size */
+static ULARGE_INTEGER g_nInputFileSize;
+static ULARGE_INTEGER g_nCurrentReadSize;
+#ifdef LOOP
+/* how many times have we looped */
+uint32_t g_nFileLoops = 0;
+#endif
+/* currently loaded filename (full path) */
+static char szAlternateFilename[MAX_PATH] = { 0 };
 
-char szFileModeFilename[MAX_PATH];
-char szSearchFailureReason[MAX_PATH + 128];
+static char szFileModeFilename[MAX_PATH];
+static char szSearchFailureReason[MAX_PATH + 128];
 
-char * szCmdLinePtr;
+static char *szCmdLinePtr;
 #ifndef LOOP
 #ifndef CONTINUOUS
 char gszSourceName[] = {"Transport Stream File"};
@@ -60,7 +73,7 @@ char gszSourceName[] = {"Transport Stream File-continuous"};
 #else LOOP
 char gszSourceName[] = {"Transport Stream File-loop"};
 #endif LOOP
-char szAlternateFilename[MAX_PATH] = {0};
+
 static char gszKeyName[] = TEXT("Software\\COOL.STF\\TSReader\\FileSource");
 
 BOOL __cdecl SourceHelper_ValidateSourceContainer(PSOURCESTRUCT pss);
@@ -89,7 +102,7 @@ BOOL CALLBACK ReachedEndDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 }
 
 #ifndef LOOP
-BOOL CheckForNextTSFile()
+BOOL CheckForNextTSFile(void)
 {
 	char szTemp[MAX_PATH];
 	char * szSecondPeriod;
@@ -131,6 +144,11 @@ BOOL CheckForNextTSFile()
 						// Ok to continue on with this file
 						wsprintf(szTemp, "Now reading from %s\n", szFileModeFilename);
 						OutputDebugString(szTemp);
+
+						/* get file size for progress report */
+						g_nInputFileSize.LowPart = GetFileSize(hInputStream, &g_nInputFileSize.HighPart);
+						g_nCurrentReadSize.QuadPart = 0;
+
 						return TRUE;
 					}
 				}
@@ -157,10 +175,10 @@ BOOL CheckForNextTSFile()
 			*szSecondPeriod = '\0';
 			if (sscanf(szSequenceSeperator + 1, "%d", &nCurrentSequence) == 1)
 			{
-				char szTemp[32];
+				char szFilename[32];
 				nCurrentSequence++;
-				wsprintf(szTemp, "_%02d.tp", nCurrentSequence);
-				lstrcpy(szSequenceSeperator, szTemp);				
+				wsprintf(szFilename, "_%02d.tp", nCurrentSequence);
+				lstrcpy(szSequenceSeperator, szFilename);
 			}
 			else
 				return FALSE;
@@ -172,6 +190,11 @@ BOOL CheckForNextTSFile()
 			// Ok to continue on with this file
 			wsprintf(szTemp, "Now reading from %s\n", szFileModeFilename);
 			OutputDebugString(szTemp);
+
+			/* get file size for progress report */
+			g_nInputFileSize.LowPart = GetFileSize(hInputStream, &g_nInputFileSize.HighPart);
+			g_nCurrentReadSize.QuadPart = 0;
+
 			return TRUE;
 		}
 	}
@@ -180,7 +203,7 @@ BOOL CheckForNextTSFile()
 }
 #endif LOOP
 
-void ThreadTerminateCleanup()
+void ThreadTerminateCleanup(void)
 {
 	Sleep(1000);
 	do
@@ -237,7 +260,7 @@ DWORD WINAPI ReadRateControlledThread(LPVOID lpv)
 	double dTickError;
 	double dTickRemainder;
 	double dTicksPerPacket;
-	BYTE * pConversionBuffer;
+	BYTE *pConversionBuffer = NULL;
 
 	OutputDebugString("ReadRateControlledThread+\n");
 
@@ -280,6 +303,7 @@ DWORD WINAPI ReadRateControlledThread(LPVOID lpv)
 		{
 			// Very simple for nNonRSPacketLength bytes
 			ReadFile(hInputStream, ss->tsb[nTSBufferIndex].pData, nPacketsPerBuffer * nNonRSPacketLength, &dwRead, NULL);
+			g_nCurrentReadSize.QuadPart += dwRead;
 			ss->tsb[nTSBufferIndex].nSize = dwRead;
 			EnterCriticalSection(&ss->csPIDCounter);
 			ss->nLastSecondByteCounter += dwRead;
@@ -294,6 +318,7 @@ DWORD WINAPI ReadRateControlledThread(LPVOID lpv)
 
 			// Timestamp or R/S codes
 			ReadFile(hInputStream, pConversionBuffer, nPacketsPerBuffer * nPacketLength, &dwRead, NULL);
+			g_nCurrentReadSize.QuadPart += dwRead;
 			if (dwRead)
 			{
 				nPackets = (int)dwRead / nPacketLength;
@@ -324,6 +349,8 @@ DWORD WINAPI ReadRateControlledThread(LPVOID lpv)
 			if (ss->fTerminateReadThread)
 				break;
 			SetFilePointer(hInputStream, dwFileStartOffset, NULL, FILE_BEGIN);
+			g_nFileLoops++;
+			g_nCurrentReadSize.QuadPart = 0;
 			continue;
 #else LOOP
 			if (CheckForNextTSFile() == TRUE)
@@ -389,6 +416,7 @@ DWORD WINAPI ReadUncontrolledThread(LPVOID lpv)
 
 		fNeedToSleep = FALSE;
 		ReadFile(hInputStream, tsbuffer, nReadSize, &dwRead, NULL);
+		g_nCurrentReadSize.QuadPart += dwRead;
 		if (dwRead == 0)
 		{
 #ifdef LOOP
@@ -507,7 +535,7 @@ DWORD WINAPI ReadUncontrolledThread(LPVOID lpv)
 	return 0;
 }
 
-BOOL TSReader_Start()
+BOOL TSReader_Start(void)
 {
 	DWORD dwThreadID;
 
@@ -521,7 +549,7 @@ BOOL TSReader_Start()
 	return TRUE;
 }
 
-BOOL TSReader_Stop()
+BOOL TSReader_Stop(void)
 {
 	ss->fTerminateReadThread = TRUE;
 	while (ss->fReadThreadTerminated == FALSE)
@@ -548,6 +576,9 @@ BOOL TSReader_Init(PSOURCESTRUCT pss)
 	fRateControlled = FALSE;
 	fRateControlAuto = TRUE;
 	nRateManual = 0;
+	g_nCurrentReadSize.QuadPart = 0;
+	g_nInputFileSize.QuadPart = 0;
+
 #ifndef LOOP
 	fCloseOnEOF = FALSE;
 	nStartOffsetPercentage = 0;
@@ -585,7 +616,7 @@ BOOL TSReader_Init(PSOURCESTRUCT pss)
 	return TRUE;
 }
 
-BOOL TSReader_DeInit()
+BOOL TSReader_DeInit(void)
 {
 	LONG lKey;
 	HKEY hkMainReg;
@@ -735,7 +766,7 @@ int CalculateMPEGBitrate(HWND hDlg)
 {
 	int nRecord = 0;
 	int nPCRCount = 0;
-	unsigned int nPID;
+	uint16_t nPID = 0;
 	tPCR pcr[2];
 	BYTE pBuffer[204];
 
@@ -755,10 +786,10 @@ int CalculateMPEGBitrate(HWND hDlg)
 		if ((pBuffer[3] & 0x20) && (pBuffer[4] > 0) && (pBuffer[5] & 0x10))
 		{
 			if (nPCRCount == 0)
-				nPID = (unsigned int)(((pBuffer[1] & 0x1F) << 8) + pBuffer[2]);
+				nPID = (uint16_t)(((pBuffer[1] & 0x1F) << 8) + pBuffer[2]);
 			else
 			{
-				if (nPID != (unsigned int)(((pBuffer[1] & 0x1F) << 8) + pBuffer[2]))
+				if (nPID != (uint16_t)(((pBuffer[1] & 0x1F) << 8) + pBuffer[2]))
 					continue;
 			}
 			pcr[nPCRCount].base = (pBuffer[6] << 25)
@@ -794,14 +825,13 @@ int CalculateMPEGBitrate(HWND hDlg)
 	} while (!fAbortSearchThread);
 
 	return -1;		// should never get here
-
 }
 
 int CalculateDSSBitrate(HWND hDlg)
 {
 	int nRecord = 0;
 	int nPCRCount = 0;
-	int nSCID;
+	uint16_t nSCID = 0;
 	tRTC rtc[2];
 	BYTE pBuffer[147];
 
@@ -1109,7 +1139,7 @@ DWORD WINAPI SearchMPEGFileForSyncThread(LPVOID lpv)
 	return 0;
 }
 
-void AbortSearchThread()
+void AbortSearchThread(void)
 {
 	fAbortSearchThread = TRUE;
 
@@ -1178,7 +1208,7 @@ BOOL OpenTransportFile(char * szMPEGTSFilename)
 	hInputStream = CreateFile(szMPEGTSFilename, GENERIC_READ, FILE_SHARE_READ, (LPSECURITY_ATTRIBUTES)NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, (HANDLE)NULL);
 	if (hInputStream == INVALID_HANDLE_VALUE)
 	{
-		char szTemp[MAX_PATH + 100];
+		char szMessage[MAX_PATH + 100];
 		char szMsgBuf[MAX_PATH];
 		
 		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -1187,16 +1217,20 @@ BOOL OpenTransportFile(char * szMPEGTSFilename)
 					  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
 					  szMsgBuf,
 					  sizeof(szMsgBuf),
-					  NULL);		
-		wsprintf(szTemp, "Unable to open file:\n\n%s\n\n%s", szMPEGTSFilename, szMsgBuf);
+					  NULL);
+		StringCchPrintf(szMessage, sizeof(szMessage), "Unable to open file:\n\n%s\n\n%s", szMPEGTSFilename, szMsgBuf);
 		if (!ss->fQuietMode)
-			MessageBox(ss->hWndTSReader, szTemp, gszSourceName, MB_OK | MB_ICONSTOP);
+			MessageBox(ss->hWndTSReader, szMessage, gszSourceName, MB_OK | MB_ICONSTOP);
 		return FALSE;
 	}
 
+	/* get file size for progress report */
+	g_nInputFileSize.LowPart = GetFileSize(hInputStream, &g_nInputFileSize.HighPart);
+	g_nCurrentReadSize.QuadPart = 0;
+
 	// Flag if this is a .ts file
 	lstrcpy(szTemp, szMPEGTSFilename);
-	strlwr(szTemp);
+	_strlwr(szTemp);
 	if (strstr(szTemp, ".ts") != NULL)
 		ss->fLastFileTS = TRUE;
 	else if (strstr(szTemp, ".mpg") != NULL)
@@ -1215,7 +1249,7 @@ BOOL OpenTransportFile(char * szMPEGTSFilename)
 	return fRetVal;
 }
 
-BOOL TSReader_Tune()
+BOOL TSReader_Tune(void)
 {
 	return TRUE;
 }
@@ -1280,7 +1314,7 @@ BOOL TSReader_GetDescription(char * szDescription, char * szCommandLineParameter
 	return TRUE;
 }
 
-BOOL TSReader_ParseCommandLine(PSOURCESTRUCT ss, char * szCommandLine, BOOL fQuiet)
+BOOL TSReader_ParseCommandLine(PSOURCESTRUCT pss, char * szCommandLine, BOOL fQuiet)
 {
 	szCmdLinePtr = szCommandLine;
 	if (*szCmdLinePtr == '"')
@@ -1302,13 +1336,31 @@ BOOL TSReader_SetChannel(int nChannel)
 
 BOOL TSReader_GetSignalString(char * szString)
 {
-	lstrcpy(szString, "n/a");
+	if (g_nInputFileSize.QuadPart == 0 || g_nCurrentReadSize.QuadPart == 0) {
+		lstrcpy(szString, "n/a");
+		return TRUE;
+	}
+
+	StringCchPrintf(szString, 64, "File Read: %.1f%%", ((double)g_nCurrentReadSize.QuadPart / (double)g_nInputFileSize.QuadPart) * 100.0);
+
 	return TRUE;
 }
 
 BOOL TSReader_GetTunerString(char * szString)
 {
-	lstrcpy(szString, "n/a");
+	StringCchCopy(szString, 64, PathFindFileName(szAlternateFilename));
+	if (lstrlen(szString) > 27)
+		lstrcpy(&szString[27], "...");
+
+	return TRUE;
+}
+
+BOOL TSReader_GetMiscString(char *szString)
+{
+#ifdef LOOP
+	wsprintf(szString, "File Loops: %d", g_nFileLoops);
+#endif
+
 	return TRUE;
 }
 
