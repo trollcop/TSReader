@@ -52,14 +52,6 @@ DWORD WINAPI MPEGAudioDecoderThread(LPVOID lpv);
 DWORD WINAPI AC3AudioDecoderThread(LPVOID lpv);
 DWORD WINAPI AACAudioDecoderThread(LPVOID lpv);
 
-// In export.c
-void HTMLExport(HANDLE hHTMFile, int nExportSITables, char * szOutputFilename);
-void XMLExport(HWND hDlg, HANDLE hXMLFile);
-void SIParserExport(HWND hDlg);
-void StartXMLExport(HWND hDlg, BOOL fXMLTVFormat);
-void XMLTVExport(HWND hDlg, HANDLE hXMLFile);
-
-
 // Stuff in EITServer.c
 BOOL StartEITServer(void);
 BOOL TerminateEITServer(void);

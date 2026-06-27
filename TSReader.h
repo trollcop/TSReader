@@ -2092,6 +2092,21 @@ typedef char *(*td_GetReceiverName) (void);
 /* Video decoder start code parser typedef */
 typedef BOOL (*td_StartCodeParser)(BYTE *pPESPacket, int nPacketLength, int *nOffset);
 
+/* forward declarations for functions used by other source files */
+int CloseExistingChart(HWND hWnd, WORD wMenuID);
+void RestartTSReader_Stop(HWND hWnd);
+void RestartTSReader_Start(HWND hWnd);
+BOOL LoadSource(HWND hWnd);
+void GetNextECMPID(void);
+HTREEITEM AddItemToSITree(HWND hwndTV, LPTSTR lpszItem, int nLevel, LPARAM lParam, int nIconIndex, HTREEITEM hParent, HTREEITEM hInsertAfter);
+
+/* In export.c */
+void HTMLExport(HANDLE hHTMFile, int nExportSITables, char *szOutputFilename);
+void XMLExport(HWND hDlg, HANDLE hXMLFile);
+void SIParserExport(HWND hDlg);
+void StartXMLExport(HWND hDlg, BOOL fXMLTVFormat);
+void XMLTVExport(HWND hDlg, HANDLE hXMLFile);
+
 //////
 struct AC3frmsize
 {

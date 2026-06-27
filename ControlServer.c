@@ -1,49 +1,33 @@
 #include <windows.h>
 #include <commctrl.h>
 #include <time.h>
+#include <strsafe.h>
 #include "TSReader.h"
 #include "util.h"
 #include "formatter.h"
 #include "resource.h"
 
-// Forward declarations - should be in TSReader.h
-int GetTotalPMTChannels(void);
-BOOL IsAC3AudioStream(int nPMTProgramIndex, int nESIndex);
-BOOL IsPCMAudioStream(int nPMTProgramIndex, int nESIndex);
-void GetLanguageFromDescriptor(char * szLanguage, int nPMTIndex, int nESIndex);
-void XMLExport(HWND hDlg, HANDLE hXMLFile);
-void XMLTVExport(HWND hDlg, HANDLE hXMLFile);
-void HTMLExport(HANDLE hHTMFile, int nExportSITables, char * szOutputFilename);
-void RestartTSReader_Stop(HWND hDlg);
-void RestartTSReader_Start(HWND hDlg);
-BOOL LoadSource(HWND hWnd);
-void CloseExistingChart(HWND hDlg, DWORD dwMenuID);
-void GetSourceInfoLine(int nLine, char * szOutput);
-int __cdecl SortPIDsByPID(const void *elem1, const void *elem2);
-void GetNextECMPID(void);
-HTREEITEM AddItemToSITree(HWND hwndTV, LPTSTR lpszItem, int nLevel, LPARAM lParam, int nIconIndex, HTREEITEM hParent, HTREEITEM hInsertAfter);
-
 // Global variables
 extern PVARIABLES v;
-extern int  (* GetSyncLossCount) (BOOL fReset);
-extern int  (* GetRetuneCount) (BOOL fReset);
+extern td_GetSyncLossCount GetSyncLossCount;
+extern td_GetRetuneCount GetRetuneCount;
 
 // Should move into v->
-SOCKET ControlBaseSocket = INVALID_SOCKET;
-SOCKET ControlSocket = INVALID_SOCKET;
-BOOL fServerThreadActive;
-char szNewSourceName[MAX_PATH] = {0};
-BOOL fXMLStreamRunning = FALSE;
-BOOL fKillXMLStreamThread = FALSE;
-BOOL fDataRequest = FALSE;
-int nDataRequestlParam = 0;
-char szCurrentlyDoingTerminator[128] = {""};
+static SOCKET ControlBaseSocket = INVALID_SOCKET;
+static SOCKET ControlSocket = INVALID_SOCKET;
+static BOOL fServerThreadActive;
+static char szNewSourceName[MAX_PATH] = {0};
+static BOOL fXMLStreamRunning = FALSE;
+static BOOL fKillXMLStreamThread = FALSE;
+static BOOL fDataRequest = FALSE;
+static int nDataRequestlParam = 0;
+static char szCurrentlyDoingTerminator[128] = { "" };
 
-static char szError506[] = {"506 Already playing or recording\r\n"};
-static char szError507[] = {"507 No program selected\r\n"};
-static char szOK304[] =    {"304 Starting record\r\n"};
+static const char szError506[] = {"506 Already playing or recording\r\n"};
+static const char szError507[] = {"507 No program selected\r\n"};
+static const char szOK304[] =    {"304 Starting record\r\n"};
 
-char szBaseHelp[] = {
+static const char szBaseHelp[] = {
 		"201 TSReader Control Socket Help\r\n"
 		"201 \r\n"
 		"201 AUDIO\t\tReturns/sets the audio stream to use\r\n"
@@ -73,87 +57,87 @@ char szBaseHelp[] = {
 		"201 https://tsreader.co.uk"
 };
 
-static char szAudioHelp[] = {
+static const char szAudioHelp[] = {
 		"201 AUDIO help\r\n"
 };
 
-static char szExportHelp[] = {
+static const char szExportHelp[] = {
 		"201 EXPORT help\r\n"
 };
 
-static char szGraphHelp[] = {
+static const char szGraphHelp[] = {
 		"201 GRAPH help\r\n"
 };
 
-static char szHelpHelp[] = {
+static const char szHelpHelp[] = {
 		"201 HELP help\r\n"
 };
 
-static char szInfoHelp[] = {
+static const char szInfoHelp[] = {
 		"201 INFO help\r\n"
 };
 
-static char szInfoManualChannel[] = {
+static const char szInfoManualChannel[] = {
 		"201 MANUALCHANNEL help\r\n"
 };
 
-static char szPlayHelp[] = {
+static const char szPlayHelp[] = {
 		"201 PLAY help\r\n"
 };
 
-static char szQuitHelp[] = {
+static const char szQuitHelp[] = {
 		"201 QUIT help\r\n"
 };
 
-static char szRecordHelp[] = {
+static const char szRecordHelp[] = {
 		"201 RECORD help\r\n"
 };
 
-static char szPIDsHelp[] = {
+static const char szPIDsHelp[] = {
 		"201 PIDS help\r\n"
 };
 
-static char szProgramHelp[] = {
+static const char szProgramHelp[] = {
 		"201 PROGRAM help\r\n"
 };
 
-static char szSetVLCHelp[] = {
+static const char szSetVLCHelp[] = {
 		"201 SETVLC help\r\n"
 };
 
-static char szSetttingHelp[] = {
+static const char szSetttingHelp[] = {
 		"201 SETTING help\r\n"
 };
 
-static char szSourceHelp[] = {
+static const char szSourceHelp[] = {
 		"201 SOURCE help\r\n"
 };
 
-static char szStallHelp[] = {
+static const char szStallHelp[] = {
 		"201 STALL help\r\n"
 };
 
-static char szStopHelp[] = {
+static const char szStopHelp[] = {
 		"201 STOP help\r\n"
 };
 
-static char szTerminateHelp[] = {
+static const char szTerminateHelp[] = {
 		"201 TERMINATE help\r\n"
 };
 
-static char szTuneHelp[] = {
+static const char szTuneHelp[] = {
 		"201 TUNE help\r\n"
 };
 
-static char szThumbnailHelp[] = {
+static const char szThumbnailHelp[] = {
 		"201 THUMBNAIL help\r\n"
 };
 
-static char szWindowHelp[] = {
+static const char szWindowHelp[] = {
 		"201 WINDOW help\r\n"
 };
 
-int SendControlResponse(char * szMessage, int nLength)
+int SendControlResponse(const char * szMessage, int nLength)
 {
 	int nRetVal;
 
@@ -165,7 +149,7 @@ int SendControlResponse(char * szMessage, int nLength)
 		wsprintf(szTemp, "TSReader: Control server response: %s", szMessage);
 		if (szMessage[lstrlen(szMessage) - 1] != '\n')
 			lstrcat(szTemp, "\n");
-		OutputDebugString(szTemp);
+		dbg_printf(szTemp);
 	}
 #endif DEBUG_MESSAGES
 
@@ -176,8 +160,8 @@ void CS__SendHelp(char * szSpacePtr)
 {
 	int nOffset;
 	int nRemainder;
-	char * szHelp = NULL;
-	static char szError[] = {"527 HELP command parameters are incorrect\r\n"};
+	const char * szHelp = NULL;
+	static const char szError[] = {"527 HELP command parameters are incorrect\r\n"};
 
 	if (szSpacePtr == NULL)
 		szHelp = szBaseHelp;
@@ -240,7 +224,7 @@ void CS__SendHelp(char * szSpacePtr)
 	}
 }
 
-void CS__Program(char * szSpacePtr)
+void CS__Program(const char * szSpacePtr)
 {
 	if (szSpacePtr == NULL)
 	{
@@ -277,7 +261,7 @@ void CS__Program(char * szSpacePtr)
 		sscanf(szSpacePtr, "%d", &nSelectProgramNumber);
 		if (nSelectProgramNumber <= 0 || nSelectProgramNumber > 65535)
 		{
-			static char szError[] = {"501 Invalid program number\r\n"};
+			static const char szError[] = {"501 Invalid program number\r\n"};
 			SendControlResponse(szError, lstrlen(szError));
 			return;
 		}
@@ -292,47 +276,47 @@ void CS__Program(char * szSpacePtr)
 				TreeView_SelectItem(hWndTV, v->pat.pmt[nPMTIndex].hPMTTreeItem);
 				TreeView_SelectSetFirstVisible(hWndTV, v->pat.pmt[nPMTIndex].hPMTTreeItem);				
 				{
-					static char szOK[] = {"300 Program selected\r\n"};
+					static const char szOK[] = {"300 Program selected\r\n"};
 					SendControlResponse(szOK, lstrlen(szOK));
 				}
 				return;
 			}
 		}
 		{
-			char szError[] = {"502 Program not found\r\n"};
+			const char szError[] = {"502 Program not found\r\n"};
 			SendControlResponse(szError, lstrlen(szError));
 		}
 	}
 }
 
-void CS__TerminateTSReader(char * szParameters)
+void CS__TerminateTSReader(const char * szParameters)
 {
 	if (szParameters == NULL)
 	{
-		static char szError[] = {"503 Terminate command not complete\r\n"};
+		static const char szError[] = {"503 Terminate command not complete\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
 	if (lstrcmp(szParameters, "xyzzy") != 0)
 	{
-		static char szError[] = {"504 Terminate sequence incorrect\r\n"};
+		static const char szError[] = {"504 Terminate sequence incorrect\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
 	{
-		static char szOK[] = {"301 Terminating\r\n"};
+		static const char szOK[] = {"301 Terminating\r\n"};
 		SendControlResponse(szOK, lstrlen(szOK));
 	}
 	v->fDirtyManualChannels = FALSE;
 	PostMessage(v->hWndMainWindow, WM_CLOSE, 0, 0);
 }
 
-void CS__PIDs(char * szParameters)
+void CS__PIDs(const char * szParameters)
 {
 	int i;
 	double dPercent, dRate = 0.0;
-	PIDCOUNTER pc[8192];
-	static char szComplete[] = {"317 PID list complete\r\n"};
+	static PIDCOUNTER pc[8192];
+	static const char szComplete[] = {"317 PID list complete\r\n"};
 
 	EnterCriticalSection(&v->ss.csPIDCounter);
 	memcpy(&pc, &v->pc, sizeof(PIDCOUNTER) * 8192);
@@ -381,7 +365,7 @@ void CS__Play(char * szParameters)
 
 	if (szParameters == NULL)
 	{
-		static char szError[] = {"505 Play command not complete\r\n"};
+		static const char szError[] = {"505 Play command not complete\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
@@ -433,12 +417,12 @@ void CS__Play(char * szParameters)
 	}
 	if (fResult == FALSE)
 	{
-		static char szError[] = {"508 Unknown playback device specified\r\n"};
+		static const char szError[] = {"508 Unknown playback device specified\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
 	{
-		static char szOK[] = {"302 Playback starting\r\n"};
+		static const char szOK[] = {"302 Playback starting\r\n"};
 		SendControlResponse(szOK, lstrlen(szOK));
 	}
 }
@@ -447,7 +431,7 @@ void CS__Stop(char * szParameters)
 {
 	if (v->fRecording == FALSE)
 	{
-		static char szError[] = {"509 Not currently recording or playing\r\n"};
+		static const char szError[] = {"509 Not currently recording or playing\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
@@ -478,7 +462,7 @@ void CS__Stop(char * szParameters)
 	}
 	v->nAutoRecord = 0;
 	{
-		static char szOK[] = {"303 Stopping\r\n"};
+		static const char szOK[] = {"303 Stopping\r\n"};
 		SendControlResponse(szOK, lstrlen(szOK));
 	}
 }
@@ -488,7 +472,7 @@ void CS__Reset(char * szParameters)
 {
 	if (szParameters == NULL)
 	{
-		static char szError[] = {"5xx No reset value specified\r\n"};
+		static const char szError[] = {"5xx No reset value specified\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 	}
 	else
@@ -506,7 +490,7 @@ void CS__Reset(char * szParameters)
 		if (nOptions & 0x10)
 			PostMessage(v->hWndMainWindow, WM_COMMAND, ID_HELP_RESETPIDCHART, 0);
 		{
-			char szOK[] = {"325 Specified counters reset\r\n"};
+			const char szOK[] = {"325 Specified counters reset\r\n"};
 			SendControlResponse(szOK, lstrlen(szOK));
 		}
 	}
@@ -518,7 +502,7 @@ void CS__Record(char * szParameters)
 	{
 		if (v->fRecording == FALSE)
 		{
-			static char szError[] = {"517 Not currently recording\r\n"};
+			static const char szError[] = {"517 Not currently recording\r\n"};
 			SendControlResponse(szError, lstrlen(szError));
 		}
 		else
@@ -599,7 +583,7 @@ void CS__Record(char * szParameters)
 		}
 		if (szSpace == NULL)
 		{
-			char szError[] = {"510 Record filename missing\r\n"};
+			const char szError[] = {"510 Record filename missing\r\n"};
 			SendControlResponse(szError, lstrlen(szError));
 			return;
 		}
@@ -639,12 +623,12 @@ void CS__Export(char * szParameters)
 	int nHTMLExportOptions = 0xffff;
 
 	char * szSpace;
-	static char szOK[] = {"309 Data exported\r\n"};
-	static char szOpenError[] = {"520 Unable to open export file\r\n"};
+	static const char szOK[] = {"309 Data exported\r\n"};
+	static const char szOpenError[] = {"520 Unable to open export file\r\n"};
 
 	if (szParameters == NULL)
 	{
-		static char szError[] = {"512 No EXPORT parameters specified\r\n"};
+		static const char szError[] = {"512 No EXPORT parameters specified\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
@@ -652,7 +636,7 @@ void CS__Export(char * szParameters)
 	szSpace = strstr(szParameters, " ");
 	if (szSpace == NULL)
 	{
-		static char szError[] = {"513 No EXPORT filename specified\r\n"};
+		static const char szError[] = {"513 No EXPORT filename specified\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
@@ -729,35 +713,37 @@ void CS__Export(char * szParameters)
 	}
 	else
 	{
-		static char szError[] = {"514 Export mode not supported\r\n"};
+		static const char szError[] = {"514 Export mode not supported\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
 }
 
-void SendControlserverStatistics(int nTable, char * szTableName)
+void SendControlserverStatistics(int nTable, const char * szTableName)
 {
 	char szOutput[256];
 
-	wsprintf(szOutput, "208 %s Sections: %d CRC Errors: %d\r\n",
-		     szTableName,
-			 v->nSIParserPackets[nTable], v->nSIParserCRCs[nTable]);
+	StringCchPrintf(szOutput, sizeof(szOutput), "208 %s Sections: %d CRC Errors: %lld\r\n",
+		szTableName,
+		v->nSIParserPackets[nTable],
+		v->nSIParserCRCs[nTable]);
+
 	SendControlResponse(szOutput, lstrlen(szOutput));	
 }
 
-void CS__ManualChannel(char * szParameters)
+void CS__ManualChannel(const char * szParameters)
 {
 	int nConvertCount;
 	int nProgramNumber, nPCRPID;
 	int nPMTIndex, nESIndex;
 	char * szSpace;
 	char szTemp[128];
-	static char szErrorChannelorPCR[] = {"539 Channel number or PCR PID incorrect\r\n"};
-	static char szOK[] = {"322 Manual channel added\r\n"};
+	static const char szErrorChannelorPCR[] = {"539 Channel number or PCR PID incorrect\r\n"};
+	static const char szOK[] = {"322 Manual channel added\r\n"};
 
 	if (szParameters == NULL)
 	{
-		static char szError[] = {"540 No parameters specified\r\n"};
+		static const char szError[] = {"540 No parameters specified\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
@@ -771,7 +757,7 @@ void CS__ManualChannel(char * szParameters)
 	}
 	if (nProgramNumber <= 0 || nProgramNumber > 65534)
 	{
-		static char szError[] = {"541 Invalid program number\r\n"};
+		static const char szError[] = {"541 Invalid program number\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
@@ -788,7 +774,7 @@ void CS__ManualChannel(char * szParameters)
 	}
 	if (nPCRPID <= 0 || nPCRPID >= 0x1fff)
 	{
-		static char szError[] = {"543 Invalid PCR PID\r\n"};
+		static const char szError[] = {"543 Invalid PCR PID\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
@@ -823,7 +809,7 @@ void CS__ManualChannel(char * szParameters)
 			|| (nESType <= 0 || nESType > 0xff)
 			|| (nESPID <= 0 || nESPID >= 0x1fff) )
 		{
-			static char szError[] = {"544 Invalid ES parameters\r\n"};
+			static const char szError[] = {"544 Invalid ES parameters\r\n"};
 			SendControlResponse(szError, lstrlen(szError));
 			return;
 		}
@@ -838,7 +824,7 @@ void CS__ManualChannel(char * szParameters)
 
 	if (nESIndex == 0)
 	{
-		static char szError[] = {"545 No elementary streams specified\r\n"};
+		static const char szError[] = {"545 No elementary streams specified\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
@@ -851,7 +837,7 @@ void CS__ManualChannel(char * szParameters)
 	}
 	if (nPMTIndex == MAX_PAT_ENTRIES)
 	{
-		static char szError[] = {"546 Too many channels defined\r\n"};
+		static const char szError[] = {"546 Too many channels defined\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
@@ -873,7 +859,7 @@ void CS__GetInfo(char * szParameters)
 
 	if (szParameters == NULL)
 	{
-		static char szError[] = {"534 No parameters specified\r\n"};
+		static const char szError[] = {"534 No parameters specified\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
@@ -957,7 +943,7 @@ void CS__GetInfo(char * szParameters)
 	}
 }
 
-static char szXMLLeadin[] = {"<?xml version = \"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"};
+static const char szXMLLeadin[] = {"<?xml version = \"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\r\n"};
 void CS__XML_SendGeneralInfo(void)
 {
 	char szSource[128], * szSourcePtr;
@@ -999,7 +985,7 @@ void CS__XML_SendPIDs(void)
 {
 	int i;
 	double dPercent, dRate = 0.0;
-	PIDCOUNTER pc[8192];
+	static PIDCOUNTER pc[8192];
 	char * szString;
 
 	EnterCriticalSection(&v->ss.csPIDCounter);
@@ -1720,11 +1706,11 @@ DWORD WINAPI ControlServerXMLStreamer(LPVOID lpv)
 	return FALSE;
 }
 
-void CS__XML(char * szXML)
+void CS__XML(const char * szXML)
 {
 	if (!v->fStreamingXMLMode)
 	{
-		static char szError[] = {"5xx Streaming XML mode not enabled\r\n"};
+		static const char szError[] = {"5xx Streaming XML mode not enabled\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
@@ -1775,11 +1761,11 @@ void CS__XML(char * szXML)
 
 void CS__Window(char * szParameters)
 {
-	static char szOK[] = {"316 WINDOW command sucessful\r\n"};
+	static const char szOK[] = {"316 WINDOW command successful\r\n"};
 
 	if (szParameters == NULL)
 	{
-		static char szError[] = {"536 No parameters specified\r\n"};
+		static const char szError[] = {"536 No parameters specified\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
@@ -1806,7 +1792,7 @@ void CS__Window(char * szParameters)
 	}
 	else
 	{
-		static char szError[] = {"537 Incorrect parameter\r\n"};
+		static const char szError[] = {"537 Incorrect parameter\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 	}
 }
@@ -1820,11 +1806,11 @@ void CS__WriteThumbnail(char * szParameters)
 	char * szFilenamePtr;
 	HISDEST	hDestinationObject;
 	char szCheckParameters[256];
-	static char szThumbnailOK[] = {"318 Thumbnail command OK\r\n"};
+	static const char szThumbnailOK[] = {"318 Thumbnail command OK\r\n"};
 
 	if (szParameters == NULL)
 	{
-		static char szError[] = {"528 No parameters specified\r\n"};
+		static const char szError[] = {"528 No parameters specified\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
@@ -1858,7 +1844,7 @@ void CS__WriteThumbnail(char * szParameters)
 	szFilenamePtr = strstr(szParameters, " ");
 	if (szFilenamePtr == NULL)
 	{
-		static char szError[] = {"529 No filename or command specified\r\n"};
+		static const char szError[] = {"529 No filename or command specified\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
@@ -1880,7 +1866,7 @@ void CS__WriteThumbnail(char * szParameters)
 		}
 		else
 		{
-			static char szError[] = {"530 Invalid program number range\r\n"};
+			static const char szError[] = {"530 Invalid program number range\r\n"};
 			SendControlResponse(szError, lstrlen(szError));
 			return;
 		}
@@ -1900,7 +1886,7 @@ void CS__WriteThumbnail(char * szParameters)
 	}
 	if (!fFoundProgram)
 	{
-		static char szError[] = {"531 Invalid program number\r\n"};
+		static const char szError[] = {"531 Invalid program number\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
@@ -1926,14 +1912,14 @@ void CS__WriteThumbnail(char * szParameters)
 	}
 	if (!fFoundVideo)
 	{
-		static char szError[] = {"532 No video thumbnail exists for the program\r\n"};
+		static const char szError[] = {"532 No video thumbnail exists for the program\r\n"};
 		LeaveCriticalSection(&v->csThumbnails);
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
 	if (v->pat.pmt[nPMTIndex].es[nESIndex].fDecoderCrashed)
 	{
-		static char szError[] = {"555 Thumbnail decoder crashed\r\n"};
+		static const char szError[] = {"555 Thumbnail decoder crashed\r\n"};
 		LeaveCriticalSection(&v->csThumbnails);
 		SendControlResponse(szError, lstrlen(szError));
 		return;
@@ -1942,7 +1928,7 @@ void CS__WriteThumbnail(char * szParameters)
 	hDestinationObject = _ISOpenFileDest(szFilenamePtr);
 	if (hDestinationObject != NULL)
 	{
-		static char szOK[] = {"313 THUMBNAIL command sucessful\r\n"};
+		static const char szOK[] = {"313 THUMBNAIL command sucessful\r\n"};
 
 		_ISWriteRGBToJPG(hDestinationObject,
 						 v->pat.pmt[nPMTIndex].es[nESIndex].pRGBVideoFrame,
@@ -1956,7 +1942,7 @@ void CS__WriteThumbnail(char * szParameters)
 	}
 	else
 	{
-		static char szError[] = {"533 Unable to write thumbnail file\r\n"};
+		static const char szError[] = {"533 Unable to write thumbnail file\r\n"};
 		LeaveCriticalSection(&v->csThumbnails);
 		SendControlResponse(szError, lstrlen(szError));
 	}
@@ -1982,7 +1968,7 @@ void CS__Graph(char * szParameters)
 
 	if (szParameters == NULL)
 	{
-		static char szError[] = {"523 No parameters specified\r\n"};
+		static const char szError[] = {"523 No parameters specified\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
@@ -1993,7 +1979,7 @@ void CS__Graph(char * szParameters)
 	strupr(szParameters);
 	if (lstrcmp(szParameters, "REALTIME") == 0)
 	{
-		static char szOK[] = {"319 Graph mode set to realtime\r\n"};
+		static const char szOK[] = {"319 Graph mode set to realtime\r\n"};
 		v->fRealtimeCharting = TRUE;
 		CheckMenuItem(GetMenu(v->hWndMainWindow), ID_SETTINGS_REALTIMECHARTING, MF_CHECKED | MF_BYCOMMAND);
 		SendControlResponse(szOK, lstrlen(szOK));
@@ -2001,7 +1987,7 @@ void CS__Graph(char * szParameters)
 	}
 	else if (lstrcmp(szParameters, "AVERAGE") == 0)
 	{
-		static char szOK[] = {"320 Graph mode set to average\r\n"};
+		static const char szOK[] = {"320 Graph mode set to average\r\n"};
 		v->fRealtimeCharting = FALSE;
 		CheckMenuItem(GetMenu(v->hWndMainWindow), ID_SETTINGS_REALTIMECHARTING, MF_UNCHECKED | MF_BYCOMMAND);
 		SendControlResponse(szOK, lstrlen(szOK));
@@ -2009,11 +1995,11 @@ void CS__Graph(char * szParameters)
 	}
 	else if (lstrcmp(szParameters, "REFRESH") == 0)
 	{
-		static char szOK[] = {"321 Graph refresh rate updated\r\n"};
+		static const char szOK[] = {"321 Graph refresh rate updated\r\n"};
 
 		if (szSpace == NULL)
 		{
-			static char szError[] = {"538 No refresh rate specified\r\n"};
+			static const char szError[] = {"538 No refresh rate specified\r\n"};
 			SendControlResponse(szError, lstrlen(szError));
 			return;
 		}
@@ -2051,17 +2037,17 @@ void CS__Graph(char * szParameters)
 	}
 	if (fChartOK)
 	{
-		static char szOK[] = {"310 GRAPH command sucessful\r\n"};
+		static const char szOK[] = {"310 GRAPH command sucessful\r\n"};
 		SendControlResponse(szOK, lstrlen(szOK));
 	}
 	else
 	{
-		static char szError[] = {"524 Invalid mode specified for GRAPH command\r\n"};
+		static const char szError[] = {"524 Invalid mode specified for GRAPH command\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 	}
 }
 
-void CS__Tune(char * szParameters)
+void CS__Tune(const char * szParameters)
 {
 	td_ParseCommandLine ParseCommandLine = NULL;
 	static char szSourceParameters[256];
@@ -2156,19 +2142,19 @@ void CS__Setting(char * szParameters)
 		int nParsed;
 		char szSettingName[64];
 		char szNewValue[64];
-		char szOK[] = {"323 SETTING updated\r\n"};
+		const char szOK[] = {"323 SETTING updated\r\n"};
 
 		nParsed = sscanf(szParameters, "%s %s", szSettingName, szNewValue);
 		if (nParsed != 2)
 		{
-			char szError[] = {"547 SETTING subparameter or value missing\r\n"};
+			const char szError[] = {"547 SETTING subparameter or value missing\r\n"};
 			SendControlResponse(szError, lstrlen(szError));
 			return;
 		}
 		strupr(szNewValue);
 		if (szNewValue[0] != 'T' && szNewValue[0] != 'F')
 		{
-			char szError[] = {"548 SETTING true/false setting incorrect\r\n"};
+			const char szError[] = {"548 SETTING true/false setting incorrect\r\n"};
 			SendControlResponse(szError, lstrlen(szError));
 			return;
 		}
@@ -2192,7 +2178,7 @@ void CS__Setting(char * szParameters)
 			SetMenuOption(&v->fKeepSpecialXMLCharacters, ID_SETTINGS_KEEPSPECIALXMLCHARACTERS, szNewValue);
 		else
 		{
-			char szError[] = {"549 SETTING subparameter incorrect\r\n"};
+			const char szError[] = {"549 SETTING subparameter incorrect\r\n"};
 			SendControlResponse(szError, lstrlen(szError));
 			return;
 		}
@@ -2200,7 +2186,7 @@ void CS__Setting(char * szParameters)
 	}
 }
 
-void CS__SetVLC(char * szParameters)
+void CS__SetVLC(const char * szParameters)
 {
 	if (szParameters == NULL)
 	{
@@ -2218,7 +2204,7 @@ void CS__SetVLC(char * szParameters)
 		
 		if (nConversionCount != 1 || nVLCConfiguration < 1 || nVLCConfiguration > MAX_VLC_CONFIGURATIONS + 1)
 		{
-			static char szError[] = {"515 Invalid VLC configuration\r\n"};
+			static const char szError[] = {"515 Invalid VLC configuration\r\n"};
 			SendControlResponse(szError, lstrlen(szError));
 			return;
 		}
@@ -2228,14 +2214,14 @@ void CS__SetVLC(char * szParameters)
 		}
 		else
 		{
-			static char szResponse[] = {"305 VLC command updated\r\n"};
+			static const char szResponse[] = {"305 VLC command updated\r\n"};
 			lstrcpy(v->szVLCConfigCommand[nVLCConfiguration - 1], szSpace + 1);
 			SendControlResponse(szResponse, lstrlen(szResponse));
 		}
 	}
 }
 
-void CS__Source(char * szParameters)
+void CS__Source(const char * szParameters)
 {
 	int i;
 	char szCurrentDir[MAX_PATH];
@@ -2265,20 +2251,20 @@ void CS__Source(char * szParameters)
 		hSource = LoadLibrary(szSourceName);
 		if (hSource == NULL)
 		{
-			char szError[] = {"518 Unable to load source file\r\n"};
+			const char szError[] = {"518 Unable to load source file\r\n"};
 			SendControlResponse(szError, lstrlen(szError));
 			return;
 		}
 		GetDescription = (td_GetDescription)GetProcAddress(hSource, "TSReader_GetDescription");
 		if (GetDescription != NULL)
 		{
-			char szOK[] = {"300 Source updated - use the TUNE command to restart TSReader\r\n"};
+			const char szOK[] = {"300 Source updated - use the TUNE command to restart TSReader\r\n"};
 			lstrcpy(szNewSourceName, szSourceName);
 			SendControlResponse(szOK, lstrlen(szOK));
 		}
 		else
 		{
-			char szError[] = {"519 Source specified isn't a TSReader source\r\n"};
+			const char szError[] = {"519 Source specified isn't a TSReader source\r\n"};
 			SendControlResponse(szError, lstrlen(szError));
 		}
 		FreeLibrary(hSource);
@@ -2342,7 +2328,7 @@ void CS__Source(char * szParameters)
 	}
 }
 
-void CS__Audio(char * szParameters)
+void CS__Audio(const char * szParameters)
 {
 	if (szParameters == NULL)
 	{
@@ -2401,18 +2387,18 @@ void CS__Audio(char * szParameters)
 	else
 	{
 		int nAutoRecordAudioTrack;
-		static char szTemp[] = {"306 Audio stream set\r\n"};
+		static const char szTemp[] = {"306 Audio stream set\r\n"};
 
 		sscanf(szParameters, "%d", &nAutoRecordAudioTrack);
 		if (nAutoRecordAudioTrack > 0 && nAutoRecordAudioTrack < 100)
 		{
-			static char sz306[] = {"306 Audio stream set\r\n"};
+			static const char sz306[] = {"306 Audio stream set\r\n"};
 			v->nAutoRecordAudioTrack = nAutoRecordAudioTrack;
 			SendControlResponse(sz306, lstrlen(sz306));
 		}
 		else
 		{
-			static char sz516[] = {"516 Audio stream value not valid\r\n"};
+			static const char sz516[] = {"516 Audio stream value not valid\r\n"};
 			SendControlResponse(sz516, lstrlen(sz516));
 		}
 	}
@@ -2427,7 +2413,7 @@ void CS__DiSEqC(char * szParameters)
 
 	if ((v->dwSourceCapabilities & CAPABILITIES_DISEQC_POSITIONER) == 0)
 	{
-		static char szTemp[] = {"550 Source doesn't support DiSEqC positioner commands\r\n"};
+		static const char szTemp[] = {"550 Source doesn't support DiSEqC positioner commands\r\n"};
 		SendControlResponse(szTemp, lstrlen(szTemp));
 		return;
 	}
@@ -2435,13 +2421,13 @@ void CS__DiSEqC(char * szParameters)
 	SendDiSEqC = (td_SendDiSEqC)GetProcAddress(v->hSource, "TSReader_SendDiSEqC");
 	if (SendDiSEqC == NULL)
 	{
-		static char szTemp[] = {"551 Source doesn't contain a DiSEqC entry-point\r\n"};
+		static const char szTemp[] = {"551 Source doesn't contain a DiSEqC entry-point\r\n"};
 		SendControlResponse(szTemp, lstrlen(szTemp));
 		return;
 	}
 	if (szParameters == NULL)
 	{
-		static char szTemp[] = {"552 No parameters\r\n"};
+		static const char szTemp[] = {"552 No parameters\r\n"};
 		SendControlResponse(szTemp, lstrlen(szTemp));
 		return;
 	}
@@ -2470,7 +2456,7 @@ void CS__DiSEqC(char * szParameters)
 		}
 		else
 		{
-			static char szTemp[] = {"553 Invalid DiSEqC sequence\r\n"};
+			static const char szTemp[] = {"553 Invalid DiSEqC sequence\r\n"};
 			SendControlResponse(szTemp, lstrlen(szTemp));
 			return;
 		}
@@ -2478,18 +2464,18 @@ void CS__DiSEqC(char * szParameters)
 
 	if (nDiSEqCSequenceLength == 0)
 	{
-		static char szTemp[] = {"554 No DiSEqC message found\r\n"};
+		static const char szTemp[] = {"554 No DiSEqC message found\r\n"};
 		SendControlResponse(szTemp, lstrlen(szTemp));
 		return;
 	}
 	SendDiSEqC(bDiSEqCSequence, nDiSEqCSequenceLength);
 	{
-		static char szOK[] = {"324 DiSEqC sequence sent\r\n"};
+		static const char szOK[] = {"324 DiSEqC sequence sent\r\n"};
 		SendControlResponse(szOK, lstrlen(szOK));
 	}
 }
 
-void CS__Stall(char * szParameters)
+void CS__Stall(const char * szParameters)
 {
 	BOOL fThumbnailMode = FALSE;
 	int nStallTimeout, nStallTimeoutBackup;
@@ -2497,14 +2483,14 @@ void CS__Stall(char * szParameters)
 
 	if (szParameters == NULL)
 	{
-		static char szError[] = {"525 No parameters specified\r\n"};
+		static const char szError[] = {"525 No parameters specified\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
 	sscanf(szParameters, "%d", &nStallTimeout);
 	if (nStallTimeout <= 0)
 	{
-		static char szError[] = {"526 Invalid stall timeout\r\n"};
+		static const char szError[] = {"526 Invalid stall timeout\r\n"};
 		SendControlResponse(szError, lstrlen(szError));
 		return;
 	}
@@ -2546,8 +2532,8 @@ void CS__Stall(char * szParameters)
 
 	if (nStallTimeout)
 	{
-		static char szOK1[] = {"311 Table decoding complete\r\n"};
-		static char szOK2[] = {"311 Table and thumbnail decoding complete\r\n"};
+		static const char szOK1[] = {"311 Table decoding complete\r\n"};
+		static const char szOK2[] = {"311 Table and thumbnail decoding complete\r\n"};
 		if (fThumbnailMode)
 			SendControlResponse(szOK2, lstrlen(szOK2));
 		else
@@ -2555,7 +2541,7 @@ void CS__Stall(char * szParameters)
 	}
 	else
 	{
-		static char szOK[] = {"312 STALL command timed-out\r\n"};
+		static const char szOK[] = {"312 STALL command timed-out\r\n"};
 		SendControlResponse(szOK, lstrlen(szOK));
 	}
 }
@@ -2587,12 +2573,12 @@ DWORD WINAPI ControlServerThread(LPVOID lpv)
 	SOCKADDR_IN acc_sin;
 	int acc_sin_len;
 
-	OutputDebugString("TSReader: +ControlServerThread\n");
+	dbg_printf("TSReader: +ControlServerThread\n");
 
 	// Start listening
 	if (listen(ControlBaseSocket, 100) < 0)
 	{
-		OutputDebugString("TSReader: listen(ControlBaseSocket) failed\n");
+		dbg_printf("TSReader: listen(ControlBaseSocket) failed\n");
 		closesocket(ControlBaseSocket);
 		return 0;
 	}
@@ -2607,14 +2593,14 @@ DWORD WINAPI ControlServerThread(LPVOID lpv)
 		ControlSocket = accept(ControlBaseSocket, (struct sockaddr FAR *)&acc_sin, (int FAR *)&acc_sin_len);
 		if (ControlSocket == INVALID_SOCKET)
 		{
-			OutputDebugString("TSReader: accept failed in ControlServer\n");
+			dbg_printf("TSReader: accept failed in ControlServer\n");
 			break;
 		}
-		wsprintf(szTemp, "TSReader: Accepted control connection from %d.%d.%d.%d\n", acc_sin.sin_addr.S_un.S_un_b.s_b1,
+
+		dbg_printf("TSReader: Accepted control connection from %d.%d.%d.%d\n", acc_sin.sin_addr.S_un.S_un_b.s_b1,
 			                                                            acc_sin.sin_addr.S_un.S_un_b.s_b2,
 																		acc_sin.sin_addr.S_un.S_un_b.s_b3,
 																		acc_sin.sin_addr.S_un.S_un_b.s_b4);
-		OutputDebugString(szTemp);
 		{
 			int flag;
 			flag = 1;
@@ -2676,11 +2662,9 @@ DWORD WINAPI ControlServerThread(LPVOID lpv)
 			} while (nCommandLength < sizeof(szCommandBuffer));
 			if (nLength <= 0)
 				break;
-			{
-				char szCmdTemp[1024];
-				wsprintf(szCmdTemp, "TSReader: Control server command:  %s\n", szCommandBuffer);
-				OutputDebugString(szCmdTemp);
-			}
+			
+			dbg_printf("TSReader: Control server command:  %s\n", szCommandBuffer);
+
 			RemoveCommandBackspaces(szCommandBuffer);
 			if (fXML == TRUE)
 			{
@@ -2724,7 +2708,7 @@ DWORD WINAPI ControlServerThread(LPVOID lpv)
 			else if (lstrcmp(szCommand, "WINDOW") == 0)				CS__Window(szSpacePtr);
 			else
 			{
-				static char szUnrecognizedCommand[] = {"500 Command unrecognized\r\n"};
+				static const char szUnrecognizedCommand[] = {"500 Command unrecognized\r\n"};
 				SendControlResponse(szUnrecognizedCommand, lstrlen(szUnrecognizedCommand));
 			}
 		} while (TRUE);
@@ -2732,7 +2716,7 @@ DWORD WINAPI ControlServerThread(LPVOID lpv)
 		ControlSocket = INVALID_SOCKET;
 	} while (TRUE);
 
-	OutputDebugString("TSReader: -ControlServerThread\n");
+	dbg_printf("TSReader: -ControlServerThread\n");
 	return 0;
 }
 
