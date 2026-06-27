@@ -186,8 +186,7 @@ BOOL CheckForNextTSFile(void)
 					if (hInputStream != INVALID_HANDLE_VALUE)
 					{
 						// Ok to continue on with this file
-						wsprintf(szTemp, "Now reading from %s\n", szFileModeFilename);
-						OutputDebugString(szTemp);
+						dbg_printf("Now reading from %s\n", szFileModeFilename);
 
 						/* get file size for progress report */
 						g_nInputFileSize.LowPart = GetFileSize(hInputStream, &g_nInputFileSize.HighPart);
@@ -232,8 +231,7 @@ BOOL CheckForNextTSFile(void)
 		if (hInputStream != INVALID_HANDLE_VALUE)
 		{
 			// Ok to continue on with this file
-			wsprintf(szTemp, "Now reading from %s\n", szFileModeFilename);
-			OutputDebugString(szTemp);
+			dbg_printf("Now reading from %s\n", szFileModeFilename);
 
 			/* get file size for progress report */
 			g_nInputFileSize.LowPart = GetFileSize(hInputStream, &g_nInputFileSize.HighPart);
@@ -443,7 +441,7 @@ DWORD WINAPI ReadUncontrolledThread(LPVOID lpv)
 #endif CONTINUOUS
 
 #ifdef DEBUG_MESSAGES
-	OutputDebugString("+ReadUncontrolledThread\n");
+	dbg_printf("+ReadUncontrolledThread\n");
 #endif DEBUG_MESSAGES
 
 #ifdef CONTINUOUS
@@ -1219,7 +1217,7 @@ BOOL CALLBACK SearchSyncDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 		switch(LOWORD(wParam))
 		{
 		case IDCANCEL:
-			OutputDebugString("File: Aborting sync search\n");
+			dbg_printf("File: Aborting sync search\n");
 			AbortSearchThread();
 			EndDialog(hDlg, FALSE);
 			break;

@@ -129,38 +129,59 @@ int __cdecl  SourceHelper_GetFrequencyFromQAMChannel(int nChannel);
 int __cdecl  SourceHelper_GetQAMChannelFromFrequency(int nFrequency);
 int __cdecl  SourceHelper_GetATSCChannelFromFrequency(int nFrequency);
 
-// Tuner dialogs
-BOOL __cdecl SourceHelper_DVBSTuneDialog(HWND hWnd);
-BOOL __cdecl SourceHelper_DVBTTuneDialog(HWND hWnd);
-BOOL __cdecl SourceHelper_DVBCTuneDialog(HWND hWnd);
-BOOL __cdecl SourceHelper_DSSTuneDialog(HWND hWnd);
-BOOL __cdecl SourceHelper_ATSCTuneDialog(HWND hWnd);
-BOOL __cdecl SourceHelper_ISDBTTuneDialog(HWND hWnd);
-BOOL __cdecl SourceHelper_ADVTuneDialog(HWND hWnd);
-BOOL __cdecl SourceHelper_QAMTuneDialog(HWND hWnd);
-BOOL __cdecl SourceHelper_UDPMulticastTuneDialog(HWND hWnd);
-BOOL __cdecl SourceHelper_UDPUnicastTuneDialog(HWND hWnd);
-BOOL __cdecl SourceHelper_TCPTuneDialog(HWND hWnd);
+// Tuner dialogs - these are called by the source module to present a standard
+// tuning interface to the user. Although its possible to use your own dialog
+// to get tuner parameters, we suggest using TSReader's dialogs.
+BOOL __cdecl SourceHelper_DVBSTuneDialog(HWND hWnd);			//  DVB-S signals
+BOOL __cdecl SourceHelper_DVBTTuneDialog(HWND hWnd);			//  DVB-T signals
+BOOL __cdecl SourceHelper_DVBCTuneDialog(HWND hWnd);			//  DVB-C signals
+BOOL __cdecl SourceHelper_DVBC2TuneDialog(HWND hWnd);			//  DVB-C2 signals
+BOOL __cdecl SourceHelper_DSSTuneDialog(HWND hWnd);				//  DIRECTV Ku-band signals
+BOOL __cdecl SourceHelper_ATSCTuneDialog(HWND hWnd);			//  ATSC signals
+BOOL __cdecl SourceHelper_ISDBTTuneDialog(HWND hWnd);			//  ISDB-T signals
+BOOL __cdecl SourceHelper_ADVTuneDialog(HWND hWnd);				//  advanced satellite tuners
+BOOL __cdecl SourceHelper_QAMTuneDialog(HWND hWnd);				//  SCTE QAM signals
+BOOL __cdecl SourceHelper_UDPMulticastTuneDialog(HWND hWnd);	//  Multicast UDP streams
+BOOL __cdecl SourceHelper_UDPUnicastTuneDialog(HWND hWnd);		//  Unicast UDP streams
+BOOL __cdecl SourceHelper_TCPTuneDialog(HWND hWnd);				//  TCP delivered streams
 
-// Misc functions
-BOOL __cdecl SourceHelper_TuneSerialControl(char * szTunerString);
+// Functions for serial receiver control modules
+BOOL __cdecl SourceHelper_TuneSerialControl(char *szTunerString);
 void __cdecl SourceHelper_SerialControlStart(void);
 void __cdecl SourceHelper_SerialControlStop(void);
-BOOL __cdecl SourceHelper_SerialControlGetSignal(char * szSignalString);
-BYTE __cdecl SourceHelper_ReceiveReceiverSerial(int * nTimeout);
-int  __cdecl SourceHelper_SendReceiverSerial(unsigned char * lpByte, DWORD dwBytesToWrite);
-
-BOOL __cdecl SourceHelper_GetQAMHRCStatus(void);
-BOOL __cdecl SourceHelper_myGetOpenFileName(LPOPENFILENAMEA lpofn);
-BOOL __cdecl SourceHelper_myGetOpenFileNameW(LPOPENFILENAMEW lpofn);
-BOOL __cdecl SourceHelper_GetTSReaderVersion(int * nMajor, int * nMinor, int * nBuild);
-BOOL __cdecl SourceHelper_GetProfileName(char * szBuffer);
+BOOL __cdecl SourceHelper_SerialControlGetSignal(char *szSignalString);
+BYTE __cdecl SourceHelper_ReceiveReceiverSerial(int *nTimeout);
+int  __cdecl SourceHelper_SendReceiverSerial(unsigned char *lpByte, DWORD dwBytesToWrite);
 
 // Sync functions
 BOOL __cdecl SourceHelper_StartSyncThread(PSOURCESTRUCT pss, BOOL fDSSMode);
 BOOL __cdecl SourceHelper_StopSyncThread(void);
-BOOL __cdecl SourceHelper_SyncData(BYTE * pData, int nLength);
+BOOL __cdecl SourceHelper_SyncData(BYTE *pData, int nLength);
 int  __cdecl SourceHelper_GetSyncLossCount(BOOL fReset);
+
+// Misc functions
+BOOL __cdecl SourceHelper_GetQAMHRCStatus(void);
+BOOL __cdecl SourceHelper_myGetOpenFileName(OPENFILENAME *lpofn);
+BOOL __cdecl SourceHelper_myGetOpenFileNameW(LPOPENFILENAMEW lpofn);
+BOOL __cdecl SourceHelper_GetTSReaderVersion(int *nMajor, int *nMinor, int *nBuild);
+BOOL __cdecl SourceHelper_GetProfileName(char *szBuffer);
+void __cdecl SourceHelper_OutputDebugString(char *szDebugString);
+HANDLE __cdecl SourceHelper_GetSourceBufferEventHandle(void);
+BOOL __cdecl SourceHelper_RunningOnWine(void);
+void __cdecl SourceHelper_LogRTPLoss(char *szFilename, int nCount, __int64 lnTimeDifference);
+void __cdecl SourceHelper_GetTSReaderEXEDirectory(HINSTANCE hInstance, char *szCurrentDir, int nCurrentDirLength);
+int SourceHelper_ReadLine(HANDLE hFile, char *szBuffer, int nMaxLength);
+int SourceHelper_ReadLineW(HANDLE hFile, wchar_t *szBuffer, int nMaxLength);
+BOOL SourceHelper_GetProgramPIDs(int nProgramNumber, int *nPMTPID, int *nPCRPID, int *nPIDs);
+
+// Command-line parsing functions
+BOOL __cdecl SourceHelper_Parse_CommandLine_ATSC(char *szCommandLine, BOOL fQuiet, int *nFrequency);
+BOOL __cdecl SourceHelper_Parse_CommandLine_QAM(char *szCommandLine, BOOL fQuiet, int *nFrequency);
+BOOL __cdecl SourceHelper_Parse_CommandLine_DVBS(char *szCommandLine, BOOL fQuiet, int *nFrequency, int *nPolarity, int *nSymbolRate, int *nLNBFrequency, int *n22KHz, int *nDiSEqCInput);
+BOOL __cdecl SourceHelper_Parse_CommandLine_DVBT(char *szCommandLine, BOOL fQuiet, int *nFrequency, BOOL *fSpectrumInversion, int *nBandwidth);
+BOOL __cdecl SourceHelper_Parse_CommandLine_DVBC(char *szCommandLine, BOOL fQuiet, int *nFrequency, int *nSymbolRate, int *nQAM, BOOL *fSpectrumInversion, int *nBandwidth);
+BOOL __cdecl SourceHelper_Parse_CommandLine_ADV(char *szCommandLine, BOOL fQuiet, int *nFrequency, int *nPolarity, int *nSymbolRate, int *nLNBFrequency, int *n22KHz, int *nADVModulationMode, int *nCodeRate, int *nDiSEqCInput);
+BOOL __cdecl SourceHelper_Parse_CommandLine_DVBC2(char *szCommandLine, BOOL fQuiet, int *nFrequency, int *nBandwidth);
 
 #ifdef  __cplusplus
 }

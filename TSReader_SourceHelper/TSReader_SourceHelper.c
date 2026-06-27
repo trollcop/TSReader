@@ -3,6 +3,7 @@
 #include <commctrl.h>
 #include <math.h>
 #include <shlobj.h>
+#include <strsafe.h>
 
 #include "..\TSReader.h"
 #include "resource.h"
@@ -74,7 +75,7 @@ void CursorWait(HWND hWnd)
 	SetCursor(LoadCursor(NULL, IDC_WAIT));
 }
 	
-BOOL SourceHelper_myGetOpenFileName(LPOPENFILENAMEA lpofn)
+BOOL SourceHelper_myGetOpenFileName(OPENFILENAME *lpofn)
 {
 	int i;
 	char * szFileName = lpofn->lpstrFile;
@@ -6806,73 +6807,221 @@ BOOL SourceHelper_DVBC2TuneDialog(HWND hWnd)
 
 HANDLE SourceHelper_GetSourceBufferEventHandle(void)
 {
+	/* TODO wat */
 	return NULL;
 }
 
-void SourceHelper_LogRTPLoss(int nLoss, int nTotal)
+void SourceHelper_LogRTPLoss(char *szFilename, int nCount, __int64 lnTimeDifference)
 {
-	(void)nLoss; (void)nTotal;
+	char szDestPath[MAX_PATH];
+	char szTemp[10240];
+	DWORD dwBytesWritten = 0;
+	SYSTEMTIME systemTime;
+	const char *szHeader = "Date,Time,Delta(ms),Count\r\n";
+
+	/* TODO is this the real log place */
+	StringCchCopy(szDestPath, MAX_PATH, v->szSaveStreamLogFolder);
+
+	size_t pathLen = 0;
+	StringCchLength(szDestPath, MAX_PATH, &pathLen);
+	if (pathLen > 0 && szDestPath[pathLen - 1] != '\\')
+		StringCchCat(szDestPath, MAX_PATH, "\\");
+	StringCchCat(szDestPath, MAX_PATH, szFilename);
+
+	HANDLE hFile = CreateFileA(szDestPath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+		return;
+
+	if (GetFileSize(hFile, NULL) == 0)
+		WriteFile(hFile, szHeader, lstrlen(szHeader), &dwBytesWritten, NULL);
+
+	GetSystemTime(&systemTime);
+
+	StringCchPrintf(
+		szTemp,
+		sizeof(szTemp),
+		"%04d/%02d/%02d,%02d:%02d:%02d;%03d,%I64u,%d\r\n",
+		systemTime.wYear,
+		systemTime.wMonth,
+		systemTime.wDay,
+		systemTime.wHour,
+		systemTime.wMinute,
+		systemTime.wSecond,
+		systemTime.wMilliseconds,
+		lnTimeDifference,
+		nCount
+	);
+
+	SetFilePointer(hFile, 0, NULL, FILE_END);
+
+	WriteFile(hFile, szTemp, lstrlenA(szTemp), &dwBytesWritten, NULL);
+	CloseHandle(hFile);
 }
 
-void SourceHelper_OutputDebugString(const char * sz)
+void SourceHelper_OutputDebugString(char *szDebugString)
 {
-	if (sz != NULL)
-		OutputDebugStringA(sz);
+	OutputDebugStringA(szDebugString);
 }
 
-BOOL SourceHelper_Parse_CommandLine_ATSC(char * szCmd)
+BOOL SourceHelper_Parse_CommandLine_ATSC(char *szCommandLine, BOOL fQuiet, int *nFrequency)
 {
-	(void)szCmd;
+	const char *szUsage =
+		"Usage for this source: freq\n\n"
+		"freq = frequency to tune in MHz or prefix with 0 for channel number, e.g. 022 for channel 22";
+
+	if (sscanf(szCommandLine, "%d", nFrequency) >= 1) {
+		if (*szCommandLine == '0')
+			*nFrequency = SourceHelper_GetFrequencyFromATSCChannel(*nFrequency);
+		return TRUE;
+	}
+	
+	if (!fQuiet)
+		MessageBox(NULL, szUsage, gszAppName, MB_ICONSTOP);
+
 	return FALSE;
 }
 
-BOOL SourceHelper_Parse_CommandLine_QAM(char * szCmd)
+BOOL SourceHelper_Parse_CommandLine_QAM(char *szCommandLine, BOOL fQuiet, int *nFrequency)
 {
-	(void)szCmd;
+	const char *szUsage =
+		"Usage for this source: freq\n\n"
+		"freq = frequency to tune in MHz or prefix with 0 for channel number, e.g. 022 for channel 22";
+
+	if (sscanf(szCommandLine, "%d", nFrequency) >= 1) {
+		if (*szCommandLine == '0')
+			*nFrequency = SourceHelper_GetFrequencyFromQAMChannel(*nFrequency);
+
+		return TRUE;
+	}
+
+	if (!fQuiet)
+		MessageBox(NULL, szUsage, gszAppName, MB_ICONSTOP);
+
 	return FALSE;
 }
 
-BOOL SourceHelper_Parse_CommandLine_DVBS(char * szCmd)
+BOOL SourceHelper_Parse_CommandLine_DVBS(char *szCommandLine, BOOL fQuiet, int *nFrequency, int *nPolarity, int *nSymbolRate, int *nLNBFrequency, int *n22KHz, int *nDiSEqCInput)
 {
-	(void)szCmd;
+	const char *szUsage =
+		"Usage for this source: freq pol sr lnbf 22khz {input}\n\n"
+		"freq = frequency to tune\n"
+		"pol = 0 vertical/RHCP 1 horizontal/LHCP\n"
+		"sr = symbol rate\n"
+		"lnbf = LNB frequency\n"
+		"22k = 22KHz tone enable\n"
+		"input = select DiSEqC input number (1-4) - optional";
+
+	SourceHelper_ConvertPolarity(szCommandLine);
+	if (sscanf(szCommandLine, "%d %d %d %d %d %d", nFrequency, nPolarity, nSymbolRate, nLNBFrequency, n22KHz, nDiSEqCInput) >= 5)
+		return TRUE;
+
+	if (!fQuiet)
+		MessageBox(NULL, szUsage, gszAppName, MB_ICONSTOP);
+
 	return FALSE;
 }
 
-BOOL SourceHelper_Parse_CommandLine_DVBT(char * szCmd)
+BOOL SourceHelper_Parse_CommandLine_DVBT(char *szCommandLine, BOOL fQuiet, int *nFrequency, BOOL *fSpectrumInversion, int *nBandwidth)
 {
-	(void)szCmd;
+	const char *szUsage =
+		"Usage for this source: freq inversion bandwidth\n\n"
+		"freq = frequency to tune in KHz\n"
+		"inversion = inverted spectrum (0 or 1)\n"
+		"bandwidth = bandwidth of signal (0 = 6, 1 = 7, 2 = 8 MHz, 3 = 5 MHz, 4 = 4 MHz, 5 = 3 MHz, 6 = 2 MHz)";
+
+	if (sscanf(szCommandLine, "%d %d %d", nFrequency, fSpectrumInversion, nBandwidth) >= 3)
+		return TRUE;
+
+	if (!fQuiet)
+		MessageBoxA(NULL, szUsage, gszAppName, MB_ICONSTOP);
+
 	return FALSE;
 }
 
-BOOL SourceHelper_Parse_CommandLine_DVBC(char * szCmd)
+BOOL SourceHelper_Parse_CommandLine_DVBC(char *szCommandLine, BOOL fQuiet, int *nFrequency, int *nSymbolRate, int *nQAM, BOOL *fSpectrumInversion, int *nBandwidth)
 {
-	(void)szCmd;
+	const char *szUsage =
+		"Usage for this source: freq sr QAM inversion bandwidth\n\n"
+		"freq = frequency to tune in KHz\n"
+		"sr = symbol rate\n"
+		"QAM = QAM Mode (0=QAM-16 1=QAM-32 2=QAM-64 3=QAM-128 4=QAM-256)\n"
+		"inversion = inverted spectrum (0 or 1)\n"
+		"bandwidth = bandwidth of signal (0 = 6, 1 = 7, 2 = 8 MHz)";
+
+	if (sscanf(szCommandLine, "%d %d %d %d %d", nFrequency, nSymbolRate, nQAM, fSpectrumInversion, nBandwidth) >= 5)
+		return TRUE;
+
+	if (!fQuiet)
+		MessageBoxA(NULL, szUsage, gszAppName, MB_ICONSTOP);
+	return 0;
 	return FALSE;
 }
 
-BOOL SourceHelper_Parse_CommandLine_ADV(char * szCmd)
+BOOL SourceHelper_Parse_CommandLine_ADV(char *szCommandLine, BOOL fQuiet, int *nFrequency, int *nPolarity, int *nSymbolRate, int *nLNBFrequency, int *n22KHz, int *nADVModulationMode, int *nCodeRate, int *nDiSEqCInput)
 {
-	(void)szCmd;
+	const char *szUsage =
+		"Usage for this source: freq pol sr lnbf 22khz mode fec {input}\n\n"
+		"freq = frequency to tune\n"
+		"sr = symbol rate\n"
+		"lnbf = LNB frequency\n"
+		"22k = 22KHz tone enable\n"
+		"mode = modulation mode (see documentation)\n"
+		"FEC = code rate selection (see documentation)\n"
+		"input = select DiSEqC input number (1-4) - optional";
+
+	SourceHelper_ConvertPolarity(szCommandLine);
+
+	if (sscanf(szCommandLine, "%d %d %d %d %d %d %d %d", nFrequency, nPolarity, nSymbolRate, nLNBFrequency, n22KHz, nADVModulationMode, nCodeRate, nDiSEqCInput) >= 7)
+		return TRUE;
+
+	if (!fQuiet)
+		MessageBox(NULL, szUsage, gszAppName, MB_ICONSTOP);
+
 	return FALSE;
 }
 
-BOOL SourceHelper_Parse_CommandLine_DVBC2(char * szCmd)
+BOOL SourceHelper_Parse_CommandLine_DVBC2(char *szCommandLine, BOOL fQuiet, int *nFrequency, int *nBandwidth)
 {
-	(void)szCmd;
+	const char *szUsage =
+		"Usage for this source: freq inversion bandwidth\n\n"
+		"freq = frequency to tune in KHz\n"
+		"bandwidth = bandwidth of signal (0 = 6, 1 = 7, 2 = 8 MHz)";
+
+	if (sscanf(szCommandLine, "%d %d", nFrequency, nBandwidth) >= 3)
+		return TRUE;
+
+	if (!fQuiet)
+		MessageBoxA(NULL, szUsage, gszAppName, MB_ICONSTOP);
+
 	return FALSE;
 }
 
 int SourceHelper_ReadLineW(HANDLE hFile, wchar_t * szBuffer, int nMaxLength)
 {
 	(void)hFile; (void)szBuffer; (void)nMaxLength;
+
 	return 0;
 }
 
 BOOL SourceHelper_RunningOnWine(void)
 {
 	HMODULE dll = GetModuleHandle("ntdll.dll");
+	if (!dll)
+		return FALSE;
 
 	return GetProcAddress(dll, "wine_get_version") != NULL;
+}
+
+BOOL SourceHelper_GetProgramPIDs(int nProgramNumber, int *nPMTPID, int *nPCRPID, int *nPIDs)
+{
+	(void)nProgramNumber;
+	(void)nPMTPID;
+	(void)nPCRPID;
+	(void)nPIDs;
+
+	/* TODO */
+
+	return FALSE;
 }
 
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
