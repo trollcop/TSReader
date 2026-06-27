@@ -7,6 +7,7 @@
 
 #include "SoftCSA.h"
 #include "sources.h"
+#include "libaribb24/aribb24/decoder.h"
 
 // Stuff for imglib
 #include <_ISource.h>
@@ -1818,6 +1819,7 @@ typedef struct tag_Variables
 	HANDLE hCheckNewVersionThread;
 	HICON hCheckNewVersionStatusIconBad, hCheckNewVersionStatusIconGood;
 	HANDLE hCCLogFile;
+	arib_instance_t *hARIBInstance;
 
 	SOCKET SocketControlBase, SocketControl;
 	SOCKET UDPsock;
@@ -1923,6 +1925,7 @@ typedef struct tag_Variables
 	BYTE bAdvancedDropPID[8192];
 
 	char szSIFormatBuffer[1 * 1024 * 1024];
+	wchar_t szSIFormatBufferW[1 * 1024 * 1024];
 	char szHTMInitialDir[MAX_PATH];
 	char szXMLInitialDir[MAX_PATH];
 	char szOutputPIDFlags[20];

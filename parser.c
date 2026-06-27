@@ -3,6 +3,7 @@
 #include <time.h>
 #include <winsock.h>
 #include <shlobj.h>
+#include <strsafe.h>
 #include "TSReader.h"
 #include "bcdmux.h"
 #include "util.h"
@@ -614,6 +615,7 @@ void ParseDVBEITPacket(BYTE * pSectionPointer, int nPacketLength)
 							unsigned int nLength = pSectionPointer[5];
 							unsigned char * pText = &pSectionPointer[6];
 							unsigned int k;
+							char szEventName[512] = { 0, };
 
 							if (v->fEITLanguageFilterEnabled)
 							{
@@ -624,32 +626,43 @@ void ParseDVBEITPacket(BYTE * pSectionPointer, int nPacketLength)
 							thiseitevent.nFlags |= EIT_FLAG_SHORT_EVENT;
 							if (nLength > 0)
 							{
+#if 0
+								/* this weird filtering is unknown */
 								while ( ((*pText & 0x7f) < 0x20) && (nLength > 0) )
 								{
 									nLength--;
 									pText++;
 								}
+#endif
 								for (k = 0; k < nLength; k++)
 								{
-									thiseitevent.szEventName[k] = *pText++;
+									szEventName[k] = *pText++;
+#if 0
 									if ((BYTE)thiseitevent.szEventName[k] == 0x80 || (BYTE)thiseitevent.szEventName[k] == 0x87)
 										thiseitevent.szEventName[k] = ' ';
+#endif
 								}
-								thiseitevent.szEventName[k] = '\0';
+								szEventName[k] = '\0';
+								if (!v->fISDB)
+									StringCchCopy(thiseitevent.szEventName, sizeof(thiseitevent.szEventName), szEventName);
+								else
+									DecodeARIBString(thiseitevent.szEventName, sizeof(thiseitevent.szEventName), szEventName);
+
 								nLength = *pText++;		// text_length
 								if (nLength > 0)
 								{
-									int o = 0;
 									for (k = 0; k < nLength; k++)
 									{
+#if 0
 										if (*pText < ' ' || *pText == 0x80 || *pText == 0x87)
 										{
 											pText++;
 										}
 										else
-											szShortEventDescription[o++] = *pText++;
+#endif
+											szShortEventDescription[k] = *pText++;
 									}
-									szShortEventDescription[o] = 0;
+									szShortEventDescription[k] = '\0';
 								}
 							}
 						}
@@ -670,14 +683,16 @@ void ParseDVBEITPacket(BYTE * pSectionPointer, int nPacketLength)
 
 								for (k = 0; k < nTextLength; k++)
 								{
+#if 0
 									if (*pText < ' ' || *pText == 0x80 || *pText == 0x87) 
 									{
 										pText++;
 									}
 									else
-										szLongEventDescription[o++] = *pText++;
+#endif
+										szLongEventDescription[k] = *pText++;
 								}
-								szLongEventDescription[o] = '\0';
+								szLongEventDescription[k] = '\0';
 							}
 						}
 						break;
@@ -773,13 +788,21 @@ LogDefaultEITDescriptor:
 								pNewEIT = v->pEvents[nServiceID];
 								if (lstrlen(szShortEventDescription))
 								{
-									pNewItem->szShortEventDescription = LocalAlloc(LPTR, lstrlen(szShortEventDescription) + 1 + 4);
-									lstrcpy(pNewItem->szShortEventDescription, szShortEventDescription);
+									if (!v->fISDB) {
+										pNewItem->szShortEventDescription = LocalAlloc(LPTR, lstrlen(szShortEventDescription) + 1 + 4);
+										lstrcpy(pNewItem->szShortEventDescription, szShortEventDescription);
+									} else {
+										pNewItem->szShortEventDescription = DecodeARIBString(NULL, 0, szShortEventDescription);
+									}
 								}
 								if (lstrlen(szLongEventDescription))
 								{
-									pNewItem->szLongEventDescription = LocalAlloc(LPTR, lstrlen(szLongEventDescription) + 1 + 4);
-									lstrcpy(pNewItem->szLongEventDescription, szLongEventDescription);
+									if (!v->fISDB) {
+										pNewItem->szLongEventDescription = LocalAlloc(LPTR, lstrlen(szLongEventDescription) + 1 + 4);
+										lstrcpy(pNewItem->szLongEventDescription, szLongEventDescription);
+									} else {
+										pNewItem->szLongEventDescription = DecodeARIBString(NULL, 0, szLongEventDescription);
+									}
 								}
 
 								// Copy over the descriptors
@@ -837,13 +860,21 @@ LogDefaultEITDescriptor:
 										pNewEIT = pNewEvent;
 										if (lstrlen(szShortEventDescription))
 										{
-											pNewEvent->szShortEventDescription = LocalAlloc(LPTR, lstrlen(szShortEventDescription) + 1 + 4);
-											lstrcpy(pNewEvent->szShortEventDescription, szShortEventDescription);
+											if (!v->fISDB) {
+												pNewEvent->szShortEventDescription = LocalAlloc(LPTR, lstrlen(szShortEventDescription) + 1 + 4);
+												lstrcpy(pNewEvent->szShortEventDescription, szShortEventDescription);
+											} else {
+												pNewEvent->szShortEventDescription = DecodeARIBString(NULL, 0, szShortEventDescription);
+											}
 										}
 										if (lstrlen(szLongEventDescription))
 										{
-											pNewEvent->szLongEventDescription = LocalAlloc(LPTR, lstrlen(szLongEventDescription) + 1 + 4);
-											lstrcpy(pNewEvent->szLongEventDescription, szLongEventDescription);
+											if (!v->fISDB) {
+												pNewEvent->szLongEventDescription = LocalAlloc(LPTR, lstrlen(szLongEventDescription) + 1 + 4);
+												lstrcpy(pNewEvent->szLongEventDescription, szLongEventDescription);
+											} else {
+												pNewEvent->szLongEventDescription = DecodeARIBString(NULL, 0, szLongEventDescription);
+											}
 										}
 
 										// Copy over the descriptors
@@ -1205,31 +1236,33 @@ void ParseDVBSDTPacket(BYTE * pSectionPointer, int nPacketLength)
 	#endif SKYSTUFF
 							case 0x48:
 								{
+									/* service_provider_name_length */
 									int nLength = pSectionPointer[3];
-									unsigned char * pText;
+									unsigned char *pText;
 									int k;
 									int nOutput = 0;
+									char szLongName[256] = { 0, };
+									char szShortName[128] = { 0, };
 
 									pText = &pSectionPointer[4];
 									for (k = 0; k < nLength; k++)
-									{
-										if (*pText == 0x86 || *pText == 0x87 || *pText < 0x06)
-											pText++;
-										else
-											thischanneldata.szLongName[nOutput++] = *pText++;
-									}
-									thischanneldata.szLongName[nOutput] = '\0';
-									
-									nLength = *pText++;								
+										szLongName[nOutput++] = *pText++;
+									szLongName[nOutput] = '\0';
+
+									/* service_name_length */
+									nLength = *pText++;
 									nOutput = 0;
 									for (k = 0; k < nLength; k++)
-									{
-										if (*pText == 0x86 || *pText == 0x87 || *pText < 0x06)
-											pText++;
-										else
-											thischanneldata.szShortName[nOutput++] = *pText++;
+										szShortName[nOutput++] = *pText++;
+									szShortName[nOutput] = '\0';
+
+									if (v->fISDB) {
+										DecodeARIBString(thischanneldata.szLongName, sizeof(thischanneldata.szLongName), szLongName);
+										DecodeARIBString(thischanneldata.szShortName, sizeof(thischanneldata.szShortName), szShortName);
+									} else {
+										StringCchCopy(thischanneldata.szLongName, sizeof(thischanneldata.szLongName), szLongName);
+										StringCchCopy(thischanneldata.szShortName, sizeof(thischanneldata.szShortName), szShortName);
 									}
-									thischanneldata.szShortName[nOutput] = '\0';
 								}
 								//break;		// DON'T BREAK - we want to save this descriptor too
 							default:
@@ -3830,14 +3863,18 @@ void ParseDVBNITPacket(BYTE * pSectionPointer, int nPacketLength)
 							}
 						}
 
-						if (v->pNITData[nNITIndex] == NULL)
-						{
+						if (v->pNITData[nNITIndex] == NULL) {
 							v->pNITData[nNITIndex] = LocalAlloc(LPTR, sizeof(NITENTRY) + 4);
 							v->pNITData[nNITIndex]->nTransportStreamID = nTransportStreamID;
 							v->pNITData[nNITIndex]->nOriginalNetworkID = nOriginalNetworkID;
 							v->pNITData[nNITIndex]->nNetworkID = nNetworkID;
 							v->pNITData[nNITIndex]->nVersionNumber = nVersionNumber;
-							lstrcpy(v->pNITData[nNITIndex]->szNetworkName, szNetworkName);
+							if (!v->fISDB)
+								StringCchCopy(v->pNITData[nNITIndex]->szNetworkName, sizeof(v->pNITData[nNITIndex]->szNetworkName), szNetworkName);
+							else {
+								/* decode ARIB string */
+								DecodeARIBString(v->pNITData[nNITIndex]->szNetworkName, sizeof(v->pNITData[nNITIndex]->szNetworkName), szNetworkName);
+							}
 							if (nTableID == 0x40)
 								v->pNITData[nNITIndex]->fThisTS = TRUE;
 							if (nNetworkDescriptorsLength)

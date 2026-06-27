@@ -91,3 +91,6 @@ int SortPIDsByPID(const void *elem1, const void *elem2);
 /* utf8-related */
 int mywcstombs(char *dest, int len, const wchar_t *src);
 int mymbstowcs(wchar_t *dest, int len, const char *src);
+/* Decode ARIB B24 encoded string. If szDest is provided, decoded data will be copied there. Otherwise, new block will be allocated and must be freed after use */
+char *DecodeARIBString(char *szDest, size_t len, const char *szString);
+void HexDump(const void *buffer, size_t size);

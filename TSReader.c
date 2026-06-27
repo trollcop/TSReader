@@ -127,7 +127,7 @@ td_decrypt_packets decrypt_packets = NULL;
 #define SOURCE_INFO_COLOR_2 RGB(7,141,44)
 
 char gszAppName[32] = TEXT("TSReader Professional");
-char gszMainClass[256] = {TEXT("TSReaderMain")};
+wchar_t gszMainClass[256] = { L"TSReaderMain" };
 char gszEPGGridClass[] = {"TSReaderEPGClass"};
 char gszChartClass[] = {"TSReaderChartClass"};
 char gszRestartNeeded[128] = {"For this change to take full effect you should restart "};
@@ -7034,21 +7034,24 @@ void InitSITreeViewImageLists(HWND hWndTV)
 // lpszItem - text of the item to add 
 // nLevel - level at which to add the item 
 HTREEITEM AddItemToSITree(HWND hwndTV, LPTSTR lpszItem, int nLevel, LPARAM lParam, int nIconIndex, HTREEITEM hParent, HTREEITEM hInsertAfter) 
-{ 
-	TV_INSERTSTRUCT tvins; 
-	LPTV_ITEM tvi = &tvins.item; 
-	static HTREEITEM hPrev = (HTREEITEM) TVI_FIRST; 
+{
+	TV_INSERTSTRUCTW tvins;
+	LPTV_ITEMW tvi = &tvins.item;
+	static HTREEITEM hPrev = (HTREEITEM) TVI_FIRST;
 	static HTREEITEM hPrevRootItem = NULL;
 	static HTREEITEM hPrevLev2Item = NULL;
+	wchar_t szTemp[512] = { 0, };
  
-	tvi->mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM ; 
- 
-    // Set the text of the item. 
-    tvi->pszText = lpszItem; 
-    tvi->cchTextMax = lstrlen(lpszItem); 
-  
-    // Save the heading level in the item's application-defined 
-    // data area. 
+	tvi->mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM ;
+
+	/* convert utf8 to unicode first */
+	mymbstowcs(szTemp, _countof(szTemp), lpszItem);
+	// Set the text of the item.
+    tvi->pszText = szTemp;
+    tvi->cchTextMax = lstrlenW(szTemp);
+
+    // Save the eading level in the item's application-defined
+    // data area.
     tvi->lParam = lParam;
     tvi->cChildren = 0;
     if (hInsertAfter == NULL)
@@ -7056,36 +7059,36 @@ HTREEITEM AddItemToSITree(HWND hwndTV, LPTSTR lpszItem, int nLevel, LPARAM lPara
 	else
 		tvins.hInsertAfter = hInsertAfter;
 
-	tvi->iImage = v->nSITreeIcons[nIconIndex]; 
+	tvi->iImage = v->nSITreeIcons[nIconIndex];
 	tvi->iSelectedImage = v->nSITreeIcons[nIconIndex];
 
-    // Set the parent item based on the specified level. 
+    // Set the parent item based on the specified level.
 	if (hParent != NULL)
 		tvins.hParent = hParent;
 	else
 	{
-		switch (nLevel) 
+		switch (nLevel)
 		{
 		case 1:
-			tvins.hParent = TVI_ROOT; 
+			tvins.hParent = TVI_ROOT;
 			break;
 		default:
-			tvins.hParent = hPrevRootItem; 
+			tvins.hParent = hPrevRootItem;
 			break;
 		}
 	}
 	
     // Add the item to the tree-view control. 
-    hPrev = (HTREEITEM) SendMessage(hwndTV, TVM_INSERTITEM, 0, (LPARAM)(LPTV_INSERTSTRUCT)&tvins); 
+    hPrev = (HTREEITEM) SendMessageW(hwndTV, TVM_INSERTITEMW, 0, (LPARAM)(LPTV_INSERTSTRUCTW)&tvins);
  
-    // Save the handle of the item. 
-    if (nLevel == 1) 
-        hPrevRootItem = hPrev; 
+    // Save the handle of the item.
+    if (nLevel == 1)
+        hPrevRootItem = hPrev;
     else if (nLevel == 2) 
-        hPrevLev2Item = hPrev; 
+        hPrevLev2Item = hPrev;
  
-    return hPrev; 
-} 
+    return hPrev;
+}
 
 int GetPMTOffsetFromThumbnailScrollOffset(void)
 {
@@ -8191,7 +8194,9 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 	case SI_PARSER_CDT:	// Also the RRT, BIT
 		if (v->fISDB) {
 			/* BIT table */
-			SetDlgItemText(hDlg, IDC_SI_TEXT, FormatBIT(FALSE));
+			FormatBIT(FALSE);
+			mymbstowcs(v->szSIFormatBufferW, _countof(v->szSIFormatBufferW), v->szSIFormatBuffer);
+			SetDlgItemTextW(hDlg, IDC_SI_TEXT, v->szSIFormatBufferW);
 			memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
 			v->nHighlightPIDs[0] = 0x0024;
 			ForcePIDChartRepaint(hDlg);
@@ -8305,7 +8310,9 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 		nItemIndex = (int)tvi.lParam - SI_PARSER_NIT;
 		if (nItemIndex != 0x0fffffff)
 		{
-			SetDlgItemText(hDlg, IDC_SI_TEXT, FormatNITEntry(nItemIndex, FALSE));
+			FormatNITEntry(nItemIndex, FALSE);
+			mymbstowcs(v->szSIFormatBufferW, _countof(v->szSIFormatBufferW), v->szSIFormatBuffer);
+			SetDlgItemTextW(hDlg, IDC_SI_TEXT, v->szSIFormatBufferW);
 			nLastNITClick = nItemIndex;
 		}
 		else
@@ -8330,11 +8337,13 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 		ForcePIDChartRepaint(hDlg);
 		break;
 	case SI_PARSER_PAT:
-		SetDlgItemText(hDlg, IDC_SI_TEXT, FormatPAT(FALSE, v->nExportSITables));
+		FormatPAT(FALSE, v->nExportSITables);
+		mymbstowcs(v->szSIFormatBufferW, _countof(v->szSIFormatBufferW), v->szSIFormatBuffer);
+		SetDlgItemTextW(hDlg, IDC_SI_TEXT, v->szSIFormatBufferW);
 		memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
 		v->nHighlightPIDs[0] = 0x0000;
 		ForcePIDChartRepaint(hDlg);
-		v->nSelectedVideoDisplayProgram = 0;			
+		v->nSelectedVideoDisplayProgram = 0;
 		UpdateVideoPix(hDlg);
 		break;
 	case SI_PARSER_PMT:
@@ -8352,7 +8361,9 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 			}
 
 			nItemIndex = (int)tvi.lParam - SI_PARSER_PMT;
-			SetDlgItemText(hDlg, IDC_SI_TEXT, FormatPMTEntry(nItemIndex, FALSE));
+			FormatPMTEntry(nItemIndex, FALSE);
+			mymbstowcs(v->szSIFormatBufferW, _countof(v->szSIFormatBufferW), v->szSIFormatBuffer);
+			SetDlgItemTextW(hDlg, IDC_SI_TEXT, v->szSIFormatBufferW);
 			memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
 			v->nHighlightPIDs[nHighlightIndex++] = v->pat.pmt[nItemIndex].nPMTPID;
 			if (v->pat.pmt[nItemIndex].nProgramNumber != 0)
@@ -8566,11 +8577,13 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 		}
 		break;
 	case SI_PARSER_SDT:
-	case SI_PARSER_VCT:		
+	case SI_PARSER_VCT:
 		nItemIndex = (int)tvi.lParam - SI_PARSER_SDT;
-		if (nItemIndex != 0x0fffffff)
-			SetDlgItemText(hDlg, IDC_SI_TEXT, FormatSDTEntry(nItemIndex, FALSE));
-		else
+		if (nItemIndex != 0x0fffffff) {
+			FormatSDTEntry(nItemIndex, FALSE);
+			mymbstowcs(v->szSIFormatBufferW, _countof(v->szSIFormatBufferW), v->szSIFormatBuffer);
+			SetDlgItemTextW(hDlg, IDC_SI_TEXT, v->szSIFormatBufferW);
+		} else
 		{
 			char szTemp[128] = {""};
 
@@ -8595,8 +8608,11 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 	case SI_PARSER_EIT:
 		CursorWait(hDlg);
 		nItemIndex = (int)tvi.lParam - SI_PARSER_EIT;
-		if (nItemIndex != 0x0fffffff)
-			SetDlgItemText(hDlg, IDC_SI_TEXT, FormatEITEntry(nItemIndex, EIT_FORMAT_PLAIN, FALSE));
+		if (nItemIndex != 0x0fffffff) {
+			FormatEITEntry(nItemIndex, EIT_FORMAT_PLAIN, FALSE);
+			mymbstowcs(v->szSIFormatBufferW, _countof(v->szSIFormatBufferW), v->szSIFormatBuffer);
+			SetDlgItemTextW(hDlg, IDC_SI_TEXT, v->szSIFormatBufferW);
+		}
 		else
 		{
 			char szTemp[128] = {""};
@@ -8652,7 +8668,8 @@ void SIParserMsgNotify(HWND hDlg, UINT uMessage, WPARAM wparam, LPARAM lParam)
 				PostMessage(v->hWndMainWindow, WM_CLOSE, 0, 0);
 		}
 		break;
-	case TVN_SELCHANGED:
+	case TVN_SELCHANGEDA:
+	case TVN_SELCHANGEDW:
 		{
 			if (v->fDeletingAllTVItems == TRUE)
 				break;
@@ -8662,7 +8679,8 @@ void SIParserMsgNotify(HWND hDlg, UINT uMessage, WPARAM wparam, LPARAM lParam)
 				HandleTreeClickIPDVB(hDlg, pnmh);
 		}
 		break;
-	case TVN_DELETEITEM:
+	case TVN_DELETEITEMA:
+	case TVN_DELETEITEMW:
 		if (v->fIPDVBMode == TRUE)
 		{
 			LPNMTREEVIEW pnmtv = (LPNMTREEVIEW) lParam;
@@ -10604,14 +10622,18 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 						{
 							if (lstrlen(v->pChannelData[i]->szShortName) > 0)
 							{
-								TVITEM tvi;
+								TVITEMW tvi;
+								wchar_t szTempW[256];
 
+								/* this code appends SDT channel names to EIT subtree nodes */
 								wsprintf(szTemp, "%d %s", v->pChannelData[i]->nChannelNumber, v->pChannelData[i]->szShortName);
+								mymbstowcs(szTempW, _countof(szTempW), szTemp);
+
 								memset(&tvi, 0, sizeof(tvi));
 								tvi.hItem = v->hEITTreeItem[i];
 								tvi.mask = TVIF_TEXT;
-								tvi.pszText = szTemp;
-								TreeView_SetItem(hWndTV, &tvi);
+								tvi.pszText = szTempW;
+								SendMessage(hWndTV, TVM_SETITEMW, 0, (LPARAM)(const TV_ITEMW *)(&tvi));
 								v->pChannelData[i]->fSetupEITName = TRUE;
 							}
 						}
@@ -11523,10 +11545,10 @@ void RestartTSReader_Stop(HWND hWnd)
 
 	do
 	{
-		while (PeekMessage(&msg, hWnd, WM_USER + 5, WM_USER + 5, PM_REMOVE))
+		while (PeekMessageW(&msg, hWnd, WM_USER + 5, WM_USER + 5, PM_REMOVE))
 		{
 			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			DispatchMessageW(&msg);
 		}
 		Sleep(50);
 	} while ( (v->fParseThreadRunning == TRUE) || (v->ss.fReadThreadTerminated == FALSE) );
@@ -11792,7 +11814,7 @@ void IPDVBModeOn(HWND hWnd)
 {
 	SendMessage(GetDlgItem(v->hDlgSIParser, IDC_SI_TREE), WM_SETREDRAW, FALSE, 0);
 	v->fDeletingAllTVItems = TRUE;
-	TreeView_DeleteAllItems(GetDlgItem(v->hDlgSIParser, IDC_SI_TREE));	
+	TreeView_DeleteAllItems(GetDlgItem(v->hDlgSIParser, IDC_SI_TREE));
 	v->fDeletingAllTVItems = FALSE;
 	v->fIPDVBModeChanged = TRUE;
 	v->fIPDVBMode = TRUE;
@@ -11800,10 +11822,10 @@ void IPDVBModeOn(HWND hWnd)
 	CleanupMPEGParsingThread(hWnd);
 	memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
 	ForcePIDChartRepaint(v->hDlgSIParser);
-	CheckMenuItem(GetMenu(v->hWndMainWindow), IDC_SI_PARSER_IP_DVB_MODE, MF_CHECKED | MF_BYCOMMAND);					
+	CheckMenuItem(GetMenu(v->hWndMainWindow), IDC_SI_PARSER_IP_DVB_MODE, MF_CHECKED | MF_BYCOMMAND);
 	//UpdateMainStatusText("");
 	SendMessage(GetDlgItem(v->hDlgSIParser, IDC_SI_TREE), WM_SETREDRAW, TRUE, 0);
-	SetDlgItemText(v->hDlgSIParser, IDC_SI_TEXT, "");
+	SetDlgItemTextW(v->hDlgSIParser, IDC_SI_TEXT, L"");
 	ResetParserPackets();
 	ResetParserCRCs();
 	ResetParserTableErrors();
@@ -11836,7 +11858,7 @@ void IPDVBModeOff(HWND hWnd)
 	v->nMinimumSDTChannel = 65536;
 	v->nMinimumEITChannel = 65536;
 	SendMessage(GetDlgItem(v->hDlgSIParser, IDC_SI_TREE), WM_SETREDRAW, TRUE, 0);
-	SetDlgItemText(v->hDlgSIParser, IDC_SI_TEXT, "");
+	SetDlgItemTextW(v->hDlgSIParser, IDC_SI_TEXT, L"");
 	UpdateMainStatusText("Reading PAT");
 	ResetParserPackets();
 	ResetParserCRCs();
@@ -11851,7 +11873,7 @@ void ToggleIPDVBMode(HWND hWnd)
 	v->fRecordPIDMode = FALSE;
 	if (v->fIPDVBMode == FALSE)
 	{
-		if (DialogBoxParam(v->hInstance, MAKEINTRESOURCE(IDD_IPDVB_PID), hWnd, IPDVBPIDSelectDlgProc, FALSE) == TRUE)
+		if (DialogBoxParamW(v->hInstance, MAKEINTRESOURCEW(IDD_IPDVB_PID), hWnd, IPDVBPIDSelectDlgProc, FALSE) == TRUE)
 			IPDVBModeOn(hWnd);
 	}
 	else
@@ -13399,7 +13421,7 @@ void CreateTooltip(HWND hWnd)
 
 	dwStyle = WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP;
 
-	v->hWndTT = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, NULL, dwStyle,
+	v->hWndTT = CreateWindowExW(WS_EX_TOPMOST, TOOLTIPS_CLASSW, NULL, dwStyle,
 							CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hWnd, NULL, v->hInstance, NULL);
     SetWindowPos(v->hWndTT, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 }
@@ -13444,7 +13466,7 @@ void CreateStatusBar(HWND hWnd)
 
 	//Create the status bar
 	dwStyle = WS_CHILD | WS_VISIBLE | SBT_TOOLTIPS;
-	v->hWndST = CreateStatusWindow(dwStyle, TEXT(""), hWnd, 2);
+	v->hWndST = CreateStatusWindowW(dwStyle, L"", hWnd, 2);
 	if (v->hWndST != NULL)
 	{
 		SendMessage(v->hWndST, SB_SETICON, 4, (LPARAM)v->hStatusBarIcons[0]);
@@ -13582,6 +13604,9 @@ void GetDescriptorListDispInfo(LV_DISPINFO *pnmv)
 			case DESCRIPTOR_CAT:
 				lstrcpy(pnmv->item.pszText, "MPEG-CAT");
 				break;
+			case DESCRIPTOR_BIT:
+				lstrcpy(pnmv->item.pszText, "ISDB-BIT");
+				break;
 			case DESCRIPTOR_PMT:
 				lstrcpy(pnmv->item.pszText, "MPEG-PMT");
 				break;
@@ -13616,11 +13641,11 @@ void GetDescriptorListDispInfo(LV_DISPINFO *pnmv)
 			break;
 		case 1:
 			{
-				int nDescriptorTag;
+				uint8_t nDescriptorTag;
 				char szTemp[8];
 				char szOutput[1024] = {0};
 
-				for (nDescriptorTag = 0; nDescriptorTag < 256; nDescriptorTag++)
+				for (nDescriptorTag = 0; nDescriptorTag < 255; nDescriptorTag++)
 				{
 					if (v->bDescriptorTagArray[nIndex][nDescriptorTag])
 					{
@@ -13721,7 +13746,7 @@ INT_PTR CALLBACK DescriptorUsageDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
 				char szTemp[1024];
 				char szOutput[10 * 1024] = {0};
 
-				for (nDescriptorTag = 0; nDescriptorTag < 256; nDescriptorTag++)
+				for (nDescriptorTag = 0; nDescriptorTag < 255; nDescriptorTag++)
 				{
 					if (v->bDescriptorTagArray[v->nSelectedDescriptorItem][nDescriptorTag])
 					{
@@ -13883,7 +13908,7 @@ void SetupFonts(HWND hDlg)
 							   CLIP_DEFAULT_PRECIS,
 							   ANTIALIASED_QUALITY,
 							   FF_DONTCARE | VARIABLE_PITCH,
-							   "Arial");	
+							   "Arial");
 	v->hSourceInfoFont = CreateFont(-MulDiv(9, GetDeviceCaps(hDC, LOGPIXELSY), 72),
 							   0,
 							   0,
@@ -13897,7 +13922,7 @@ void SetupFonts(HWND hDlg)
 							   CLIP_DEFAULT_PRECIS,
 							   ANTIALIASED_QUALITY,
 							   FF_DONTCARE | VARIABLE_PITCH,
-							   "Arial");	
+							   "Arial");
 	v->hCourierNew = CreateFont(-MulDiv(9, GetDeviceCaps(hDC, LOGPIXELSY), 72),
 							   0,
 							   0,
@@ -16340,7 +16365,7 @@ LRESULT APIENTRY MainDlgSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 			for (i = 0; i < 10; i++)
 			{
 				if (hWnd == v->hWndMainDlgSubclass[i])
-					return CallWindowProc(v->wpSubclassOrigProc[i], hWnd, uMsg, wParam, lParam); 
+					return CallWindowProcW(v->wpSubclassOrigProc[i], hWnd, uMsg, wParam, lParam); 
 			}
 		}
 		break;
@@ -16387,7 +16412,7 @@ INT_PTR CALLBACK MDIIndexDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 	switch(uMsg)
 	{
 	case WM_INITDIALOG:
-		{			
+		{
 			InitializeCriticalSection(&v->csMDI);
 			mdi = mdiStreamInit(188);
 			SetTimer(hDlg, 1, 1000, NULL);
@@ -16867,7 +16892,7 @@ void ToggleNetworkIgnore(HWND hWnd)
 						} while (pCurrent != NULL);
 						v->pEvents[nSDTIndex] = NULL;
 						TreeView_DeleteItem(GetDlgItem(v->hDlgSIParser, IDC_SI_TREE), v->hEITTreeItem[nSDTIndex]);
-						v->hEITTreeItem[nSDTIndex] = NULL;								
+						v->hEITTreeItem[nSDTIndex] = NULL;
 						LeaveCriticalSection(&v->csEIT);
 					}
 				}
@@ -16894,11 +16919,11 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 				GetVideoArea(&xStart, &yStart, &xWidth, &yHeight);
 				BitBlt(hRealDC,
-				       xStart, yStart, 
-					   xWidth, yHeight,
-					   v->hThumbnailDC,
-					   0, 0, SRCCOPY);
-			}			
+						xStart, yStart, 
+						xWidth, yHeight,
+						v->hThumbnailDC,
+						0, 0, SRCCOPY);
+			}
 			EndPaint(hDlg, &ps);
 		}
 		break;
@@ -16967,7 +16992,7 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				if (v->ss.fTimestampPackets == TRUE)
 					v->ss.tsb[j].pTimestamps = LocalAlloc(LPTR, sizeof(DWORD) * TS_PACKETS_AT_A_TIME);
 			}
-			
+
 			if (v->fSortChartByPID == FALSE)
 				CheckDlgButton(hDlg, IDC_SORT_RATE, BST_CHECKED);
 			else
@@ -16984,13 +17009,13 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			fFirstTime = TRUE;
 
 			CreateTooltip(hDlg);
-			SetWindowLong(hDlg, GWL_STYLE, GetWindowLong(hDlg, GWL_STYLE) | CS_DBLCLKS);
+			SetWindowLongW(hDlg, GWL_STYLE, GetWindowLongW(hDlg, GWL_STYLE) | CS_DBLCLKS);
 
 			for (i = 0; nSubclassItemList[i] != 0; i++)
-			{				
+			{
 				v->hWndMainDlgSubclass[i] = GetDlgItem(hDlg, nSubclassItemList[i]);
-				v->wpSubclassOrigProc[i] = (WNDPROC)SetWindowLongPtr(v->hWndMainDlgSubclass[i], GWLP_WNDPROC, (LONG_PTR)MainDlgSubclassProc);
-			}	
+				v->wpSubclassOrigProc[i] = (WNDPROC)SetWindowLongPtrW(v->hWndMainDlgSubclass[i], GWLP_WNDPROC, (LONG_PTR)MainDlgSubclassProc);
+			}
 		}
 		break;
 	case WM_DESTROY:
@@ -16998,7 +17023,7 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			int j;
 
 			for (j = 0; v->hWndMainDlgSubclass[j] != NULL; j++)
-				SetWindowLongPtr(v->hWndMainDlgSubclass[j], GWLP_WNDPROC, (LONG_PTR)v->wpSubclassOrigProc[j]); 
+				SetWindowLongPtrW(v->hWndMainDlgSubclass[j], GWLP_WNDPROC, (LONG_PTR)v->wpSubclassOrigProc[j]); 
 
 			KillTimer(hDlg, 1);
 			KillTimer(hDlg, 2);
@@ -17483,8 +17508,14 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				EnterCriticalSection(&v->csStatusbar);
 				if (v->fStatusDirty)
 				{
-					SendMessage(v->hWndST, SB_SETTEXT, (WPARAM)0, (LPARAM)v->szStatusTextMain);		
-					SendMessage(v->hWndST, SB_SETTEXT, (WPARAM)1, (LPARAM)v->szStatusTextSecondary);		
+					wchar_t szStatusTextMain[256];
+					wchar_t szStatusTextSecondary[256];
+
+					mymbstowcs(szStatusTextMain, _countof(szStatusTextMain), v->szStatusTextMain);
+					mymbstowcs(szStatusTextSecondary, _countof(szStatusTextSecondary), v->szStatusTextSecondary);
+
+					SendMessage(v->hWndST, SB_SETTEXTW, (WPARAM)0, (LPARAM)szStatusTextMain);
+					SendMessage(v->hWndST, SB_SETTEXTW, (WPARAM)1, (LPARAM)szStatusTextSecondary);
 					v->fStatusDirty = FALSE;
 					v->nStatusNotDirtyCounter = 0;
 				}
@@ -17634,10 +17665,10 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			}
 			while (v->fParseThreadRunning == TRUE)
 			{
-				while (PeekMessage(&msg, hDlg, 0, 0, PM_REMOVE))
+				while (PeekMessageW(&msg, hDlg, 0, 0, PM_REMOVE))
 				{
 					TranslateMessage(&msg);
-					DispatchMessage(&msg);
+					DispatchMessageW(&msg);
 				}
 				Sleep(10);
 			}
@@ -17649,10 +17680,10 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			// Let any outstanding messages from the SI parser thread
 			// through before we delete stuff
-			while (PeekMessage(&msg, hDlg, WM_USER + 2, WM_USER + 2, PM_REMOVE))
+			while (PeekMessageW(&msg, hDlg, WM_USER + 2, WM_USER + 2, PM_REMOVE))
 			{
 				TranslateMessage(&msg);
-				DispatchMessage(&msg);
+				DispatchMessageW(&msg);
 			}
 
 			SendMessage(GetDlgItem(v->hDlgSIParser, IDC_SI_TREE), WM_SETREDRAW, FALSE, 0);
@@ -18301,7 +18332,7 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_TABLE_VIEWER_PRO), hWnd, TableViewerDlgProc);
 		break;
 	case ID_SETTINGS_EPGGRID:
-		DialogBoxParam(v->hInstance, MAKEINTRESOURCE(IDD_EPG_GRID_SETTINGS), hWnd, EPGGridSettingsDlgProc, FALSE);
+		DialogBoxParamW(v->hInstance, MAKEINTRESOURCEW(IDD_EPG_GRID_SETTINGS), hWnd, EPGGridSettingsDlgProc, FALSE);
 		break;
 	case ID_VIEW_CHART_SETTINGS_REFRESHRATE:
 		DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_GRAPH_REFRESH), hWnd, GraphRefreshRateDlgProc);
@@ -18536,7 +18567,7 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	case ID_VIEW_MDIINDEX:
 		if (v->hDlgMDIIndex == NULL)
 		{
-			v->hDlgMDIIndex = CreateDialog(v->hInstance, MAKEINTRESOURCE(IDD_MDI_INDEX), hWnd, MDIIndexDlgProc);
+			v->hDlgMDIIndex = CreateDialogW(v->hInstance, MAKEINTRESOURCEW(IDD_MDI_INDEX), hWnd, MDIIndexDlgProc);
 			ShowWindow(v->hDlgMDIIndex, SW_SHOW);
 		}
 		else
@@ -18558,7 +18589,7 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 			SetForegroundWindow(v->hDlgStreamMonitor);
 		else
 		{
-			v->hDlgStreamMonitor = CreateDialog(v->hInstance, MAKEINTRESOURCE(IDD_STREAM_MONITOR), hWnd, StreamMonitorDlgProc);
+			v->hDlgStreamMonitor = CreateDialogW(v->hInstance, MAKEINTRESOURCEW(IDD_STREAM_MONITOR), hWnd, StreamMonitorDlgProc);
 			ShowWindow(v->hDlgStreamMonitor, SW_SHOW);
 		}
 		break;
@@ -18745,7 +18776,7 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 			else
 			{
 				v->fRecordPIDMode = TRUE;
-				if (DialogBoxParam(v->hInstance, MAKEINTRESOURCE(IDD_RECORD_PID_SELECT), hWnd, IPDVBPIDSelectDlgProc, TRUE) == TRUE)
+				if (DialogBoxParamW(v->hInstance, MAKEINTRESOURCEW(IDD_RECORD_PID_SELECT), hWnd, IPDVBPIDSelectDlgProc, TRUE) == TRUE)
 				{
 					//
 					uint16_t nPID;
@@ -19210,7 +19241,7 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 	case WM_CREATE:
 		{
 			fFirstTime = TRUE;
-			v->hDlgSIParser = CreateDialog(v->hInstance, MAKEINTRESOURCE(IDD_SI_PARSER), hWnd, SIParserDlgProc);
+			v->hDlgSIParser = CreateDialogW(v->hInstance, MAKEINTRESOURCEW(IDD_SI_PARSER), hWnd, SIParserDlgProc);
 			if (v->fSourceInitFailed)
 			{
 				DestroyWindow(hWnd);
@@ -19241,7 +19272,7 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			/*if (v->fAllowResizing)
 			{
 				LONG lState = GetWindowLong(hWnd, GWL_STYLE);
-				SetWindowLong(hWnd, GWL_STYLE, lState | WS_THICKFRAME | WS_MAXIMIZEBOX);
+				SetWindowLongW(hWnd, GWL_STYLE, lState | WS_THICKFRAME | WS_MAXIMIZEBOX);
 			}*/
 
 		}
@@ -19612,7 +19643,7 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				AddTaskbarIcon(hWnd);
 		}
 		else
-			return(DefWindowProc(hWnd, uMsg, wParam, lParam));
+			return(DefWindowProcW(hWnd, uMsg, wParam, lParam));
 	}
 
 	return 0;
@@ -19696,6 +19727,9 @@ void InitVariables(HINSTANCE hInstance, int nCmdShow)
 		for (j = 0; j < MAX_CVCT_CHANNEL_ENTRIES; j++)
 			v->cvct[i].CVCTEntry[j].major_channel_number = v->cvct[i].CVCTEntry[j].minor_channel_number = -1;
 	}
+
+	/* Init B24 stuff */
+	v->hARIBInstance = arib_instance_new(NULL);
 
 	InitializeCriticalSection(&v->csEIT);
 	InitializeCriticalSection(&v->ss.csPIDCounter);
@@ -19805,6 +19839,9 @@ void DeInitVariables(void)
 		if (v->hScrambledPicture[nIndex] != NULL)
 			GlobalFree(v->hScrambledPicture[nIndex]);
 	}
+
+	/* kill B24 instance */
+	arib_instance_destroy(v->hARIBInstance);
 
 	DeleteCriticalSection(&v->csEIT);
 	DeleteCriticalSection(&v->ss.csPIDCounter);
@@ -20864,7 +20901,7 @@ VOID UnloadOtherModules(void)
 
 BOOL NEAR InitApplication(void)
 {
-	WNDCLASS wndclass;
+	WNDCLASSW wndclass;
 
 	// register window class
 	wndclass.style =         CS_DBLCLKS;
@@ -20875,11 +20912,10 @@ BOOL NEAR InitApplication(void)
 	wndclass.hIcon =         LoadIcon(v->hInstance, MAKEINTRESOURCE(IDI_DVBSMALL_LOGO));
 	wndclass.hCursor =       LoadCursor(NULL, IDC_ARROW);
 	wndclass.hbrBackground = (HBRUSH) (COLOR_BACKGROUND);
-	wndclass.lpszMenuName =  MAKEINTRESOURCE(IDR_MAIN);
+	wndclass.lpszMenuName =  MAKEINTRESOURCEW(IDR_MAIN);
 	wndclass.lpszClassName = gszMainClass;
 
-	return(RegisterClass(&wndclass));
-
+	return(RegisterClassW(&wndclass));
 }
 
 HWND NEAR InitInstance(int nCmdShow)
@@ -20888,12 +20924,12 @@ HWND NEAR InitInstance(int nCmdShow)
 	int nInitialXSize, nInitialYSize;
 	BOOL fMaximizedFlag;
 	DWORD dwStyle;
-	char szTitle[256] = {"\0"};
-	char szProfileName[256] = {"Default"};
+	wchar_t szTitle[256] = { 0, };
+	char szProfileName[256] = { "Default" };
 
 	if (lstrlen(v->szProfileName))
 		lstrcpy(szProfileName, v->szProfileName);
-	wsprintf(szTitle, "%s -- %s %s", szProfileName, gszAppName, GetTSRVersion(NULL));
+	wsprintfW(szTitle, L"%S -- %S %S", szProfileName, gszAppName, GetTSRVersion(NULL));
 	fMaximizedFlag = v->fMaximizedFlag; // save as it gets reset on the first WM_SIZE
 	v->hAccel = LoadAccelerators(v->hInstance, MAKEINTRESOURCE(IDR_ACCELERATOR_TOP));
 
@@ -20906,7 +20942,7 @@ HWND NEAR InitInstance(int nCmdShow)
 	nInitialYPos = 0;
 	nInitialXSize = TSREADER_INITIAL_X;
 	nInitialYSize = TSREADER_INITIAL_Y;
-	v->hWndMainWindow = CreateWindow(gszMainClass, szTitle,
+	v->hWndMainWindow = CreateWindowW(gszMainClass, szTitle,
 						   dwStyle,
 						   nInitialXPos, nInitialYPos,
 						   nInitialXSize, nInitialYSize,
@@ -20986,7 +21022,7 @@ void DoNormalTSReaderWindow(char * szCmdLinePtr)
 		v->szSourceParametersPtr = szCmdLinePtr;
 		if (ParseSourceModuleCommandLine(&v->ss, szCmdLinePtr, FALSE) == TRUE)
 		{
-			if (DialogBox(v->hInstance, MAKEINTRESOURCE(IDD_LICENSE), NULL, LicenseDlgProc) == TRUE)
+			if (DialogBoxW(v->hInstance, MAKEINTRESOURCEW(IDD_LICENSE), NULL, LicenseDlgProc) == TRUE)
 			{
 				LoadOtherModules();
 				LoadOutputModules();
@@ -21012,11 +21048,11 @@ void DoNormalTSReaderWindow(char * szCmdLinePtr)
 						__try
 						{
 #endif CATCH_ERRORS
-							while (GetMessage(&msg, NULL, 0, 0) == TRUE)
+							while (GetMessageW(&msg, NULL, 0, 0) == TRUE)
 							{
 								if (msg.hwnd == v->hWndMainWindow)
 								{
-									if (!(TranslateAccelerator(msg.hwnd, v->hAccel, &msg)))
+									if (!(TranslateAcceleratorW(msg.hwnd, v->hAccel, &msg)))
 										TranslateMessage(&msg);
 								}
 								{
@@ -21026,11 +21062,11 @@ void DoNormalTSReaderWindow(char * szCmdLinePtr)
 										if (IsWindow(v->hPluginTranslateDialog[i]))
 										{
 											if (v->hPluginTranslateDialog[i] == msg.hwnd)
-												IsDialogMessage(v->hPluginTranslateDialog[i], &msg);
+												IsDialogMessageW(v->hPluginTranslateDialog[i], &msg);
 										}
 									}
 								}
-								DispatchMessage(&msg);
+								DispatchMessageW(&msg);
 							}
 #ifdef CATCH_ERRORS
 						} __except(EXCEPTION_EXECUTE_HANDLER )
@@ -21104,7 +21140,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	char szVersion[32];
 
 	// In memory of Rod Hewitt KG6TTD (G6TTD) - shows for 5 seconds, click/key to dismiss
-	ShowMemorialSplash(hInstance);
+	// ShowMemorialSplash(hInstance);
 
 	nTSReaderReturnValue = 0;
 	dbg_printf("%s: Version %s Built %s %s\n", gszAppName, GetTSRVersion(szVersion), __DATE__, __TIME__);
@@ -21152,8 +21188,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	{
 		if (lstrlen(v->szProfileName))
 		{
-			lstrcat(gszMainClass, ".");
-			lstrcat(gszMainClass, v->szProfileName);
+			wchar_t szProfileName[MAX_PATH];
+			mbstowcs(szProfileName, v->szProfileName, _countof(szProfileName));
+			lstrcatW(gszMainClass, L".");
+			lstrcatW(gszMainClass, szProfileName);
 		}
 
 		if (v->fSingleInstance)
@@ -21162,7 +21200,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
 			do
 			{
-				HWND hWnd = FindWindow(gszMainClass, NULL);
+				HWND hWnd = FindWindowW(gszMainClass, NULL);
 				if (hWnd == NULL)
 					break;
 				if (fSentClose == FALSE)

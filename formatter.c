@@ -1458,7 +1458,7 @@ void DecodeDescriptorNames(char * szDescriptor, BYTE nDescriptorID)
 		break;
 	case 0xcb:
 		if (v->fISDB)
-			lstrcpy(szDescriptor, "ISDB Contract Information Descriptor");
+			lstrcpy(szDescriptor, "ISDB Contract Information");
 		else
 			goto DecodeDescriptorNames_ForceDefault;
 		break;
@@ -1489,6 +1489,12 @@ void DecodeDescriptorNames(char * szDescriptor, BYTE nDescriptorID)
 	case 0xd7:
 		if (v->fISDB)
 			lstrcpy(szDescriptor, "ISDB SI Parameter");
+		else
+			goto DecodeDescriptorNames_ForceDefault;
+		break;
+	case 0xd8:
+		if (v->fISDB)
+			lstrcpy(szDescriptor, "ISDB Broadcaster Name");
 		else
 			goto DecodeDescriptorNames_ForceDefault;
 		break;
@@ -4762,9 +4768,7 @@ byte 8 uimsbf
 		break;
 
 	case 0xcb:	// ISDB Contract Information 
-		if (!v->fISDB)
-			goto DecodeMPEG2Descriptor_Default;
-
+		goto DecodeMPEG2Descriptor_Default;
 		/* TODO */
 		break;
 
@@ -4811,9 +4815,7 @@ byte 8 uimsbf
 		break;
 
 	case 0xce:	// ISDB Extended Broadcaster
-		if (!v->fISDB)
-			goto DecodeMPEG2Descriptor_Default;
-
+		goto DecodeMPEG2Descriptor_Default;
 		/* TODO */
 		break;
 
@@ -4888,11 +4890,15 @@ byte 8 uimsbf
 		break;
 
 	case 0xd7:	// ISDB SI Parameter
-		if (!v->fISDB)
-			goto DecodeMPEG2Descriptor_Default;
-
+		goto DecodeMPEG2Descriptor_Default;
 		/* TODO */
 		break;
+
+	case 0xd8:	// ISDB Broadcaster Name
+		goto DecodeMPEG2Descriptor_Default;
+		/* TODO */
+		break;
+
 
 	case 0xde:	// ISDB Content Availability
 		if (!v->fISDB)
@@ -5630,9 +5636,7 @@ char * FormatEITEntry(int nChannelNumber, int nEITFormat, BOOL fIncludeHTMLTags)
 	if (v->pChannelData[nChannelNumber] != NULL)
 	{
 		lstrcpy(szShortName, v->pChannelData[nChannelNumber]->szShortName);
-		EscapeReplaceXML(szShortName);
 		lstrcpy(szLongName, v->pChannelData[nChannelNumber]->szLongName);
-		EscapeReplaceXML(szLongName);
 
 		switch(nEITFormat)
 		{
@@ -5661,6 +5665,9 @@ char * FormatEITEntry(int nChannelNumber, int nEITFormat, BOOL fIncludeHTMLTags)
 			break;
 		case EIT_FORMAT_XML:
 			{
+				EscapeReplaceXML(szShortName);
+				EscapeReplaceXML(szLongName);
+
 				wsprintf(v->szSIFormatBuffer, 
 						 " <CHANNEL>\r\n  <SERVICE-NUMBER>%d</SERVICE-NUMBER>\r\n  <SHORT-NAME>%s</SHORT-NAME>\r\n  <LONG-NAME>%s</LONG-NAME>\r\n  <TRANSPORT-STREAM-ID>%d</TRANSPORT-STREAM-ID>\r\n",
 						 v->pChannelData[nChannelNumber]->nChannelNumber,
@@ -5671,6 +5678,9 @@ char * FormatEITEntry(int nChannelNumber, int nEITFormat, BOOL fIncludeHTMLTags)
 			break;
 		case EIT_FORMAT_XMLTV:
 			{
+				EscapeReplaceXML(szShortName);
+				EscapeReplaceXML(szLongName);
+			
 				QuickFormatNIT(szSignalInfo, v->pChannelData[nChannelNumber]->nTransportStreamID, FALSE);
 				wsprintf(v->szSIFormatBuffer,
 						 "<channel id=\"%d-%s\">\r\n"
@@ -5798,7 +5808,7 @@ char * FormatEITEntry(int nChannelNumber, int nEITFormat, BOOL fIncludeHTMLTags)
 						{
 							char szEventDescriptionLines[4096] = {0};
 							char szSource[128] = {"n/a"};
-							GetEITSource(szSource, &pSortList[nEITIndex]);	
+							GetEITSource(szSource, &pSortList[nEITIndex]);
 							if (pSortList[nEITIndex].szShortEventDescription != NULL)
 								lstrcpy(szEventDescriptionLines, pSortList[nEITIndex].szShortEventDescription);
 							if (pSortList[nEITIndex].szLongEventDescription != NULL)
@@ -5811,7 +5821,7 @@ char * FormatEITEntry(int nChannelNumber, int nEITFormat, BOOL fIncludeHTMLTags)
 								else
 									lstrcpy(szEventDescriptionLines, pSortList[nEITIndex].szLongEventDescription);
 							}
-							wsprintf(szTemp, "---------------------------------------------\r\nStarts: %s %s\r\nLength: %02d:%02d:%02d\r\nEIT Source: %s\r\nName: %s\r\n%s",
+							StringCchPrintf(szTemp, sizeof(szTemp), "---------------------------------------------\r\nStarts: %s %s\r\nLength: %02d:%02d:%02d\r\nEIT Source: %s\r\nName: %s\r\nDescription: %s",
 									 szStartDate,
 									 szStartTime,
 									 pSortList[nEITIndex].stRunTime.wHour, pSortList[nEITIndex].stRunTime.wMinute, pSortList[nEITIndex].stRunTime.wSecond,
@@ -5829,7 +5839,7 @@ char * FormatEITEntry(int nChannelNumber, int nEITFormat, BOOL fIncludeHTMLTags)
 								pDescription = pSortList[nEITIndex].szShortEventDescription;
 
 							GetEITSource(szSource, &pSortList[nEITIndex]);
-							wsprintf(szTemp, "---------------------------------------------\r\nStarts: %s %s\r\nLength: %02d:%02d:%02d\r\nEIT Source: %s\r\nName: %s\r\nDescription: %s\r\n",
+							StringCchPrintf(szTemp, sizeof(szTemp), "---------------------------------------------\r\nStarts: %s %s\r\nLength: %02d:%02d:%02d\r\nEIT Source: %s\r\nName: %s\r\nDescription: %s\r\n",
 									 szStartDate,
 									 szStartTime,
 									 pSortList[nEITIndex].stRunTime.wHour, pSortList[nEITIndex].stRunTime.wMinute, pSortList[nEITIndex].stRunTime.wSecond,
@@ -6747,8 +6757,7 @@ char * FormatPMTEntry(int nPMTIndex, BOOL fHTMLMode)
 {
 	if (v->pat.pmt[nPMTIndex].nProgramNumber == 0)
 	{		
-		wsprintf(v->szSIFormatBuffer, "Network PMT Entry - table on PID %d (0x%04x)",
-			     v->pat.pmt[nPMTIndex].nPMTPID, v->pat.pmt[nPMTIndex].nPMTPID);
+		wsprintf(v->szSIFormatBuffer, "Network PMT Entry - table on PID %d (0x%04x)", v->pat.pmt[nPMTIndex].nPMTPID, v->pat.pmt[nPMTIndex].nPMTPID);
 	}
 	else
 	{

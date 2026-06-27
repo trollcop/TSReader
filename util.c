@@ -8,6 +8,7 @@
 #include "bcdmux.h"
 #include "util.h"
 #include "formatter.h"
+#include "libaribb24/aribb24/decoder.h"
 
 #include "resource.h"
 
@@ -2111,4 +2112,57 @@ int mymbstowcs(wchar_t *dest, int len, const char *src)
 		wchars_needed = len - 1;
 
 	return MultiByteToWideChar(CP_UTF8, 0, src, -1, dest, wchars_needed);
+}
+
+char *DecodeARIBString(char *szDest, size_t len, const char *szString)
+{
+	if (!szString || !v->hARIBInstance)
+		return NULL;
+
+	size_t i_in = strlen(szString);
+	char *szOutput = NULL;
+
+	arib_decoder_t *p_decoder = arib_get_decoder(v->hARIBInstance);
+	if (!p_decoder)
+		return NULL;
+
+	size_t i_out = i_in * 4;
+	if (!szDest)
+		szOutput = (char *)LocalAlloc(LPTR, i_out + 1);
+	else {
+		szOutput = szDest;
+		i_out = len;
+	}
+
+	arib_initialize_decoder(p_decoder);
+	i_out = arib_decode_buffer(p_decoder, (const unsigned char *)szString, i_in, szOutput, i_out);
+	arib_finalize_decoder(p_decoder);
+
+	return szOutput;
+}
+
+void HexDump(const void *buffer, size_t size)
+{
+	const unsigned char *p = (const unsigned char *)buffer;
+
+	for (size_t i = 0; i < size; i += 16) {
+		dbg_printf("%04zX: ", i);
+
+		for (size_t j = 0; j < 16; ++j) {
+			if (i + j < size)
+				dbg_printf("%02X ", p[i + j]);
+			else
+				dbg_printf("   ");
+		}
+
+		dbg_printf(" | ");
+
+		for (size_t j = 0; j < 16; ++j) {
+			if (i + j < size) {
+				unsigned char ch = p[i + j];
+				dbg_printf("%c", (ch >= 32 && ch <= 126) ? ch : '.');
+			}
+		}
+		dbg_printf("\n");
+	}
 }
