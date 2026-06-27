@@ -14,7 +14,6 @@ typedef struct _tagRegistryList
 
 static REGISTRYLIST rl[] =
 {
-	// All TSReader versions
 	"EPGRecordPS", offsetof(VARIABLES, fEPGRecordPS), sizeofstruct(VARIABLES, fEPGRecordPS), REG_DWORD,
 	"DontShowSchedulerWarning", offsetof(VARIABLES, fDontShowSchedulerWarning), sizeofstruct(VARIABLES, fDontShowSchedulerWarning), REG_DWORD,
 	"EPGUpdateRealtime", offsetof(VARIABLES, fEPGUpdateRealtime), sizeofstruct(VARIABLES, fEPGUpdateRealtime), REG_DWORD,
@@ -149,7 +148,6 @@ static REGISTRYLIST rl[] =
 	"ShowNonVideoPCR", offsetof(VARIABLES, fShowNonVideoPCR), sizeofstruct(VARIABLES, fShowNonVideoPCR), REG_DWORD,
 	//"", offsetof(VARIABLES, ), sizeofstruct(VARIABLES, ), REG_DWORD,
 
-	//TSReader Standard and Pro
 	"ThumbnailsRightToLeft", offsetof(VARIABLES, fThumbnailsRightToLeft), sizeofstruct(VARIABLES, fThumbnailsRightToLeft), REG_DWORD,
 	"MaximumH264Pictures", offsetof(VARIABLES, nMaximumH264Pictures), sizeofstruct(VARIABLES, nMaximumH264Pictures), REG_DWORD,
 	"ExportNITINITurbo", offsetof(VARIABLES, fExportNITINITurbo), sizeofstruct(VARIABLES, fExportNITINITurbo), REG_DWORD,
@@ -215,7 +213,6 @@ static REGISTRYLIST rl[] =
 	"DontWarnAboutInccorectAutoRecordProgram", offsetof(VARIABLES, fDontWarnAboutInccorectAutoRecordProgram), sizeofstruct(VARIABLES, fDontWarnAboutInccorectAutoRecordProgram), REG_DWORD,
 	//"", offsetof(VARIABLES, ), sizeofstruct(VARIABLES, ), REG_DWORD,
 
-	// TSReader Pro
 	"RecordTablesFolder", offsetof(VARIABLES, szRecordTablesFolder), sizeofstruct(VARIABLES, szRecordTablesFolder), REG_SZ,
 	"RecordTablesHexASCII", offsetof(VARIABLES, fRecordTablesHexASCII), sizeofstruct(VARIABLES, fRecordTablesHexASCII), REG_DWORD,
 	"StreamMonitorClockSystem", offsetof(VARIABLES, fStreamMonitorClockSystem), sizeofstruct(VARIABLES, fStreamMonitorClockSystem), REG_DWORD,

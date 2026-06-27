@@ -57,11 +57,23 @@ PUDPLIST pUDPList;
 SWITCHPARAMETERS spcopy[MAX_SWITCH_PARAMETERS];
 // This should be moved into VARIABLES
 
-BOOL (*SendDiSEqC) (BYTE * bCommand, int nLength);
+td_SendDiSEqC SendDiSEqC = NULL;
 
 char szCurrentSatFile[48] = {0};
 char szTypeName[4] = {"DVB"};
 char gszAppName[] = {"TSReader Source Helper"};
+
+void dbg_printf(const char *fmt, ...)
+{
+	char debug_buf[4096];
+
+	va_list args;
+	va_start(args, fmt);
+
+	vsnprintf_s(debug_buf, sizeof(debug_buf), sizeof(debug_buf), fmt, args);
+	OutputDebugStringA(debug_buf);
+	va_end(args);
+}
 
 void CursorNormal(void)
 {
@@ -158,7 +170,7 @@ void SetupSatelliteListViews(HWND hDlg)
 	int nColumnPosition = 0;
 	HWND hWndSatelliteList = GetDlgItem(hDlg, IDC_TUNER_SATELLITE_LIST);
 	HWND hWndMuxList = GetDlgItem(hDlg, IDC_TUNER_MUX_LIST);
-	LV_COLUMN lvc; 
+	LV_COLUMN lvc = { 0, };
 	char szTemp[128];
 
 	// Initialize the LV_COLUMN structure. 
@@ -464,14 +476,7 @@ void SourceHelper_CalculateSwitchParameters(int nFrequency, int nPolarity, int n
 		break;
 	}
 
-
-	/*{
-		char szTemp[256];
-		wsprintf(szTemp, "SourceHelper: CalculateSwitchParameters(nFrequency = %d nPolarity = %d nDiSEqCInput = %d *nLOF = %d, *f22KHz = %d *nVoltage = %d\n",
-			     nFrequency, nPolarity, nDiSEqCInput, *nLOF, *f22KHz, *nVoltage);
-		OutputDebugString(szTemp);
-	}*/
-
+	/* dbg_printf("SourceHelper: CalculateSwitchParameters(nFrequency = %d nPolarity = %d nDiSEqCInput = %d *nLOF = %d, *f22KHz = %d *nVoltage = %d\n", nFrequency, nPolarity, nDiSEqCInput, *nLOF, *f22KHz, *nVoltage); */
 }
 
 void SetupAutoSwitchParameters(HWND hDlg, BOOL fFromFrequencyChange)
@@ -558,7 +563,7 @@ void UpdateSatelliteMux(HWND hDlg, int nMuxIndex)
 
 	if (v->nInitialMuxIndex != -1)
 	{
-		LV_ITEM lvi; 
+		LV_ITEM lvi = { 0, };
 
 		lvi.mask = LVIF_STATE;
 		lvi.iItem = v->nInitialMuxIndex;
@@ -768,9 +773,9 @@ void SetupCableListView(HWND hDlg)
 	int nColumnPosition = 0;
 	int nIndex;
 	HWND hWndMuxList = GetDlgItem(hDlg, IDC_CABLE_LIST);
-	char szTemp[100];
-	LV_COLUMN lvc; 
-	LV_ITEM lvi; 
+	char szTemp[100] = { 0, };
+	LV_COLUMN lvc = { 0, };
+	LV_ITEM lvi = { 0, };
 
 	// Initialize the LV_COLUMN structure. 
 	lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM; 
@@ -1657,7 +1662,7 @@ DWORD WINAPI ScanDVBTThread(LPVOID lpv)
 	}
 	if (nBandplanTable == -1)
 	{
-		OutputDebugString("SourceHelper: Unable to locate bandplan table 1\n");
+		dbg_printf("SourceHelper: Unable to locate bandplan table 1\n");
 		goto ScanDVBTThread_Wrapup;
 	}
 
@@ -1678,7 +1683,7 @@ DWORD WINAPI ScanDVBTThread(LPVOID lpv)
 	} while (nDVBTBandplans[nIndex] != 0);
 	if (nBandplanOffset == -1)
 	{
-		OutputDebugString("SourceHelper: Unable to locate bandplan table 2\n");
+		dbg_printf("SourceHelper: Unable to locate bandplan table 2\n");
 		goto ScanDVBTThread_Wrapup;
 	}
 
@@ -1733,7 +1738,7 @@ ScanDVBTThread_Rescan:
 				sprintf(szTemp, "%.3f - locked", v->ss.nFrequency / 1000.0);
 				SetDlgItemText(hDlg, IDC_DVBT_SCAN_STATUS, szTemp);
 				lstrcat(szTemp, "\n");
-				OutputDebugString(szTemp);
+				dbg_printf(szTemp);
 				for (i = 0; i < v->nTerrestrialMuxes; i++)
 				{
 					if (v->tmuxes[i].nFrequency == v->ss.nFrequency)
@@ -1755,7 +1760,7 @@ ScanDVBTThread_Rescan:
 				sprintf(szTemp, "%.3f - analog", v->ss.nFrequency / 1000.0);
 				SetDlgItemText(hDlg, IDC_DVBT_SCAN_STATUS, szTemp);
 				lstrcat(szTemp, "\n");
-				OutputDebugString(szTemp);
+				dbg_printf(szTemp);
 			}
 			else
 			{
@@ -1763,7 +1768,7 @@ ScanDVBTThread_Rescan:
 				sprintf(szTemp, "%.3f", v->ss.nFrequency / 1000.0);
 				SetDlgItemText(hDlg, IDC_DVBT_SCAN_STATUS, szTemp);
 				lstrcat(szTemp, "\n");
-				OutputDebugString(szTemp);
+				dbg_printf(szTemp);
 			}
 			
 			// Handle special cases
@@ -2136,7 +2141,7 @@ DWORD WINAPI ScanATSCQAMThread(LPVOID lpv)
 			wsprintf(szTemp, "%d - locked", nChannel);
 			SetDlgItemText(hDlg, IDC_ATSC_SCAN_STATUS, szTemp);
 			lstrcat(szTemp, "\n");
-			OutputDebugString(szTemp);
+			dbg_printf(szTemp);
 			for (i = 0; i < v->nATSCMuxes; i++)
 			{
 				if (v->amuxes[i].nFrequency == v->ss.nFrequency)
@@ -2156,7 +2161,7 @@ DWORD WINAPI ScanATSCQAMThread(LPVOID lpv)
 			wsprintf(szTemp, "%d - NTSC", nChannel);
 			SetDlgItemText(hDlg, IDC_ATSC_SCAN_STATUS, szTemp);
 			lstrcat(szTemp, "\n");
-			OutputDebugString(szTemp);
+			dbg_printf(szTemp);
 		}
 		else
 		{
@@ -2164,7 +2169,7 @@ DWORD WINAPI ScanATSCQAMThread(LPVOID lpv)
 			wsprintf(szTemp, "%d", nChannel);
 			SetDlgItemText(hDlg, IDC_ATSC_SCAN_STATUS, szTemp);
 			lstrcat(szTemp, "\n");
-			OutputDebugString(szTemp);
+			dbg_printf(szTemp);
 		}
 		SendDlgItemMessage(hDlg, IDC_ATSC_SCAN_PROGRESS, PBM_SETPOS, nChannel, 0);
 	}
@@ -3310,7 +3315,6 @@ void GotoUSALSPosition(HWND hDlg)
 //		BYTE bInit[] = {0xe0, 0x10, 0x03};
 //		BYTE bUSALS[] = {0xe0, 0x31, 0x6e, CMD1, CMD2};
 		BYTE bUSALS[6];
-		char szTemp[128];
 
 		CursorWait(hDlg);
 		//SendDiSEqC(bInit, 3);
@@ -3320,11 +3324,9 @@ void GotoUSALSPosition(HWND hDlg)
 		//SendDiSEqC(bInit, 3);
 		//Sleep(15);
 
-		//wsprintf(szTemp, "SourceHelper: USALS old: %02x %02x %02x %02x %02x\n", bUSALS[0], bUSALS[1], bUSALS[2], bUSALS[3], bUSALS[4]);
-		//OutputDebugString(szTemp);
+		//dbg_printf("SourceHelper: USALS old: %02x %02x %02x %02x %02x\n", bUSALS[0], bUSALS[1], bUSALS[2], bUSALS[3], bUSALS[4]);
 		CalculateUSALSString(hDlg, bUSALS);
-		wsprintf(szTemp, "SourceHelper: USALS new: %02x %02x %02x %02x %02x\n", bUSALS[0], bUSALS[1], bUSALS[2], bUSALS[3], bUSALS[4]);
-		OutputDebugString(szTemp);
+		dbg_printf("SourceHelper: USALS new: %02x %02x %02x %02x %02x\n", bUSALS[0], bUSALS[1], bUSALS[2], bUSALS[3], bUSALS[4]);
 		SendDiSEqC(bUSALS, 5);
 		Sleep(15);
 
@@ -3365,6 +3367,7 @@ BOOL CALLBACK PositionerDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 			{
 				MessageBox(hDlg, "The currently selected source doesn't support DiSEqC functions - you shouldn't actually see this error!", gszAppName, MB_ICONSTOP);
 				EndDialog(hDlg, FALSE);
+				break;
 			}
 			fMoving = FALSE;
 			SetTimer(hDlg, 1, 1000, NULL);
@@ -4022,7 +4025,7 @@ void SaveUDPList(HWND hDlg)
 	DWORD dwWritten;
 	HANDLE hList;
     char szListFile[MAX_PATH];
-	char szTemp[MAX_PATH];
+	char szTemp[MAX_PATH] = { 0, };
 	char szDescription[128];
 
 	SourceHelper_GetTSReaderEXEDirectory(v->hInstance, szListFile, sizeof(szListFile));
@@ -4144,7 +4147,7 @@ void UpdateUDPItem(HWND hDlg, int nItem)
 		SetDlgItemText(hDlg, IDC_UDP_MULTICAST_ADDRESS, pUDPList[nItem].szAddress);
 		while (TRUE)
 		{			
-			char szTemp[128];
+			char szTemp[128] = { 0, };
 			int nRetVal = SendDlgItemMessage(hDlg, IDC_INTERFACE_ADDRESS, CB_GETLBTEXT, nComboItem, (LPARAM)szTemp);
 			if (nRetVal == CB_ERR)
 				break;
@@ -5412,9 +5415,7 @@ void SourceHelper_CheckContinuity(BYTE * pBuffer, int nLength)
 	}
 	if (dMBReceived > dNextMBReceivedDisplay)
 	{
-		char szTemp[100];
-		sprintf(szTemp, "%d continuity errors %d packets length = %d %.3f MB received\n", nContinuityErrors, nPackets, nLength, dMBReceived);
-		OutputDebugString(szTemp);
+		dbg_printf("%d continuity errors %d packets length = %d %.3f MB received\n", nContinuityErrors, nPackets, nLength, dMBReceived);
 		nPreviousContinuityErrors = nContinuityErrors;
 		dNextMBReceivedDisplay = dMBReceived + 5.0;
 	}
@@ -5448,7 +5449,7 @@ BOOL SourceHelper_InitSerialControl(void)
 	typedef void (* td_GetSerialParameters) (int *nBaudRate, int *nDataBits, int *nParity, int *nStopBits, BOOL *fDTR);
 	void (* GetSerialParameters) (int *nBaudRate, int *nDataBits, int *nParity, int *nStopBits, BOOL *fDTR);
 
-	OutputDebugString("SourceHelper: SourceHelper_InitSerialControl()\n");
+	dbg_printf("SourceHelper: SourceHelper_InitSerialControl()\n");
 	if (nSerialIndex == -1)
 	{
 		MessageBox(NULL, "Unable to locate serial receiver module", gszAppName, MB_ICONSTOP);
@@ -5472,7 +5473,7 @@ BOOL SourceHelper_InitSerialControl(void)
 
 BOOL SourceHelper_DeInitSerialControl(void)
 {
-	OutputDebugString("SourceHelper: SourceHelper_DeInitSerialControl()\n");
+	dbg_printf("SourceHelper: SourceHelper_DeInitSerialControl()\n");
 	if (v->fSerialReceiverControlThreadRunning == TRUE)
 		CloseSerialPort();
 	return TRUE;
@@ -5484,10 +5485,8 @@ BOOL SourceHelper_SetChannelSerialControl(int nSID, int nTSID, int nNID)
 	BOOL (* SetChannel) (int nSID, int nTSID, int nNID);
 
 	int nSerialIndex = FindSerialModuleIndex();
-	char szTemp[256];
 	
-	wsprintf(szTemp, "SourceHelper: SourceHelper_SetChannelSerialControl(%d,%d,%d) with nSerialReceiverType = %s\n", nSID, nTSID, nNID, v->szSerialReceiverType);
-	OutputDebugString(szTemp);
+	dbg_printf("SourceHelper: SourceHelper_SetChannelSerialControl(%d,%d,%d) with nSerialReceiverType = %s\n", nSID, nTSID, nNID, v->szSerialReceiverType);
 
 	if (nSerialIndex == -1)
 	{
@@ -5730,9 +5729,9 @@ void WriteINIFiles(HWND hDlg, PSDXBUILDLIST pSDX, int nItemCount)
 	int nDVBMuxCount = 0;
 	int nADVMuxCount = 0;
 	int nDSSMuxCount = 0;
-	char szOutputDirectory[MAX_PATH];
-	char szTSReaderDir[MAX_PATH];
-	char szCurrentINIFile[MAX_PATH];
+	char szOutputDirectory[MAX_PATH] = { 0, };
+	char szTSReaderDir[MAX_PATH] = { 0, };
+	char szCurrentINIFile[MAX_PATH] = { 0, };
 
 	if (MessageBox(hDlg, "Warning: This will overwrite all existing data for the satellites being imported.\n\nAre you sure you want to do this?", gszAppName, MB_ICONWARNING | MB_YESNO) == IDNO)
 		return;
@@ -6546,7 +6545,7 @@ DWORD WINAPI ReadPipeThread(LPVOID lpv)
 	int nOutputBufferSize = TS_BUFFER_SIZE / 4;
 	BYTE syncbuffer[SYNCSIZE];
 
-	OutputDebugString("SourceHelper: +ReadPipeThread\n");
+	dbg_printf("SourceHelper: +ReadPipeThread\n");
 	v->fSyncThread_PipeThreadTerminated = FALSE;
 	v->nSyncThread_SyncLossCount = 0;
 	do
@@ -6595,11 +6594,7 @@ DWORD WINAPI ReadPipeThread(LPVOID lpv)
 											nRemainder = (SYNCSIZE - nOffset) - nCompletePacketBytes;
 											nJunkBytes = nSync - nRemainder;
 											ReadFromPipe(syncbuffer, nJunkBytes);
-											{
-												char szTemp[128];
-												wsprintf(szTemp, "SourceHelper: Sync with %d byte packets\n", nSync);
-												OutputDebugString(szTemp);
-											}
+											dbg_printf("SourceHelper: Sync with %d byte packets\n", nSync);
 											break;
 										}
 										else
@@ -6639,14 +6634,14 @@ DWORD WINAPI ReadPipeThread(LPVOID lpv)
 					break;
 				}
 				if (nRead != v->nSyncThread_PacketLength)
-					OutputDebugString("SourceHelper: read error 5\n");
+					dbg_printf("SourceHelper: read error 5\n");
 				if (*(ss->tsb[nTSBufferIndex].pData + ss->tsb[nTSBufferIndex].nSize) != v->nSyncThread_Syncword)
 				{
 					nSync = 0;
 					v->nSyncThread_SyncLossCount++;
 					nFirstBuffer = 0;
 #ifdef _DEBUG
-					OutputDebugString("SourceHelper: Lost sync\n");
+					dbg_printf("SourceHelper: Lost sync\n");
 #endif _DEBUG
 					break;
 				}
@@ -6660,7 +6655,7 @@ DWORD WINAPI ReadPipeThread(LPVOID lpv)
 						break;
 					}
 					if (nRead != nSync - v->nSyncThread_PacketLength)
-						OutputDebugString("SourceHelper: read error 6\n");
+						dbg_printf("SourceHelper: read error 6\n");
 				}
 			}		 
 			
@@ -6689,7 +6684,7 @@ DWORD WINAPI ReadPipeThread(LPVOID lpv)
 	} while (fAbort == FALSE);
 
 	CloseHandle(v->hSyncThread_PipeRead);
-	OutputDebugString("SourceHelper: -ReadPipeThread\n");
+	dbg_printf("SourceHelper: -ReadPipeThread\n");
 	v->fSyncThread_PipeThreadTerminated = TRUE;
 	return 0;
 }
@@ -6811,7 +6806,7 @@ HANDLE SourceHelper_GetSourceBufferEventHandle(void)
 	return NULL;
 }
 
-void SourceHelper_LogRTPLoss(char *szFilename, int nCount, __int64 lnTimeDifference)
+void SourceHelper_LogRTPLoss(char *szFilename, int nCount, int64_t lnTimeDifference)
 {
 	char szDestPath[MAX_PATH];
 	char szTemp[10240];

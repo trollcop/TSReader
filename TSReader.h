@@ -1,7 +1,10 @@
-// Stuff for libmpeg
 #include <stdio.h>
 #include <stdlib.h>
-#include "inttypes.h"
+#include <inttypes.h>
+#include <stdint.h>
+#include <Windows.h>
+#include <CommCtrl.h>
+
 #include "SoftCSA.h"
 #include "sources.h"
 
@@ -446,7 +449,7 @@ typedef struct _tagIPEntry
 	int nPacketCount;
 	HTREEITEM hIPItem;
 	HTREEITEM hIPMacItem;
-	__int64 nByteCount;
+	int64_t nByteCount;
 	HANDLE hSaveFile;
 	BOOL fTransmitting;
 	BOOL fGotFirstFragment;
@@ -459,7 +462,7 @@ typedef struct _tagIPMACEntry
 {
 	LONG_PTR dwNext;				// gets cast!
 	int nPacketCount;
-	__int64 nByteCount;
+	int64_t nByteCount;
 	HTREEITEM hIPMacItem;
 	HTREEITEM hIPPIDRootItem;
 	PIPENTRY pIPEntries;
@@ -470,7 +473,7 @@ typedef struct _tagIPPIDEntry
 {
 	int nPID;
 	int nPacketCount;
-	__int64 nByteCount;
+	int64_t nByteCount;
 	HTREEITEM hIPPIDRootItem;
 	PIPMACENTRY pMACEntries;
 } IPPIDENTRY, *PIPPIDENTRY;
@@ -818,7 +821,7 @@ typedef struct _tagPIDCounter
 	uint16_t nPID;
 	int nPIDHasContinuityErrors;
 	int nPIDTEICount;
-	__int64 lnPackets;
+	int64_t lnPackets;
 	double dPercent;
 	double dPIDRate;
 } PIDCOUNTER, *PPIDCOUNTER;
@@ -986,12 +989,12 @@ typedef struct tag_SourceModules
 typedef struct _tagTableMonitor
 {
 	int nPacketCount;
-	__int64 lnLastTime;
-	__int64 lnDelay;
-	__int64 lnDelayItems;
-	__int64 lnDelayMax;
-	__int64 lnDelayMin;
-	__int64 lnLastDisplayDelay;
+	int64_t lnLastTime;
+	int64_t lnDelay;
+	int64_t lnDelayItems;
+	int64_t lnDelayMax;
+	int64_t lnDelayMin;
+	int64_t lnLastDisplayDelay;
 	int nLastDisplayPacketCount;
 	BOOL fInList;
 } TABLEMONITOR, *PTABLEMONITOR;
@@ -1032,8 +1035,8 @@ typedef struct _tagEPGGridVariables
 	int nSelectedEPGChannel;
 	int nMapSourceProgram[MAX_EPG_MAPS], nMapDestinationProgram[MAX_EPG_MAPS];	
 	
-	__int64 nStartDisplayTime;
-	__int64 nActualStartTime;
+	int64_t nStartDisplayTime;
+	int64_t nActualStartTime;
 
 	HFONT hGridTextFont;
 	HFONT hGridTextFontBold;
@@ -1065,7 +1068,7 @@ typedef struct _tagStreamMonitor
 {
 	BOOL fDisabled;
 	int nStatus;
-	__int64 lnLastAlarmTime;
+	int64_t lnLastAlarmTime;
 } STREAMMONITOR, *PSTREAMMONITOR;
 
 #define XML_LOG_TYPE_WMUSER2 0
@@ -1220,22 +1223,22 @@ typedef struct _tagTSParserVariables
 
 typedef struct tag_Variables
 {
-	__int64 lnPIDSecondCounter[60];
-	__int64 lnPIDCounter[8192];
-	__int64 lnTotalTSPackets;
-	__int64 lnCopyTotalTSPackets;
-	__int64 lnMuxRatePCR;
-	__int64 lnRecordSplitPCR;
-	__int64 lnPIDRatePCR[8192];
-	__int64 lnESParseStartTime[REAL_MAX_ES_PARSERS];
-	__int64 lnPIDRateBytes[8192];
-	__int64 lnPIDRateSamples[8192];
-	__int64 lnMaxPackets;
-	__int64 nDSSRTCOffset;
-	__int64 lnTicksPerSecond;
-	__int64 nLastEPGDisplayTime;
-	__int64 nSIParserPackets[16];
-	__int64 nSIParserCRCs[16];
+	int64_t lnPIDSecondCounter[60];
+	int64_t lnPIDCounter[8192];
+	int64_t lnTotalTSPackets;
+	int64_t lnCopyTotalTSPackets;
+	int64_t lnMuxRatePCR;
+	int64_t lnRecordSplitPCR;
+	int64_t lnPIDRatePCR[8192];
+	int64_t lnESParseStartTime[REAL_MAX_ES_PARSERS];
+	int64_t lnPIDRateBytes[8192];
+	int64_t lnPIDRateSamples[8192];
+	int64_t lnMaxPackets;
+	int64_t nDSSRTCOffset;
+	int64_t lnTicksPerSecond;
+	int64_t nLastEPGDisplayTime;
+	int64_t nSIParserPackets[16];
+	int64_t nSIParserCRCs[16];
 
 	int nEITEvents;
 	int nSITreeIcons[50];
@@ -2100,6 +2103,14 @@ BOOL LoadSource(HWND hWnd);
 void GetNextECMPID(void);
 HTREEITEM AddItemToSITree(HWND hwndTV, LPTSTR lpszItem, int nLevel, LPARAM lParam, int nIconIndex, HTREEITEM hParent, HTREEITEM hInsertAfter);
 
+/* Audio decoders */
+DWORD WINAPI MPEGAudioDecoderThread(LPVOID lpv);
+DWORD WINAPI AC3AudioDecoderThread(LPVOID lpv);
+DWORD WINAPI AACAudioDecoderThread(LPVOID lpv);
+
+/* In decoder.c */
+DWORD WINAPI GenericVideoDecoderThread(LPVOID lpv);
+
 /* In export.c */
 void HTMLExport(HANDLE hHTMFile, int nExportSITables, char *szOutputFilename);
 void XMLExport(HWND hDlg, HANDLE hXMLFile);
@@ -2116,7 +2127,7 @@ struct AC3frmsize
 
 // H.264 parser stuff
 
-//Appendix E. Table E-1 ­ Meaning of sample aspect ratio indicator
+//Appendix E. Table E-1 Meaning of sample aspect ratio indicator
 #define SAR_Unspecified  0           // Unspecified
 #define SAR_1_1        1             //  1:1
 #define SAR_12_11      2             // 12:11

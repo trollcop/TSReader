@@ -85,18 +85,6 @@ static char gszKeyName[] = "Software\\COOL.STF\\TSReader\\FileSource";
 
 BOOL __cdecl SourceHelper_ValidateSourceContainer(PSOURCESTRUCT pss);
 
-static void dbg_printf(const char *fmt, ...)
-{
-	char debug_buf[4096];
-
-	va_list args;
-	va_start(args, fmt);
-
-	vsnprintf_s(debug_buf, sizeof(debug_buf), sizeof(debug_buf), fmt, args);
-	OutputDebugStringA(debug_buf);
-	va_end(args);
-}
-
 static void FormatLongFileName(const wchar_t *szFileName)
 {
 	const wchar_t *ptr;

@@ -82,7 +82,6 @@ char *FormatPIDMask(char *szDest, size_t len, const char *szFormat, uint16_t nPI
 uint32_t ParseNumber(const char *szInput, BOOL bForceHex);
 
 /* debug/output helpers */
-void dbg_printf(const char *fmt, ...);
 void MessageBoxFormat(HWND hWnd, UINT uType, const char *fmt, ...);
 
 /* qsort helper functions */

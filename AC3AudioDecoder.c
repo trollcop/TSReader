@@ -1,6 +1,7 @@
-#include <windows.h>
-#include <commctrl.h>
+#include <Windows.h>
+#include <CommCtrl.h>
 #include <limits.h>
+
 #include "TSReader.h"
 #include "util.h"
 

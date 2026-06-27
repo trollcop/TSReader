@@ -2050,18 +2050,6 @@ uint32_t ParseNumber(const char *szInput, BOOL bForceHex)
 	return (uint32_t)val;
 }
 
-void dbg_printf(const char *fmt, ...)
-{
-	char debug_buf[4096];
-
-	va_list args;
-	va_start(args, fmt);
-
-	vsnprintf_s(debug_buf, sizeof(debug_buf), sizeof(debug_buf), fmt, args);
-	OutputDebugStringA(debug_buf);
-	va_end(args);
-}
-
 extern char gszAppName[32];
 
 void MessageBoxFormat(HWND hWnd, UINT uType, const char *fmt, ...)

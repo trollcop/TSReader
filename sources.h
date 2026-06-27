@@ -1,9 +1,10 @@
 // sources.h
-// Copyright (C) 2004 COOLSTF.com Inc.
+// Copyright (C) 2004-2020 COOLSTF.com Inc.
 //
 // Include file for developing TSReader sources
 //
-#include <windows.h>
+#include <Windows.h>
+#include <stdint.h>
 
 // Size of transport stream buffers - do NOT change
 // 256 elements in the ring buffer
@@ -168,7 +169,7 @@ BOOL __cdecl SourceHelper_GetProfileName(char *szBuffer);
 void __cdecl SourceHelper_OutputDebugString(char *szDebugString);
 HANDLE __cdecl SourceHelper_GetSourceBufferEventHandle(void);
 BOOL __cdecl SourceHelper_RunningOnWine(void);
-void __cdecl SourceHelper_LogRTPLoss(char *szFilename, int nCount, __int64 lnTimeDifference);
+void __cdecl SourceHelper_LogRTPLoss(char *szFilename, int nCount, int64_t lnTimeDifference);
 void __cdecl SourceHelper_GetTSReaderEXEDirectory(HINSTANCE hInstance, char *szCurrentDir, int nCurrentDirLength);
 int SourceHelper_ReadLine(HANDLE hFile, char *szBuffer, int nMaxLength);
 int SourceHelper_ReadLineW(HANDLE hFile, wchar_t *szBuffer, int nMaxLength);
@@ -182,6 +183,8 @@ BOOL __cdecl SourceHelper_Parse_CommandLine_DVBT(char *szCommandLine, BOOL fQuie
 BOOL __cdecl SourceHelper_Parse_CommandLine_DVBC(char *szCommandLine, BOOL fQuiet, int *nFrequency, int *nSymbolRate, int *nQAM, BOOL *fSpectrumInversion, int *nBandwidth);
 BOOL __cdecl SourceHelper_Parse_CommandLine_ADV(char *szCommandLine, BOOL fQuiet, int *nFrequency, int *nPolarity, int *nSymbolRate, int *nLNBFrequency, int *n22KHz, int *nADVModulationMode, int *nCodeRate, int *nDiSEqCInput);
 BOOL __cdecl SourceHelper_Parse_CommandLine_DVBC2(char *szCommandLine, BOOL fQuiet, int *nFrequency, int *nBandwidth);
+
+void dbg_printf(const char *fmt, ...);
 
 #ifdef  __cplusplus
 }

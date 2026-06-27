@@ -4,7 +4,7 @@
 #ifndef _ISOURCE_H_REPLACEMENT
 #define _ISOURCE_H_REPLACEMENT
 
-#include <windows.h>
+#include <Windows.h>
 
 typedef struct { char szPath[MAX_PATH]; } * HISSRC;
 typedef struct { char szPath[MAX_PATH]; } * HISDEST;

@@ -64,3 +64,6 @@ EXPORTS
 	SourceHelper_Parse_CommandLine_DVBC2			@62
 	SourceHelper_DVBC2TuneDialog					@63
 	SourceHelper_GetProgramPIDs						@64
+
+
+	dbg_printf										@100

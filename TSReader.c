@@ -44,14 +44,6 @@ DWORD WINAPI RokuTelnetControlThread(LPVOID lpv);
 BOOL StartControlServer(void);
 BOOL TerminateControlServer(void);
 
-/* Stuff in decoder.c */
-DWORD WINAPI GenericVideoDecoderThread(LPVOID lpv);
-
-// Audio decoders
-DWORD WINAPI MPEGAudioDecoderThread(LPVOID lpv);
-DWORD WINAPI AC3AudioDecoderThread(LPVOID lpv);
-DWORD WINAPI AACAudioDecoderThread(LPVOID lpv);
-
 // Stuff in EITServer.c
 BOOL StartEITServer(void);
 BOOL TerminateEITServer(void);
@@ -134,7 +126,6 @@ td_decrypt_packets decrypt_packets = NULL;
 #define SOURCE_INFO_COLOR_1 RGB(41, 253, 136)
 #define SOURCE_INFO_COLOR_2 RGB(7,141,44)
 
-extern char szProValue[];
 char gszAppName[32] = TEXT("TSReader Professional");
 char gszMainClass[256] = {TEXT("TSReaderMain")};
 char gszEPGGridClass[] = {"TSReaderEPGClass"};
@@ -224,10 +215,10 @@ void SaveSettings(void)
 	}
 
 	lKey = RegCreateKeyEx(v->hRegistryRoot,
-		                  szKeyName,
+						  szKeyName,
 						  0,
 						  gszAppName,
-					      REG_OPTION_NON_VOLATILE,
+						  REG_OPTION_NON_VOLATILE,
 						  KEY_ALL_ACCESS,
 						  NULL,
 						  &hkMainReg,
@@ -345,7 +336,7 @@ void LoadSettings(void)
 	char szKeyName[MAX_PATH];
 
 	lKey = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-		                gszKeyName,
+						gszKeyName,
 						0,
 						KEY_ALL_ACCESS,
 						&hkAllReg);
@@ -366,10 +357,10 @@ void LoadSettings(void)
 		lstrcat(szKeyName, v->szProfileName);
 	}
 	lKey = RegCreateKeyEx(v->hRegistryRoot,
-		                  szKeyName,
+						  szKeyName,
 						  0,
 						  gszAppName,
-					      REG_OPTION_NON_VOLATILE,
+						  REG_OPTION_NON_VOLATILE,
 						  KEY_ALL_ACCESS,
 						  NULL,
 						  &hkMainReg,
@@ -7423,7 +7414,7 @@ void DrawThumbnail(HDC hDC, int nPMTIndex, int nESIndex, int yCurrent, int yEnd,
 				else
 					pIcon = v->pRGB_BL_AACAudio;
 				break;
-			}					
+			}
 			if (pIcon != NULL)
 				_ISOverlayRGBTrans(v->pNewPicture, nThumbnailWidth, nThumbnailHeight, pIcon, 24, 13, nThumbnailWidth - 25, 1, 1.0, 0x0000ff);
 		}

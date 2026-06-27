@@ -1,5 +1,5 @@
-#include <windows.h>
-#include <commctrl.h>
+#include <Windows.h>
+#include <CommCtrl.h>
 #include <limits.h>
 #include "TSReader.h"
 #include "util.h"
@@ -15,6 +15,7 @@ extern PVARIABLES v;
 static BYTE *pThumbnail[REAL_MAX_ES_PARSERS];
 static signed short *pSamples[REAL_MAX_ES_PARSERS];
 static int nSampleWriteIndex[REAL_MAX_ES_PARSERS];
+DWORD WINAPI AACAudioDecoderThread(LPVOID lpv);
 
 DWORD WINAPI AACAudioDecoderThread(LPVOID lpv)
 {
