@@ -841,8 +841,12 @@ LogDefaultEITDescriptor:
 								{
 									if (lstrlen(szLongEventDescription) > 0)
 									{
-										pCurrent->szLongEventDescription = LocalAlloc(LPTR, lstrlen(szLongEventDescription) + 1 + 4);
-										lstrcpy(pCurrent->szLongEventDescription, szLongEventDescription);
+										if (!v->fISDB) {
+											pCurrent->szLongEventDescription = LocalAlloc(LPTR, lstrlen(szLongEventDescription) + 1 + 4);
+											lstrcpy(pCurrent->szLongEventDescription, szLongEventDescription);
+										} else {
+											pCurrent->szLongEventDescription = DecodeARIBString(NULL, 0, szLongEventDescription);
+										}
 									}
 								}
 								break;
