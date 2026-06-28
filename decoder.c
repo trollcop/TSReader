@@ -248,6 +248,7 @@ DWORD WINAPI GenericVideoDecoderThread(LPVOID lpv)
 			break;
 
 		default:
+		case DEC_AAC:
 			dbg_printf("GenericVideoDecoderThread: Unhandled decoder %d\n", esparserinfo->eDecoder);
 			break;
 	}

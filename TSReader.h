@@ -1140,12 +1140,16 @@ typedef struct _tagStreamMonitorLog
 #define ACTUAL_MAX_RECORD_BUFFERS MAX_RECORD_BUFFERS;
 
 typedef enum _tagDecoderType {
+	/* video */
 	DEC_MPEG2,
 	DEC_MPEG4,
 	DEC_H264,
 	DEC_H265,
 	DEC_VC1,
 	DEC_AV1,
+
+	/* audio */
+	DEC_AAC,
 
 } DecoderType;
 
@@ -2113,6 +2117,8 @@ DWORD WINAPI AACAudioDecoderThread(LPVOID lpv);
 
 /* In decoder.c */
 DWORD WINAPI GenericVideoDecoderThread(LPVOID lpv);
+/* In audio.c */
+DWORD WINAPI GenericAudioDecoderThread(LPVOID lpv);
 
 /* In export.c */
 void HTMLExport(HANDLE hHTMFile, int nExportSITables, char *szOutputFilename);

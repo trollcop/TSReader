@@ -1057,6 +1057,74 @@ static BOOL StartCodeVC1(BYTE *pPESPacket, int nPacketLength, int *pnOffset)
 	return FALSE;
 }
 
+BOOL DecodeGenericAudio(BYTE *pPESPacket, int nPacketLength, int nES, DecoderType eDecoder)
+{
+	BOOL fRetVal = FALSE;
+	int nOffset = 0;
+
+	/* AAC only for now. More stuff later once this works */
+	if (v->fESParseDecoderStartedLibMPEG[nES] == FALSE) {
+		for (nOffset = 0; nOffset < nPacketLength - 4; nOffset++) {
+			int syncword = (pPESPacket[nOffset + 0] << 8 | pPESPacket[nOffset + 1]);
+			if (((syncword & 0xfff8) == 0xfff8) && (syncword != 0xffff)) {
+				break;
+			}
+		}
+	}
+
+	/* packet sequence header not found or startcode parser missing, skip */
+	if (nOffset == nPacketLength - 4)
+		return FALSE;
+
+	/* do we bother doing audio thumbnails at all */
+	if (v->nThumbnailProcessingThreadPriority == 3 || !v->fAudioThumbnails)
+		return TRUE;
+
+	/* open ES pipe, start decoder thread, etc */
+	EnterCriticalSection(&v->esparserinfo[nES].csThreadSignal);
+	if (v->fESParseDecoderStartedLibMPEG[nES] == FALSE) {
+		DWORD dwThreadID;
+		HANDLE hThread;
+
+		v->fESParseDecoderStartedLibMPEG[nES] = TRUE;
+		CreatePipe(&v->hMPEGDecoderReadPipe[nES], &v->hMPEGDecoderWritePipe[nES], NULL, v->nThumbnailPipeSize * 1024 * 1024);
+		v->esparserinfo[nES].nProgramNumber = v->pat.pmt[v->nESParsePMTIndex[nES]].nProgramNumber;
+		v->esparserinfo[nES].nES = nES;
+		v->esparserinfo[nES].eDecoder = eDecoder;
+		hThread = CreateThread(NULL, 0, GenericAudioDecoderThread, (LPVOID)&v->esparserinfo[nES], 0, &dwThreadID);
+		if (hThread) {
+			switch (v->nThumbnailProcessingThreadPriority) {
+				case 0:
+					SetThreadPriority(hThread, THREAD_PRIORITY_NORMAL);
+					break;
+				case 1:
+					SetThreadPriority(hThread, THREAD_PRIORITY_HIGHEST);
+					break;
+				case 2:
+					SetThreadPriority(hThread, THREAD_PRIORITY_IDLE);
+					break;
+			}
+			CloseHandle(hThread);
+		}
+	} else {
+		if (v->fESParseDecoderCompletedLibMPEG[nES] == TRUE)
+			fRetVal = TRUE;
+	}
+	LeaveCriticalSection(&v->esparserinfo[nES].csThreadSignal);
+
+	if (!fRetVal) {
+		DWORD dwWritten;
+		int nActualLength = nPacketLength - nOffset;
+
+		WriteFile(v->hMPEGDecoderWritePipe[nES], &nActualLength, sizeof(nActualLength), &dwWritten, NULL);
+		WriteFile(v->hMPEGDecoderWritePipe[nES], &pPESPacket[nOffset], nPacketLength - nOffset, &dwWritten, NULL);
+		if (dwWritten != (DWORD)nActualLength) {
+			dbg_printf("TSReader: %s: Bad data write to pipe (nPacketLength = %d dwWritten = %d)\n", __FUNCTION__, nPacketLength, dwWritten);
+		}
+	}
+	return fRetVal;
+}
+
 BOOL DecodeGenericVideo(BYTE *pPESPacket, int nPacketLength, int nES, DecoderType eDecoder, td_StartCodeParser pParser)
 {
 	int nOffset = 0;
@@ -5202,7 +5270,11 @@ void CheckForESParsing(int nPID, int nES)
 
 							/* audio types */
 						case PARSE_ES_TYPE_MPEG2_AAC_AUDIO:
+#if 0
+							fRetVal = DecodeGenericAudio(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_AAC);
+#else
 							fRetVal = DecodeMPEGAACAudio(tv->bESBuffer[nES], tv->nPESLength[nES], nES);
+#endif
 							break;
 						case PARSE_ES_TYPE_MPEG4_AAC_AUDIO:
 							fRetVal = DecodeMPEGAACAudio(tv->bESBuffer[nES], tv->nPESLength[nES], nES);

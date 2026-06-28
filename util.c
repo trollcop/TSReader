@@ -1132,8 +1132,7 @@ void GenerateThumbnail(BYTE *pImage, int nDestWidth, int nDestHeight, int nESPar
 	PostMessage(v->hDlgSIParser, WM_USER + 3, 0, 1);
 }
 
-void GenerateAudioThumbnail(signed short * pSamples, int nAudioChannels, int nDestWidth, int nDestHeight, BYTE * pThumbnail,
-							int nESParsePMTIndex, int nESParseESIndex)
+void GenerateAudioThumbnail(signed short * pSamples, int nAudioChannels, int nDestWidth, int nDestHeight, BYTE * pThumbnail, int nESParsePMTIndex, int nESParseESIndex)
 {
 	int nRightAverage = 0;
 	int nLeftAverage = 0;
@@ -1142,7 +1141,7 @@ void GenerateAudioThumbnail(signed short * pSamples, int nAudioChannels, int nDe
 	int nDestXPos = 5;
 	int nSampleNumber = 0;
 	DWORD dwChannelTextColor = RGB(0x00, 0xff, 0x00);
-	char szChannelDesc[] = {"L"};
+	char szChannelDesc[] = { "L" };
 
 	v->pat.pmt[nESParsePMTIndex].es[nESParseESIndex].as.nChannels = nAudioChannels;
 	for (nSampleIndex = 0; nSampleIndex < SAMPLES_REQUIRED; nSampleIndex += 2)
@@ -1213,7 +1212,7 @@ void GenerateAudioThumbnail(signed short * pSamples, int nAudioChannels, int nDe
 	v->pat.pmt[nESParsePMTIndex].es[nESParseESIndex].nVideoHeight = nDestHeight;
 
 	if(nAudioChannels != 2)
-		szChannelDesc[0] = 'M';	
+		szChannelDesc[0] = 'M';
 	_ISDrawTextOnRGB2(v->pat.pmt[nESParsePMTIndex].es[nESParseESIndex].pRGBVideoFrame,
 					  nDestWidth,
 					  nDestHeight,
@@ -1221,7 +1220,7 @@ void GenerateAudioThumbnail(signed short * pSamples, int nAudioChannels, int nDe
 					  &v->logfontChannelFont,
 					  nDestWidth - 12,
 					  16,
-					  dwChannelTextColor);				
+					  dwChannelTextColor);
 	
 	if(nAudioChannels == 2)
 	{
@@ -1234,7 +1233,7 @@ void GenerateAudioThumbnail(signed short * pSamples, int nAudioChannels, int nDe
 						  &v->logfontChannelFont,
 						  nDestWidth - 12,
 						  32,
-						  dwChannelTextColor);				
+						  dwChannelTextColor);
 	}
 	LeaveCriticalSection(&v->csThumbnails);
 	PostMessage(v->hDlgSIParser, WM_USER + 3, 0, 1);
