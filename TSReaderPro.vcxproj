@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{D2623D87-D191-A567-85F0-FF3AA46CFF63}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectName>TSReaderPro</ProjectName>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;STANDARD_ICON;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <AdditionalIncludeDirectories>include;stubs;libfaad\include;libfaad;Md\MULTIDEC;TSReader_SourceHelper;libmad-0.15.1b\msvc++;a52dec-0.7.4\include;a52dec-0.7.4\libao;ffmpeg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>5045;4820;4668;4189;4100;4191;4702;4464;4710;4062</DisableSpecificWarnings>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>libfaad2.lib;libmad.lib;liba52.lib;libao.lib;libvo.lib;PEGRPCS.lib;ffmpeg\lib\avcodec.lib;ffmpeg\lib\avutil.lib;ffmpeg\lib\swscale.lib;ffmpeg\lib\swresample.lib;kernel32.lib;user32.lib;gdi32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;setupapi.lib;comctl32.lib;winmm.lib;ws2_32.lib;wininet.lib;comdlg32.lib;winspool.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <ResourceCompile>
+      <PreprocessorDefinitions>STANDARD_ICON</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;STANDARD_ICON;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>include;stubs;libfaad\include;libfaad;Md\MULTIDEC;TSReader_SourceHelper;libmad-0.15.1b\msvc++;a52dec-0.7.4\include;a52dec-0.7.4\libao;ffmpeg\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>5045;4820;4668;4189;4100;4191;4702;4464;4710;4062</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>libfaad2.lib;libmad.lib;liba52.lib;libao.lib;libvo.lib;PEGRPCS.lib;ffmpeg\lib\avcodec.lib;ffmpeg\lib\avutil.lib;ffmpeg\lib\swscale.lib;ffmpeg\lib\swresample.lib;kernel32.lib;user32.lib;gdi32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;setupapi.lib;comctl32.lib;winmm.lib;ws2_32.lib;wininet.lib;comdlg32.lib;winspool.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+    <ResourceCompile>
+      <PreprocessorDefinitions>STANDARD_ICON</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="AACAudioDecoder.c" />
+    <ClCompile Include="AC3AudioDecoder.c" />
+    <ClCompile Include="archive.c" />
+    <ClCompile Include="ATSC_huffman.c" />
+    <ClCompile Include="audio.c" />
+    <ClCompile Include="bcdmux.c" />
+    <ClCompile Include="CCDecoder.c" />
+    <ClCompile Include="charting.c" />
+    <ClCompile Include="CI-CAM.c" />
+    <ClCompile Include="ControlServer.c" />
+    <ClCompile Include="decoder.c" />
+    <ClCompile Include="dn_huffman.c" />
+    <ClCompile Include="EITServer.c" />
+    <ClCompile Include="email.c" />
+    <ClCompile Include="EPGGrid.c" />
+    <ClCompile Include="export.c" />
+    <ClCompile Include="formatter.c" />
+    <ClCompile Include="Forwarder.c" />
+    <ClCompile Include="GPSSignal.c" />
+    <ClCompile Include="libaribb24\aribb24.c" />
+    <ClCompile Include="libaribb24\b24decoder.c" />
+    <ClCompile Include="MDInterface.c" />
+    <ClCompile Include="MDI\mdi.c" />
+    <ClCompile Include="mosaic.c" />
+    <ClCompile Include="MPEGAudio.c" />
+    <ClCompile Include="parser.c" />
+    <ClCompile Include="ProfileBrowser.c" />
+    <ClCompile Include="reed-solomon.c" />
+    <ClCompile Include="RokuTelnetInterface.c" />
+    <ClCompile Include="settings.c" />
+    <ClCompile Include="sky_epg.c" />
+    <ClCompile Include="sky_huffman.c" />
+    <ClCompile Include="SoftCSA.c" />
+    <ClCompile Include="splash.c" />
+    <ClCompile Include="StreamMonitor.c" />
+    <ClCompile Include="stubs\isource_impl.c" />
+    <ClCompile Include="stubs\link_stubs.c" />
+    <ClCompile Include="TitleThumbnails.c" />
+    <ClCompile Include="TSReader.c" />
+    <ClCompile Include="util.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ATSC_huffman.h" />
+    <ClInclude Include="bcdmux.h" />
+    <ClInclude Include="CCDecoder.h" />
+    <ClInclude Include="CCDecoder_Strings.h" />
+    <ClInclude Include="charting.h" />
+    <ClInclude Include="CI-CAM.h" />
+    <ClInclude Include="config.h" />
+    <ClInclude Include="dn_huffman.h" />
+    <ClInclude Include="EPGGrid.h" />
+    <ClInclude Include="epgschedule.h" />
+    <ClInclude Include="formatter.h" />
+    <ClInclude Include="forwarder.h" />
+    <ClInclude Include="MDInterface.h" />
+    <ClInclude Include="MDI\mdi.h" />
+    <ClInclude Include="parser.h" />
+    <ClInclude Include="reed-solomon.h" />
+    <ClInclude Include="registry_list.h" />
+    <ClInclude Include="sky_genres.h" />
+    <ClInclude Include="SoftCSA.h" />
+    <ClInclude Include="sources.h" />
+    <ClInclude Include="stubs\stb_image.h" />
+    <ClInclude Include="stubs\stb_image_resize2.h" />
+    <ClInclude Include="stubs\stb_image_write.h" />
+    <ClInclude Include="stubs\_ISource.h" />
+    <ClInclude Include="tables.h" />
+    <ClInclude Include="TSReader.h" />
+    <ClInclude Include="util.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="TSReader.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="TSReader_SourceHelper\TSReader_SourceHelper.vcxproj">
+      <Project>{cb12e98a-0b39-c97b-0e66-64488f307de6}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

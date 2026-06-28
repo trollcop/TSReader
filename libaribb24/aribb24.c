@@ -27,8 +27,9 @@
 #ifdef _DEBUG
 #include <stdlib.h>
 #include <crtdbg.h>
-#endif
 #else
+#include <stdlib.h>
+#endif
 #include <stdlib.h>
 #endif
 #include <stdio.h>

@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36705.20
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TSReaderPro", "TSReaderPro.vcxproj", "{D2623D87-D191-A567-85F0-FF3AA46CFF63}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CB12E98A-0B39-C97B-0E66-64488F307DE6} = {CB12E98A-0B39-C97B-0E66-64488F307DE6}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TSReader_SourceHelper", "TSReader_SourceHelper\TSReader_SourceHelper.vcxproj", "{CB12E98A-0B39-C97B-0E66-64488F307DE6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TSReader_File", "TSReader_File\TSReader_File.vcxproj", "{199CCF48-D326-AB4B-B4A9-C0427456181B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D2623D87-D191-A567-85F0-FF3AA46CFF63}.Debug|x86.ActiveCfg = Debug|Win32
+		{D2623D87-D191-A567-85F0-FF3AA46CFF63}.Debug|x86.Build.0 = Debug|Win32
+		{D2623D87-D191-A567-85F0-FF3AA46CFF63}.Release|x86.ActiveCfg = Release|Win32
+		{D2623D87-D191-A567-85F0-FF3AA46CFF63}.Release|x86.Build.0 = Release|Win32
+		{CB12E98A-0B39-C97B-0E66-64488F307DE6}.Debug|x86.ActiveCfg = Debug|Win32
+		{CB12E98A-0B39-C97B-0E66-64488F307DE6}.Debug|x86.Build.0 = Debug|Win32
+		{CB12E98A-0B39-C97B-0E66-64488F307DE6}.Release|x86.ActiveCfg = Release|Win32
+		{CB12E98A-0B39-C97B-0E66-64488F307DE6}.Release|x86.Build.0 = Release|Win32
+		{199CCF48-D326-AB4B-B4A9-C0427456181B}.Debug|x86.ActiveCfg = Debug|Win32
+		{199CCF48-D326-AB4B-B4A9-C0427456181B}.Debug|x86.Build.0 = Debug|Win32
+		{199CCF48-D326-AB4B-B4A9-C0427456181B}.Release|x86.ActiveCfg = Release|Win32
+		{199CCF48-D326-AB4B-B4A9-C0427456181B}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3274F00B-2EF2-4BD8-A92A-1511812AFEFD}
+	EndGlobalSection
+EndGlobal
