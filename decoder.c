@@ -194,6 +194,13 @@ static void VideoDecoderThread(PESPARSERINFO esparserinfo, enum AVCodecID codec_
 		}
 	} while (!fDone);
 
+	dbg_printf("TSReader: Completed Video decoding for program %d ES thread %d\n", esparserinfo->nProgramNumber, esparserinfo->nES);
+
+	/* close PES pipes */
+	CloseHandle(v->hMPEGDecoderReadPipe[esparserinfo->nES]);
+	CloseHandle(v->hMPEGDecoderWritePipe[esparserinfo->nES]);
+
+	/* free up used memory/frames */
 	LocalFree(buffer);
 	av_frame_free(&frame);
 	avcodec_free_context(&ctx);
