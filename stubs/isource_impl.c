@@ -21,6 +21,10 @@
 #define STB_IMAGE_RESIZE2_IMPLEMENTATION
 #include "stb_image_resize2.h"
 
+/* from util.c */
+int mywcstombs(char *dest, int len, const wchar_t *src);
+int mymbstowcs(wchar_t *dest, int len, const char *src);
+
 /* ======================================================================
    Source/Dest handle types (simple file path wrappers)
    ====================================================================== */
@@ -288,6 +292,7 @@ void _ISDrawTextOnRGB2(void * pImage, int nWidth, int nHeight,
     BITMAPINFO bmi;
     RECT rc;
     BYTE * pBits;
+    wchar_t szTextW[512];
 
     if (!pImage || !szText || nWidth <= 0 || nHeight <= 0) return;
     if (!szText[0]) return;
@@ -319,7 +324,8 @@ void _ISDrawTextOnRGB2(void * pImage, int nWidth, int nHeight,
 
     rc.left = nX; rc.top = nHeight - nY - 20; /* flip Y for bottom-up */
     rc.right = nWidth - 2; rc.bottom = nHeight;
-    DrawTextA(hMemDC, szText, -1, &rc, DT_LEFT | DT_TOP | DT_NOPREFIX);
+    mymbstowcs(szTextW, _countof(szTextW), szText);
+    DrawTextW(hMemDC, szTextW, -1, &rc, DT_LEFT | DT_TOP | DT_NOPREFIX);
 
     SelectObject(hMemDC, hOldFont);
     if (pLogFont && hFont) DeleteObject(hFont);
