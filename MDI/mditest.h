@@ -24,8 +24,8 @@
 /***************************************************************************/
 typedef struct tFRAME
 {
-	unsigned __int64 ts;				/* timestamp in nanoseconds */
-	unsigned __int32 nBytes;			/* length of complete frame */
+	uint64_t ts;						/* timestamp in nanoseconds */
+	uint32_t nBytes;					/* length of complete frame */
 	void *pBuffer;						/* pointer to complete frame */
 } tFRAME;
 

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
@@ -304,6 +306,40 @@ typedef enum ES_PARSER_TYPES
 	PARSE_ES_TYPE_AUDIO_TITLE
 } ES_PARSER_TYPES;
 
+typedef enum _tagSIIconID {
+	ID_SI_PAT, // 0
+	ID_SI_PMT, // 1
+	ID_SI_EIT, // 2
+	ID_SI_PCR, // 3
+	ID_SI_AUDIO_ES, //4
+	ID_SI_VIDEO_ES, //5
+	ID_SI_USER_ES, //6
+	ID_SI_SDT, //7
+	ID_SI_DESCRIPTOR, //8
+	ID_SI_NIT, //9
+	ID_SI_CAT, //10
+	ID_SI_IP,  //11
+	ID_SI_VCT, //12
+	ID_SI_TDT, //13
+	ID_SI_SIT, //14
+	ID_SI_CDT, //15
+	ID_SI_MMT, //16
+	ID_SI_USER_VBI, //17
+	ID_SI_DATA, //18
+	ID_SI_USER_SUBTL, //19
+	ID_SI_MGT, //20
+	ID_SI_IP_STREAMING, //21
+	ID_SI_IP_SAVING, //22
+	ID_SI_BAT, //23
+	ID_SI_SDT_OTHER, //24
+	ID_SI_NIT_OTHER, //25
+	ID_SI_BAT_SELECTED, //26
+	ID_SI_NIT_IGNORED, //27
+	ID_SI_BIT, //28
+
+	ID_SI_MAX
+} eSIIconID;
+
 #define AUTO_RECORD_NONE 0
 #define AUTO_RECORD_PROGRAM 1
 #define AUTO_RECORD_ALL 2
@@ -420,11 +456,11 @@ typedef struct _tagCVCTENTRY
 
 typedef struct _tagCVCT
 {
-	int transport_stream_id;
-	int version_number;
-	int num_channels_in_section;
+	uint16_t transport_stream_id;
+	uint8_t version_number;
+	uint8_t num_channels_in_section;
 	CVCTENTRY CVCTEntry[MAX_CVCT_CHANNEL_ENTRIES];
-	int additional_descriptors_length;
+	uint16_t additional_descriptors_length;
 	BYTE * pAdditionalDescriptors;
 } CVCT, *PCVCT;
 
@@ -472,7 +508,7 @@ typedef struct _tagIPMACEntry
 
 typedef struct _tagIPPIDEntry
 {
-	int nPID;
+	uint16_t nPID;
 	int nPacketCount;
 	int64_t nByteCount;
 	HTREEITEM hIPPIDRootItem;
@@ -602,7 +638,7 @@ typedef struct _tagNITEntry
 	uint16_t nTransportStreamID;
 	uint16_t nOriginalNetworkID;
 	int nFrequency;
-	int nNetworkDescriptorsLength;
+	uint16_t nNetworkDescriptorsLength;
 	uint8_t nVersionNumber;
 	BOOL fThisTS;
 	HTREEITEM hNITTreeItem;
@@ -1268,7 +1304,7 @@ typedef struct tag_Variables
 	int nRecordAudioPID[MAX_AUDIO_STREAMS], nRecordAudioType[MAX_AUDIO_STREAMS];
 	int nPMTTimeoutCounter, nTreeUpdateCounter, nTreeUpdateCounter2;
 	int nPATPointerKludge, nPMTPointerKludge;
-	int nNetworkPID;
+	uint16_t nNetworkPID;
 	int nMaxMMT, nMaxCDT, nMaxSIT, nMaxTDT;
 	int nIPMonitorPID[8192];
 	int nPIDContinuity[8192];
@@ -1316,7 +1352,7 @@ typedef struct tag_Variables
 	int nInputActivityPosition, nForwarderActivityPosition;
 	int nAutoRecord;
 	int nAutoRecordAudioTrack;
-	int nEITPID;
+	uint16_t nEITPID;
 	int nPIDHasContinuityErrors[8192];
 	int nPIDTEICount[8192];
 	int nAutoVLCConfiguration;
@@ -2116,9 +2152,7 @@ DWORD WINAPI AC3AudioDecoderThread(LPVOID lpv);
 DWORD WINAPI AACAudioDecoderThread(LPVOID lpv);
 
 /* In decoder.c */
-DWORD WINAPI GenericVideoDecoderThread(LPVOID lpv);
-/* In audio.c */
-DWORD WINAPI GenericAudioDecoderThread(LPVOID lpv);
+DWORD WINAPI GenericDecoderThread(LPVOID lpv);
 
 /* In export.c */
 void HTMLExport(HANDLE hHTMFile, int nExportSITables, char *szOutputFilename);

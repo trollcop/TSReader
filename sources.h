@@ -3,6 +3,9 @@
 //
 // Include file for developing TSReader sources
 //
+
+#pragma once
+
 #include <Windows.h>
 #include <stdint.h>
 

@@ -844,7 +844,7 @@ void CS__ManualChannel(const char * szParameters)
 	memcpy(&v->pat.pmt[nPMTIndex], &v->editpmt, sizeof(PMT));
 
 	wsprintf(szTemp, "Manual - Program %d", v->pat.pmt[nPMTIndex].nProgramNumber);
-	v->pat.pmt[nPMTIndex].hPMTTreeItem = AddItemToSITree(GetDlgItem(v->hDlgSIParser, IDC_SI_TREE), szTemp, 2, SI_PARSER_PMT + nPMTIndex, 1, v->pat.hPATTreeItem, NULL);
+	v->pat.pmt[nPMTIndex].hPMTTreeItem = AddItemToSITree(GetDlgItem(v->hDlgSIParser, IDC_SI_TREE), szTemp, 2, SI_PARSER_PMT + nPMTIndex, ID_SI_PMT, v->pat.hPATTreeItem, NULL);
 	PostMessage(v->hDlgSIParser, WM_USER + 2, SI_PARSER_PMT, nPMTIndex);
 	v->fDirtyManualChannels = TRUE;
 
@@ -1047,7 +1047,7 @@ char * CS__XMLFormatStats(int nValue)
 	return szReturnValue;
 }
 
-char * CS__XMLFormatStats64(__int64 nValue)
+char * CS__XMLFormatStats64(int64_t nValue)
 {
 	static char szReturnValue[128];
 	
@@ -1204,8 +1204,8 @@ void SendRequestedData(int nData)
 						 DS_day_of_month,
 						 DS_hour);
 				{
-					__int64 nSystemTime, nStream;
-					__int64 nDifference;
+					int64_t nSystemTime, nStream;
+					int64_t nDifference;
 					SYSTEMTIME stSystemTime, stStreamTime;
 					char szTemp2[128];
 

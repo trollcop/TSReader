@@ -1,25 +1,22 @@
-#include <windows.h>
-#include <commctrl.h>
+#include <Windows.h>
+#include <CommCtrl.h>
 #include "TSReader.h"
 #include "util.h"
 #include "resource.h"
 
 #include "TSReader_Scheduler/TSReader_Scheduler.h"
 
-PEPGSCHEDULE pepgschedule;
-int nEPGScheduleItems;
-int nEPGScheduleMax;
-void UpdateSkyEPGMap(int nBATID);
+#define EXTRA_VERTICAL_PIXELS 3
 
 extern PVARIABLES v;
 extern char gszAppName[];
 
-#define EXTRA_VERTICAL_PIXELS 3
-#ifndef WM_MOUSEWHEEL
-	#define WM_MOUSEWHEEL                   0x020A 
-#endif
+static PEPGSCHEDULE pepgschedule;
+static int nEPGScheduleItems;
+static int nEPGScheduleMax;
+static BOOL fShownScreenEventsWarning = FALSE;
 
-int __cdecl SortEITCompare(const void *elem1, const void *elem2);
+void UpdateSkyEPGMap(int nBATID);
 void CursorNormal(void);
 void CursorWait(HWND hWnd);
 void DecodeATSCContentAdvisoryDescriptor(char * szBuffer, BYTE * pDescriptor, BOOL fShortMode);
@@ -29,8 +26,6 @@ void GetRetuneCommandLineParameters(char * szCommandLine, int nNITIndex);
 INT_PTR CALLBACK EPGGridSettingsDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 BOOL EventInPast(PEITEVENT pEvent, BOOL fAllowPastEITData);
 int GetLogicalChannelNumber(int nProgramNumber);
-
-BOOL fShownScreenEventsWarning;
 
 static tdScheduler_EnsureServiceRunning Scheduler_EnsureServiceRunning;
 static tdScheduler_CreateNewTask Scheduler_CreateNewTask;
@@ -110,8 +105,8 @@ int IsRecordingScheduled(int nProgramNumber, PEITEVENT pEvent)
 	int nIndex;
 	int nDuration;
 	int nCompareProgramNumber = nProgramNumber;
-	__int64 nEventEnd;
-	__int64 nEventStart;
+	int64_t nEventEnd;
+	int64_t nEventStart;
 
 	if (pEvent == NULL)
 		return FALSE;
@@ -129,15 +124,15 @@ int IsRecordingScheduled(int nProgramNumber, PEITEVENT pEvent)
 	nDuration =  pEvent->stRunTime.wHour * 60 * 60
 			   + pEvent->stRunTime.wMinute * 60
 			   + pEvent->stRunTime.wSecond;
-	nEventEnd = nEventStart + ((__int64)nDuration * (__int64)10000000);
+	nEventEnd = nEventStart + ((int64_t)nDuration * (int64_t)10000000);
 
 	for (nIndex = 0; nIndex < nEPGScheduleItems; nIndex++)
 	{
 		if (pepgschedule[nIndex].nChannel == nCompareProgramNumber)
 		{
-			__int64 nScheduledEnd;
+			int64_t nScheduledEnd;
 
-			nScheduledEnd = pepgschedule[nIndex].nStartTime + ((__int64)pepgschedule[nIndex].nDuration * (__int64)10000000);
+			nScheduledEnd = pepgschedule[nIndex].nStartTime + ((int64_t)pepgschedule[nIndex].nDuration * (int64_t)10000000);
 			/*if (pepgschedule[nIndex].nStartTime <= nEventEnd)
 			{
 				if (nEventStart <= nScheduledEnd)
@@ -150,7 +145,7 @@ int IsRecordingScheduled(int nProgramNumber, PEITEVENT pEvent)
 	return -1;
 }
 
-/*void FormatFILETIME(char * szReturn, __int64 nValue)
+/*void FormatFILETIME(char * szReturn, int64_t nValue)
 {
 	SYSTEMTIME st;
 
@@ -164,8 +159,8 @@ int CheckForDuplicateRecording(PEITEVENT pEvent)
 {
 	int nIndex;
 	int nDuration;
-	__int64 nEventEnd;
-	__int64 nEventStart;
+	int64_t nEventEnd;
+	int64_t nEventStart;
 
 	if (pEvent == NULL)
 		return FALSE;
@@ -175,16 +170,16 @@ int CheckForDuplicateRecording(PEITEVENT pEvent)
 			   + pEvent->stRunTime.wMinute * 60
 			   + pEvent->stRunTime.wSecond;
 	nDuration--;
-	nEventEnd = nEventStart + ((__int64)nDuration * (__int64)10000000);
+	nEventEnd = nEventStart + ((int64_t)nDuration * (int64_t)10000000);
 
 	for (nIndex = 0; nIndex < nEPGScheduleItems; nIndex++)
 	{
-		__int64 nScheduledEnd;
+		int64_t nScheduledEnd;
 
 		if (pepgschedule[nIndex].nChannel == 0)
 			continue;
 
-		nScheduledEnd = pepgschedule[nIndex].nStartTime + ((__int64)pepgschedule[nIndex].nDuration * (__int64)10000000);
+		nScheduledEnd = pepgschedule[nIndex].nStartTime + ((int64_t)pepgschedule[nIndex].nDuration * (int64_t)10000000);
 		/*{
 			char szEventStart[64], szEventEnd[64];
 			char szScheduleStart[64], szScheduleEnd[64];
@@ -240,7 +235,7 @@ void EPGPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	int nStartProgramOffset = GetEITOffset(v->epg.nVerticalScrollPos);
 	int nEvents = 0;
 	int nCountProgramNumber;
-	__int64 nCurrentDisplayTime;
+	int64_t nCurrentDisplayTime;
 	HDC hDC, hRealDC;
 	HBITMAP memBM;
 	PAINTSTRUCT ps;
@@ -345,7 +340,7 @@ void EPGPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 				}
 			}
 		}
-		nCurrentDisplayTime += (__int64)10000000 * (__int64)30 * (__int64)60;
+		nCurrentDisplayTime += (int64_t)10000000 * (int64_t)30 * (int64_t)60;
 		nCurrentX += 30 * v->nEPGHalfHourWidth;
 		v->epg.nTimeRangeShown++;
 	} while (nCurrentX < rc.right);
@@ -477,7 +472,7 @@ void EPGPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		if (v->pEvents[nProgramNumber] != NULL)
 		{
 			int nFirstEPGX;
-			__int64 nFirstEventTime;
+			int64_t nFirstEventTime;
 
 			nCurrentDisplayTime = v->epg.nStartDisplayTime;
 			nFirstEPGX = -1;
@@ -485,25 +480,25 @@ void EPGPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 			do
 			{
 				PEITEVENT pCurrent = v->pEvents[nProgramNumber];
-				__int64 nCurrentDisplayEndTime = nCurrentDisplayTime + ((__int64)10000000 * (__int64)((29 * 60) + 59));
+				int64_t nCurrentDisplayEndTime = nCurrentDisplayTime + ((int64_t)10000000 * (int64_t)((29 * 60) + 59));
 
 				do
 				{
 					int nDuration;
-					__int64 nEndTime;
-					__int64 nEventTime;
+					int64_t nEndTime;
+					int64_t nEventTime;
 
 					SystemTimeToFileTime(&pCurrent->stStartTime, (FILETIME *)&nEventTime);
 					nDuration =  pCurrent->stRunTime.wHour * 60 * 60
 							   + pCurrent->stRunTime.wMinute * 60
 							   + pCurrent->stRunTime.wSecond;
-					nEndTime = nEventTime + ((__int64)nDuration * (__int64)10000000);
+					nEndTime = nEventTime + ((int64_t)nDuration * (int64_t)10000000);
 					
 					if (nEventTime >= nCurrentDisplayTime && nEventTime <= nCurrentDisplayEndTime)
 					{
 						int nPixelWidth;
 						int nScheduleIndex;
-						__int64 nSecondOffset = (nEventTime - nCurrentDisplayTime) / (__int64)10000000;
+						int64_t nSecondOffset = (nEventTime - nCurrentDisplayTime) / (int64_t)10000000;
 						int nMinuteDisplayOffset = (int)nSecondOffset / 60;	// get minutes
 						char szEventName[1024];
 						char szEventDescription[10 * 1024] = {0};
@@ -596,7 +591,7 @@ void EPGPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 					}
 					pCurrent = (PEITEVENT)pCurrent->dwNextEvent;
 				} while (pCurrent != NULL);
-				nCurrentDisplayTime += (__int64)10000000 * (__int64)30 * (__int64)60;
+				nCurrentDisplayTime += (int64_t)10000000 * (int64_t)30 * (int64_t)60;
 				nCurrentX += 30 * v->nEPGHalfHourWidth;
 			} while (nCurrentX < rc.right);
 			v->nLastEPGDisplayTime = nCurrentDisplayTime;
@@ -653,9 +648,9 @@ void EPGPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 					qsort(pSortList, nEITItems, sizeof(EITEVENTWITHPTR), SortEITCompare);			
 					for (nEITIndex = 0; nEITIndex < nEITItems; nEITIndex++)
 					{
-						__int64 nThisEventStart, nThisEventEnd;
-						__int64 nMultiplier = 10000000;
-						__int64 nRunTime = ( (pSortList[nEITIndex].eitevent.stRunTime.wHour * 60 * 60)
+						int64_t nThisEventStart, nThisEventEnd;
+						int64_t nMultiplier = 10000000;
+						int64_t nRunTime = ( (pSortList[nEITIndex].eitevent.stRunTime.wHour * 60 * 60)
 											   + (pSortList[nEITIndex].eitevent.stRunTime.wMinute * 60)
 											   + (pSortList[nEITIndex].eitevent.stRunTime.wSecond) ) * nMultiplier;
 
@@ -677,10 +672,10 @@ void EPGPaint(HWND hWnd, WPARAM wParam, LPARAM lParam)
 						if (nFirstEPGX == -1)
 						{
 							int nPixelWidth;
-							__int64 nEventEndTime;
-							__int64 nEventRemaining;
-							__int64 nMultiplier = 10000000;
-							__int64 nRunTime = ( (pSortList[nFillInTarget].eitevent.stRunTime.wHour * 60 * 60)
+							int64_t nEventEndTime;
+							int64_t nEventRemaining;
+							int64_t nMultiplier = 10000000;
+							int64_t nRunTime = ( (pSortList[nFillInTarget].eitevent.stRunTime.wHour * 60 * 60)
 												   + (pSortList[nFillInTarget].eitevent.stRunTime.wMinute * 60)
 												   + (pSortList[nFillInTarget].eitevent.stRunTime.wSecond) ) * nMultiplier;
 
@@ -986,7 +981,7 @@ EPGPaint_SelectedEvents:
 				MoveToEx(hDC, nCurrentX, nCurrentY + sizeText.cy, NULL);
 				LineTo(hDC, nCurrentX, rc.bottom);
 			}
-			nCurrentDisplayTime += (__int64)10000000 * (__int64)30 * (__int64)60;
+			nCurrentDisplayTime += (int64_t)10000000 * (int64_t)30 * (int64_t)60;
 			nCurrentX += 30 * v->nEPGHalfHourWidth;
 		} while (nCurrentX < rc.right);
 	}
@@ -1000,11 +995,11 @@ WindupEPGGridPaint:
 
 void UpdateHorizontalScroll(HWND hWnd)
 {
-	__int64 nTimeOffset;
+	int64_t nTimeOffset;
 
 	SetScrollPos(hWnd, SB_HORZ, v->epg.nHorizontalScrollPos, TRUE);
 	nTimeOffset = v->epg.nHorizontalScrollPos - 32500;
-	nTimeOffset *= (__int64)10000000 * (__int64)30 * (__int64)60;
+	nTimeOffset *= (int64_t)10000000 * (int64_t)30 * (int64_t)60;
 	v->epg.nStartDisplayTime = v->epg.nActualStartTime + nTimeOffset;
 	InvalidateRect(hWnd, NULL, FALSE);
 }
@@ -1230,8 +1225,8 @@ BOOL SearchNextEPGEntry(HWND hWndParent)
 				{
 					int nScreenEventOffset = 0;
 					BOOL fSetEPGOffsetNeeded = TRUE;
-					__int64 lnStartTime;
-					__int64 lnTimeOffset;
+					int64_t lnStartTime;
+					int64_t lnTimeOffset;
 
 					v->epg.fFoundSomething = TRUE;
 					v->epg.pSelectedEvent = pCurrent;
@@ -1262,7 +1257,7 @@ BOOL SearchNextEPGEntry(HWND hWndParent)
 					// Not on the screen so scroll there
 					SystemTimeToFileTime(&pCurrent->stStartTime, (FILETIME *)&lnStartTime);
 					lnTimeOffset = lnStartTime - v->epg.nActualStartTime;
-					lnTimeOffset /= (__int64)10000000 * (__int64)30 * (__int64)60;
+					lnTimeOffset /= (int64_t)10000000 * (int64_t)30 * (int64_t)60;
 					v->epg.nHorizontalScrollPos = 32500 + (int)lnTimeOffset - 1;
 					if (fSetEPGOffsetNeeded)
 						SetEPGOffsetNearChannel(v->epg.nSearchChannel);
@@ -2248,7 +2243,7 @@ void ScheduleRecording(HWND hWnd, LPARAM lParam, WORD wPreRoll, WORD wPostRoll)
 	nDuplicateEventIndex = CheckForDuplicateRecording(v->epg.pSelectedEvent);
 	if (nDuplicateEventIndex != -1)
 	{
-		__int64 nStartTime;
+		int64_t nStartTime;
 		char szTemp[256];
 		char szChannel[16];
 
@@ -3121,14 +3116,14 @@ LRESULT FAR PASCAL EPGridWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 						if (nChannelNumber <= v->nMaxEPGDisplayChannel)
 						{
 							int nDuration;
-							__int64 nEventEnd;
-							__int64 nEventStart;
+							int64_t nEventEnd;
+							int64_t nEventStart;
 
 							SystemTimeToFileTime(&pEvent->stStartTime, (FILETIME *)&nEventStart);
 							nDuration =  pEvent->stRunTime.wHour * 60 * 60
 									   + pEvent->stRunTime.wMinute * 60
 									   + pEvent->stRunTime.wSecond;
-							nEventEnd = nEventStart + ((__int64)nDuration * (__int64)10000000);
+							nEventEnd = nEventStart + ((int64_t)nDuration * (int64_t)10000000);
 							if (nEventStart >= v->epg.nStartDisplayTime && nEventEnd < v->nLastEPGDisplayTime)
 								InvalidateRect(hWnd, NULL, FALSE);
 						}

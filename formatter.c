@@ -5579,22 +5579,6 @@ char * FormatNITEntry(int nTransportStreamID, BOOL fIncludeHTMLTags)
 	return v->szSIFormatBuffer;
 }
 
-int __cdecl SortEITCompare(const void *elem1, const void *elem2)
-{
-	PEITEVENT pEIT1 = (PEITEVENT)elem1;
-	PEITEVENT pEIT2 = (PEITEVENT)elem2;
-	DWORD64 dwTime1, dwTime2;
-
-	SystemTimeToFileTime(&pEIT1->stStartTime, (FILETIME *)&dwTime1);
-	SystemTimeToFileTime(&pEIT2->stStartTime, (FILETIME *)&dwTime2);
-
-	if (dwTime1 < dwTime2)
-		return -1;
-	if (dwTime1 > dwTime2)
-		return 1;
-
-	return 0;
-}
 
 void GetEITSource(char * szSource, PEITEVENT pEvent)
 {

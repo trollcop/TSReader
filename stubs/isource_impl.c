@@ -235,7 +235,11 @@ void _ISResizeRGB(void * pSrc, int srcW, int srcH,
 {
     /* Convert BGR bottom-up to RGB top-down, resize, convert back */
     unsigned char * rgb_src, * rgb_dst;
-    int row, col;
+    int row;
+#if 0
+    int col;
+#endif
+
     if (!pSrc || !pDst || srcW <= 0 || srcH <= 0 || dstW <= 0 || dstH <= 0) return;
 
     rgb_src = bgr_bottomup_to_rgb_topdown((BYTE *)pSrc, srcW, srcH);

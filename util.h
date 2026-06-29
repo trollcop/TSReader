@@ -6,7 +6,7 @@ void CopyListControlToClipboard(HWND hListControl, BOOL fAddCR);
 void UpdateMainStatusText(char * szText);
 void UpdateSecondaryStatusText(char * szText);
 BOOL ATSCPIDs(void);
-__int64 DecodeMPEG2PCR(BYTE * bAB);
+int64_t DecodeMPEG2PCR(BYTE * bAB);
 int GetTotalPMTChannels(void);
 BOOL IsDuplicateDescriptor(BYTE * pDescriptor1, BYTE * pDescriptor2);
 char * GetExtensionPtr(char * szInputString);
@@ -87,6 +87,7 @@ void MessageBoxFormat(HWND hWnd, UINT uType, const char *fmt, ...);
 /* qsort helper functions */
 int SortPIDsByPackets(const void *elem1, const void *elem2);
 int SortPIDsByPID(const void *elem1, const void *elem2);
+int SortEITCompare(const void *elem1, const void *elem2);
 
 /* utf8-related */
 int mywcstombs(char *dest, int len, const wchar_t *src);

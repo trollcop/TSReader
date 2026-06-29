@@ -114,9 +114,6 @@
     <ClCompile Include="stubs\isource_impl.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="stubs\link_stubs.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TitleThumbnails.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -134,9 +131,6 @@
     </ClCompile>
     <ClCompile Include="libaribb24\b24decoder.c">
       <Filter>libaribb24</Filter>
-    </ClCompile>
-    <ClCompile Include="audio.c">
-      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

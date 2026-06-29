@@ -36,15 +36,15 @@
 /***************************************************************************/
 /***************************************************************************/
 /***************************************************************************/
-typedef unsigned __int8			MDIUBYTE;
-typedef unsigned __int16		MDIUSHORT;
-typedef unsigned __int32		MDIULONG;
-typedef signed __int32			MDILONG;
-typedef unsigned __int64		MDITIME;
+typedef uint8_t					MDIUBYTE;
+typedef uint16_t				MDIUSHORT;
+typedef uint32_t				MDIULONG;
+typedef int32_t					MDILONG;
+typedef uint64_t				MDITIME;
 #if MDI_USE_FLOAT
 typedef float					MDIFLOAT;
 #else
-typedef signed __int32			MDIFLOAT;
+typedef int32_t					MDIFLOAT;
 #endif
 
 typedef struct tMDISTREAM

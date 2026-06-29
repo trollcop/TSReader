@@ -6,9 +6,9 @@
 #include "bcdmux.h"
 
 #define PACKETSIZE		(2048)						// MPEG Program stream block size
-#define CLOCKRATE		((__int64)27000000)			// MPEG System clock rate
-//#define STREAMRATE		((__int64)2401587)			// Original HD stream rate 19.2 Mbps
-#define STREAMRATE		((__int64)312500)
+#define CLOCKRATE		((int64_t)27000000)			// MPEG System clock rate
+//#define STREAMRATE		((int64_t)2401587)			// Original HD stream rate 19.2 Mbps
+#define STREAMRATE		((int64_t)312500)
 #define DEMUX			(((int)STREAMRATE * 8) / 50)// Demux value for HD content STREAMRATE / 50
 
 #define RDBUFSIZE		(1024 * 1024 * 4)
@@ -149,7 +149,7 @@ void set_bit_pos(int index, unsigned int newpos)
 
 // ------------------------------------------------------------------------------------
 
-void set_pts(unsigned char* buf, __int64 PTS)
+void set_pts(unsigned char* buf, int64_t PTS)
 {
 	set_buf(BM_PS_MUXER, buf, 5, TRUE);
 
@@ -162,10 +162,10 @@ void set_pts(unsigned char* buf, __int64 PTS)
 	set_bits(BM_PS_MUXER, 1, 1);								// marker bit						1
 }
 
-BOOL write_pack(__int64 time)
+BOOL write_pack(int64_t time)
 {
 	DWORD dwWritten;
-	__int64 ext_time;
+	int64_t ext_time;
 	unsigned char buf[64];
 	
 	set_buf(BM_PS_MUXER, buf, 64, TRUE);
@@ -264,7 +264,7 @@ static BOOL pad_buffer(size_t pad)
 	return TRUE;
 }
 
-int make_pes_header(unsigned char* buf, int streamid, int len, __int64 PTS, __int64 DTS)
+int make_pes_header(unsigned char* buf, int streamid, int len, int64_t PTS, int64_t DTS)
 {
 	int hdrlen = 0;
 	int PTS_DTS_flags = 0;
@@ -377,8 +377,8 @@ BYTE audiosync[2];
 BYTE audiosyncmask[2];
 
 // Set the starting time value
-__int64 PCR;
-__int64 first_video_PCR;
+int64_t PCR;
+int64_t first_video_PCR;
 BOOL doing_iframe;
 
 int PS__StartWriting(void)
@@ -552,9 +552,9 @@ int PS__TranslateToProgramStream(BYTE * pPacketData, int nLength)
 		}
 		if (start && (adaption & 0x2) && (buf[5] & 0x10))
 		{
-			__int64 PCR_base = ((__int64)buf[6] << 25) | ((__int64)buf[7] << 17) | 
-				  ((__int64)buf[8] << 9) | ((__int64)buf[9] << 1) | ((__int64)buf[10] >> 7);
-			__int64 PCR_ext = ((__int64)(buf[10] & 0x1) << 8) | ((__int64)buf[11]);
+			int64_t PCR_base = ((int64_t)buf[6] << 25) | ((int64_t)buf[7] << 17) | 
+				  ((int64_t)buf[8] << 9) | ((int64_t)buf[9] << 1) | ((int64_t)buf[10] >> 7);
+			int64_t PCR_ext = ((int64_t)(buf[10] & 0x1) << 8) | ((int64_t)buf[11]);
 			PCR = PCR_base * 300 + PCR_ext;
 			if (v->nRecordVideoPID != v->nRecordPCRPID)
 				continue;
@@ -720,7 +720,7 @@ int PS__TranslateToProgramStream(BYTE * pPacketData, int nLength)
 				DWORD dwWritten;
 				int hdrsize;
 				int i;
-				__int64 packet_time;
+				int64_t packet_time;
 
 				// Get total length of this pack
 				int len = min(14 + ac3len + packetpos[curstream] - pos, PACKETSIZE);
@@ -734,7 +734,7 @@ int PS__TranslateToProgramStream(BYTE * pPacketData, int nLength)
 				}
 
 				// Write out pack header
-				packet_time = ((__int64)v->dTotalRecorded * CLOCKRATE / STREAMRATE);
+				packet_time = ((int64_t)v->dTotalRecorded * CLOCKRATE / STREAMRATE);
 				if (!write_pack(packet_time))
 				{
 					error("Couldn't write pack header!");

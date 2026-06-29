@@ -1057,75 +1057,25 @@ static BOOL StartCodeVC1(BYTE *pPESPacket, int nPacketLength, int *pnOffset)
 	return FALSE;
 }
 
-BOOL DecodeGenericAudio(BYTE *pPESPacket, int nPacketLength, int nES, DecoderType eDecoder)
+static BOOL StartCodeAAC(BYTE *pPESPacket, int nPacketLength, int *pnOffset)
 {
-	BOOL fRetVal = FALSE;
 	int nOffset = 0;
-
-	/* AAC only for now. More stuff later once this works */
-	if (v->fESParseDecoderStartedLibMPEG[nES] == FALSE) {
-		for (nOffset = 0; nOffset < nPacketLength - 4; nOffset++) {
-			int syncword = (pPESPacket[nOffset + 0] << 8 | pPESPacket[nOffset + 1]);
-			if (((syncword & 0xfff8) == 0xfff8) && (syncword != 0xffff)) {
-				break;
-			}
-		}
-	}
-
-	/* packet sequence header not found or startcode parser missing, skip */
-	if (nOffset == nPacketLength - 4)
+	if (!pnOffset)
 		return FALSE;
 
-	/* do we bother doing audio thumbnails at all */
-	if (v->nThumbnailProcessingThreadPriority == 3 || !v->fAudioThumbnails)
-		return TRUE;
+	for (nOffset = 0; nOffset < nPacketLength - 4; nOffset++) {
+		uint16_t syncword = (pPESPacket[nOffset + 0] << 8 | pPESPacket[nOffset + 1]);
+		if (((syncword & 0xfff8) == 0xfff8) && (syncword != 0xffff)) {
 
-	/* open ES pipe, start decoder thread, etc */
-	EnterCriticalSection(&v->esparserinfo[nES].csThreadSignal);
-	if (v->fESParseDecoderStartedLibMPEG[nES] == FALSE) {
-		DWORD dwThreadID;
-		HANDLE hThread;
-
-		v->fESParseDecoderStartedLibMPEG[nES] = TRUE;
-		CreatePipe(&v->hMPEGDecoderReadPipe[nES], &v->hMPEGDecoderWritePipe[nES], NULL, v->nThumbnailPipeSize * 1024 * 1024);
-		v->esparserinfo[nES].nProgramNumber = v->pat.pmt[v->nESParsePMTIndex[nES]].nProgramNumber;
-		v->esparserinfo[nES].nES = nES;
-		v->esparserinfo[nES].eDecoder = eDecoder;
-		hThread = CreateThread(NULL, 0, GenericAudioDecoderThread, (LPVOID)&v->esparserinfo[nES], 0, &dwThreadID);
-		if (hThread) {
-			switch (v->nThumbnailProcessingThreadPriority) {
-				case 0:
-					SetThreadPriority(hThread, THREAD_PRIORITY_NORMAL);
-					break;
-				case 1:
-					SetThreadPriority(hThread, THREAD_PRIORITY_HIGHEST);
-					break;
-				case 2:
-					SetThreadPriority(hThread, THREAD_PRIORITY_IDLE);
-					break;
-			}
-			CloseHandle(hThread);
-		}
-	} else {
-		if (v->fESParseDecoderCompletedLibMPEG[nES] == TRUE)
-			fRetVal = TRUE;
-	}
-	LeaveCriticalSection(&v->esparserinfo[nES].csThreadSignal);
-
-	if (!fRetVal) {
-		DWORD dwWritten;
-		int nActualLength = nPacketLength - nOffset;
-
-		WriteFile(v->hMPEGDecoderWritePipe[nES], &nActualLength, sizeof(nActualLength), &dwWritten, NULL);
-		WriteFile(v->hMPEGDecoderWritePipe[nES], &pPESPacket[nOffset], nPacketLength - nOffset, &dwWritten, NULL);
-		if (dwWritten != (DWORD)nActualLength) {
-			dbg_printf("TSReader: %s: Bad data write to pipe (nPacketLength = %d dwWritten = %d)\n", __FUNCTION__, nPacketLength, dwWritten);
+			*pnOffset = nOffset;
+			return TRUE;
 		}
 	}
-	return fRetVal;
+
+	return FALSE;
 }
 
-BOOL DecodeGenericVideo(BYTE *pPESPacket, int nPacketLength, int nES, DecoderType eDecoder, td_StartCodeParser pParser)
+BOOL DecodeGenericPES(BYTE *pPESPacket, int nPacketLength, int nES, DecoderType eDecoder, td_StartCodeParser pParser)
 {
 	int nOffset = 0;
 	BOOL fRetVal = FALSE;
@@ -1139,9 +1089,15 @@ BOOL DecodeGenericVideo(BYTE *pPESPacket, int nPacketLength, int nES, DecoderTyp
 	if (v->fESParseDecodedHeader[nES] == FALSE)
 		return FALSE;
 
-	/* do we bother doing thumbnails at all */
+	/* do we bother doing any thumbnails at all? */
 	if (v->nThumbnailProcessingThreadPriority == 3)
 		return TRUE;
+
+	if (eDecoder >= DEC_AAC) {
+		/* do we bother doing audio thumbnails? */
+		if (!v->fAudioThumbnails)
+			return TRUE;
+	}
 
 	/* open ES pipe, start decoder thread, etc */
 	EnterCriticalSection(&v->esparserinfo[nES].csThreadSignal);
@@ -1154,7 +1110,7 @@ BOOL DecodeGenericVideo(BYTE *pPESPacket, int nPacketLength, int nES, DecoderTyp
 		v->esparserinfo[nES].nProgramNumber = v->pat.pmt[v->nESParsePMTIndex[nES]].nProgramNumber;
 		v->esparserinfo[nES].nES = nES;
 		v->esparserinfo[nES].eDecoder = eDecoder;
-		hThread = CreateThread(NULL, 0, GenericVideoDecoderThread, (LPVOID)&v->esparserinfo[nES], 0, &dwThreadID);
+		hThread = CreateThread(NULL, 0, GenericDecoderThread, (LPVOID)&v->esparserinfo[nES], 0, &dwThreadID);
 		if (hThread) {
 			switch (v->nThumbnailProcessingThreadPriority) {
 				case 0:
@@ -4002,7 +3958,7 @@ DWORD WINAPI AdvancedRecordFreeSpaceMonitorThread(LPVOID lpv)
 			szDrive[1] = szCurrentRecordFile[1];
 			szDrive[2] = '\0';
 			GetDiskFreeSpaceEx(szDrive, &FreeBytesAvailable, &TotalNumberOfBytes, &TotalNumberOfFreeBytes);
-			nCurrentFreeGB = (int)((double)(__int64)FreeBytesAvailable.QuadPart / 1024.0 / 1024.0 / 1024.0);
+			nCurrentFreeGB = (int)((double)(int64_t)FreeBytesAvailable.QuadPart / 1024.0 / 1024.0 / 1024.0);
 
 			if (nCurrentFreeGB >= v->nAdvancedRecordRemoveOldLimitGB)
 				break;
@@ -4196,7 +4152,7 @@ BOOL CheckForFileSplit(void)
 				v->lnRecordSplitPCR = v->lnMuxRatePCR;
 				dbg_printf("TSReader: PCR rollover\n");
 			}
-			if (v->lnMuxRatePCR > (v->lnRecordSplitPCR + (__int64)v->nSplitFileSize * (__int64)27000000))
+			if (v->lnMuxRatePCR > (v->lnRecordSplitPCR + (int64_t)v->nSplitFileSize * (int64_t)27000000))
 			{
 				fSplitRequired = TRUE;
 				v->lnRecordSplitPCR = v->lnMuxRatePCR;
@@ -4571,9 +4527,9 @@ void TimestampRecordPID(BYTE * pInputAdaptationField)
 	}
 }
 
-__int64 DecodeDSSRTC(BYTE * pRTC)
+int64_t DecodeDSSRTC(BYTE * pRTC)
 {
-	return ((__int64)pRTC[0] << 24 | (__int64)pRTC[1] << 16 | (__int64)pRTC[2] << 8 | (__int64)pRTC[3]);
+	return ((int64_t)pRTC[0] << 24 | (int64_t)pRTC[1] << 16 | (int64_t)pRTC[2] << 8 | (int64_t)pRTC[3]);
 }
 
 void DSSMuxrateProcessing(uint16_t nPID)
@@ -4619,7 +4575,7 @@ void DSSMuxrateProcessing(uint16_t nPID)
 				&& tv->pIncomingBuffer[tv->nBufferOffset + 4] == 0xc3)
 			{
 				double dRate;
-				__int64 nCurrentPCR = DecodeDSSRTC(&tv->pIncomingBuffer[tv->nBufferOffset + 7]) + v->nDSSRTCOffset;
+				int64_t nCurrentPCR = DecodeDSSRTC(&tv->pIncomingBuffer[tv->nBufferOffset + 7]) + v->nDSSRTCOffset;
 				
 				if (nCurrentPCR < v->lnMuxRatePCR)
 				{
@@ -4697,7 +4653,7 @@ void MPEG2MuxrateProcessing(uint16_t nPID)
 				&& ((tv->pIncomingBuffer[tv->nBufferOffset + 5] & 0x10) == 0x10)	// PCR flag
 			    && ((tv->pIncomingBuffer[tv->nBufferOffset + 1] & 0x80) == 0x00) )	// no TEI error
 			{
-				__int64 nCurrentPCR = DecodeMPEG2PCR(&tv->pIncomingBuffer[tv->nBufferOffset + 4]);
+				int64_t nCurrentPCR = DecodeMPEG2PCR(&tv->pIncomingBuffer[tv->nBufferOffset + 4]);
 				double dRate = v->nMuxRateBytes * (1.0 / (1.0/27000000.0 * ((double)nCurrentPCR - (double)v->lnMuxRatePCR)));				
 				TimestampRecordPID(&tv->pIncomingBuffer[tv->nBufferOffset + 4]);
 				
@@ -4748,7 +4704,7 @@ void MPEG2MuxrateProcessing(uint16_t nPID)
 		}
 		else
 		{
-			__int64 nCurrentPCR = DecodeMPEG2PCR(&tv->pIncomingBuffer[tv->nBufferOffset + 4]);
+			int64_t nCurrentPCR = DecodeMPEG2PCR(&tv->pIncomingBuffer[tv->nBufferOffset + 4]);
 			if (nCurrentPCR != v->lnPIDRatePCR[nPID])
 			{
 				if (v->fRealtimeCharting)
@@ -4970,7 +4926,7 @@ void CheckForGeneralESParsing(int nPID, int nComparePID, BYTE * bESBuffer, int *
 
 					if (*nESLength == -1)
 						*nESLength = *nESFillPtr;
-					nActualLength = *(nESLength);				
+					nActualLength = *(nESLength);
 					switch(nCompletionRoutine)
 					{
 					case 0:
@@ -5026,7 +4982,7 @@ void LogTableMonitorData(void)
 {
 	int nPacketLength = v->nTableMonitorFillPtr;
 	int nTableID;
-	__int64 lnNow;
+	int64_t lnNow;
 	BYTE * pSectionPointer = v->bTableMonitorBuffer;
 
 	do
@@ -5046,7 +5002,7 @@ void LogTableMonitorData(void)
 	lnNow = v->lnMuxRatePCR;
 	if (v->tablemonitor[nTableID].lnLastTime)
 	{
-		__int64 lnDelay = lnNow - v->tablemonitor[nTableID].lnLastTime;
+		int64_t lnDelay = lnNow - v->tablemonitor[nTableID].lnLastTime;
 
 		v->tablemonitor[nTableID].lnDelay += lnDelay;
 		v->tablemonitor[nTableID].lnDelayItems++;
@@ -5170,12 +5126,12 @@ void CheckForESParsing(int nPID, int nES)
 	if (v->lnESParseStartTime[nES] && v->lnMuxRatePCR) //todo
 	{
 #ifdef _DEBUG
-		__int64 lnTimeoutSeconds = 30;
+		int64_t lnTimeoutSeconds = 30;
 #else _DEBUG
-		__int64 lnTimeoutSeconds = 15;
+		int64_t lnTimeoutSeconds = 15;
 #endif _DEBUG
 
-		if (v->lnMuxRatePCR > v->lnESParseStartTime[nES] + (lnTimeoutSeconds * (__int64)27000000) && !v->fDisableBlacklisting)
+		if (v->lnMuxRatePCR > v->lnESParseStartTime[nES] + (lnTimeoutSeconds * (int64_t)27000000) && !v->fDisableBlacklisting)
 		{
 			dbg_printf("TSReader: ES PID 0x%04x blacklisted - no appreciable data for %d seconds\n", v->pat.pmt[v->nESParsePMTIndex[nES]].es[v->nESParseESIndex[nES]].nESPID, (int)lnTimeoutSeconds);
 			if (v->fArchiveRunning == FALSE)
@@ -5250,28 +5206,28 @@ void CheckForESParsing(int nPID, int nES)
 						{
 							/* video types */
 						case PARSE_ES_TYPE_MPEG2_VIDEO:
-							fRetVal = DecodeGenericVideo(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_MPEG2, StartCodeMPEG2);
+							fRetVal = DecodeGenericPES(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_MPEG2, StartCodeMPEG2);
 							break;
 						case PARSE_ES_TYPE_MPEG4_VIDEO:
-							fRetVal = DecodeGenericVideo(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_MPEG4, StartCodeMPEG4);
+							fRetVal = DecodeGenericPES(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_MPEG4, StartCodeMPEG4);
 							break;
 						case PARSE_ES_TYPE_VC1_VIDEO:
-							fRetVal = DecodeGenericVideo(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_VC1, StartCodeVC1);
+							fRetVal = DecodeGenericPES(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_VC1, StartCodeVC1);
 							break;
 						case PARSE_ES_TYPE_H264_VIDEO:
-							fRetVal = DecodeGenericVideo(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_H264, StartCodeH264);
+							fRetVal = DecodeGenericPES(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_H264, StartCodeH264);
 							break;
 						case PARSE_ES_TYPE_H265_VIDEO:
-							fRetVal = DecodeGenericVideo(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_H265, StartCodeH265);
+							fRetVal = DecodeGenericPES(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_H265, StartCodeH265);
 							break;
 						case PARSE_ES_TYPE_AV1_VIDEO:
-							fRetVal = DecodeGenericVideo(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_AV1, NULL);
+							fRetVal = DecodeGenericPES(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_AV1, NULL);
 							break;
 
 							/* audio types */
 						case PARSE_ES_TYPE_MPEG2_AAC_AUDIO:
 #if 0
-							fRetVal = DecodeGenericAudio(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_AAC);
+							fRetVal = DecodeGenericPES(tv->bESBuffer[nES], tv->nPESLength[nES], nES, DEC_AAC, StartCodeAAC);
 #else
 							fRetVal = DecodeMPEGAACAudio(tv->bESBuffer[nES], tv->nPESLength[nES], nES);
 #endif
@@ -6032,7 +5988,7 @@ void PMTListenParser(int nPMTListenIndex, int nPID, BYTE * pPacket)
 	}
 }
 
-void BufferSections(int nPID)
+void BufferSections(uint16_t nPID)
 {
 	if ((tv->pIncomingBuffer[tv->nBufferOffset + 1] & 0x40) == 0x40)		// PES/PSI start?
 	{
@@ -6087,7 +6043,6 @@ void BufferSections(int nPID)
 	}
 }
 
-
 DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 {
 	int i;
@@ -6138,7 +6093,7 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 	v->nPATPointerKludge = 0;
 	v->nPMTPointerKludge = 0;
 
-	for (i  = 0; i < tv->nActualMaxRecordBuffers; i++)
+	for (i = 0; i < tv->nActualMaxRecordBuffers; i++)
 	{
 		tv->pOutputRecordPackets[i] = LocalAlloc(LPTR, TS_BUFFER_SIZE);
 		tv->dwRecordSize[i] = 0;
@@ -6186,12 +6141,12 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 		if (v->fMDIIndexActive)
 		{
 			MDITIME ts;
-			__int64 lnCurrentCounterValue;
+			int64_t lnCurrentCounterValue;
 			double dnsPerTick;
 
 			dnsPerTick = 1000000000.0 / (double)v->lnTicksPerSecond;
 			QueryPerformanceCounter((LARGE_INTEGER *)&lnCurrentCounterValue);
-			ts = lnCurrentCounterValue * (__int64)dnsPerTick;
+			ts = lnCurrentCounterValue * (int64_t)dnsPerTick;
 			EnterCriticalSection(&v->csMDI);
 			mdiPacket(ts, tv->pIncomingBuffer, tv->nIncomingBufferLength, mdi);
 			LeaveCriticalSection(&v->csMDI);
@@ -6992,7 +6947,7 @@ void CleanupMPEGParsingThread(HWND hDlg)
 		if (v->cvct[i].pAdditionalDescriptors != NULL)
 			LocalFree(v->cvct[i].pAdditionalDescriptors);
 		memset(&v->cvct[i], 0, sizeof(CVCT));
-		v->cvct[i].transport_stream_id = -1;
+		v->cvct[i].transport_stream_id = (uint16_t)-1;
 		for (j = 0; j < MAX_CVCT_CHANNEL_ENTRIES; j++)
 			v->cvct[i].CVCTEntry[j].major_channel_number = v->cvct[i].CVCTEntry[j].minor_channel_number = -1;
 	}
@@ -7053,49 +7008,56 @@ int AddSITreeIcon(int nResource)
 	return nRetVal;
 }
 
+
+typedef struct tTreeViewIcons {
+	eSIIconID Id;
+	DWORD ResourceId;
+} TreeViewIcons;
+
+static const TreeViewIcons g_nIconIDs[] = {
+	{ ID_SI_PAT, IDI_SI_PAT },
+	{ ID_SI_PMT, IDI_SI_PMT },
+	{ ID_SI_EIT, IDI_SI_EIT },
+	{ ID_SI_PCR, IDI_SI_PCR },
+	{ ID_SI_AUDIO_ES, IDI_SI_AUDIO_ES },
+	{ ID_SI_VIDEO_ES, IDI_SI_VIDEO_ES },
+	{ ID_SI_USER_ES, IDI_SI_USER_ES },
+	{ ID_SI_SDT, IDI_SI_SDT },
+	{ ID_SI_DESCRIPTOR, IDI_SI_DESCRIPTOR },
+	{ ID_SI_NIT, IDI_SI_NIT },
+	{ ID_SI_CAT, IDI_SI_CAT },
+	{ ID_SI_IP, IDI_SI_IP },
+	{ ID_SI_VCT, IDI_SI_VCT },
+	{ ID_SI_TDT, IDI_SI_TDT },
+	{ ID_SI_SIT, IDI_SI_SIT },
+	{ ID_SI_CDT, IDI_SI_CDT },
+	{ ID_SI_MMT, IDI_SI_MMT },
+	{ ID_SI_USER_VBI, IDI_SI_USER_VBI },
+	{ ID_SI_DATA, IDI_SI_DATA },
+	{ ID_SI_USER_SUBTL, IDI_SI_USER_SUBTL },
+	{ ID_SI_MGT, IDI_SI_MGT },
+	{ ID_SI_IP_STREAMING, IDI_SI_IP_STREAMING },
+	{ ID_SI_IP_SAVING, IDI_SI_IP_SAVING },
+	{ ID_SI_BAT, IDI_SI_BAT },
+	{ ID_SI_SDT_OTHER, IDI_SI_SDT_OTHER },
+	{ ID_SI_NIT_OTHER, IDI_SI_NIT_OTHER },
+	{ ID_SI_BAT_SELECTED, IDI_SI_BAT_SELECTED },
+	{ ID_SI_NIT_IGNORED, IDI_SI_NIT_IGNORED },
+	{ ID_SI_BIT, IDI_SI_BIT },
+};
+
 void InitSITreeViewImageLists(HWND hWndTV)
 {
-	int nIconID[] = {IDI_SI_PAT, // 0
-		             IDI_SI_PMT, // 1
-					 IDI_SI_EIT, // 2
-					 IDI_SI_PCR, // 3
-		             IDI_SI_AUDIO_ES, //4
-					 IDI_SI_VIDEO_ES, //5
-					 IDI_SI_USER_ES, //6
-					 IDI_SI_SDT, //7
-					 IDI_SI_DESCRIPTOR, //8
-					 IDI_SI_NIT, //9
-					 IDI_SI_CAT, //10
-					 IDI_SI_IP,  //11
-					 IDI_SI_VCT, //12
-					 IDI_SI_TDT, //13
-					 IDI_SI_SIT, //14
-					 IDI_SI_CDT, //15
-					 IDI_SI_MMT, //16
-					 IDI_SI_USER_VBI, //17
-					 IDI_SI_DATA, //18
-					 IDI_SI_USER_SUBTL, //19
-					 IDI_SI_MGT, //20
-					 IDI_SI_IP_STREAMING, //21
-					 IDI_SI_IP_SAVING, //22
-					 IDI_SI_BAT, //23
-					 IDI_SI_SDT_OTHER, //24
-					 IDI_SI_NIT_OTHER, //25
-					 IDI_SI_BAT_SELECTED, //26
-					 IDI_SI_NIT_IGNORED, //27
-					 IDI_SI_BIT, //28
-					 0};
-
 	v->hSIParserImageList = ImageList_Create(16, 16, ILC_MASK, 30, 50);
 	if (v->hSIParserImageList != NULL)
 	{
 		int i;
 
-		for (i = 0; nIconID[i] != 0; i++)
-			v->nSITreeIcons[i] = AddSITreeIcon(nIconID[i]);
+		for (i = 0; i < ARRAYSIZE(g_nIconIDs); i++)
+			v->nSITreeIcons[i] = AddSITreeIcon(g_nIconIDs[i].ResourceId);
 
-		// Associate the image list with the tree-view control. 
-		TreeView_SetImageList(hWndTV, v->hSIParserImageList, TVSIL_NORMAL); 
+		/* Associate the image list with the tree-view control. */
+		TreeView_SetImageList(hWndTV, v->hSIParserImageList, TVSIL_NORMAL);
 	}
 
 }
@@ -7105,7 +7067,7 @@ void InitSITreeViewImageLists(HWND hWndTV)
 // hwndTV - handle of the tree-view control 
 // lpszItem - text of the item to add 
 // nLevel - level at which to add the item 
-HTREEITEM AddItemToSITree(HWND hwndTV, LPTSTR lpszItem, int nLevel, LPARAM lParam, int nIconIndex, HTREEITEM hParent, HTREEITEM hInsertAfter) 
+HTREEITEM AddItemToSITree(HWND hwndTV, LPTSTR lpszItem, int nLevel, LPARAM lParam, eSIIconID nIconIndex, HTREEITEM hParent, HTREEITEM hInsertAfter)
 {
 	TV_INSERTSTRUCTW tvins;
 	LPTV_ITEMW tvi = &tvins.item;
@@ -8038,7 +8000,7 @@ void ForcePIDChartRepaint(HWND hDlg)
 typedef struct _tagSortMACs
 {
 	int nPackets;
-	__int64 nBytes;
+	int64_t nBytes;
 	BYTE bMAC[8];
 } SORTMACS, *PSORTMACS;
 
@@ -8242,7 +8204,9 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 	{
 	case SI_PARSER_CVCT:
 		nItemIndex = (int)tvi.lParam - SI_PARSER_CVCT;
-		SetDlgItemText(hDlg, IDC_SI_TEXT, FormatCVCT(nItemIndex));
+		FormatCVCT(nItemIndex);
+		mymbstowcs(v->szSIFormatBufferW, _countof(v->szSIFormatBufferW), v->szSIFormatBuffer);
+		SetDlgItemTextW(hDlg, IDC_SI_TEXT, v->szSIFormatBufferW);
 		memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
 		v->nHighlightPIDs[0] = 0x1ffb;
 		PIDManagement(TRUE, v->nHighlightPIDs[0], TRUE);
@@ -8250,14 +8214,18 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 		break;
 	case SI_PARSER_BAT:
 		nItemIndex = (int)tvi.lParam - SI_PARSER_BAT;
-		SetDlgItemText(hDlg, IDC_SI_TEXT, FormatBAT(nItemIndex));
+		FormatBAT(nItemIndex);
+		mymbstowcs(v->szSIFormatBufferW, _countof(v->szSIFormatBufferW), v->szSIFormatBuffer);
+		SetDlgItemTextW(hDlg, IDC_SI_TEXT, v->szSIFormatBufferW);
 		memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
 		v->nHighlightPIDs[0] = 0x0011;
 		PIDManagement(TRUE, v->nHighlightPIDs[0], TRUE);
 		ForcePIDChartRepaint(hDlg);
 		break;
 	case SI_PARSER_MGT:
-		SetDlgItemText(hDlg, IDC_SI_TEXT, FormatMGT());
+		FormatMGT();
+		mymbstowcs(v->szSIFormatBufferW, _countof(v->szSIFormatBufferW), v->szSIFormatBuffer);
+		SetDlgItemTextW(hDlg, IDC_SI_TEXT, v->szSIFormatBufferW);
 		memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
 		v->nHighlightPIDs[0] = 0x1ffb;
 		PIDManagement(TRUE, v->nHighlightPIDs[0], TRUE);
@@ -8298,7 +8266,9 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 		{
 		default:
 			nItemIndex = (int)tvi.lParam - SI_PARSER_TDT;
-			SetDlgItemText(hDlg, IDC_SI_TEXT, FormatTDTEntry(nItemIndex));
+			FormatTDTEntry(nItemIndex);
+			mymbstowcs(v->szSIFormatBufferW, _countof(v->szSIFormatBufferW), v->szSIFormatBuffer);
+			SetDlgItemTextW(hDlg, IDC_SI_TEXT, v->szSIFormatBufferW);
 			memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
 			v->nHighlightPIDs[0] = v->nNetworkPID;
 			PIDManagement(TRUE, v->nHighlightPIDs[0], TRUE);
@@ -8315,7 +8285,9 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 			}
 			else
 			{
-				SetDlgItemText(hDlg, IDC_SI_TEXT, FormatDVBTOT());
+				FormatDVBTOT();
+				mymbstowcs(v->szSIFormatBufferW, _countof(v->szSIFormatBufferW), v->szSIFormatBuffer);
+				SetDlgItemTextW(hDlg, IDC_SI_TEXT, v->szSIFormatBufferW);
 			}
 			break;
 		case 0x1ffb:
@@ -8324,6 +8296,7 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 				int DS_day_of_month = (v->dvbtdt.nDaylightSavings >> 8) & 0x1f;
 				int DS_hour = v->dvbtdt.nDaylightSavings & 0xff;
 				char szTemp[1024];
+				wchar_t szTempW[1024];
 
 				wsprintf(szTemp, "STT: GPS/UTC offset: %d\r\nSTT: DS Status: %d DS Day of Month: %d DS Hour: %d\r\n",
 					     v->dvbtdt.nGPSOffset,
@@ -8331,8 +8304,8 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 						 DS_day_of_month,
 						 DS_hour);
 				{
-					__int64 nSystemTime, nStream;
-					__int64 nDifference;
+					int64_t nSystemTime, nStream;
+					int64_t nDifference;
 					SYSTEMTIME stSystemTime, stStreamTime;
 					char szTemp2[128];
 
@@ -8353,7 +8326,8 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 					wsprintf(szTemp2, "Difference between stream and PC time: %d seconds\r\n", (int)nDifference);
 					lstrcat(szTemp, szTemp2);
 				}
-				SetDlgItemText(hDlg, IDC_SI_TEXT, szTemp);
+				mymbstowcs(szTempW, _countof(szTempW), szTemp);
+				SetDlgItemTextW(hDlg, IDC_SI_TEXT, szTempW);
 			}
 			memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
 			v->nHighlightPIDs[0] = 0x1ffb;
@@ -8364,7 +8338,9 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 		break;
 	case SI_PARSER_SIT:
 		nItemIndex = (int)tvi.lParam - SI_PARSER_SIT;
-		SetDlgItemText(hDlg, IDC_SI_TEXT, FormatSITEntry(nItemIndex));
+		FormatSITEntry(nItemIndex);
+		mymbstowcs(v->szSIFormatBufferW, _countof(v->szSIFormatBufferW), v->szSIFormatBuffer);
+		SetDlgItemTextW(hDlg, IDC_SI_TEXT, v->szSIFormatBufferW);
 		memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
 		v->nHighlightPIDs[0] = v->nNetworkPID;
 		PIDManagement(TRUE, v->nHighlightPIDs[0], TRUE);
@@ -8372,7 +8348,9 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 		break;
 	case SI_PARSER_MMT:
 		nItemIndex = (int)tvi.lParam - SI_PARSER_MMT;
-		SetDlgItemText(hDlg, IDC_SI_TEXT, FormatMMTEntry(nItemIndex));
+		FormatMMTEntry(nItemIndex);
+		mymbstowcs(v->szSIFormatBufferW, _countof(v->szSIFormatBufferW), v->szSIFormatBuffer);
+		SetDlgItemTextW(hDlg, IDC_SI_TEXT, v->szSIFormatBufferW);
 		memset(&v->nHighlightPIDs, -1, sizeof(v->nHighlightPIDs));
 		v->nHighlightPIDs[0] = v->nNetworkPID;
 		PIDManagement(TRUE, v->nHighlightPIDs[0], TRUE);
@@ -8532,8 +8510,8 @@ void HandleTreeClickMPEG2(HWND hDlg, LPNMHDR pnmh)
 				v->nProgramPIDCount = nHighlightIndex;
 
 				ForcePIDChartRepaint(hDlg);
-				v->nSelectedVideoDisplayProgram = v->nSelectedProgram = nItemIndex;			
-				UpdateVideoPix(hDlg);				
+				v->nSelectedVideoDisplayProgram = v->nSelectedProgram = nItemIndex;
+				UpdateVideoPix(hDlg);
 				if (v->fMDPluginsLoaded == TRUE)
 				{
 					struct TCA_System CA[MAX_CA_SYSTEMS];
@@ -9253,7 +9231,7 @@ void ShowStatistics(HDC hDC, int xStart, int yStart, int nTable, char * szDescri
 
 void UpdateStatistics(HWND hDlg, BOOL fFromTimer)
 {
-	__int64 nTotalBytes = 0;
+	int64_t nTotalBytes = 0;
 	int nActiveByteSamples = 0;
 	int xWidth, xStart, yStart, yEnd;
 	int yCurrent;
@@ -9607,7 +9585,7 @@ void SetupForNewStream(HWND hWnd)
 
 	SendMessage(hWndTV, WM_SETREDRAW, FALSE, 0);
 	v->fDeletingAllTVItems = TRUE;
-	TreeView_DeleteAllItems(hWndTV);	
+	TreeView_DeleteAllItems(hWndTV);
 	v->fDeletingAllTVItems = FALSE;
 	v->fTreeViewSelectedAtLeastOnce = FALSE;
 	SendMessage(hWndTV, WM_SETREDRAW, TRUE, 0);
@@ -9675,7 +9653,7 @@ void SetupForNewStream(HWND hWnd)
 	v->nSelectedProgram	= -1;
 	if (!v->fForcedNetworkType)
 	{
-		v->nNetworkPID = -1;
+		v->nNetworkPID = (uint16_t)-1;
 		v->fISDB = FALSE;
 	}
 
@@ -10214,14 +10192,12 @@ void HandleWMUSER2IPMode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 			int nIndex = (int)lParam;
 			PIPCLICKLPARAM ipclicklParam;
 			char szTemp[128];
-			char szMask[128];
 
-			wsprintf(szMask, "PID %s", v->szOutputPIDFlags);
-			wsprintf(szTemp, szMask, v->ippid[nIndex].nPID);
+			FormatPIDMask(szTemp, sizeof(szTemp), "PID %s", v->ippid[nIndex].nPID);
 			ipclicklParam = LocalAlloc(LPTR, sizeof(IPCLICKLPARAM));
 			ipclicklParam->dwPtr = (LONG_PTR)nIndex;
 			ipclicklParam->nType = SI_PARSER_IP_PID;
-			v->ippid[nIndex].hIPPIDRootItem = AddItemToSITree(hWndTV, szTemp, 1, (LPARAM)ipclicklParam, 11, NULL, TVI_FIRST);
+			v->ippid[nIndex].hIPPIDRootItem = AddItemToSITree(hWndTV, szTemp, 1, (LPARAM)ipclicklParam, ID_SI_IP, NULL, TVI_FIRST);
 		}
 		break;
 	case SI_PARSER_IP_MAC:
@@ -10231,12 +10207,12 @@ void HandleWMUSER2IPMode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 			char szTemp[128];
 
 			wsprintf(szTemp, "MAC %02x:%02x:%02x:%02x:%02x:%02x",
-				     pCurrentMac->bMAC[0], pCurrentMac->bMAC[1], pCurrentMac->bMAC[2],
-					 pCurrentMac->bMAC[3], pCurrentMac->bMAC[4], pCurrentMac->bMAC[5]);
+					pCurrentMac->bMAC[0], pCurrentMac->bMAC[1], pCurrentMac->bMAC[2],
+					pCurrentMac->bMAC[3], pCurrentMac->bMAC[4], pCurrentMac->bMAC[5]);
 			ipclicklParam = LocalAlloc(LPTR, sizeof(IPCLICKLPARAM));
 			ipclicklParam->dwPtr = (LONG_PTR)pCurrentMac;
 			ipclicklParam->nType = SI_PARSER_IP_MAC;
-			pCurrentMac->hIPMacItem = AddItemToSITree(hWndTV, szTemp, 2, (LPARAM)ipclicklParam, 11, pCurrentMac->hIPPIDRootItem, NULL);
+			pCurrentMac->hIPMacItem = AddItemToSITree(hWndTV, szTemp, 2, (LPARAM)ipclicklParam, ID_SI_IP, pCurrentMac->hIPPIDRootItem, NULL);
 			TreeView_Expand(hWndTV, pCurrentMac->hIPPIDRootItem, TVE_EXPAND);
 		}
 		break;
@@ -10275,7 +10251,7 @@ void HandleWMUSER2IPMode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 			ipclicklParam = LocalAlloc(LPTR, sizeof(IPCLICKLPARAM));
 			ipclicklParam->dwPtr = (LONG_PTR)pCurrentIP;
 			ipclicklParam->nType = SI_PARSER_IP_IP;
-			pCurrentIP->hIPItem = AddItemToSITree(hWndTV, szTemp, 3, (LPARAM)ipclicklParam, 11, pCurrentIP->hIPMacItem, NULL);
+			pCurrentIP->hIPItem = AddItemToSITree(hWndTV, szTemp, 3, (LPARAM)ipclicklParam, ID_SI_IP, pCurrentIP->hIPMacItem, NULL);
 			if (v->fAutoExpandIPs)
 				TreeView_Expand(hWndTV, pCurrentIP->hIPMacItem, TVE_EXPAND);
 		}
@@ -10338,9 +10314,8 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 
 			if (v->pat.hPATTreeItem == NULL)
 			{
-				wsprintf(szMask, "PAT PID %s", v->szOutputPIDFlags);
-				wsprintf(szTemp, szMask, 0);
-				v->pat.hPATTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_PAT, 0, NULL, TVI_FIRST);
+				FormatPIDMask(szTemp, sizeof(szTemp), "PAT PID %s", 0);
+				v->pat.hPATTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_PAT, ID_SI_PAT, NULL, TVI_FIRST);
 			}
 
 			for (nPMTIndex = 0; nPMTIndex < MAX_PAT_ENTRIES; nPMTIndex++)
@@ -10356,10 +10331,9 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 				}
 				else
 				{
-					wsprintf(szMask, "PMT PID %s - Network", v->szOutputPIDFlags);
-					wsprintf(szTemp, szMask, v->pat.pmt[nPMTIndex].nPMTPID);
+					FormatPIDMask(szTemp, sizeof(szTemp), "PMT PID %s - Network", v->pat.pmt[nPMTIndex].nPMTPID);
 				}
-				v->pat.pmt[nPMTIndex].hPMTTreeItem = AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_PMT + nPMTIndex, 1, v->pat.hPATTreeItem, NULL);
+				v->pat.pmt[nPMTIndex].hPMTTreeItem = AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_PMT + nPMTIndex, ID_SI_PMT, v->pat.hPATTreeItem, NULL);
 #ifdef DEBUG_MESSAGES				
 				dbg_printf("TSReader: PMT for %s item #%d\n", szTemp, nPMTIndex);
 #endif DEBUG_MESSAGES
@@ -10367,21 +10341,21 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 				{
 					if (v->pat.pmt[nPMTIndex].fSetupSDTName == FALSE)
 					{
-						int nIcon;
+						eSIIconID nIcon = ID_SI_SDT_OTHER;
 
 						v->pat.pmt[nPMTIndex].fSetupSDTName = TRUE;
 						if (v->pChannelData[v->pat.pmt[nPMTIndex].nProgramNumber]->fATSC == FALSE)
 						{
 							wsprintf(szTemp, "SDT: %s", v->pChannelData[v->pat.pmt[nPMTIndex].nProgramNumber]->szShortName);
 							if (v->pChannelData[v->pat.pmt[nPMTIndex].nProgramNumber]->nFromTable == 0x42)
-								nIcon = 7;
+								nIcon = ID_SI_SDT;
 							else
-								nIcon = 24;
+								nIcon = ID_SI_SDT_OTHER;
 						}
 						else
 						{
 							wsprintf(szTemp, "VCT: %s", v->pChannelData[v->pat.pmt[nPMTIndex].nProgramNumber]->szShortName);
-							nIcon = 12;
+							nIcon = ID_SI_VCT;
 						}
 						AddItemToSITree(hWndTV, szTemp, 3, SI_PARSER_SDT + v->pat.pmt[nPMTIndex].nProgramNumber, nIcon, v->pat.pmt[nPMTIndex].hPMTTreeItem, TVI_FIRST);
 						if (v->fAutoExpandPMTs == TRUE)
@@ -10396,27 +10370,26 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 		{
 			int nPMTIndex = (int)lParam;
 			int nESIndex;
-			int nIcon;
+			eSIIconID nIcon = ID_SI_VIDEO_ES;
 			BOOL fVideoService = FALSE;
 			char szTemp[128];
-			char szMask[128];
 
 			for (nESIndex = 0; nESIndex < MAX_ESLIST_ENTRIES; nESIndex++)
 			{
 				if (v->pat.pmt[nPMTIndex].es[nESIndex].nESPID == 0)
 					break;
 
-				wsprintf(szMask, "ES PID %s", v->szOutputPIDFlags);
-				wsprintf(szTemp, szMask, v->pat.pmt[nPMTIndex].es[nESIndex].nESPID);
+				FormatPIDMask(szTemp, sizeof(szTemp), "ES PID %s", v->pat.pmt[nPMTIndex].es[nESIndex].nESPID);
 				switch(v->pat.pmt[nPMTIndex].es[nESIndex].nStreamType)
 				{
 				case 0x01:	// MPEG-1
 				case 0x02:	// MPEG-2
 				case 0x10:	// MPEG-4
 				case 0x1b:	// H264
+				case 0x24:	// H265
 				case 0xea:	// VC1
 					fVideoService = TRUE;
-					nIcon = 5;
+					nIcon = ID_SI_VIDEO_ES;
 					break;
 				case 0x03:	// MPEG-1
 				case 0x04:	// MPEG-2
@@ -10426,19 +10399,19 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 				case 0x83:	// LPCM
 				case 0x85:	// DTS
 				case 0xe6:	// WM9
-					nIcon = 4;
+					nIcon = ID_SI_AUDIO_ES;
 					break;
 				case 0x06:			// perhaps AC3/PCM. Let's see if there's an AC3 descriptor
 					if (   IsAC3AudioStream(nPMTIndex, nESIndex) == TRUE
 						|| IsPCMAudioStream(nPMTIndex, nESIndex) == TRUE
 						|| IsDTSAudioStream(nPMTIndex, nESIndex) == TRUE)
-						nIcon = 4;
+						nIcon = ID_SI_AUDIO_ES;
 					else if (IsTeleTextOrVBIStream(nPMTIndex, nESIndex) == TRUE)
-						nIcon = 17;
+						nIcon = ID_SI_USER_VBI;
 					else if (IsSubtitleStream(nPMTIndex, nESIndex) == TRUE)
-						nIcon = 19;
+						nIcon = ID_SI_USER_SUBTL;
 					else
-						nIcon = 6;
+						nIcon = ID_SI_USER_ES;
 					break;
 				default:
 					if (v->nNetworkPID != 0x0010)
@@ -10446,16 +10419,16 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 						if (v->pat.pmt[nPMTIndex].es[nESIndex].nStreamType == 0x80) // DCII video
 						{
 							fVideoService = TRUE;
-							nIcon = 5;
+							nIcon = ID_SI_VIDEO_ES;
 							break;
 						}
 					}
 					if (IsDataBroadcastStream(nPMTIndex, nESIndex) == TRUE)
 					{
-						nIcon = 18;
+						nIcon = ID_SI_DATA;
 						break;
 					}
-					nIcon = 6;
+					nIcon = ID_SI_USER_ES;
 					break;
 				}
 				v->pat.pmt[nPMTIndex].es[nESIndex].hESTreeItem = AddItemToSITree(hWndTV, szTemp, 3, SI_PARSER_ES + v->pat.pmt[nPMTIndex].es[nESIndex].nESPID, nIcon, v->pat.pmt[nPMTIndex].hPMTTreeItem, NULL);
@@ -10469,7 +10442,7 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 						char szDescriptor[128];
 
 						DecodeDescriptorNames(szDescriptor, v->pat.pmt[nPMTIndex].es[nESIndex].pDescriptors[nCurrentIndex]);
-						AddItemToSITree(hWndTV, szDescriptor, 4, SI_PARSER_NOP, 8, v->pat.pmt[nPMTIndex].es[nESIndex].hESTreeItem, NULL);
+						AddItemToSITree(hWndTV, szDescriptor, 4, SI_PARSER_NOP, ID_SI_DESCRIPTOR, v->pat.pmt[nPMTIndex].es[nESIndex].hESTreeItem, NULL);
 						nCurrentIndex += (BYTE)v->pat.pmt[nPMTIndex].es[nESIndex].pDescriptors[nCurrentIndex + 1]; // descriptor length
 						nCurrentIndex += 2;	// descriptor tag and length
 					} while (nCurrentIndex < nDescriptorsLength);
@@ -10478,10 +10451,9 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 			if ( (v->pat.pmt[nPMTIndex].nPCRPID > 0) && (v->pat.pmt[nPMTIndex].nPCRPID < 0x1fff) )
 			{
 				if (fVideoService == TRUE || v->fShowNonVideoPCR)
-				{							
-					wsprintf(szMask, "PCR PID %s", v->szOutputPIDFlags);
-					wsprintf(szTemp, szMask, v->pat.pmt[nPMTIndex].nPCRPID);
-					v->pat.pmt[nPMTIndex].hPCRTreeItem = AddItemToSITree(hWndTV, szTemp, 3, SI_PARSER_NOP, 3, v->pat.pmt[nPMTIndex].hPMTTreeItem, NULL);
+				{
+					FormatPIDMask(szTemp, sizeof(szTemp), "PCR PID %s", v->pat.pmt[nPMTIndex].nPCRPID);
+					v->pat.pmt[nPMTIndex].hPCRTreeItem = AddItemToSITree(hWndTV, szTemp, 3, SI_PARSER_NOP, ID_SI_PCR, v->pat.pmt[nPMTIndex].hPMTTreeItem, NULL);
 				}
 			}
 			if (v->fAutoExpandPMTs == TRUE)
@@ -10496,16 +10468,15 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 	case SI_PARSER_NIT:
 		{
 			int nTransportStreamID = (int)lParam;
-			int nIcon = 9;
+			eSIIconID nIcon = ID_SI_NIT;
 			int i;
 			char szTemp[128], szMask[128], szPolarity[16], szEW[2];
 			char szOrbitalPosition[6];
 
 			if (v->hNITRootTreeItem == NULL)
 			{
-				wsprintf(szMask, "NIT PID %s", v->szOutputPIDFlags);
-				wsprintf(szTemp, szMask, 0x0010);
-				v->hNITRootTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_NIT + 0x0fffffff, 9, NULL, NULL);
+				FormatPIDMask(szTemp, sizeof(szTemp), "NIT PID %s", 0x0010);
+				v->hNITRootTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_NIT + 0x0fffffff, ID_SI_NIT, NULL, NULL);
 			}
 			szTemp[0] = '\0';
 			switch(v->pNITData[nTransportStreamID]->nType)
@@ -10543,14 +10514,14 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 				break;
 			}
 			if (v->pNITData[nTransportStreamID]->fThisTS != TRUE)
-				nIcon = 25;
+				nIcon = ID_SI_NIT_OTHER;
 			for (i = 0; i < MAX_IGNORED_NETWORKS; i++)
 			{
 				if (v->nIgnoredNetworks[i] == 0)
 					break;
 				if (v->nIgnoredNetworks[i] == v->pNITData[nTransportStreamID]->nNetworkID)
 				{
-					nIcon = 27;
+					nIcon = ID_SI_NIT_IGNORED;
 					break;
 				}
 			}
@@ -10574,7 +10545,7 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 		{
 			int nChannelNumber = (int)lParam;
 			int i;
-			int nIcon;
+			eSIIconID nIcon = ID_SI_VCT;
 			char szTemp[256], szMask[256];
 			
 			if (v->nNetworkPID == 0x0ffe)
@@ -10584,21 +10555,19 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 				PostMessage(v->hWndEPGGrid, WM_USER + 2, wParam, lParam);
 
 			if (wParam == SI_PARSER_SDT)
-				nIcon = 7;
+				nIcon = ID_SI_SDT;
 			else
-				nIcon = 12;
+				nIcon = ID_SI_VCT;
 
 			if (v->hSDTRootTreeItem == NULL)
 			{
 				if (wParam == SI_PARSER_SDT)
 				{
-					wsprintf(szMask, "SDT PID %s", v->szOutputPIDFlags);
-					wsprintf(szTemp, szMask, 0x0011);
+					FormatPIDMask(szTemp, sizeof(szTemp), "SDT PID %s", 0x0011);
 				}
 				else
 				{
-					wsprintf(szMask, "TVCT PID %s", v->szOutputPIDFlags);
-					wsprintf(szTemp, szMask, 0x1ffb);
+					FormatPIDMask(szTemp, sizeof(szTemp), "TVCT PID %s", 0x1ffb);
 				}
 				v->hSDTRootTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_SDT | 0x0fffffff, nIcon, NULL, NULL);
 			}
@@ -10607,9 +10576,9 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 			if (wParam == SI_PARSER_SDT)
 			{
 				if (v->pChannelData[nChannelNumber]->nFromTable == 0x42)
-					nIcon = 7;
+					nIcon = ID_SI_SDT;
 				else
-					nIcon = 24;
+					nIcon = ID_SI_SDT_OTHER;
 			}
 			if (nChannelNumber < v->nMinimumSDTChannel)
 			{
@@ -10667,14 +10636,14 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 						{
 							wsprintf(szTemp, "SDT: %s", v->pChannelData[nProgramNumber]->szShortName);
 							if (v->pChannelData[nProgramNumber]->nFromTable == 0x42)
-								nIcon = 7;
+								nIcon = ID_SI_SDT;
 							else
-								nIcon = 24;
+								nIcon = ID_SI_SDT_OTHER;
 						}
 						else
 						{
 							wsprintf(szTemp, "VCT: %s", v->pChannelData[nProgramNumber]->szShortName);
-							nIcon = 12;
+							nIcon = ID_SI_VCT;
 						}
 						AddItemToSITree(hWndTV, szTemp, 3, SI_PARSER_SDT + nProgramNumber, nIcon, v->pat.pmt[i].hPMTTreeItem, TVI_FIRST);
 						v->nSDTTreeItemCount++;
@@ -10724,12 +10693,11 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 			{
 				if (v->nNetworkPID == 0x0010)
 				{
-					wsprintf(szMask, "EIT PID %s", v->szOutputPIDFlags);
-					wsprintf(szTemp, szMask, v->nEITPID);
+					FormatPIDMask(szTemp, sizeof(szTemp), "EIT PID %s", v->nEITPID);
 				}
 				else
 					lstrcpy(szTemp, "EIT/ETT");
-				v->hEITRootTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_EIT | 0x0fffffff, 2, NULL, NULL);
+				v->hEITRootTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_EIT | 0x0fffffff, ID_SI_EIT, NULL, NULL);
 			}
 			if (v->hEITTreeItem[nChannelNumber] != NULL)
 				break;
@@ -10754,12 +10722,12 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 			{
 				if (v->hEITTreeItem[i] != NULL)
 				{
-					v->hEITTreeItem[nChannelNumber] = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_EIT + nChannelNumber, 2, v->hEITRootTreeItem, v->hEITTreeItem[i]);
+					v->hEITTreeItem[nChannelNumber] = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_EIT + nChannelNumber, ID_SI_EIT, v->hEITRootTreeItem, v->hEITTreeItem[i]);
 					break;
 				}
 			}
 			if (i == 0)
-				v->hEITTreeItem[nChannelNumber] = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_EIT + nChannelNumber, 2, v->hEITRootTreeItem, TVI_FIRST);
+				v->hEITTreeItem[nChannelNumber] = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_EIT + nChannelNumber, ID_SI_EIT, v->hEITRootTreeItem, TVI_FIRST);
 			v->nEITTreeItemCount++;
 			if (v->nNetworkPID == 0x0010)
 			{
@@ -10778,11 +10746,10 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 	case SI_PARSER_CAT:
 		{
 			int i;
-			char szTemp[128], szMask[128];
+			char szTemp[128];
 
-			wsprintf(szMask, "CAT PID %s", v->szOutputPIDFlags);
-			wsprintf(szTemp, szMask, 0x0001);
-			v->cat.hCATTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_CAT, 10, NULL, v->pat.hPATTreeItem);
+			FormatPIDMask(szTemp, sizeof(szTemp), "CAT PID %s", 0x0001);
+			v->cat.hCATTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_CAT, ID_SI_CAT, NULL, v->pat.hPATTreeItem);
 
 			for (i = 0; i < MAX_CAT_DESCRIPTORS; i++)
 			{
@@ -10805,7 +10772,7 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 					lstrcat(szDescriptor, " - ");
 					lstrcat(szDescriptor, szCAName);
 				}
-				AddItemToSITree(hWndTV, szDescriptor, 2, SI_PARSER_NOP, 8, v->cat.hCATTreeItem, NULL);
+				AddItemToSITree(hWndTV, szDescriptor, 2, SI_PARSER_NOP, ID_SI_DESCRIPTOR, v->cat.hCATTreeItem, NULL);
 			}
 			TreeView_Expand(hWndTV, v->cat.hCATTreeItem, TVE_EXPAND);
 		}
@@ -10813,11 +10780,10 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 	case SI_PARSER_MMT:
 		{
 			int i;
-			char szTemp[128], szMask[128];
+			char szTemp[128];
 
-			wsprintf(szMask, "MMT PID %s", v->szOutputPIDFlags);
-			wsprintf(szTemp, szMask, v->nNetworkPID);
-			v->hMMTRootTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_NOP, 16, NULL, v->pat.hPATTreeItem);
+			FormatPIDMask(szTemp, sizeof(szTemp), "MMT PID %s", v->nNetworkPID);
+			v->hMMTRootTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_NOP, ID_SI_MMT, NULL, v->pat.hPATTreeItem);
 
 			for (i = 0; i < v->nMaxMMT; i++)
 			{
@@ -10826,7 +10792,7 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 
 				DecodeFEC(v->mmt[i].inner_coding_mode, szFEC, TRUE);
 				wsprintf(szTemp, "%d %s", nDisplaySR, szFEC);
-				AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_MMT + i, 16, v->hMMTRootTreeItem, NULL);
+				AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_MMT + i, ID_SI_MMT, v->hMMTRootTreeItem, NULL);
 			}
 		}
 		break;
@@ -10834,26 +10800,24 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 		if (v->nNetworkPID == 0x1ffb)
 		{
 			int nRRTRegion = (int)lParam;
-			char szTemp[128], szMask[128];
+			char szTemp[128];
 
 			if (v->hRRTRootTreeItem == NULL)
 			{
-				wsprintf(szMask, "RRT PID %s", v->szOutputPIDFlags);
-				wsprintf(szTemp, szMask, v->nNetworkPID);
-				v->hRRTRootTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_NOP, 15, NULL, v->pat.hPATTreeItem);
+				FormatPIDMask(szTemp, sizeof(szTemp), "RRT PID %s", v->nNetworkPID);
+				v->hRRTRootTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_NOP, ID_SI_CDT, NULL, v->pat.hPATTreeItem);
 			}
 			wsprintf(szTemp, "Region %d", nRRTRegion);
-			AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_RRT + nRRTRegion, 15, v->hRRTRootTreeItem, NULL);
+			AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_RRT + nRRTRegion, ID_SI_CDT, v->hRRTRootTreeItem, NULL);
 		}
 		else if (v->fISDB)
 		{
-			char szTemp[128], szMask[128];
+			char szTemp[128];
 			int i;
 
 			if (v->bit.hBITTreeItem == NULL) {
-				wsprintf(szMask, "BIT PID %s", v->szOutputPIDFlags);
-				wsprintf(szTemp, szMask, 0x0024);
-				v->bit.hBITTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_BIT, 28, NULL, NULL);
+				FormatPIDMask(szTemp, sizeof(szTemp), "BIT PID %s", 0x0024);
+				v->bit.hBITTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_BIT, ID_SI_BIT, NULL, NULL);
 			}
 
 			for (i = 0; i < MAX_BIT_DESCRIPTORS; i++) {
@@ -10863,20 +10827,14 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 					break;
 
 				DecodeDescriptorNames(szDescriptor, v->bit.pDescriptor[i][0]);
-				set_buf(BM_USER_THREAD, v->bit.pDescriptor[i], 0, FALSE);
-				{
-					uint8_t descriptor_tag = get_bits(BM_USER_THREAD, 8) & 0xff;
-					uint8_t descriptor_length = get_bits(BM_USER_THREAD, 8) & 0xff;
-				}
-				AddItemToSITree(hWndTV, szDescriptor, 2, SI_PARSER_NOP, 8, v->bit.hBITTreeItem, NULL);
+				AddItemToSITree(hWndTV, szDescriptor, 2, SI_PARSER_NOP, ID_SI_DESCRIPTOR, v->bit.hBITTreeItem, NULL);
 			}
 		} else {
 			int i;
-			char szTemp[128], szMask[128];
+			char szTemp[128];
 
-			wsprintf(szMask, "CDT PID %s", v->szOutputPIDFlags);
-			wsprintf(szTemp, szMask, v->nNetworkPID);
-			v->hCDTRootTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_NOP, 15, NULL, v->pat.hPATTreeItem);
+			FormatPIDMask(szTemp, sizeof(szTemp), "CDT PID %s", v->nNetworkPID);
+			v->hCDTRootTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_NOP, ID_SI_CDT, NULL, v->pat.hPATTreeItem);
 
 			for (i = 0; i < v->nMaxCDT; i++)
 			{
@@ -10896,13 +10854,12 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 	case SI_PARSER_SIT:
 		{
 			int nSITIndex = (int)lParam;
-			char szTemp[128], szMask[128];
+			char szTemp[128];
 
 			if (v->hSITRootTreeItem == NULL)
 			{
-				wsprintf(szMask, "SIT PID %s", v->szOutputPIDFlags);
-				wsprintf(szTemp, szMask, v->nNetworkPID);
-				v->hSITRootTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_NOP, 14, NULL, v->pat.hPATTreeItem);
+				FormatPIDMask(szTemp, sizeof(szTemp), "SIT PID %s", v->nNetworkPID);
+				v->hSITRootTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_NOP, ID_SI_SIT, NULL, v->pat.hPATTreeItem);
 			}
 
 			sprintf(szTemp, "%d @ %.3f deg ", v->sit[nSITIndex].satellite_ID, (double)v->sit[nSITIndex].orbital_position / 10.0);
@@ -10910,13 +10867,13 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 				lstrcat(szTemp, "W");
 			else
 				lstrcat(szTemp, "E");
-			AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_SIT + nSITIndex, 14, v->hSITRootTreeItem, NULL);
+			AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_SIT + nSITIndex, ID_SI_SIT, v->hSITRootTreeItem, NULL);
 		}
 		break;
 	case SI_PARSER_TDT:
 		{
 			int nTDTIndex = (int)lParam;
-			char szTemp[128], szMask[128];
+			char szTemp[128];
 
 			switch(v->nNetworkPID)
 			{
@@ -10930,10 +10887,9 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 					if (v->dvbtdt.hRootTreeItem == NULL)
 					{
 						char szTemp2[128];
-						wsprintf(szMask, "TDT PID %s", v->szOutputPIDFlags);
-						wsprintf(szTemp2, szMask, 0x0014);
-						v->dvbtdt.hRootTreeItem = AddItemToSITree(hWndTV, szTemp2, 1, SI_PARSER_NOP, 13, NULL, v->pat.hPATTreeItem);
-						v->dvbtdt.hTreeItem = AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_TDT, 13, v->dvbtdt.hRootTreeItem, NULL);
+						FormatPIDMask(szTemp2, sizeof(szTemp2), "TDT PID %s", 0x0014);
+						v->dvbtdt.hRootTreeItem = AddItemToSITree(hWndTV, szTemp2, 1, SI_PARSER_NOP, ID_SI_TDT, NULL, v->pat.hPATTreeItem);
+						v->dvbtdt.hTreeItem = AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_TDT, ID_SI_TDT, v->dvbtdt.hRootTreeItem, NULL);
 						TreeView_Expand(hWndTV, v->dvbtdt.hRootTreeItem, TVE_EXPAND);
 					}
 					else
@@ -10956,8 +10912,8 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 					{
 						char szTemp2[128];
 						FormatPIDMask(szTemp2, sizeof(szTemp2), "TOT PID %s", 0x0014);
-						v->dvbtot.hRootTreeItem = AddItemToSITree(hWndTV, szTemp2, 1, SI_PARSER_NOP, 13, NULL, v->pat.hPATTreeItem);
-						v->dvbtot.hTreeItem = AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_TDT + 1, 13, v->dvbtot.hRootTreeItem, NULL);
+						v->dvbtot.hRootTreeItem = AddItemToSITree(hWndTV, szTemp2, 1, SI_PARSER_NOP, ID_SI_TDT, NULL, v->pat.hPATTreeItem);
+						v->dvbtot.hTreeItem = AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_TDT + 1, ID_SI_TDT, v->dvbtot.hRootTreeItem, NULL);
 						TreeView_Expand(hWndTV, v->dvbtot.hRootTreeItem, TVE_EXPAND);
 					}
 					else
@@ -10981,10 +10937,9 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 					if (v->dvbtdt.hRootTreeItem == NULL)
 					{
 						char szTemp2[128];
-						wsprintf(szMask, "STT PID %s", v->szOutputPIDFlags);
-						wsprintf(szTemp2, szMask, 0x1ffb);
-						v->dvbtdt.hRootTreeItem = AddItemToSITree(hWndTV, szTemp2, 1, SI_PARSER_NOP, 13, NULL, v->pat.hPATTreeItem);
-						v->dvbtdt.hTreeItem = AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_TDT, 13, v->dvbtdt.hRootTreeItem, NULL);
+						FormatPIDMask(szTemp2, sizeof(szTemp2), "STT PID %s", 0x1ffb);
+						v->dvbtdt.hRootTreeItem = AddItemToSITree(hWndTV, szTemp2, 1, SI_PARSER_NOP, ID_SI_TDT, NULL, v->pat.hPATTreeItem);
+						v->dvbtdt.hTreeItem = AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_TDT, ID_SI_TDT, v->dvbtdt.hRootTreeItem, NULL);
 						TreeView_Expand(hWndTV, v->dvbtdt.hRootTreeItem, TVE_EXPAND);
 					}
 					else
@@ -11004,12 +10959,11 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 					// DCII Transponder Definition Table
 					if (v->hTDTRootTreeItem == NULL)
 					{
-						wsprintf(szMask, "TDT PID %s", v->szOutputPIDFlags);
-						wsprintf(szTemp, szMask, v->nNetworkPID);
-						v->hTDTRootTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_NOP, 13, NULL, v->pat.hPATTreeItem);
+						FormatPIDMask(szTemp, sizeof(szTemp), "TDT PID %s", v->nNetworkPID);
+						v->hTDTRootTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_NOP, ID_SI_TDT, NULL, v->pat.hPATTreeItem);
 					}
 					wsprintf(szTemp, "Sat. %d txp. %d", v->tdt[nTDTIndex].satellite_ID, v->tdt[nTDTIndex].transponder_number);
-					AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_TDT + nTDTIndex, 13, v->hTDTRootTreeItem, NULL);
+					AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_TDT + nTDTIndex, ID_SI_TDT, v->hTDTRootTreeItem, NULL);
 				}
 				break;
 			}
@@ -11017,32 +10971,29 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 		break;
 	case SI_PARSER_MGT:
 		{
-			char szTemp[128], szMask[128];
+			char szTemp[128];
 
-			wsprintf(szMask, "MGT PID %s", v->szOutputPIDFlags);
-			wsprintf(szTemp, szMask, 0x1ffb);
-			v->hMGTRootTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_MGT, 20, NULL, v->pat.hPATTreeItem);
+			FormatPIDMask(szTemp, sizeof(szTemp), "MGT PID %s", 0x1ffb);
+			v->hMGTRootTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_MGT, ID_SI_MGT, NULL, v->pat.hPATTreeItem);
 		}
 		break;
 	case SI_PARSER_CVCT:
 		{
 			int nCVCTIndex = (int)lParam;
-			char szTemp[128], szMask[128];
+			char szTemp[128];
 
 			if (v->hCVCTRootTreeItem == NULL)
 			{
-				wsprintf(szMask, "CVCT PID %s", v->szOutputPIDFlags);
-				wsprintf(szTemp, szMask, 0x1ffb);
-				v->hCVCTRootTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_CVCT + MAX_CVCT_ENTRIES + 1, 12, NULL, v->pat.hPATTreeItem);
+				FormatPIDMask(szTemp, sizeof(szTemp), "CVCT PID %s", 0x1ffb);
+				v->hCVCTRootTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_CVCT + MAX_CVCT_ENTRIES + 1, ID_SI_VCT, NULL, v->pat.hPATTreeItem);
 			}
-			wsprintf(szMask, "CVCT TSID %s", v->szOutputPIDFlags);
-			wsprintf(szTemp, szMask, v->cvct[nCVCTIndex].transport_stream_id);
-			AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_CVCT + nCVCTIndex, 12, v->hCVCTRootTreeItem, NULL);
+			FormatPIDMask(szTemp, sizeof(szTemp), "CVCT TSID %s", v->cvct[nCVCTIndex].transport_stream_id);
+			AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_CVCT + nCVCTIndex, ID_SI_VCT, v->hCVCTRootTreeItem, NULL);
 		}
 		break;
 	case SI_PARSER_BAT:
 		{
-			int nIcon = 23;
+			int nIcon = ID_SI_BAT;
 			int nBATIndex = (int)lParam;
 			char szTemp[128], szMask[128];
 
@@ -11055,15 +11006,14 @@ void HandleWMUSER2MPEG2Mode(HWND hDlg, WPARAM wParam, LPARAM lParam)
 
 			if (v->hBATRootTreeItem == NULL)
 			{
-				wsprintf(szMask, "BAT PID %s", v->szOutputPIDFlags);
-				wsprintf(szTemp, szMask, 0x0011);
-				v->hBATRootTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_BAT + MAX_BAT_ENTRIES, 23, NULL, v->pat.hPATTreeItem);
+				FormatPIDMask(szTemp, sizeof(szTemp), "BAT PID %s", 0x0011);
+				v->hBATRootTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_BAT + MAX_BAT_ENTRIES, ID_SI_BAT, NULL, v->pat.hPATTreeItem);
 			}
 			wsprintf(szMask, "BAT %s (v%d)", v->szOutputPIDFlags, v->bat[nBATIndex].version_number);
 			wsprintf(szTemp, szMask, v->bat[nBATIndex].bouquet_id);
 			if (v->bat[nBATIndex].bouquet_id == v->nCurrentBATID)
 			{
-				nIcon = 26;
+				nIcon = ID_SI_BAT_SELECTED;
 			}
 			v->bat[nBATIndex].hTreeItem = AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_BAT + nBATIndex, nIcon, v->hBATRootTreeItem, NULL);
 			v->nBATTreeItemCount++;
@@ -11909,7 +11859,7 @@ void IPDVBModeOff(HWND hWnd)
 {
 	SendMessage(GetDlgItem(v->hDlgSIParser, IDC_SI_TREE), WM_SETREDRAW, FALSE, 0);
 	v->fDeletingAllTVItems = TRUE;
-	TreeView_DeleteAllItems(GetDlgItem(v->hDlgSIParser, IDC_SI_TREE));	
+	TreeView_DeleteAllItems(GetDlgItem(v->hDlgSIParser, IDC_SI_TREE));
 	v->fDeletingAllTVItems = FALSE;
 	v->fIPDVBModeChanged = TRUE;
 	v->fIPDVBMode = FALSE;
@@ -11920,7 +11870,7 @@ void IPDVBModeOff(HWND hWnd)
 	v->fDidCAT = FALSE;
 	if (!v->fForcedNetworkType)
 	{
-		v->nNetworkPID = -1;
+		v->nNetworkPID = (uint16_t)-1;
 		v->fISDB = FALSE;
 	}
 	v->nPMTTimeoutCounter = v->nPMTPID = 0;
@@ -12772,11 +12722,11 @@ INT_PTR CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam
 							if (v->pat.hPATTreeItem == NULL)
 							{
 								FormatPIDMask(szTemp2, sizeof(szTemp2), "PAT PID %s", 0);
-								v->pat.hPATTreeItem = AddItemToSITree(hWndTV, szTemp2, 1, SI_PARSER_PAT, 0, NULL, TVI_FIRST);
+								v->pat.hPATTreeItem = AddItemToSITree(hWndTV, szTemp2, 1, SI_PARSER_PAT, ID_SI_PAT, NULL, TVI_FIRST);
 							}
 
 							wsprintf(szTemp2, "Manual - Program %d", v->pat.pmt[nPMTIndex].nProgramNumber);
-							v->pat.pmt[nPMTIndex].hPMTTreeItem = AddItemToSITree(hWndTV, szTemp2, 2, SI_PARSER_PMT + nPMTIndex, 1, v->pat.hPATTreeItem, NULL);
+							v->pat.pmt[nPMTIndex].hPMTTreeItem = AddItemToSITree(hWndTV, szTemp2, 2, SI_PARSER_PMT + nPMTIndex, ID_SI_PMT, v->pat.hPATTreeItem, NULL);
 							PostMessage(v->hDlgSIParser, WM_USER + 2, SI_PARSER_PMT, nPMTIndex);
 
 							memset(&lvi, 0, sizeof(lvi));
@@ -13063,19 +13013,17 @@ BOOL LoadManualChannels(HWND hWnd, char * szInputFile)
 				if (v->pat.pmt[nPMTIndex].nPMTPID == 0)
 				{
 					char szTemp[128];
-					char szMask[128];
 
 					if (v->pat.hPATTreeItem == NULL)
 					{
-						wsprintf(szMask, "PAT PID %s", v->szOutputPIDFlags);
-						wsprintf(szTemp, szMask, 0);
-						v->pat.hPATTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_PAT, 0, NULL, TVI_FIRST);
+						FormatPIDMask(szTemp, sizeof(szTemp), "PAT PID %s", 0);
+						v->pat.hPATTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_PAT, ID_SI_PAT, NULL, TVI_FIRST);
 					}
 
 					newpmt.nPMTPID = MANUAL_CHANNEL_PMT_PID;
 					memcpy(&v->pat.pmt[nPMTIndex], &newpmt, sizeof(PMT));
 					wsprintf(szTemp, "Manual - Program %d", v->pat.pmt[nPMTIndex].nProgramNumber);
-					v->pat.pmt[nPMTIndex].hPMTTreeItem = AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_PMT + nPMTIndex, 1, v->pat.hPATTreeItem, NULL);
+					v->pat.pmt[nPMTIndex].hPMTTreeItem = AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_PMT + nPMTIndex, ID_SI_PMT, v->pat.hPATTreeItem, NULL);
 #ifdef DEBUG_MESSAGES
 					dbg_printf("TSReader: PMT for %s item #%d\n", szTemp, nPMTIndex);
 #endif DEBUG_MESSAGES
@@ -14468,7 +14416,7 @@ BOOL CheckWinPcap(HWND hDlg)
 	if (v->hUDPSender == NULL)
 	{
 		if (MessageBox(hDlg, "WinPcap is required for this function and has not been installed.\n\nWould you like to go to the WinPcap homepage to download it?", gszAppName, MB_ICONSTOP | MB_YESNO) == IDYES)
-			ShellExecute(NULL, "open", "http://winpcap.polito.it/", NULL, NULL, SW_SHOW);
+			ShellExecute(NULL, "open", "https://www.winpcap.org/", NULL, NULL, SW_SHOW);
 		return FALSE;
 	}
 	return TRUE;
@@ -15646,7 +15594,7 @@ void GetTableMonitorDispInfo(LV_DISPINFO *pnmv)
 			{
 				if (v->tablemonitor[nTableID].lnDelayItems)
 				{
-					__int64 nValue = (v->tablemonitor[nTableID].lnDelay / v->tablemonitor[nTableID].lnDelayItems) / (__int64)27000;
+					int64_t nValue = (v->tablemonitor[nTableID].lnDelay / v->tablemonitor[nTableID].lnDelayItems) / (int64_t)27000;
 					wsprintf(pnmv->item.pszText, "%d", (int)nValue);
 				}
 				else
@@ -15660,7 +15608,7 @@ void GetTableMonitorDispInfo(LV_DISPINFO *pnmv)
 			{
 				if (v->tablemonitor[nTableID].lnDelayMin != 0xffffffff)
 				{
-					__int64 nValue = v->tablemonitor[nTableID].lnDelayMin / (__int64)27000;
+					int64_t nValue = v->tablemonitor[nTableID].lnDelayMin / (int64_t)27000;
 					wsprintf(pnmv->item.pszText, "%d", (int)nValue);
 				}
 				else
@@ -15674,7 +15622,7 @@ void GetTableMonitorDispInfo(LV_DISPINFO *pnmv)
 			{
 				if (v->tablemonitor[nTableID].lnDelayMax)
 				{
-					__int64 nValue = v->tablemonitor[nTableID].lnDelayMax / (__int64)27000;
+					int64_t nValue = v->tablemonitor[nTableID].lnDelayMax / (int64_t)27000;
 					wsprintf(pnmv->item.pszText, "%d", (int)nValue);
 				}
 				else
@@ -16478,8 +16426,8 @@ INT_PTR CALLBACK ChartSaveDataDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARA
 
 INT_PTR CALLBACK MDIIndexDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	static __int64 nTotalBitrate;
-	static int nTotalBitrateSamples;
+	static int64_t nTotalBitrate;
+	static int64_t nTotalBitrateSamples;
 
 	switch(uMsg)
 	{
@@ -16516,7 +16464,7 @@ INT_PTR CALLBACK MDIIndexDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 		{
 			tMDISAMPLE sample;
 			MDITIME ts;
-			signed __int64 lnCurrentCounterValue;
+			int64_t lnCurrentCounterValue;
 			double dnsPerTick;
 			char szTemp[128];
 
@@ -16524,17 +16472,17 @@ INT_PTR CALLBACK MDIIndexDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			dnsPerTick = 1000000000.0 / (double)v->lnTicksPerSecond;
 			QueryPerformanceCounter((LARGE_INTEGER *)&lnCurrentCounterValue);
-			ts = lnCurrentCounterValue * (__int64)dnsPerTick;
+			ts = lnCurrentCounterValue * (int64_t)dnsPerTick;
 
 			EnterCriticalSection(&v->csMDI);
 			mdiSample(ts, mdi, &sample);
-			LeaveCriticalSection(&v->csMDI);			
-			sprintf(szTemp, "MDI: df=%8.3f lc=%5u br=%9u  ts=%.0f\n", sample.delayFactor / 1000, sample.lossCount, sample.bitrate, (double)ts);
+			LeaveCriticalSection(&v->csMDI);
+			StringCchPrintf(szTemp, sizeof(szTemp), "MDI: df=%8.3f lc=%5u br=%9u  ts=%.0f\n", sample.delayFactor / 1000, sample.lossCount, sample.bitrate, (double)ts);
 			SendDlgItemMessage(hDlg, IDC_MDI_DEBUG, LB_INSERTSTRING, 0, (LPARAM)szTemp);
 
-			nTotalBitrate += (__int64)sample.bitrate;
+			nTotalBitrate += (int64_t)sample.bitrate;
 			nTotalBitrateSamples++;
-			wsprintf(szTemp, "%d", nTotalBitrate / nTotalBitrateSamples);
+			StringCchPrintf(szTemp, sizeof(szTemp), "%lld", nTotalBitrate / nTotalBitrateSamples);
 			SetDlgItemText(hDlg, IDC_MDI_AVERAGE_BR, szTemp);
 		}
 		break;
@@ -17760,7 +17708,7 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			SendMessage(GetDlgItem(v->hDlgSIParser, IDC_SI_TREE), WM_SETREDRAW, FALSE, 0);
 			v->fDeletingAllTVItems = TRUE;
-			TreeView_DeleteAllItems(GetDlgItem(v->hDlgSIParser, IDC_SI_TREE));	
+			TreeView_DeleteAllItems(GetDlgItem(v->hDlgSIParser, IDC_SI_TREE));
 			v->fDeletingAllTVItems = FALSE;
 			SendMessage(GetDlgItem(v->hDlgSIParser, IDC_SI_TREE), WM_SETREDRAW, TRUE, 0);
 			v->fTreeViewSelectedAtLeastOnce = FALSE;
@@ -19754,7 +19702,7 @@ void InitVariables(HINSTANCE hInstance, int nCmdShow)
 	v->nAutoExportDelay = 10;
 	v->nPIDUsageStackedAreaChartIndex = -1;
 	v->nDiSEqCPosition = -1;
-	v->nNetworkPID = -1;
+	v->nNetworkPID = (uint16_t)-1;
 	v->nNITRightClickIndex = -1;
 	v->nSDTRightClickIndex = -1;
 	for (i = 0; i < MAX_ES_PARSERS; i++)
@@ -19795,7 +19743,7 @@ void InitVariables(HINSTANCE hInstance, int nCmdShow)
 	{
 		int j;
 
-		v->cvct[i].transport_stream_id = -1;
+		v->cvct[i].transport_stream_id = (uint16_t)-1;
 		for (j = 0; j < MAX_CVCT_CHANNEL_ENTRIES; j++)
 			v->cvct[i].CVCTEntry[j].major_channel_number = v->cvct[i].CVCTEntry[j].minor_channel_number = -1;
 	}
@@ -19806,10 +19754,10 @@ void InitVariables(HINSTANCE hInstance, int nCmdShow)
 	InitializeCriticalSection(&v->csEIT);
 	InitializeCriticalSection(&v->ss.csPIDCounter);
 	InitializeCriticalSection(&v->ss.csTSBuffersInUse);
-	InitializeCriticalSection(&v->csThumbnails);	
-	InitializeCriticalSection(&v->csPipeBytes);		
-	InitializeCriticalSection(&v->csAutoRestartOnDataStopCounter);		
-	InitializeCriticalSection(&v->csNextESPID);			
+	InitializeCriticalSection(&v->csThumbnails);
+	InitializeCriticalSection(&v->csPipeBytes);
+	InitializeCriticalSection(&v->csAutoRestartOnDataStopCounter);
+	InitializeCriticalSection(&v->csNextESPID);
 	InitializeCriticalSection(&v->csStatusbar);
 
 	InitializeCriticalSection(&v->csActualRecordFilename);

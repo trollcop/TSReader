@@ -1762,7 +1762,7 @@ ParsePMTPacket_Windup:
 
 BOOL fSyncedUDPPacket = FALSE;
 
-void ParseIPPacket(BYTE * pSectionPointer, int nPacketLength, int nPID, int nBufferNumber)
+void ParseIPPacket(BYTE * pSectionPointer, int nPacketLength, uint16_t nPID, int nBufferNumber)
 {
 	int i;
 	int llc_snap_offset = 0;
@@ -2515,14 +2515,14 @@ BOOL ParsePSIPPacket(BYTE * pSectionPointer, int nPacketLength)
 				int reserved1 = get_bits(BM_PARSER_THREAD, 2);
 				int section_length = get_bits(BM_PARSER_THREAD, 12);
 
-				int transport_stream_id = get_bits(BM_PARSER_THREAD, 16);
+				uint16_t transport_stream_id = get_bits(BM_PARSER_THREAD, 16) & 0xffff;
 				int reserved2 = get_bits(BM_PARSER_THREAD, 2);
-				int version_number = get_bits(BM_PARSER_THREAD, 5);
+				uint8_t version_number = get_bits(BM_PARSER_THREAD, 5) & 0x1f;
 				int current_next_indicator = get_bits(BM_PARSER_THREAD, 1);
 				int section_number = get_bits(BM_PARSER_THREAD, 8);
 				int last_section_number = get_bits(BM_PARSER_THREAD, 8);
 				int protocol_version = get_bits(BM_PARSER_THREAD, 8);
-				int num_channels_in_section = get_bits(BM_PARSER_THREAD, 8);
+				uint8_t num_channels_in_section = get_bits(BM_PARSER_THREAD, 8) & 0xff;
 				if (num_channels_in_section == 0)
 					return FALSE;
 				
@@ -2659,7 +2659,7 @@ BOOL ParsePSIPPacket(BYTE * pSectionPointer, int nPacketLength)
 				{
 					int j;
 					int reserved = get_bits(BM_PARSER_THREAD, 6);
-					int additional_descriptors_length = get_bits(BM_PARSER_THREAD, 10);
+					uint16_t additional_descriptors_length = get_bits(BM_PARSER_THREAD, 10) & 0x3ff;
 					if (additional_descriptors_length)
 					{
 						v->cvct[nCVCTIndex].additional_descriptors_length = additional_descriptors_length;

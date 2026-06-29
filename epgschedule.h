@@ -4,6 +4,6 @@ typedef struct _tagEPGSchedule
 	int nDuration;
 	short wPreRoll;
 	short wPostRoll;
-	__int64 nStartTime;
+	int64_t nStartTime;
 	char szEventName[64];
 } EPGSCHEDULE, *PEPGSCHEDULE;

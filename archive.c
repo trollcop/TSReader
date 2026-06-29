@@ -1,5 +1,5 @@
-#include <windows.h>
-#include <commctrl.h>
+#include <Windows.h>
+#include <CommCtrl.h>
 #include <shlobj.h>
 
 #include "TSReader.h"
@@ -2148,7 +2148,7 @@ void UpdateOutputFreeSpace(HWND hWnd)
 
 			wsprintf(szDrive, "%c:", i + 'A');
 			GetDiskFreeSpaceEx(szDrive, &FreeBytesAvailable, &TotalNumberOfBytes, &TotalNumberOfFreeBytes);
-			archive->dDriveFreeSpace[i] = ((double)(__int64)FreeBytesAvailable.QuadPart / 1024.0 / 1024.0 / 1024.0);
+			archive->dDriveFreeSpace[i] = ((double)(int64_t)FreeBytesAvailable.QuadPart / 1024.0 / 1024.0 / 1024.0);
 		}
 	}
 
@@ -4036,7 +4036,7 @@ BOOL EPGDataWithin15SecondsPresent(int nPMTIndex)
 void CheckEPG(void)
 {
 	SYSTEMTIME stNow;
-	__int64 ftNow, ftTimeCheck;
+	int64_t ftNow, ftTimeCheck;
 
 
 	GetSystemTime(&stNow);

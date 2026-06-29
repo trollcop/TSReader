@@ -63,15 +63,29 @@ char szCurrentSatFile[48] = {0};
 char szTypeName[4] = {"DVB"};
 char gszAppName[] = {"TSReader Source Helper"};
 
+static int mymbstowcs(wchar_t *dest, int len, const char *src)
+{
+	int wchars_needed = MultiByteToWideChar(CP_UTF8, 0, src, -1, NULL, 0);
+	if (wchars_needed == 0)
+		return 0;
+
+	if (wchars_needed > len)
+		wchars_needed = len - 1;
+
+	return MultiByteToWideChar(CP_UTF8, 0, src, -1, dest, wchars_needed);
+}
+
 void dbg_printf(const char *fmt, ...)
 {
 	char debug_buf[4096];
+	wchar_t debug_bufW[4096];
 
 	va_list args;
 	va_start(args, fmt);
 
 	vsnprintf_s(debug_buf, sizeof(debug_buf), sizeof(debug_buf), fmt, args);
-	OutputDebugStringA(debug_buf);
+	mymbstowcs(debug_bufW, _countof(debug_bufW), debug_buf);
+	OutputDebugStringW(debug_bufW);
 	va_end(args);
 }
 

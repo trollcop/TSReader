@@ -87,7 +87,6 @@
     <ClCompile Include="AC3AudioDecoder.c" />
     <ClCompile Include="archive.c" />
     <ClCompile Include="ATSC_huffman.c" />
-    <ClCompile Include="audio.c" />
     <ClCompile Include="bcdmux.c" />
     <ClCompile Include="CCDecoder.c" />
     <ClCompile Include="charting.c" />
@@ -119,7 +118,6 @@
     <ClCompile Include="splash.c" />
     <ClCompile Include="StreamMonitor.c" />
     <ClCompile Include="stubs\isource_impl.c" />
-    <ClCompile Include="stubs\link_stubs.c" />
     <ClCompile Include="TitleThumbnails.c" />
     <ClCompile Include="TSReader.c" />
     <ClCompile Include="util.c" />

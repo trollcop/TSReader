@@ -8,7 +8,7 @@ void ParseDVBSDTPacket(BYTE * pSectionPointer, int nPacketLength);
 BOOL ParseDCIIPMTTypeThing(BYTE * pSectionPointer, int nPacketLength, int nCurrentProgramNumber);
 BOOL ParseDCIIProgramNameMessage(BYTE * pSectionPointer, int nPacketLength, int nCurrentProgramNumber);
 BOOL ParsePMTPacket(BYTE * pSectionPointer, int nPacketLength, int nCurrentProgramNumber, int nPMTListenIndex);
-void ParseIPPacket(BYTE * pSectionPointer, int nPacketLength, int nPID, int nBufferNumber);
+void ParseIPPacket(BYTE * pSectionPointer, int nPacketLength, uint16_t nPID, int nBufferNumber);
 BOOL ParsePATPacket(BYTE * pSectionPointer, int nPacketLength);
 BOOL ParsePSIPPacket(BYTE * pSectionPointer, int nPacketLength);
 BOOL ParseCATPacket(BYTE * pSectionPointer, int nPacketLength);

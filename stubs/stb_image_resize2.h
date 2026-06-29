@@ -389,18 +389,11 @@
 #define STBIR_INCLUDE_STB_IMAGE_RESIZE2_H
 
 #include <stddef.h>
-#ifdef _MSC_VER
-typedef unsigned char    stbir_uint8;
-typedef unsigned short   stbir_uint16;
-typedef unsigned int     stbir_uint32;
-typedef unsigned __int64 stbir_uint64;
-#else
 #include <stdint.h>
 typedef uint8_t  stbir_uint8;
 typedef uint16_t stbir_uint16;
 typedef uint32_t stbir_uint32;
 typedef uint64_t stbir_uint64;
-#endif
 
 #ifndef STBIRDEF
 #ifdef STB_IMAGE_RESIZE_STATIC

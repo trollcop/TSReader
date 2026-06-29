@@ -24,7 +24,7 @@ typedef struct tPCR
 
 typedef struct tRTC
 {
-	__int64 pcr;
+	int64_t pcr;
 	int nRecord;
 } tRTC;
 
@@ -282,8 +282,8 @@ DWORD WINAPI ReadRateControlledThread(LPVOID lpv)
 	int nRateMbps;
 	int nNonRSPacketLength = 188;
 	int nRSPacketLength = 204;
-	__int64 lnTicksPerSecond;
-	__int64 lnCurrentTime, lnTargetTime;
+	int64_t lnTicksPerSecond;
+	int64_t lnCurrentTime, lnTargetTime;
 	double dInterPacketDelay;
 	double dnsPerTick;
 	double dInterPacketns;
@@ -890,7 +890,7 @@ int CalculateDSSBitrate(HWND hDlg)
 				if (nSCID != ((pBuffer[1] << 8 | pBuffer[2]) & 0xfff))
 					continue;
 			}
-			rtc[nPCRCount].pcr = ((__int64)pBuffer[7 + 0] << 24 | (__int64)pBuffer[7 + 1] << 16 | (__int64)pBuffer[7 + 2] << 8 | (__int64)pBuffer[7 + 3]);
+			rtc[nPCRCount].pcr = ((int64_t)pBuffer[7 + 0] << 24 | (int64_t)pBuffer[7 + 1] << 16 | (int64_t)pBuffer[7 + 2] << 8 | (int64_t)pBuffer[7 + 3]);
 			rtc[nPCRCount].nRecord = nRecord;
 			nPCRCount++;
 		}

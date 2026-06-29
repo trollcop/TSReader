@@ -492,7 +492,7 @@ void AddMuxRateData(int nChartIndex)
 	int nPMTIndex, nESIndex;
 	int nPointIndex = 0;
 	int i;
-	__int64 lnTotalTSPackets;
+	int64_t lnTotalTSPackets;
 	float fNewValues[8192];
 	float fPercent;
 	SYSTEMTIME stLocal;
@@ -1486,10 +1486,6 @@ void UpdateVideoCompositionChart(int nGOPLength, int nChartIndex, BOOL fH264)
 					dwPointColors[nPicture] = RGB(0x00, 0x00, 0xff);
 					break;
 				default:
-					{
-						int a=1;
-						a=1;
-					}
 					break;
 				}
 			}
@@ -1963,7 +1959,7 @@ void AddDataToPIDUsageStackedChart(int nChartIndex)
 			{
 				if (pidusagestacked->nPIDList[i] == v->pc[nPIDIndex].nPID)
 				{
-					__int64 lnBytes = (v->pc[nPIDIndex].lnPackets * 188 * 8);
+					int64_t lnBytes = (v->pc[nPIDIndex].lnPackets * 188 * 8);
 					float fDifference = (1.0f/(float)rate.QuadPart * ((float)count.QuadPart - (float)priorcount.QuadPart));
 					fNewValues[i] = lnBytes * (1.0f / (1.0f/(float)rate.QuadPart * ((float)count.QuadPart - (float)priorcount.QuadPart)));				
 					if (fNewValues[i] == 0.0f)

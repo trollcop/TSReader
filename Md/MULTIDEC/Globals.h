@@ -439,8 +439,8 @@ struct IndexHeader_t {
 	   unsigned int TimeStampStart;
 	   unsigned int CurrentSpielZeit;
 	   unsigned int SpielZeit;
-	   unsigned __int64 Dateigroesse;
-	   unsigned __int64 Bytesplay;
+	   uint64_t Dateigroesse;
+	   uint64_t Bytesplay;
        char TypeName[30];
 	   unsigned int KBTotal;
 	   int Anzahl_Files;

@@ -91,12 +91,12 @@ BOOL ATSCPIDs(void)
 	return FALSE;
 }
 
-__int64 DecodeMPEG2PCR(BYTE * bAB)
+int64_t DecodeMPEG2PCR(BYTE * bAB)
 {
-	unsigned __int64 nPCR_base = ((__int64)bAB[2] << 32 | (__int64)bAB[3] << 24 | (__int64)bAB[4] << 16 | (__int64)bAB[5] << 8 | (__int64)bAB[6]);
-	unsigned __int64 nPCR_ext = (__int64) ((bAB[6] << 8 | bAB[7]) & 0x1ff);
+	uint64_t nPCR_base = ((int64_t)bAB[2] << 32 | (int64_t)bAB[3] << 24 | (int64_t)bAB[4] << 16 | (int64_t)bAB[5] << 8 | (int64_t)bAB[6]);
+	uint64_t nPCR_ext = (int64_t) ((bAB[6] << 8 | bAB[7]) & 0x1ff);
 
-	return ((nPCR_base >> 7) * (__int64)300) + nPCR_ext;
+	return ((nPCR_base >> 7) * (int64_t)300) + nPCR_ext;
 }
 
 int GetTotalPMTChannels(void)
@@ -2084,6 +2084,23 @@ int SortPIDsByPID(const void *elem1, const void *elem2)
 		return -1;
 	if (pPID1->nPID > pPID2->nPID)
 		return 1;
+	return 0;
+}
+
+int SortEITCompare(const void *elem1, const void *elem2)
+{
+	PEITEVENT pEIT1 = (PEITEVENT)elem1;
+	PEITEVENT pEIT2 = (PEITEVENT)elem2;
+	DWORD64 dwTime1, dwTime2;
+
+	SystemTimeToFileTime(&pEIT1->stStartTime, (FILETIME *)&dwTime1);
+	SystemTimeToFileTime(&pEIT2->stStartTime, (FILETIME *)&dwTime2);
+
+	if (dwTime1 < dwTime2)
+		return -1;
+	if (dwTime1 > dwTime2)
+		return 1;
+
 	return 0;
 }
 

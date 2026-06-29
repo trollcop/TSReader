@@ -10,8 +10,9 @@
 /***************************************************************************/
 /***************************************************************************/
 /***************************************************************************/
-#include <windows.h>
+#include <Windows.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <io.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -94,8 +95,8 @@ int pcapRead(tFRAME *pFrame, FILE *pFile)
 		recHdr.nTimeMicroSeconds = Swap32(recHdr.nTimeMicroSeconds);
 	}
 
-	pFrame->ts = ((unsigned __int64)recHdr.nTimeMicroSeconds * 1000)
-			+ ((unsigned __int64)recHdr.nTimeSeconds * 1000000000);
+	pFrame->ts = ((uint64_t)recHdr.nTimeMicroSeconds * 1000)
+			+ ((uint64_t)recHdr.nTimeSeconds * 1000000000);
 
 	if (recHdr.nIncludedLength != fread((void *)pFrame->pBuffer, 1, recHdr.nIncludedLength, pFile))
 		return 1;
