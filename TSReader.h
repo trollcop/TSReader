@@ -1410,7 +1410,7 @@ typedef struct tag_Variables
 	int nRecordPIDsPCRPID, nRecordPIDsPCRContinuity;
 	int nProfileBrowserX, nProfileBrowserY;
 	int nProfileBrowserWidth, nProfileBrowserHeight;
-	int nVideoCompositionPID[REAL_MAX_CHARTS];
+	uint32_t nVideoCompositionPID[REAL_MAX_CHARTS]; /* this is a 16bit PID, but top bits are used to define the type of parser that will look at it */
 	int nARCHIVEDPROGRAMSMax;
 	int nARCHIVEDPROGRAMSCount;
 	int nSelectedArchiveProgram;
@@ -1878,7 +1878,6 @@ typedef struct tag_Variables
 	CRITICAL_SECTION csSyncThread_PipeBytes;
 	CRITICAL_SECTION csNextESPID;
 	CRITICAL_SECTION csStatusbar;
-	CRITICAL_SECTION csH264VideoChart;
 	CRITICAL_SECTION csGPSSerial;
 
 	PEITCHANNELDATA pChannelData[MAX_EIT_CHANNEL_DATA];
@@ -2144,15 +2143,22 @@ void RestartTSReader_Stop(HWND hWnd);
 void RestartTSReader_Start(HWND hWnd);
 BOOL LoadSource(HWND hWnd);
 void GetNextECMPID(void);
-HTREEITEM AddItemToSITree(HWND hwndTV, LPTSTR lpszItem, int nLevel, LPARAM lParam, int nIconIndex, HTREEITEM hParent, HTREEITEM hInsertAfter);
+HTREEITEM AddItemToSITree(HWND hwndTV, LPTSTR lpszItem, int nLevel, LPARAM lParam, eSIIconID nIconIndex, HTREEITEM hParent, HTREEITEM hInsertAfter);
+uint32_t GetVideoCompositionPID(HWND hWnd);
 
 /* Audio decoders */
 DWORD WINAPI MPEGAudioDecoderThread(LPVOID lpv);
 DWORD WINAPI AC3AudioDecoderThread(LPVOID lpv);
 DWORD WINAPI AACAudioDecoderThread(LPVOID lpv);
 
+/* In charting.c */
+void UpdateVideoCompositionChart(int nGOPLength, int nChartIndex, BOOL fH264);
+
 /* In decoder.c */
 DWORD WINAPI GenericDecoderThread(LPVOID lpv);
+void ParseInit(void);
+void ParseDeInit(void);
+void ParseCompositionData(BYTE *pPESPacket, int nPESLength, int nChartIndex, int eParserID);
 
 /* In export.c */
 void HTMLExport(HANDLE hHTMFile, int nExportSITables, char *szOutputFilename);

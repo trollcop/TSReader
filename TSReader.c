@@ -4933,21 +4933,18 @@ void CheckForGeneralESParsing(int nPID, int nComparePID, BYTE * bESBuffer, int *
 						InputCCData(bESBuffer, nActualLength, nChartIndex);
 						break;
 					case 1:
-						InputMPEG2VideoCompositionESData(bESBuffer, nActualLength, nChartIndex);
+						ParseCompositionData(bESBuffer, nActualLength, nChartIndex, 0); /* MPEG2 */
 						break;
-#ifdef PRO_BROKEN
 					case 2:
-						/*{
-							DWORD dwWritten;
-							WriteFile(v->hDebugFile, bESBuffer, nActualLength, &dwWritten, NULL);
-						}*/
-						InputH264VideoCompositionESData(bESBuffer, nActualLength, nChartIndex);
+						ParseCompositionData(bESBuffer, nActualLength, nChartIndex, 1); /* H264 */
 						break;
-#endif PRO_BROKEN
+					case 3:
+						ParseCompositionData(bESBuffer, nActualLength, nChartIndex, 2); /* HEVC */
+						break;
 					}
 				}
 				*nESLength = 0;
-				*nESFillPtr = 0;				
+				*nESFillPtr = 0;
 				*nESLength = pWritePtr[4] << 8 | pWritePtr[5];
 				if (nWriteLen - 14 > 0)
 				{
@@ -6303,10 +6300,13 @@ DWORD WINAPI ParseIncomingTSDataThread(LPVOID lpv)
 					{
 						if (v->nVideoCompositionPID[nChartIndex] != -1)
 						{
-							int nParseType = 1;
+							int nParseType = 1; /* MPEG2 */
 
 							if ((v->nVideoCompositionPID[nChartIndex] & 0xffff0000) == 0x00010000)
-								nParseType = 2;
+								nParseType = 2; /* H264 */
+							else if ((v->nVideoCompositionPID[nChartIndex] & 0xffff0000) == 0x00020000)
+								nParseType = 3; /* H265 */
+
 							CheckForGeneralESParsing(nPID,
 													 v->nVideoCompositionPID[nChartIndex] & 0x1fff,
 													 tv->bVideoESBuffer[nChartIndex],
@@ -9598,7 +9598,7 @@ void SetupForNewStream(HWND hWnd)
 	v->bit.nVersionNumber = (uint8_t)-1;
 	v->nCaptionPID = -1;
 	for (i = 0; i < MAX_CHARTS; i++)
-		v->nVideoCompositionPID[i] = -1;
+		v->nVideoCompositionPID[i] = (uint32_t)-1;
 	v->nSIParserVersionNumbers[SI_PARSER_STATS_BAT] = -1;
 	v->nSIParserVersionNumbers[SI_PARSER_STATS_SDT] = -1;
 	v->nSIParserVersionNumbers[SI_PARSER_STATS_NIT] = -1;
@@ -18072,17 +18072,17 @@ void LoadManualPIDList(HWND hWnd)
 	}
 }
 
-int GetVideoCompositionPID(HWND hWnd)
+uint32_t GetVideoCompositionPID(HWND hWnd)
 {
 	int nVideoCompositionPID;
 	int i;
 
 	if (v->nSelectedProgram == -1)
 	{
-		MessageBox(hWnd, "Please select a video program to chart", gszAppName, MB_ICONSTOP);
+		MessageBoxFormat(hWnd, MB_ICONSTOP, "Please select a video program to chart");
 		return 0;
 	}
-	nVideoCompositionPID = -1;
+	nVideoCompositionPID = (uint32_t)-1;
 	for (i = 0; i < MAX_ESLIST_ENTRIES && nVideoCompositionPID == -1; i++)
 	{
 		if (v->pat.pmt[v->nSelectedProgram].es[i].nESPID == 0)
@@ -18096,20 +18096,23 @@ int GetVideoCompositionPID(HWND hWnd)
 		case 0x1b:	// H264
 			nVideoCompositionPID = v->pat.pmt[v->nSelectedProgram].es[i].nESPID | 0x0010000;
 			break;
+		case 0x24:	// HEVC
+			nVideoCompositionPID = v->pat.pmt[v->nSelectedProgram].es[i].nESPID | 0x0020000;
+			break;
 		case 0x80:	// DCII
 			if (v->nNetworkPID != 0x0010)
 				nVideoCompositionPID = v->pat.pmt[v->nSelectedProgram].es[i].nESPID;
 			break;			
 		}
 	}
-	if (nVideoCompositionPID == -1)
+	if (nVideoCompositionPID == (uint32_t)-1)
 	{
-		MessageBox(hWnd, "No MPEG-2/H.264 video stream found in this program", gszAppName, MB_ICONSTOP);
+		MessageBoxFormat(hWnd, MB_ICONSTOP, "No MPEG-2/H.264/HEVC video stream found in this program");
 		return 0;
 	}
 	if (v->fPIDScrambled[nVideoCompositionPID])
 	{
-		MessageBox(hWnd, "Video stream is scrambled", gszAppName, MB_ICONSTOP);
+		MessageBoxFormat(hWnd, MB_ICONSTOP, "Video stream is scrambled");
 		return 0;
 	}
 
@@ -19693,7 +19696,7 @@ void InitVariables(HINSTANCE hInstance, int nCmdShow)
 	v->bit.nVersionNumber = (uint8_t)-1;
 	v->nCaptionPID = -1;
 	for (i = 0; i < MAX_CHARTS; i++)
-		v->nVideoCompositionPID[i] = -1;
+		v->nVideoCompositionPID[i] = (uint32_t)-1;
 	v->nSIParserVersionNumbers[SI_PARSER_STATS_BAT] = -1;
 	v->nSIParserVersionNumbers[SI_PARSER_STATS_SDT] = -1;
 	v->nSIParserVersionNumbers[SI_PARSER_STATS_NIT] = -1;
@@ -19762,7 +19765,6 @@ void InitVariables(HINSTANCE hInstance, int nCmdShow)
 
 	InitializeCriticalSection(&v->csActualRecordFilename);
 	InitializeCriticalSection(&v->csXMLLog);
-	InitializeCriticalSection(&v->csH264VideoChart);
 	{
 		int nTableIndex;
 		for (nTableIndex = 0; nTableIndex < MAX_RECORD_TABLES; nTableIndex++)
@@ -19834,6 +19836,9 @@ void InitVariables(HINSTANCE hInstance, int nCmdShow)
 	v->wChartMenuItems[i++] = ID_VIEW_CHART_PROGRAMUSAGESTACKEDBARCHART;
 	v->wChartMenuItems[i++] = ID_VIEW_CHART_VIDEOCOMPOSITIONCHART;
 	v->wChartMenuItems[i++] = ID_VIEW_CHART_SIGNALCHART;
+
+	/* Init MPEG2/H26x frame composition parsers */
+	ParseInit();
 }
 
 void DeInitVariables(void)
@@ -19863,17 +19868,19 @@ void DeInitVariables(void)
 	/* kill B24 instance */
 	arib_instance_destroy(v->hARIBInstance);
 
+	/* destroy frame composition parsers */
+	ParseDeInit();
+
 	DeleteCriticalSection(&v->csEIT);
 	DeleteCriticalSection(&v->ss.csPIDCounter);
 	DeleteCriticalSection(&v->ss.csTSBuffersInUse);
-	DeleteCriticalSection(&v->csThumbnails);			
-	DeleteCriticalSection(&v->csPipeBytes);			
-	DeleteCriticalSection(&v->csAutoRestartOnDataStopCounter);			
-	DeleteCriticalSection(&v->csNextESPID);			
+	DeleteCriticalSection(&v->csThumbnails);
+	DeleteCriticalSection(&v->csPipeBytes);
+	DeleteCriticalSection(&v->csAutoRestartOnDataStopCounter);
+	DeleteCriticalSection(&v->csNextESPID);
 	DeleteCriticalSection(&v->csStatusbar);
 	DeleteCriticalSection(&v->csActualRecordFilename);
 	DeleteCriticalSection(&v->csXMLLog);
-	DeleteCriticalSection(&v->csH264VideoChart);
 	
 	for (nIndex = 0; nIndex < MAX_ES_PARSERS; nIndex++)
 		DeleteCriticalSection(&v->esparserinfo[nIndex].csThreadSignal);

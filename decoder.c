@@ -416,3 +416,123 @@ DWORD WINAPI GenericDecoderThread(LPVOID lpv)
 
 	return 0;
 }
+
+
+typedef struct tagParserContext {
+	enum AVCodecID id;
+	const AVCodec *codec;
+	AVCodecParserContext *parser;
+	AVCodecContext *ctx;
+} ParserContext;
+
+static ParserContext g_parsers[3] = {
+	{ AV_CODEC_ID_MPEG2VIDEO, },		/* 0 = MPEG2 */
+	{ AV_CODEC_ID_H264, },				/* 1= H264 */
+	{ AV_CODEC_ID_HEVC, },				/* 2 = HEVC */
+};
+	
+void ParseInit(void)
+{
+	int i;
+
+	for (i = 0; i < ARRAYSIZE(g_parsers); i++) {
+		g_parsers[i].codec = avcodec_find_decoder(g_parsers[i].id);
+		g_parsers[i].parser = av_parser_init(g_parsers[i].codec->id);
+		g_parsers[i].ctx = avcodec_alloc_context3(g_parsers[i].codec);
+	}
+}
+
+void ParseDeInit(void)
+{
+	int i;
+
+	for (i = 0; i < ARRAYSIZE(g_parsers); i++) {
+		if (g_parsers[i].parser)
+			av_parser_close(g_parsers[i].parser);
+		if (g_parsers[i].ctx)
+			avcodec_free_context(&g_parsers[i].ctx);
+		g_parsers[i].codec = avcodec_find_decoder(g_parsers[i].id);
+	}
+}
+
+void ParseCompositionData(BYTE *pPESPacket, int nPESLength, int nChartIndex, int eParserID)
+{
+	AVPacket *pkt = av_packet_alloc();
+	uint8_t *data = pPESPacket;
+	size_t data_size = nPESLength;
+	BOOL fFoundPictureStart = FALSE;
+	int nMaxPoints = v->nGraphHistoricalPoints;
+
+	/* Not initialized */
+	if (!g_parsers[eParserID].parser || !g_parsers[eParserID].ctx)
+		return;
+
+	if (eParserID > 0) {
+		if (v->nGraphHistoricalPoints >= MAX_CHART_GOP_LENGTH)
+			nMaxPoints = MAX_CHART_GOP_LENGTH;
+	}
+
+	while (data_size > 0) {
+		/* parse stream header */
+		int ret = av_parser_parse2(g_parsers[eParserID].parser, g_parsers[eParserID].ctx, &pkt->data, &pkt->size, data, data_size, AV_NOPTS_VALUE, AV_NOPTS_VALUE, 0);
+		if (ret < 0)
+			break;
+
+		data += ret;
+		data_size -= ret;
+
+		/* now get results */
+		if (pkt->size > 0) {
+			switch (g_parsers[eParserID].parser->pict_type) {
+				case AV_PICTURE_TYPE_I:
+					if (v->nPictureIndex[nChartIndex] != -1) {
+						/* first decoded frame */
+						UpdateVideoCompositionChart(v->nPictureIndex[nChartIndex], nChartIndex, TRUE);
+					}
+					v->nPictureIndex[nChartIndex] = 0;
+					v->nPictureType[nChartIndex][v->nPictureIndex[nChartIndex]] = g_parsers[eParserID].parser->pict_type;
+					break;
+
+				default:
+				case AV_PICTURE_TYPE_P:
+				case AV_PICTURE_TYPE_B:
+				case AV_PICTURE_TYPE_SP:
+				case AV_PICTURE_TYPE_SI:
+					if (v->nPictureIndex[nChartIndex] != -1)
+						v->nPictureIndex[nChartIndex]++;
+					break;
+			}
+
+			/* set picture type into the array */
+			if (v->nPictureIndex[nChartIndex] != -1) {
+				v->nPictureType[nChartIndex][v->nPictureIndex[nChartIndex]] = g_parsers[eParserID].parser->pict_type;
+				v->nPictureDataCount[nChartIndex][v->nPictureIndex[nChartIndex]] += pkt->size;
+			}
+
+			/* TODO figure this out */
+			if (v->nPictureIndex[nChartIndex] == nMaxPoints - 1) {
+				int i;
+
+				for (i = 0; i < nMaxPoints - 2; i++) {
+					v->nPictureDataCount[nChartIndex][i] = v->nPictureDataCount[nChartIndex][i + 1];
+					v->nPictureType[nChartIndex][i] = v->nPictureType[nChartIndex][i + 1];
+				}
+				v->nPictureIndex[nChartIndex] = nMaxPoints - 2;
+				v->nPictureDataCount[nChartIndex][v->nPictureIndex[nChartIndex]] = 0;
+				v->nPictureType[nChartIndex][v->nPictureIndex[nChartIndex]] = 0;
+			}
+
+			fFoundPictureStart = TRUE;
+		}
+		/* unref the packet */
+		av_packet_unref(pkt);
+	}
+
+	if (!fFoundPictureStart) {
+		/* this will make a single bar graph without type of picture, but with average bitrate, i think */
+		if (v->nPictureIndex[nChartIndex] != -1)
+			v->nPictureDataCount[nChartIndex][v->nPictureIndex[nChartIndex]] += nPESLength;
+	}
+	
+	av_packet_free(&pkt);
+}

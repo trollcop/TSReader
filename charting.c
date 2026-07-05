@@ -4,11 +4,7 @@
 #include "Pegrpapi.h"
 #include "bcdmux.h"
 #include "util.h"
-
-#ifdef PRO_BROKEN
- #include "fvd_mp4.h"
- FVD_VIDEO_DEC * H264Dec = 0;
-#endif PRO_BROKEN
+#include "charting.h"
 
 // Stuff in TSReader.c
 extern PVARIABLES v;
@@ -1331,9 +1327,9 @@ LRESULT FAR PASCAL VideoCompositionChartWindowProc(HWND hWnd, UINT uMsg, WPARAM 
 			memset(v->nPictureType[nChartIndex], 0, sizeof(int) * MAX_CHART_GOP_LENGTH);
 			v->nPictureIndex[nChartIndex] = -1;
 			v->nVideoCompositionPoints[nChartIndex] = 0;
-			if ((v->nChartParameters & 0xffff0000) == 0x00010000)
+			if ((v->nChartParameters & 0xffff0000) & 0x00030000)
 			{
-				// H264
+				// H264 / HEVC
 				if (v->nGraphHistoricalPoints < MAX_CHART_GOP_LENGTH)
 					v->nVideoCompositionPoints[nChartIndex] = v->nGraphHistoricalPoints;
 				else
@@ -1401,17 +1397,6 @@ LRESULT FAR PASCAL VideoCompositionChartWindowProc(HWND hWnd, UINT uMsg, WPARAM 
 			v->nTotalGOPLength[nChartIndex] = 0;
 			v->nGOPLengthSamples[nChartIndex] = 0;
 
-#ifdef PRO_BROKEN
-			if ((v->nChartParameters & 0xffff0000) == 0x00010000)
-			{
-				// H.264 - initialise the decoder
-				EnterCriticalSection(&v->csH264VideoChart);
-				H264Dec = Fvd_New_Decoder(FVD_MPEG4_H264);
-				Fvd_Dec_Set_Param(H264Dec, FVD_CMD_NO_FILTER, 1,  0);
-				//Fvd_Dec_Set_Param(H264Dec, FVD_CMD_CPU, FVD_CPU_DETECT, 0);
-				LeaveCriticalSection(&v->csH264VideoChart);
-			}
-#endif PRO_BROKEN
 			CheckCommonGraphMessages(hWnd, uMsg, wParam, lParam);
 		}
 		break;
@@ -1419,16 +1404,7 @@ LRESULT FAR PASCAL VideoCompositionChartWindowProc(HWND hWnd, UINT uMsg, WPARAM 
 		{
 			int nChartIndex = (int)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 			CheckCommonGraphMessages(hWnd, uMsg, wParam, lParam);
-#ifdef PRO_BROKEN
-			if ((v->nVideoCompositionPID[nChartIndex] & 0xffff0000) == 0x00010000)
-			{
-				EnterCriticalSection(&v->csH264VideoChart);
-				Fvd_Delete_Decoder(H264Dec);
-				H264Dec = 0;
-				LeaveCriticalSection(&v->csH264VideoChart);
-			}
-#endif PRO_BROKEN
-			v->nVideoCompositionPID[nChartIndex] = -1;
+			v->nVideoCompositionPID[nChartIndex] = (uint32_t)-1;
 		}
 		break;
 	default:
@@ -1444,7 +1420,7 @@ void UpdateVideoCompositionChart(int nGOPLength, int nChartIndex, BOOL fH264)
 	int nPicture;
 	char szNewXAxisLabel[256];
 
-	if (v->nVideoCompositionPoints[nChartIndex] < nGOPLength || fH264)
+	if (1) /* v->nVideoCompositionPoints[nChartIndex] < nGOPLength || fH264) */
 	{
 		DWORD dwPointColors[MAX_CHART_GOP_LENGTH];
 
@@ -1453,41 +1429,21 @@ void UpdateVideoCompositionChart(int nGOPLength, int nChartIndex, BOOL fH264)
 		PEnset(v->m_hPE[nChartIndex], PEP_nALTFREQTHRESHOLD, v->nVideoCompositionPoints[nChartIndex] + 1); 
 		for (nPicture = 0; nPicture <= v->nVideoCompositionPoints[nChartIndex]; nPicture++)
 		{
-			if (!fH264)
+			switch(v->nPictureType[nChartIndex][nPicture])
 			{
-				switch(v->nPictureType[nChartIndex][nPicture])
-				{
-				case 1:		// I
-					dwPointColors[nPicture] = RGB(0x00, 0xff, 0x00);
-					break;
-				case 2:		// P
-					dwPointColors[nPicture] = RGB(0xff, 0xff, 0x00);
-					break;
-				case 3:		// B
-					dwPointColors[nPicture] = RGB(0x00, 0x00, 0xff);
-					break;
-				case 4:		// D
-					dwPointColors[nPicture] = RGB(0xff, 0x00, 0x00);
-					break;
-				}
-			}
-			else
-			{
-				switch(v->nPictureType[nChartIndex][nPicture])
-				{
-				case 1:
-				case 2:
-					dwPointColors[nPicture] = RGB(0x00, 0xff, 0x00);
-					break;
-				case 3:
-					dwPointColors[nPicture] = RGB(0xff, 0xff, 0x00);
-					break;
-				case 4:
-					dwPointColors[nPicture] = RGB(0x00, 0x00, 0xff);
-					break;
-				default:
-					break;
-				}
+			case AV_PICTURE_TYPE_I:
+				dwPointColors[nPicture] = RGB(0x00, 0xff, 0x00);
+				break;
+			case AV_PICTURE_TYPE_P:
+				dwPointColors[nPicture] = RGB(0xff, 0xff, 0x00);
+				break;
+			case AV_PICTURE_TYPE_B:
+				dwPointColors[nPicture] = RGB(0x00, 0x00, 0xff);
+				break;
+			default:
+				/* Everything else */
+				dwPointColors[nPicture] = RGB(0xff, 0x00, 0x00);
+				break;
 			}
 		}
 		PEvset(v->m_hPE[nChartIndex], PEP_dwaPOINTCOLORS, dwPointColors, v->nVideoCompositionPoints[nChartIndex] + 1);
@@ -1511,287 +1467,45 @@ void UpdateVideoCompositionChart(int nGOPLength, int nChartIndex, BOOL fH264)
 			PEvset(v->m_hPE[nChartIndex], PEP_fMANUALMAXY, &d, 1);
 		}
 
-		if (!fH264)
+		switch(v->nPictureType[nChartIndex][nPicture])
 		{
-			switch(v->nPictureType[nChartIndex][nPicture])
-			{
-			case 1:		// I
-				szPictureType[0] = 'I';
-				break;
-			case 2:		// P
-				szPictureType[0] = 'P';
-				break;
-			case 3:		// B
-				szPictureType[0] = 'B';
-				break;
-			case 4:		// D
-				szPictureType[0] = 'D';
-				break;
-			}
-		}
-		else
-		{
-			switch(v->nPictureType[nChartIndex][nPicture])
-			{
-			case 1:
-			case 2:
-				lstrcpy(szPictureType, "I");
-				break;
-			case 3:
-				lstrcpy(szPictureType, "P");
-				break;
-			case 4:
-				lstrcpy(szPictureType, "B");
-				break;
-			}
+		case AV_PICTURE_TYPE_I:
+			szPictureType[0] = 'I';
+			break;
+		case AV_PICTURE_TYPE_P:
+			szPictureType[0] = 'P';
+			break;
+		case AV_PICTURE_TYPE_B:
+			szPictureType[0] = 'B';
+			break;
+		default:
+			/* Everything else */
+			szPictureType[0] = 'X';
+			break;
 		}
 		PEvsetcell(v->m_hPE[nChartIndex], PEP_szaPOINTLABELS, nPicture, szPictureType);
 	}
 
-	if (!fH264)
-	{
-		// nGOPLength is really an index, so we bump it by 1 to get the actual
-		// number of pictures in the GOP
-		nGOPLength++;
-		if (nGOPLength > v->nMaxGOPLength[nChartIndex])
-			v->nMaxGOPLength[nChartIndex] = nGOPLength;
-		if (nGOPLength < v->nMinGOPLength[nChartIndex])
-			v->nMinGOPLength[nChartIndex] = nGOPLength;
-		v->nTotalGOPLength[nChartIndex] += nGOPLength;
-		v->nGOPLengthSamples[nChartIndex]++;
-		wsprintf(szNewXAxisLabel, "Picture Type (Max GOP Length: %d Min: %d Average: %d)",
-				 v->nMaxGOPLength[nChartIndex], 
-				 v->nMinGOPLength[nChartIndex],
-				 v->nTotalGOPLength[nChartIndex] / v->nGOPLengthSamples[nChartIndex]);		     
-		PEszset(v->m_hPE[nChartIndex], PEP_szXAXISLABEL, szNewXAxisLabel);
-		memset(v->nPictureDataCount[nChartIndex], 0, sizeof(int) * MAX_CHART_GOP_LENGTH);
-		memset(v->nPictureType[nChartIndex], 0, sizeof(int) * MAX_CHART_GOP_LENGTH);
-	}
+	// nGOPLength is really an index, so we bump it by 1 to get the actual
+	// number of pictures in the GOP
+	nGOPLength++;
+	if (nGOPLength > v->nMaxGOPLength[nChartIndex])
+		v->nMaxGOPLength[nChartIndex] = nGOPLength;
+	if (nGOPLength < v->nMinGOPLength[nChartIndex])
+		v->nMinGOPLength[nChartIndex] = nGOPLength;
+	v->nTotalGOPLength[nChartIndex] += nGOPLength;
+	v->nGOPLengthSamples[nChartIndex]++;
+	wsprintf(szNewXAxisLabel, "Picture Type (Max GOP Length: %d Min: %d Average: %d)",
+				v->nMaxGOPLength[nChartIndex],
+				v->nMinGOPLength[nChartIndex],
+				v->nTotalGOPLength[nChartIndex] / v->nGOPLengthSamples[nChartIndex]);
+	PEszset(v->m_hPE[nChartIndex], PEP_szXAXISLABEL, szNewXAxisLabel);
+	memset(v->nPictureDataCount[nChartIndex], 0, sizeof(int) * MAX_CHART_GOP_LENGTH);
+	memset(v->nPictureType[nChartIndex], 0, sizeof(int) * MAX_CHART_GOP_LENGTH);
 
 	PEreinitialize(v->m_hPE[nChartIndex]);
 	PEresetimage(v->m_hPE[nChartIndex], 0, 0);
 	InvalidateRect(v->hWndChart[nChartIndex], NULL, FALSE);
-}
-
-#ifdef PRO_BROKEN
-void InputH264VideoCompositionESData(BYTE * pPESPacket, int nPESLength, int nChartIndex)
-{
-	int nMaxPoints = v->nGraphHistoricalPoints;
-	if (v->nGraphHistoricalPoints >= MAX_CHART_GOP_LENGTH)
-		nMaxPoints = MAX_CHART_GOP_LENGTH;
-
-	EnterCriticalSection(&v->csH264VideoChart);
-	if (H264Dec == 0)
-	{
-		LeaveCriticalSection(&v->csH264VideoChart);
-		return;
-	}
-
-	while (nPESLength)
-	{
-		FVD_ERROR_CODE Error_Status;
-		int nRead;
-		
-		nRead = Fvd_Dec_Decode(H264Dec, pPESPacket, nPESLength);
-		Error_Status = (FVD_ERROR_CODE)Fvd_Dec_Get_Param(H264Dec, FVD_CMD_GET_ERROR_STATUS);
-		if (Error_Status != FVD_ERROR_NONE)
-		{
-			char szTemp[512];
-			wsprintf(szTemp, "TSReader: H264 Chart error %d\n", Error_Status);
-			OutputDebugString(szTemp);
-			break;
-		}
-		if (nRead < 0)
-		{
-			OutputDebugString("TSReader: H264 Chart error decoding\n");
-			break;
-		}
-
-		nPESLength -= nRead;
-		pPESPacket += nRead;
-		if (v->nPictureIndex[nChartIndex] != -1)
-			v->nPictureDataCount[nChartIndex][v->nPictureIndex[nChartIndex]] += nRead;
-
-		if (Fvd_Dec_Has_Pending_Frames(H264Dec))
-		{
-			FVD_PIC Pic;
-			Fvd_Dec_Consume_Frame(H264Dec, &Pic);
-
-			if (v->nPictureIndex[nChartIndex] == -1)
-			{
-				// First decoded frame
-				v->nPictureIndex[nChartIndex] = 0;
-			}
-			else
-			{
-				v->nPictureType[nChartIndex][v->nPictureIndex[nChartIndex]] = Pic.Coding;
-				UpdateVideoCompositionChart(v->nPictureIndex[nChartIndex], nChartIndex, TRUE);
-
-				v->nPictureIndex[nChartIndex]++;
-				if (v->nPictureIndex[nChartIndex] == nMaxPoints - 1)
-				{
-					int i;
-
-					for (i = 0; i < nMaxPoints - 2; i++)
-					{
-						v->nPictureDataCount[nChartIndex][i] = v->nPictureDataCount[nChartIndex][i + 1];
-						v->nPictureType[nChartIndex][i] = v->nPictureType[nChartIndex][i + 1];
-					}
-					v->nPictureIndex[nChartIndex] = nMaxPoints - 2;
-					v->nPictureDataCount[nChartIndex][v->nPictureIndex[nChartIndex]] = 0;
-					v->nPictureType[nChartIndex][v->nPictureIndex[nChartIndex]] = 0;
-				}
-			}
-		}
-	}
-	LeaveCriticalSection(&v->csH264VideoChart);
-
-
-/*	int nCurrentPos = 0;
-	BOOL fFoundPictureStart = FALSE;
-
-	while (nCurrentPos < nPESLength - 4)
-	{
-		if (   pPESPacket[nCurrentPos + 0] == 0x00
-			&& pPESPacket[nCurrentPos + 1] == 0x00
-			&& pPESPacket[nCurrentPos + 2] == 0x01)
-		{
-			switch (pPESPacket[nCurrentPos + 3] & 0x1f)
-			{
-			case 1:		// Coded slice of a non-IDR picture
-			case 5:		// Coded slice of an IDR picture
-			case 19:	// Coded slice of an auxiliary coded picture without partitioning
-				{
-					uint32_t first_mb_in_slice;
-					uint32_t slice_type;
-					//uint32_t pic_parameter_set_id;
-					//uint32_t frame_num;
-					bs_t b;
-					
-					memset(&b, 0, sizeof(b));
-					bs_init(&b, &pPESPacket[nCurrentPos + 4], nPESLength - (nCurrentPos + 4));
-					
-					first_mb_in_slice = bs_read_ue(&b);
-					slice_type = bs_read_ue(&b);
-					if (slice_type > 4)
-						slice_type -= 5;
-
-					//pic_parameter_set_id = bs_read_ue(&b);
-					//frame_num = bs_read_u(&b, sps->log2_max_frame_num_minus4 + 4 ); // was u(v)
-
-					switch(slice_type)
-					{
-					case SH_SLICE_TYPE_I:
-						if (v->nPictureIndex[nChartIndex] != -1)
-							UpdateVideoCompositionChart(v->nPictureIndex[nChartIndex], nChartIndex, TRUE);
-						v->nPictureIndex[nChartIndex] = 0;
-						OutputDebugString("I");
-						break;
-					case SH_SLICE_TYPE_P:
-						if (v->nPictureIndex[nChartIndex] != -1)
-							v->nPictureIndex[nChartIndex]++;
-						OutputDebugString("P");
-						break;
-					case SH_SLICE_TYPE_B:
-						if (v->nPictureIndex[nChartIndex] != -1)
-							v->nPictureIndex[nChartIndex]++;
-						OutputDebugString("B");
-						break;
-					case SH_SLICE_TYPE_SP:
-						if (v->nPictureIndex[nChartIndex] != -1)
-							v->nPictureIndex[nChartIndex]++;
-						OutputDebugString("Sp");
-						break;
-					case SH_SLICE_TYPE_SI:
-						if (v->nPictureIndex[nChartIndex] != -1)
-							v->nPictureIndex[nChartIndex]++;
-						OutputDebugString("Si");
-						break;
-					}
-					if (v->nPictureIndex[nChartIndex] != -1)
-					{
-						v->nPictureType[nChartIndex][v->nPictureIndex[nChartIndex]] = slice_type;
-						v->nPictureDataCount[nChartIndex][v->nPictureIndex[nChartIndex]] += nPESLength - nCurrentPos;
-					}
-					fFoundPictureStart = TRUE;
-				}
-				break;
-			}
-		}
-		nCurrentPos++;
-	}
-
-	if (!fFoundPictureStart)
-	{
-		if (v->nPictureIndex[nChartIndex] != -1)
-			v->nPictureDataCount[nChartIndex][v->nPictureIndex[nChartIndex]] += nPESLength;
-	}
-	*/
-}
-#endif PRO_BROKEN
-
-void InputMPEG2VideoCompositionESData(BYTE * pPESPacket, int nPESLength, int nChartIndex)
-{
-	int nCurrentPos = 0;
-	BOOL fFoundPictureStart = FALSE;
-
-	while (nCurrentPos < nPESLength - 4)
-	{
-		if (   pPESPacket[nCurrentPos + 0] == 0x00
-			&& pPESPacket[nCurrentPos + 1] == 0x00
-			&& pPESPacket[nCurrentPos + 2] == 0x01)
-		{
-			switch (pPESPacket[nCurrentPos + 3])
-			{
-			case 0x00:	// picture start code
-				if (v->nPictureIndex[nChartIndex] != -1)
-					v->nPictureDataCount[nChartIndex][v->nPictureIndex[nChartIndex]] += nCurrentPos;
-				set_buf(BM_PARSER_THREAD, &pPESPacket[nCurrentPos + 4], 0, FALSE);
-				{
-					int temporal_reference = get_bits(BM_PARSER_THREAD, 10);
-					int picture_coding_type = get_bits(BM_PARSER_THREAD, 3);
-
-					switch(picture_coding_type)
-					{
-					case 0:		// forbidden
-					default:	// reserved
-						break;
-					case 1:		// I
-						if (v->nPictureIndex[nChartIndex] != -1)
-							UpdateVideoCompositionChart(v->nPictureIndex[nChartIndex], nChartIndex, FALSE);
-						v->nPictureIndex[nChartIndex] = 0;
-						break;
-					case 2:		// P
-						if (v->nPictureIndex[nChartIndex] != -1)
-							v->nPictureIndex[nChartIndex]++;
-						break;
-					case 3:		// B
-						if (v->nPictureIndex[nChartIndex] != -1)
-							v->nPictureIndex[nChartIndex]++;
-						break;
-					case 4:		// D
-						if (v->nPictureIndex[nChartIndex] != -1)
-							v->nPictureIndex[nChartIndex]++;
-						break;
-					}
-					if (v->nPictureIndex[nChartIndex] != -1)
-					{
-						v->nPictureType[nChartIndex][v->nPictureIndex[nChartIndex]] = picture_coding_type;
-						v->nPictureDataCount[nChartIndex][v->nPictureIndex[nChartIndex]] += nPESLength - nCurrentPos;
-					}
-					fFoundPictureStart = TRUE;
-				}
-				break;
-			}
-		}
-		nCurrentPos++;
-	}
-
-	if (!fFoundPictureStart)
-	{
-		if (v->nPictureIndex[nChartIndex] != -1)
-			v->nPictureDataCount[nChartIndex][v->nPictureIndex[nChartIndex]] += nPESLength;
-	}
 }
 
 typedef struct _tagPIDUsageStacked
