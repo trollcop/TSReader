@@ -738,7 +738,7 @@ typedef struct _tagESLIST
 	ES_PARSER_TYPES nParseType;
 	int nVideoWidth, nVideoHeight;
 	int nTeletextServices;
-	int nBlacklisted;	
+	int nBlacklisted;
 	BOOL fDecoderCrashed;
 	DWORD dwAFDData;
 	RECT rcThumbnail;

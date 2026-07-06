@@ -12612,6 +12612,9 @@ void GetManualChannelDisplayInfo(LV_DISPINFO *pnmv)
 
 INT_PTR CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	char szTemp[128];
+	char szMask[32];
+
 	switch(uMsg)
 	{
 	case WM_INITDIALOG:
@@ -12619,17 +12622,14 @@ INT_PTR CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam
 			if (v->editpmt.nProgramNumber)
 			{
 				int nESIndex;
-				char szTemp[32];
 
 				SetDlgItemInt(hDlg, IDC_MANUAL_PROGRAM_NUMBER, v->editpmt.nProgramNumber, FALSE);
 				EnableWindow(GetDlgItem(hDlg, IDC_MANUAL_PROGRAM_NUMBER), FALSE);
 
-				wsprintf(szTemp, v->szOutputPIDFlags, v->editpmt.nPCRPID);
+				FormatPID(szTemp, sizeof(szTemp), v->editpmt.nPCRPID);
 				SetDlgItemText(hDlg, IDC_MANUAL_PCR_PID, szTemp);
 				for (nESIndex = 0; nESIndex < MAX_ESLIST_ENTRIES; nESIndex++)
 				{
-					char szMask[32];
-
 					if (v->editpmt.es[nESIndex].nStreamType == 0)
 						break;
 
@@ -12668,21 +12668,21 @@ INT_PTR CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam
 			SetDlgItemText(hDlg, IDC_MANUAL_CHANNEL_ES_TYPE, "81"); // AC3 Audio
 			SetFocus(GetDlgItem(hDlg, IDC_MANUAL_CHANNEL_ES_PID));
 			break;
+		case IDC_MANUAL_ES_H264_VIDEO:
+			SetDlgItemText(hDlg, IDC_MANUAL_CHANNEL_ES_TYPE, "1B"); // H.264 Video
+			SetFocus(GetDlgItem(hDlg, IDC_MANUAL_CHANNEL_ES_PID));
+			break;
 		case IDOK:
 			{
 				uint16_t nProgramNumber = (uint16_t)GetDlgItemInt(hDlg, IDC_MANUAL_PROGRAM_NUMBER, NULL, FALSE);
-				int nPCRPID = 0;
+				uint16_t nPCRPID = 0;
 				int nPMTIndex;
-				char szTemp[64];
 
 				GetDlgItemText(hDlg, IDC_MANUAL_PCR_PID, szTemp, sizeof(szTemp));
-				if (v->fDecimalPIDs)
-					sscanf(szTemp, "%d", &nPCRPID);
-				else
-					sscanf(szTemp, "%x", &nPCRPID);
-				if (nPCRPID <= 0 || nPCRPID > 8191)
+				nPCRPID = (uint16_t)ParseNumber(szTemp, !v->fDecimalPIDs);
+				if (nPCRPID > 0x1fff)
 				{
-					MessageBox(hDlg, "The PCR PID is not valid", gszAppName, MB_ICONSTOP);
+					MessageBoxFormat(hDlg, MB_ICONSTOP, "The PCR PID is not valid");
 					SetFocus(GetDlgItem(hDlg, IDC_MANUAL_PCR_PID));
 					return FALSE;
 				}
@@ -12692,7 +12692,7 @@ INT_PTR CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam
 				{
 					if (nProgramNumber <= 0 || nProgramNumber > 65534)
 					{
-						MessageBox(hDlg, "The program number is not valid", gszAppName, MB_ICONSTOP);
+						MessageBoxFormat(hDlg, MB_ICONSTOP, "The program number is not valid");
 						SetFocus(GetDlgItem(hDlg, IDC_MANUAL_PROGRAM_NUMBER));
 						return FALSE;
 					}
@@ -12702,7 +12702,7 @@ INT_PTR CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam
 							break;
 						if (v->pat.pmt[nPMTIndex].nProgramNumber == nProgramNumber)
 						{
-							MessageBox(hDlg, "This program number already exists - choose another", gszAppName, MB_ICONSTOP);
+							MessageBoxFormat(hDlg, MB_ICONSTOP, "This program number already exists - choose another");
 							SetFocus(GetDlgItem(hDlg, IDC_MANUAL_PROGRAM_NUMBER));
 							return FALSE;
 						}
@@ -12716,8 +12716,7 @@ INT_PTR CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam
 						if (v->editpmt.nProgramNumber == 0)
 						{
 							HWND hWndTV = GetDlgItem(v->hDlgSIParser, IDC_SI_TREE);
-							LV_ITEM lvi; 
-							char szTemp2[128];
+							LV_ITEM lvi;
 
 							// add this channel to the end
 							v->editpmt.nProgramNumber = nProgramNumber;
@@ -12726,12 +12725,12 @@ INT_PTR CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam
 
 							if (v->pat.hPATTreeItem == NULL)
 							{
-								FormatPIDMask(szTemp2, sizeof(szTemp2), "PAT PID %s", 0);
-								v->pat.hPATTreeItem = AddItemToSITree(hWndTV, szTemp2, 1, SI_PARSER_PAT, ID_SI_PAT, NULL, TVI_FIRST);
+								FormatPIDMask(szTemp, sizeof(szTemp), "PAT PID %s", 0);
+								v->pat.hPATTreeItem = AddItemToSITree(hWndTV, szTemp, 1, SI_PARSER_PAT, ID_SI_PAT, NULL, TVI_FIRST);
 							}
 
-							wsprintf(szTemp2, "Manual - Program %d", v->pat.pmt[nPMTIndex].nProgramNumber);
-							v->pat.pmt[nPMTIndex].hPMTTreeItem = AddItemToSITree(hWndTV, szTemp2, 2, SI_PARSER_PMT + nPMTIndex, ID_SI_PMT, v->pat.hPATTreeItem, NULL);
+							wsprintf(szTemp, "Manual - Program %d", v->pat.pmt[nPMTIndex].nProgramNumber);
+							v->pat.pmt[nPMTIndex].hPMTTreeItem = AddItemToSITree(hWndTV, szTemp, 2, SI_PARSER_PMT + nPMTIndex, ID_SI_PMT, v->pat.hPATTreeItem, NULL);
 							PostMessage(v->hDlgSIParser, WM_USER + 2, SI_PARSER_PMT, nPMTIndex);
 
 							memset(&lvi, 0, sizeof(lvi));
@@ -12764,26 +12763,19 @@ INT_PTR CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam
 				uint8_t nESType = 0;
 				uint16_t nESPID = 0;
 				int nESIndex;
-				char szTemp[16];
 
 				GetDlgItemText(hDlg, IDC_MANUAL_CHANNEL_ES_TYPE, szTemp, sizeof(szTemp));
 				nESType = (uint8_t)ParseNumber(szTemp, TRUE);
 				GetDlgItemText(hDlg, IDC_MANUAL_CHANNEL_ES_PID, szTemp, sizeof(szTemp));
-				nESPID = (uint16_t)ParseNumber(szTemp, FALSE);
+				nESPID = (uint16_t)ParseNumber(szTemp, !v->fDecimalPIDs);
 				if (nESPID == 0 || nESType == 0)
 				{
-					MessageBox(hDlg, "Set the ES type and ES PID before using this function", gszAppName, MB_ICONSTOP);
+					MessageBoxFormat(hDlg, MB_ICONSTOP, "Set the ES type and ES PID before using this function");
 					return FALSE;
 				}
-				if (nESPID <= 0 || nESPID > 8190)
+				if (nESPID > 0x1ffe)
 				{
-					MessageBox(hDlg, "The ES PID is not valid", gszAppName, MB_ICONSTOP);
-					SetFocus(GetDlgItem(hDlg, IDC_MANUAL_CHANNEL_ES_PID));
-					return FALSE;
-				}
-				if (nESType < 0 || nESType > 0xff)
-				{
-					MessageBox(hDlg, "The ES Type is not valid", gszAppName, MB_ICONSTOP);
+					MessageBoxFormat(hDlg, MB_ICONSTOP, "The ES PID is not valid");
 					SetFocus(GetDlgItem(hDlg, IDC_MANUAL_CHANNEL_ES_PID));
 					return FALSE;
 				}
@@ -12805,7 +12797,7 @@ INT_PTR CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam
 					}
 				}
 				if (nESIndex == MAX_ESLIST_ENTRIES)
-					MessageBox(hDlg, "Not enough room for this many elementary streams!", gszAppName, MB_ICONSTOP);
+					MessageBoxFormat(hDlg, MB_ICONSTOP, "Not enough room for this many elementary streams!");
 			}
 			break;
 		case IDC_MANUAL_ES_DELETE:
@@ -12814,22 +12806,26 @@ INT_PTR CALLBACK ManualChannelEditDialogProc(HWND hDlg, UINT uMsg, WPARAM wParam
 
 				nSelected = (int)SendDlgItemMessage(hDlg, IDC_MANUAL_ES_LIST, LB_GETCURSEL, 0, 0);
 				if (nSelected == LB_ERR)
-					MessageBox(hDlg, "Select an ES entry to delete first", gszAppName, MB_ICONSTOP);
+					MessageBoxFormat(hDlg, MB_ICONSTOP, "Select an ES entry to delete first");
 				else
 				{
-					PMT newpmt;
+					PMT *newpmt = NULL;
 					int nInputESIndex, nOutputESIndex = 0;
 
-					memset(&newpmt, 0, sizeof(newpmt));
-					newpmt.nPCRPID = v->editpmt.nPCRPID;
-					newpmt.nProgramNumber = v->editpmt.nProgramNumber;
+					newpmt = calloc(sizeof(PMT), 1);
+					if (!newpmt)
+						break;
+
+					newpmt->nPCRPID = v->editpmt.nPCRPID;
+					newpmt->nProgramNumber = v->editpmt.nProgramNumber;
 
 					for (nInputESIndex = 0; nInputESIndex < MAX_ESLIST_ENTRIES; nInputESIndex++)
 					{
 						if (nSelected != nInputESIndex)
-							memcpy(&newpmt.es[nOutputESIndex++], &v->editpmt.es[nInputESIndex], sizeof(ESLIST));
+							memcpy(&newpmt->es[nOutputESIndex++], &v->editpmt.es[nInputESIndex], sizeof(ESLIST));
 					}
-					memcpy(&v->editpmt, &newpmt, sizeof(PMT));
+					memcpy(&v->editpmt, newpmt, sizeof(PMT));
+					free(newpmt);
 					SendDlgItemMessage(hDlg, IDC_MANUAL_ES_LIST, LB_DELETESTRING, nSelected, 0);
 				}
 			}
