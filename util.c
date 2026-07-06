@@ -1937,10 +1937,18 @@ void GetSourceInfoLine(int nLine, char * szOutput)
 				GetMiscString(szMiscString);
 			wsprintf(szOutput, "%s", szMiscString);
 		}
+		break;
 	case 5:
 		{
-			if (v->fEPGSaveEnabled == TRUE)
-				wsprintf(szOutput, "Save All EPG: %d Items", v->nEPGSaveCount);
+			char szTemp[32];
+			if (v->fControlServerEnabled) {
+				StringCchCopy(szTemp, sizeof(szTemp), "Not running");
+				if (v->fControlServerClientConnected)
+					StringCchCopy(szTemp, sizeof(szTemp), "Connected");
+				else
+					StringCchPrintf(szTemp, sizeof(szTemp), "Idle on port %d", v->nControlServerPort);
+				wsprintf(szOutput, "Control Server: %s", szTemp);
+			}
 		}
 		break;
 	case 6:

@@ -1360,6 +1360,7 @@ typedef struct tag_Variables
 	int nATSCEITPID[64], nATSCETTPID[64];
 	int nATSCCETTPID;
 	int nControlServerPort;
+	BOOL fControlServerClientConnected;
 	int nMinimumPATs, nMaximumMPEGPictures, nMaximumDCIIPictures, nMaximumH264Pictures;
 	int nRecordProgram;
 	int nTransmittingCount;

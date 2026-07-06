@@ -15,7 +15,7 @@ extern td_GetRetuneCount GetRetuneCount;
 // Should move into v->
 static SOCKET ControlBaseSocket = INVALID_SOCKET;
 static SOCKET ControlSocket = INVALID_SOCKET;
-static BOOL fServerThreadActive;
+static BOOL fControlServerThreadActive = FALSE;
 static char szNewSourceName[MAX_PATH] = {0};
 static BOOL fXMLStreamRunning = FALSE;
 static BOOL fKillXMLStreamThread = FALSE;
@@ -2582,7 +2582,7 @@ DWORD WINAPI ControlServerThread(LPVOID lpv)
 		closesocket(ControlBaseSocket);
 		return 0;
 	}
-	fServerThreadActive = TRUE;
+	fControlServerThreadActive = TRUE;
 
 	do
 	{
@@ -2590,7 +2590,7 @@ DWORD WINAPI ControlServerThread(LPVOID lpv)
 
 		// Wait for a connection on port 1399
 		acc_sin_len = sizeof(acc_sin);
-		ControlSocket = accept(ControlBaseSocket, (struct sockaddr FAR *)&acc_sin, (int FAR *)&acc_sin_len);
+		ControlSocket = accept(ControlBaseSocket, (struct sockaddr *)&acc_sin, (int *)&acc_sin_len);
 		if (ControlSocket == INVALID_SOCKET)
 		{
 			dbg_printf("TSReader: accept failed in ControlServer\n");
@@ -2601,12 +2601,10 @@ DWORD WINAPI ControlServerThread(LPVOID lpv)
 			                                                            acc_sin.sin_addr.S_un.S_un_b.s_b2,
 																		acc_sin.sin_addr.S_un.S_un_b.s_b3,
 																		acc_sin.sin_addr.S_un.S_un_b.s_b4);
+		v->fControlServerClientConnected = TRUE;
 		{
-			int flag;
-			flag = 1;
+			int flag = 1;
 			setsockopt (ControlSocket, IPPROTO_TCP, TCP_NODELAY, (char *) &flag, sizeof(int));
-			//flag = 2048;
-			//setsockopt (gHTTPSocket, IPPROTO_TCP, TCP_MAXSEG, (char *) &flag, sizeof(int));
 		}
 
 		{
@@ -2714,8 +2712,10 @@ DWORD WINAPI ControlServerThread(LPVOID lpv)
 		} while (TRUE);
 		closesocket(ControlSocket);
 		ControlSocket = INVALID_SOCKET;
+		v->fControlServerClientConnected = FALSE;
 	} while (TRUE);
 
+	fControlServerThreadActive = FALSE;
 	dbg_printf("TSReader: -ControlServerThread\n");
 	return 0;
 }
@@ -2736,7 +2736,7 @@ BOOL StartControlServer(void)
 	local_sin.sin_port = htons((short)v->nControlServerPort);
 
 	// Bind the socket
-	if (bind(ControlBaseSocket, (struct sockaddr FAR *) &local_sin, sizeof(local_sin)) == SOCKET_ERROR)
+	if (bind(ControlBaseSocket, (struct sockaddr *) &local_sin, sizeof(local_sin)) == SOCKET_ERROR)
 	{
 		closesocket(ControlBaseSocket);
 		return FALSE;
