@@ -62,6 +62,7 @@
     <ResourceCompile>
       <PreprocessorDefinitions>STANDARD_ICON</PreprocessorDefinitions>
     </ResourceCompile>
+    <Manifest />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -140,6 +141,7 @@
     <ClInclude Include="parser.h" />
     <ClInclude Include="reed-solomon.h" />
     <ClInclude Include="registry_list.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="sky_genres.h" />
     <ClInclude Include="SoftCSA.h" />
     <ClInclude Include="sources.h" />

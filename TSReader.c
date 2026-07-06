@@ -37,6 +37,11 @@
 
 #include "MDI/mdi.h"
 
+/* enable 6.0 common controls manifest */
+#pragma comment(linker,"\"/manifestdependency:type='win32' \
+name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
+processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+
 // Stuff in RokuTelnetInterface.c
 DWORD WINAPI RokuTelnetControlThread(LPVOID lpv);
 
@@ -13484,9 +13489,10 @@ void CreateStatusBar(HWND hWnd)
 	v->hStatusBarIcons[nIndex++] = LoadImage(v->hInstance, MAKEINTRESOURCE(IDI_FWD_3), IMAGE_ICON, 16, 16, 0);				//9
 	v->hStatusBarIcons[nIndex++] = LoadImage(v->hInstance, MAKEINTRESOURCE(IDI_FWD_4), IMAGE_ICON, 16, 16, 0);				//10
 
-	//Create the status bar
+	// Create the status bar
 	dwStyle = WS_CHILD | WS_VISIBLE | SBT_TOOLTIPS;
-	v->hWndST = CreateStatusWindowW(dwStyle, L"", hWnd, 2);
+	v->hWndST = CreateWindowExW(0, STATUSCLASSNAMEW, NULL, WS_CHILDWINDOW | WS_VISIBLE | SBT_TOOLTIPS, 0, 0, 0, 0, hWnd, (HMENU)2, GetModuleHandle(NULL), NULL);
+
 	if (v->hWndST != NULL)
 	{
 		SendMessage(v->hWndST, SB_SETICON, 4, (LPARAM)v->hStatusBarIcons[0]);
@@ -14091,17 +14097,19 @@ void ResizeDialogWindow(HWND hDlg, WPARAM wParam, LPARAM lParam)
 
 			KillTimer(hDlg, 4);
 
+			/* i don't like that a lot of this seems to be pixel-coded. TODO check this at various DPI settings and see what happens */
+
 			GetWindowRect(hWndVideoFrame, &rcVideoFrame);
 			GetWindowRect(v->hWndMainWindow, &rcParent);
 			GetClientRect(hWndVideoScroll, &rcVideoScrollClient);
 
-			nVideoFrameWidth = rcParent.right - rcVideoFrame.left - 10;
-			nVideoFrameHeight = rcParent.bottom - rcParent.top - GetSystemMetrics(SM_CYMENU) - GetSystemMetrics(SM_CYCAPTION) - 30;		
+			nVideoFrameWidth = rcParent.right - rcVideoFrame.left - rcVideoScrollClient.right; /* last is scrollbar width */
+			nVideoFrameHeight = rcParent.bottom - rcParent.top - GetSystemMetrics(SM_CYMENU) - GetSystemMetrics(SM_CYCAPTION) - 40; /* last 40 is *probably* the statusbar height */
 			SetWindowPos(hWndVideoFrame, NULL, 0, 0, nVideoFrameWidth, nVideoFrameHeight, SWP_NOMOVE);
 
 			nScrollbarTop = 7;
-			nScrollbarHeight = nVideoFrameHeight - 8;//rcParent.bottom - rcParent.top - GetSystemMetrics(SM_CYMENU) - GetSystemMetrics(SM_CYCAPTION) - 30 - 7;		
-			nScrollbarLeft = rcVideoFrame.right - rcVideoScrollClient.right - rcParent.left - 6;
+			nScrollbarHeight = nVideoFrameHeight - 8;
+			nScrollbarLeft = rcVideoFrame.right - rcVideoScrollClient.right - rcParent.left - 8;
 			nScrollbarWidth = rcVideoScrollClient.right;
 			SetWindowPos(hWndVideoScroll, NULL, nScrollbarLeft, nScrollbarTop, nScrollbarWidth, nScrollbarHeight, 0);
 
@@ -19393,10 +19401,10 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 					v->fCurrentMinimized = FALSE;
 
- 					tnid.cbSize = sizeof(NOTIFYICONDATA); 
-					tnid.hWnd = hWnd; 
-					tnid.uID = 1; 
-					Shell_NotifyIcon(NIM_DELETE, &tnid); 
+ 					tnid.cbSize = sizeof(NOTIFYICONDATA);
+					tnid.hWnd = hWnd;
+					tnid.uID = 1;
+					Shell_NotifyIcon(NIM_DELETE, &tnid);
 					v->fBalloonQueued = FALSE;
 				}
 			}
@@ -20950,7 +20958,7 @@ HWND NEAR InitInstance(int nCmdShow)
 	int nInitialXPos, nInitialYPos;
 	int nInitialXSize, nInitialYSize;
 	BOOL fMaximizedFlag;
-	DWORD dwStyle;
+	DWORD dwStyle, dwStyleEx;
 	wchar_t szTitle[256] = { 0, };
 	char szProfileName[256] = { "Default" };
 
@@ -20961,7 +20969,8 @@ HWND NEAR InitInstance(int nCmdShow)
 	v->hAccel = LoadAccelerators(v->hInstance, MAKEINTRESOURCE(IDR_ACCELERATOR_TOP));
 
 	// create the window
-	dwStyle = WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU | WS_SIZEBOX;
+	dwStyle = WS_OVERLAPPED | WS_CAPTION | WS_CLIPSIBLINGS | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU | WS_SIZEBOX;
+	dwStyleEx = WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR | WS_EX_WINDOWEDGE;
 #define TSREADER_INITIAL_X 1000
 #define TSREADER_INITIAL_Y 720
 
@@ -20969,30 +20978,25 @@ HWND NEAR InitInstance(int nCmdShow)
 	nInitialYPos = 0;
 	nInitialXSize = TSREADER_INITIAL_X;
 	nInitialYSize = TSREADER_INITIAL_Y;
-	v->hWndMainWindow = CreateWindowW(gszMainClass, szTitle,
-						   dwStyle,
-						   nInitialXPos, nInitialYPos,
-						   nInitialXSize, nInitialYSize,
-						   NULL, NULL, v->hInstance, NULL);
+	v->hWndMainWindow = CreateWindowExW(dwStyleEx, gszMainClass, szTitle, dwStyle, nInitialXPos, nInitialYPos, nInitialXSize, nInitialYSize, NULL, NULL, v->hInstance, NULL);
 
 	if (NULL == v->hWndMainWindow)
-		return (NULL);
+		return NULL;
 
+	if (v->nMainWindowPositionX < 0 || v->nMainWindowPositionY < 0)
+		v->nMainWindowPositionX = v->nMainWindowPositionY = 0;
+	if (v->nMainWindowSizeX <= 0 || v->nMainWindowSizeY <= 0)
 	{
-		if (v->nMainWindowPositionX < 0 || v->nMainWindowPositionY < 0)
-			v->nMainWindowPositionX = v->nMainWindowPositionY = 0;
-		if (v->nMainWindowSizeX <= 0 || v->nMainWindowSizeY <= 0)
-		{
-			v->nMainWindowSizeX = 640;
-			v->nMainWindowSizeY = 480;
-		}
-
-		SetWindowPos(v->hWndMainWindow,
-					 HWND_TOP,
-					 v->nMainWindowPositionX, v->nMainWindowPositionY,
-					 v->nMainWindowSizeX, v->nMainWindowSizeY,
-					 0);
+		v->nMainWindowSizeX = 640;
+		v->nMainWindowSizeY = 480;
 	}
+
+	SetWindowPos(v->hWndMainWindow,
+					HWND_TOP,
+					v->nMainWindowPositionX, v->nMainWindowPositionY,
+					v->nMainWindowSizeX, v->nMainWindowSizeY,
+					0);
+
 	v->fMaximizedFlag = fMaximizedFlag;
 	if (v->fRunHidden)
 	{
@@ -21007,7 +21011,7 @@ HWND NEAR InitInstance(int nCmdShow)
 		UpdateWindow(v->hWndMainWindow);
 	}
 
-	return (v->hWndMainWindow);
+	return v->hWndMainWindow;
 }
 
 BOOL CALLBACK BombWarningDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -21180,9 +21184,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 	_ISInitialize("{4E3E4954-F9B5-11d2-A085-00500402F30B}");
 	SourceHelper_CRC_Init();
 	{
-		INITCOMMONCONTROLSEX iccex; 
+		INITCOMMONCONTROLSEX iccex;
 
-		iccex.dwICC = ICC_WIN95_CLASSES | ICC_BAR_CLASSES | ICC_COOL_CLASSES | ICC_DATE_CLASSES ;
+		iccex.dwICC = ICC_WIN95_CLASSES | ICC_BAR_CLASSES | ICC_COOL_CLASSES | ICC_DATE_CLASSES;
 		iccex.dwSize = sizeof(INITCOMMONCONTROLSEX);
 		InitCommonControlsEx(&iccex);
 	}
