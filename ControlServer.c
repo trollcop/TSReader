@@ -346,13 +346,14 @@ void CS__PIDs(const char * szParameters)
 				}
 			}
 
-			sprintf(szResponse, "209 0x%04x %d %d %.2f %.3f \"%s\"\r\n",
+			sprintf(szResponse, "209 0x%04x %d %d %.2f %.3f \"%s\" %d\r\n",
 				    pc[i].nPID,
 					pc[i].nPIDHasContinuityErrors,
 					pc[i].nPIDTEICount,
 					dPercent,
 					dRate,
-					szPIDFirstSpace);
+					szPIDFirstSpace,
+					pc[i].fScrambled);
 			SendControlResponse(szResponse, lstrlen(szResponse));
 		}
 	}
