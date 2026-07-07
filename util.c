@@ -2060,15 +2060,18 @@ uint32_t ParseNumber(const char *szInput, BOOL bForceHex)
 
 extern char gszAppName[32];
 
-void MessageBoxFormat(HWND hWnd, UINT uType, const char *fmt, ...)
+int MessageBoxFormat(HWND hWnd, UINT uType, const char *fmt, ...)
 {
 	char szTemp[1024];
+	int rv = 0;
 	va_list args;
 	va_start(args, fmt);
 
 	vsnprintf_s(szTemp, sizeof(szTemp), sizeof(szTemp), fmt, args);
-	MessageBox(hWnd, szTemp, gszAppName, uType);
+	rv = MessageBox(hWnd, szTemp, gszAppName, uType);
 	va_end(args);
+
+	return rv;
 }
 
 int SortPIDsByPackets(const void *elem1, const void *elem2)

@@ -2115,6 +2115,7 @@ extern int (*UDPSender_OpenDevice) (char * szName);
 extern int (*UDPSender_CloseDevice) (void);
 extern int (*UDPSender_SendPacket) (BYTE * pData, int nLength);
 
+typedef void (* td_Unload) (void);
 typedef BOOL (* td_Init) (PSOURCESTRUCT pss);
 typedef BOOL (* td_DeInit) (void);
 typedef BOOL (* td_Start) (void);

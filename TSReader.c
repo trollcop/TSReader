@@ -140,6 +140,7 @@ char gszKeyName[64] = TEXT("Software\\TSReaderPro");
 char gszVideoMosaicClass[] = {"TSReaderVideoMosaicClass"};
 
 // Source DLL functions
+td_Unload Unload = NULL;
 td_Init Init = NULL;
 td_DeInit DeInit = NULL;
 td_Start Start = NULL;
@@ -14251,6 +14252,7 @@ BOOL LoadSource(HWND hWnd)
 				v->szSourceName[0] = 0;
 				continue;
 			}
+			Unload = (td_Unload)GetProcAddress(v->hSource, "TSReader_Unload");
 			Init = (td_Init)GetProcAddress(v->hSource, "TSReader_Init");
 			DeInit = (td_DeInit)GetProcAddress(v->hSource, "TSReader_DeInit");
 			Start = (td_Start)GetProcAddress(v->hSource, "TSReader_Start");
@@ -14263,9 +14265,9 @@ BOOL LoadSource(HWND hWnd)
 			IsPIDActive = (td_IsPIDActive)GetProcAddress(v->hSource, "TSReader_IsPIDActive");
 			GetTunerString = (td_GetTunerString)GetProcAddress(v->hSource, "TSReader_GetTunerString");
 			GetSignalString = (td_GetSignalString)GetProcAddress(v->hSource, "TSReader_GetSignalString");
+			GetMiscString = (td_GetMiscString)GetProcAddress(v->hSource, "TSReader_GetMiscString");
 			GetSyncLossCount = (td_GetSyncLossCount)GetProcAddress(v->hSource, "TSReader_GetSyncLossCount");
 			GetRetuneCount = (td_GetRetuneCount)GetProcAddress(v->hSource, "TSReader_GetRetuneCount");
-			GetMiscString = (td_GetMiscString)GetProcAddress(v->hSource, "TSReader_GetMiscString");
 
 			GetDescription(v->szSourceModuleDescription, NULL, &v->fSourceCanBeStopped, &v->nMaxSourcePIDs, &v->dwSourceCapabilities);
 			SetupProcessorAffinity();
@@ -19337,9 +19339,7 @@ LRESULT FAR PASCAL MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			nConnectionCount = GetEITConnectionCount();
 			if (nConnectionCount)
 			{
-				char szTemp[128];
-				wsprintf(szTemp, "There are %d EIT Server connection(s) - are you want to quit?", nConnectionCount);
-				if (MessageBox(hWnd, szTemp, gszAppName, MB_ICONQUESTION | MB_YESNO | MB_DEFBUTTON2) == IDNO)
+				if (MessageBoxFormat(hWnd, MB_ICONQUESTION | MB_YESNO | MB_DEFBUTTON2, "There are %d EIT Server connection(s) - are you want to quit?", nConnectionCount) == IDNO)
 					return 0;
 			}
 		}
@@ -20983,8 +20983,8 @@ HWND NEAR InitInstance(int nCmdShow)
 		v->nMainWindowPositionX = v->nMainWindowPositionY = 0;
 	if (v->nMainWindowSizeX <= 0 || v->nMainWindowSizeY <= 0)
 	{
-		v->nMainWindowSizeX = 640;
-		v->nMainWindowSizeY = 480;
+		v->nMainWindowSizeX = 1000;
+		v->nMainWindowSizeY = 720;
 	}
 
 	SetWindowPos(v->hWndMainWindow,
@@ -21108,6 +21108,9 @@ void DoNormalTSReaderWindow(char * szCmdLinePtr)
 				TerminateEITServer();
 				UnloadOtherModules();
 			}
+		}
+		if (Unload != NULL) {
+			Unload();
 		}
 		FreeLibrary(v->hSource);
 	}
