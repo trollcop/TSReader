@@ -1462,6 +1462,7 @@ typedef struct tag_Variables
 	int nTotalGOPLength[REAL_MAX_CHARTS];
 	int nGOPLengthSamples[REAL_MAX_CHARTS];
 	int nAdvancedRecordRemoveOldLimitGB;
+	int nAdvancedRecordDeleteSplitCount;
 	int nStreamMonitorAlarmTimeout;
 	int nStreamMonitorClickIndex;
 	int nXMLLogCount, nXMLLogMax;
@@ -1688,6 +1689,7 @@ typedef struct tag_Variables
 	BOOL fDVBHMACs;
 	BOOL fAdvancedRecordRemoveOldEnabled;
 	BOOL fAdvancedRecordUTCTime;
+	BOOL fAdvancedRecordDeleteSplitEnabled;
 	BOOL fAdvancedRecordDropPID;
 	BOOL fStreamingXMLMode;
 	BOOL fWarnBeforeOverwritingRecordings;

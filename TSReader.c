@@ -11,6 +11,7 @@
 #include <shlobj.h>
 #include <wininet.h>
 #include <strsafe.h>
+#include <shlwapi.h>
 
 #include "resource.h"
 
@@ -2243,7 +2244,9 @@ INT_PTR CALLBACK RecordAdvancedFileDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 	case WM_INITDIALOG:
 		CheckDlgButton(hDlg, IDC_ADVANCED_RECORD_REMOVE_OLD, v->fAdvancedRecordRemoveOldEnabled);
 		CheckDlgButton(hDlg, IDC_ADVANCED_RECORD_UTC, v->fAdvancedRecordUTCTime);
+		CheckDlgButton(hDlg, IDC_ADVANCED_RECORD_KEEP, v->fAdvancedRecordDeleteSplitEnabled);
 		SetDlgItemInt(hDlg, IDC_ADVANCED_RECORD_REMOVE_OLD_SIZE, v->nAdvancedRecordRemoveOldLimitGB, FALSE);
+		SetDlgItemInt(hDlg, IDC_ADVANCED_RECORD_REMOVE_SPLIT, v->nAdvancedRecordDeleteSplitCount, FALSE);
 		SetFocus(GetDlgItem(hDlg, IDOK));
 		break;
 	case WM_CLOSE:
@@ -2255,15 +2258,25 @@ INT_PTR CALLBACK RecordAdvancedFileDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 		case IDOK:
 			{
 				int nNewLimit = GetDlgItemInt(hDlg, IDC_ADVANCED_RECORD_REMOVE_OLD_SIZE, NULL, FALSE);
-				if (nNewLimit == 0)
+				BOOL bRemoveChecked = IsDlgButtonChecked(hDlg, IDC_ADVANCED_RECORD_REMOVE_OLD);
+				BOOL bKeepChecked = IsDlgButtonChecked(hDlg, IDC_ADVANCED_RECORD_KEEP);
+				if (nNewLimit == 0 && bRemoveChecked)
 				{
-					MessageBox(hDlg, "Limit must be non-zero", gszAppName, MB_ICONWARNING);
+					MessageBoxFormat(hDlg, MB_ICONWARNING, "Limit must be non-zero");
 					SetFocus(GetDlgItem(hDlg, IDC_ADVANCED_RECORD_REMOVE_OLD_SIZE));
 					break;
 				}
+				int nKeepSplit = GetDlgItemInt(hDlg, IDC_ADVANCED_RECORD_REMOVE_SPLIT, NULL, FALSE);
+				if (nKeepSplit == 0 && bKeepChecked) {
+					MessageBoxFormat(hDlg, MB_ICONWARNING, "Keep split must be non-zero");
+					SetFocus(GetDlgItem(hDlg, IDC_ADVANCED_RECORD_REMOVE_SPLIT));
+					break;
+				}
 				v->nAdvancedRecordRemoveOldLimitGB = nNewLimit;
-				v->fAdvancedRecordRemoveOldEnabled = IsDlgButtonChecked(hDlg, IDC_ADVANCED_RECORD_REMOVE_OLD);
+				v->fAdvancedRecordRemoveOldEnabled = bRemoveChecked;
 				v->fAdvancedRecordUTCTime = IsDlgButtonChecked(hDlg, IDC_ADVANCED_RECORD_UTC);
+				v->nAdvancedRecordDeleteSplitCount = nKeepSplit;
+				v->fAdvancedRecordDeleteSplitEnabled = bKeepChecked;
 				EndDialog(hDlg, TRUE);
 			}
 			break;
@@ -2606,7 +2619,7 @@ Record_BuildESListDefault:
 				break;
 			}
 			break;
-		case BN_CLICKED:			
+		case BN_CLICKED:
 			switch(LOWORD(wParam))
 			{
 			case IDC_RECORD_ADVANCED_FILE:
@@ -3942,8 +3955,28 @@ void GetRecordStartTime(void)
 	memcpy(&v->lnRecordTime, &ftNow, sizeof(DWORD64));
 }
 
-DWORD WINAPI AdvancedRecordFreeSpaceMonitorThread(LPVOID lpv)
+typedef struct tagFileEntry {
+	char szFilename[MAX_PATH];
+	ULARGE_INTEGER ulFileDate;
+} FileEntry;
+
+static int SortFileEntryCompare(const void *a, const void *b)
 {
+	const FileEntry *itemA = *(const FileEntry **)a;
+	const FileEntry *itemB = *(const FileEntry **)b;
+
+	if (itemA->ulFileDate.QuadPart < itemB->ulFileDate.QuadPart)
+		return -1;
+	else if (itemA->ulFileDate.QuadPart > itemB->ulFileDate.QuadPart)
+		return 1;
+	else
+		return 0;
+}
+
+DWORD WINAPI AdvancedRecordFreeSpaceSplitMonitorThread(LPVOID lpv)
+{
+	ArrayList arFileList = { 0, };
+
 	while (v->fRecording)
 	{
 		int i;
@@ -3952,7 +3985,7 @@ DWORD WINAPI AdvancedRecordFreeSpaceMonitorThread(LPVOID lpv)
 		ULARGE_INTEGER TotalNumberOfBytes;
 		ULARGE_INTEGER TotalNumberOfFreeBytes;
 		char szCurrentRecordFile[MAX_PATH];
-		char szDrive[4];
+		char szDrive[4] = { 0, };
 
 		EnterCriticalSection(&v->csActualRecordFilename);
 		lstrcpy(szCurrentRecordFile, v->szActualRecordFile);
@@ -3966,76 +3999,120 @@ DWORD WINAPI AdvancedRecordFreeSpaceMonitorThread(LPVOID lpv)
 			GetDiskFreeSpaceEx(szDrive, &FreeBytesAvailable, &TotalNumberOfBytes, &TotalNumberOfFreeBytes);
 			nCurrentFreeGB = (int)((double)(int64_t)FreeBytesAvailable.QuadPart / 1024.0 / 1024.0 / 1024.0);
 
-			if (nCurrentFreeGB >= v->nAdvancedRecordRemoveOldLimitGB)
+			/* if there's enough space, and currently split files not being deleted, no need to run the task */
+			if (nCurrentFreeGB >= v->nAdvancedRecordRemoveOldLimitGB && !v->fAdvancedRecordDeleteSplitEnabled)
 				break;
+
+			/* array capacity, worst case is twice the recorded segments, probably ok? */
+			if (v->fAdvancedRecordDeleteSplitEnabled)
+				ArrayListInit(&arFileList, v->nAdvancedRecordDeleteSplitCount * 2);
+
+			// Time to remove old files or count exceeding keep count for splits
+			ULARGE_INTEGER ulOldestFile;
+			HANDLE hFind;
+			WIN32_FIND_DATA fd;
+			char *szExtensionPointer = NULL;
+			char szSearchPath[MAX_PATH];
+			char szOldestFile[MAX_PATH] = { 0, };
+			char szOutputFolder[MAX_PATH];
+
+			lstrcpy(szOutputFolder, szCurrentRecordFile);
+			szExtensionPointer = PathFindExtension(szOutputFolder);
+			if (szExtensionPointer == NULL)
+				szExtensionPointer = "";
+
+			for (i = lstrlen(szOutputFolder); i > 0; i--)
 			{
-				// Time to remove old files
-				ULARGE_INTEGER ulOldestFile;
-				HANDLE hFind;
-				WIN32_FIND_DATA fd;
-				char *szExtensionPointer = NULL;
-				char szSearchPath[MAX_PATH];
-				char szOldestFile[MAX_PATH] = {0};
-				char szOutputFolder[MAX_PATH];
-
-				lstrcpy(szOutputFolder, szCurrentRecordFile);
-
-				for (i = lstrlen(szOutputFolder); i > 0; i--)
+				if (szOutputFolder[i] == '\\')
 				{
-					if (szOutputFolder[i] == '.')
-						szExtensionPointer = &szOutputFolder[i];
-					else if (szOutputFolder[i] == '\\')
-					{
-						szOutputFolder[i] = '\0';
-						break;
-					}
+					szOutputFolder[i] = '\0';
+					break;
 				}
+			}
 
-				ulOldestFile.QuadPart = ULLONG_MAX;
+			ulOldestFile.QuadPart = ULLONG_MAX;
 
-				lstrcpy(szSearchPath, szOutputFolder);
-				lstrcat(szSearchPath, "\\*");
-				lstrcat(szSearchPath, szExtensionPointer);
-				hFind = FindFirstFile(szSearchPath, &fd);
-				if (hFind != INVALID_HANDLE_VALUE)
+			lstrcpy(szSearchPath, szOutputFolder);
+			lstrcat(szSearchPath, "\\*");
+			lstrcat(szSearchPath, szExtensionPointer);
+			hFind = FindFirstFile(szSearchPath, &fd);
+			if (hFind != INVALID_HANDLE_VALUE)
+			{
+				do
 				{
-					do
-					{
-						HANDLE hFile;
-						ULARGE_INTEGER ulFileDate;
-						char szFilename[MAX_PATH];
+					HANDLE hFile;
+					ULARGE_INTEGER ulFileDate = { 0, };
+					char szFilename[MAX_PATH] = { 0, };
+					char *szFoundExtension = NULL;
 
-						if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
-							continue;
+					/* skip folders */
+					if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
+						continue;
 
-						lstrcpy(szFilename, szOutputFolder);
-						lstrcat(szFilename, "\\");
-						lstrcat(szFilename, fd.cFileName);
-						if (lstrcmp(szFilename, szCurrentRecordFile) == 0)
-							continue;	// don't try to delete the currently recording file!
-						hFile = CreateFile(szFilename, GENERIC_READ, FILE_SHARE_READ, (LPSECURITY_ATTRIBUTES)NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, (HANDLE)NULL);
-						if (hFile != INVALID_HANDLE_VALUE)
-						{
-							GetFileTime(hFile, (LPFILETIME)&ulFileDate, NULL, NULL);
-							CloseHandle(hFile);
-							if (ulFileDate.QuadPart < ulOldestFile.QuadPart)
-							{
-								ulOldestFile.QuadPart = ulFileDate.QuadPart;
-								lstrcpy(szOldestFile, szFilename);
+					/* see if currently recording filename matches what was found */
+					lstrcpy(szFilename, szOutputFolder);
+					lstrcat(szFilename, "\\");
+					lstrcat(szFilename, fd.cFileName);
+					if (lstrcmp(szFilename, szCurrentRecordFile) == 0)
+						continue;	// don't try to delete the currently recording file!
+
+					/* get file time */
+					hFile = CreateFile(szFilename, GENERIC_READ, FILE_SHARE_READ, (LPSECURITY_ATTRIBUTES)NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, (HANDLE)NULL);
+					if (hFile != INVALID_HANDLE_VALUE) {
+						GetFileTime(hFile, (LPFILETIME)&ulFileDate, NULL, NULL);
+						CloseHandle(hFile);
+						if (ulFileDate.QuadPart < ulOldestFile.QuadPart) {
+							ulOldestFile.QuadPart = ulFileDate.QuadPart;
+							lstrcpy(szOldestFile, szFilename);
+						}
+
+						/* if we want to delete older split filenames */
+						if (v->fAdvancedRecordDeleteSplitEnabled) {
+							/* TODO: check for split pattern not just extension (as in the search query above). Too much 'tism for now */
+
+							/* add file data to the array */
+							FileEntry *pFE = calloc(1, sizeof(FileEntry));
+							if (pFE) {
+								StringCchCopy(pFE->szFilename, sizeof(pFE->szFilename), szFilename);
+								pFE->ulFileDate = ulFileDate;
+								ArrayListAdd(&arFileList, pFE);
 							}
 						}
-					} while (FindNextFile(hFind, &fd) == TRUE);
-					FindClose(hFind);
-
-					// Now szOldestFile has the oldest record file
-					if (lstrlen(szOldestFile))
-					{
-						dbg_printf("TSReader: Free-up %s\n", szOldestFile);
-						DeleteFile(szOldestFile);
 					}
-					else
-						break;	// didn't find an old file
+				} while (FindNextFile(hFind, &fd) == TRUE);
+
+				FindClose(hFind);
+
+				/* Now go through the list of files, sort it by date, and leave the last X */
+				if (v->fAdvancedRecordDeleteSplitEnabled) {
+					qsort(arFileList.data, arFileList.size, sizeof(void *), SortFileEntryCompare);
+
+					/* there are more files than keep count */
+					if (arFileList.size > (size_t)v->nAdvancedRecordDeleteSplitCount) {
+						/* go through the list minus what to keep. it's already sorted, so we can just delete */
+						for (i = 0; i < (int)arFileList.size - v->nAdvancedRecordDeleteSplitCount; i++) {
+							FileEntry *pFE = ArrayListGet(&arFileList, i);
+							if (pFE) {
+								dbg_printf("TSReader: Delete old split file %s\n", pFE->szFilename);
+								DeleteFile(pFE->szFilename);
+							}
+						}
+					}
 				}
+
+				/* Free up file list */
+				ArrayListFree(&arFileList);
+
+				/* If there's space, we only cared about removing old stuff */
+				if (nCurrentFreeGB >= v->nAdvancedRecordRemoveOldLimitGB)
+					break;
+
+				/* Now szOldestFile has the oldest record file */
+				if (lstrlen(szOldestFile)) {
+					dbg_printf("TSReader: Free-up %s\n", szOldestFile);
+					DeleteFile(szOldestFile);
+				} else
+					break;	// didn't find an old file
 			}
 		}
 
@@ -4118,13 +4195,16 @@ void RecordStream(HWND hWnd, BOOL fEntireTS, int nPID)
 			v->dwRecordTickCounter = GetTickCount();
 			v->fRecording = TRUE;
 			GetRecordStartTime();
-			if (v->fAdvancedRecordRemoveOldEnabled)
+			if (v->fAdvancedRecordRemoveOldEnabled || v->fAdvancedRecordDeleteSplitEnabled)
 			{
 				DWORD dwThreadID;
 				HANDLE hThread;
 
-				hThread = CreateThread(NULL, 0, AdvancedRecordFreeSpaceMonitorThread, (LPVOID)0, 0, &dwThreadID);
-				CloseHandle(hThread);										
+				hThread = CreateThread(NULL, 0, AdvancedRecordFreeSpaceSplitMonitorThread, (LPVOID)0, 0, &dwThreadID);
+				if (!hThread)
+					MessageBoxFormat(hWnd, MB_ICONERROR, "Error starting free space monitoring thread, files will NOT be monitored and deleted!");
+				else
+					CloseHandle(hThread);
 			}
 		}
 		else
@@ -21053,8 +21133,10 @@ void DoNormalTSReaderWindow(char * szCmdLinePtr)
 			{
 				LoadOtherModules();
 				LoadOutputModules();
-				if (v->fControlServerEnabled)
+				if (v->fControlServerEnabled) {
+					/* TODO loop restarting it, show dlgbox later */
 					StartControlServer();
+				}
 				if (v->fEITServerEnabled)
 				{
 					if (StartEITServer() == FALSE)

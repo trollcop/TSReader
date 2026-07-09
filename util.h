@@ -2,6 +2,12 @@
 
 #include <stdarg.h>
 
+typedef struct tagArrayList {
+    void **data;
+    size_t size;
+    size_t capacity;
+} ArrayList;
+
 void CopyListControlToClipboard(HWND hListControl, BOOL fAddCR);
 void UpdateMainStatusText(char * szText);
 void UpdateSecondaryStatusText(char * szText);
@@ -95,3 +101,9 @@ int mymbstowcs(wchar_t *dest, int len, const char *src);
 /* Decode ARIB B24 encoded string. If szDest is provided, decoded data will be copied there. Otherwise, new block will be allocated and must be freed after use */
 char *DecodeARIBString(char *szDest, size_t len, const char *szString);
 void HexDump(const void *buffer, size_t size);
+
+/* Array list NOT THREAD SAFE!! */
+void ArrayListInit(ArrayList *pList, size_t nCapacity);
+BOOL ArrayListAdd(ArrayList *pList, void *pData);
+void ArrayListFree(ArrayList *pList);
+void *ArrayListGet(ArrayList *pList, size_t nIndex);

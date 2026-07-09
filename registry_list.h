@@ -266,6 +266,8 @@ static REGISTRYLIST rl[] =
 	"AdvancedRecordRemoveOldLimitGB", offsetof(VARIABLES, nAdvancedRecordRemoveOldLimitGB), sizeofstruct(VARIABLES, nAdvancedRecordRemoveOldLimitGB), REG_DWORD,
 	"AdvancedRecordRemoveOldEnabled", offsetof(VARIABLES, fAdvancedRecordRemoveOldEnabled), sizeofstruct(VARIABLES, fAdvancedRecordRemoveOldEnabled), REG_DWORD,
 	"AdvancedRecordUTCTime", offsetof(VARIABLES, fAdvancedRecordUTCTime), sizeofstruct(VARIABLES, fAdvancedRecordUTCTime), REG_DWORD,
+	"AdvancedRecordDeleteSplitEnabled", offsetof(VARIABLES, fAdvancedRecordDeleteSplitEnabled), sizeofstruct(VARIABLES, fAdvancedRecordDeleteSplitEnabled), REG_DWORD,
+	"AdvancedRecordDeleteSplitCount", offsetof(VARIABLES, nAdvancedRecordDeleteSplitCount), sizeofstruct(VARIABLES, nAdvancedRecordDeleteSplitCount), REG_DWORD,
 	"AdvancedRecordDropPID", offsetof(VARIABLES, fAdvancedRecordDropPID), sizeofstruct(VARIABLES, fAdvancedRecordDropPID), REG_DWORD,
 	"SongTitleParserEnabled", offsetof(VARIABLES, fSongTitleParserEnabled), sizeofstruct(VARIABLES, fSongTitleParserEnabled), REG_DWORD,
 	"SongTitleParserPMT", offsetof(VARIABLES, nSongTitleParserPMT), sizeofstruct(VARIABLES, nSongTitleParserPMT), REG_DWORD,

@@ -1,3 +1,9 @@
+#ifdef _DEBUG
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+#endif
+
 #include <windows.h>
 #include <commctrl.h>
 #include <time.h>
@@ -2192,4 +2198,66 @@ void HexDump(const void *buffer, size_t size)
 		}
 		dbg_printf("\n");
 	}
+}
+
+void ArrayListInit(ArrayList *pList, size_t nCapacity)
+{
+	pList->data = (void **)calloc(nCapacity, sizeof(void *));
+	pList->size = 0;
+	pList->capacity = nCapacity;
+}
+
+BOOL ArrayListAdd(ArrayList *pList, void *pData)
+{
+	/* double the capacity if full */
+	if (pList->size == pList->capacity) {
+		void *pTemp = pList->data;
+		pList->data = (void **)realloc(pList->data, pList->capacity * 2 * sizeof(void *));
+		if (pList->data == NULL) {
+			dbg_printf("Error re-allocating ArrayList storage\n");
+			/* put back old data, do not increase -> capacity */
+			pList->data = pTemp;
+
+			return FALSE;
+		}
+		/* allocation was OK, double capacity */
+		pList->capacity *= 2;
+	}
+
+	pList->data[pList->size++] = pData;
+
+	return TRUE;
+}
+
+void ArrayListFree(ArrayList *pList)
+{
+	size_t i;
+
+	if (!pList)
+		return;
+
+	/* free up entries */
+	if (pList->data) {
+		for (i = 0; i < pList->size; i++) {
+			if (pList->data[i])
+				free(pList->data[i]);
+		}
+
+		/* free up actual pointer */
+		free(pList->data);
+	}
+	
+	pList->data = NULL;
+	pList->size = 0;
+	pList->capacity = 0;
+}
+
+void *ArrayListGet(ArrayList *pList, size_t nIndex)
+{
+	if (nIndex >= pList->size) {
+		dbg_printf("Error Array index out of bounds\n");
+		return NULL;
+	}
+
+	return pList->data[nIndex];
 }
