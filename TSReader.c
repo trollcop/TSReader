@@ -2764,10 +2764,7 @@ Record_BuildESListDefault:
 											  (HANDLE) NULL);
 						if (v->hRecordFile == INVALID_HANDLE_VALUE)
 						{
-							char szTemp[128 + MAX_PATH];
-
-							wsprintf(szTemp, "Unable to open file %s", v->szActualRecordFile);
-							MessageBox(hDlg, szTemp, gszAppName, MB_OK | MB_ICONWARNING);
+							MessageBoxFormat(hDlg, MB_OK | MB_ICONWARNING, "Unable to open file %s", v->szActualRecordFile);
 							break;
 						}
 						else
@@ -4257,7 +4254,7 @@ BOOL CheckForFileSplit(void)
 			v->nPATRecordCounter = 0;
 
 			v->nSplitFileNumber++;
-			GenerateSplitFilename(v->szRecordFile, v->szActualRecordFile, v->szSplitFormatString, v->nSplitFileNumber);				
+			GenerateSplitFilename(v->szRecordFile, v->szActualRecordFile, v->szSplitFormatString, v->nSplitFileNumber);
 			v->hRecordFile = CreateFile(v->szActualRecordFile,
 								  GENERIC_WRITE,
 								  FILE_SHARE_READ,
@@ -4267,11 +4264,8 @@ BOOL CheckForFileSplit(void)
 								  (HANDLE) NULL);
 			if (v->hRecordFile == INVALID_HANDLE_VALUE)
 			{
-				char szTemp[128 + MAX_PATH];
-
 				RecordStream(v->hWndMainWindow, v->fRecordAllTS, -1);
-				wsprintf(szTemp, "Unable to open file %s", v->szActualRecordFile);
-				MessageBox(v->hWndMainWindow, szTemp, gszAppName, MB_OK | MB_ICONSTOP);
+				MessageBoxFormat(v->hWndMainWindow, MB_OK | MB_ICONSTOP, "Unable to open file %s", v->szActualRecordFile);
 			}
 			else
 			{
@@ -9892,7 +9886,7 @@ void SIParserExportNIT(HWND hWnd)
 						  (HANDLE) NULL);
 	if (hHTMFile == INVALID_HANDLE_VALUE)
 	{
-		MessageBox(hWnd, TEXT("Unable to open file for output"), gszAppName, MB_OK | MB_ICONINFORMATION);
+		MessageBox(hWnd, "Unable to open file for output", gszAppName, MB_OK | MB_ICONINFORMATION);
 		return;
 	}
 	else
@@ -11570,7 +11564,7 @@ INT_PTR CALLBACK LicenseDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
 		switch(LOWORD(wParam))
 		{
 		case IDCANCEL:
- 			MessageBox(hDlg, "Please contact Digital River to obtain a refund of your license fees.\n\nYou are also required to remove this software from your computer since\nyou don't accept our license.\n\nTSReader will now close.", gszAppName, MB_ICONSTOP);
+ 			MessageBox(hDlg, "You are required to remove this software from your computer since\nyou don't accept our license.\n\nTSReader will now close.", gszAppName, MB_ICONSTOP);
  			EndDialog(hDlg, FALSE);
 			break;
 		case IDOK:
@@ -12076,11 +12070,7 @@ void SaveThumbnails(HWND hDlg, BOOL fContinuous)
 				}
 			}
 			if (nExportCount)
-			{
-				char szTemp[256];
-				wsprintf(szTemp, "%d Thumbnail(s) exported", nExportCount);
-				MessageBox(hDlg, szTemp, gszAppName, MB_OK | MB_ICONINFORMATION);
-			}
+				MessageBoxFormat(hDlg, MB_OK | MB_ICONINFORMATION, "%d Thumbnail(s) exported", nExportCount);
 			else
 				MessageBox(hDlg, "No thumbnails exported", gszAppName, MB_OK | MB_ICONINFORMATION);
 		}
@@ -14502,7 +14492,7 @@ BOOL CheckWinPcap(HWND hDlg)
 	if (v->hUDPSender == NULL)
 	{
 		if (MessageBox(hDlg, "WinPcap is required for this function and has not been installed.\n\nWould you like to go to the WinPcap homepage to download it?", gszAppName, MB_ICONSTOP | MB_YESNO) == IDYES)
-			ShellExecute(NULL, "open", "https://www.winpcap.org/", NULL, NULL, SW_SHOW);
+			ShellExecute(NULL, "open", "https://npcap.com/", NULL, NULL, SW_SHOW);
 		return FALSE;
 	}
 	return TRUE;
@@ -14627,8 +14617,7 @@ void RecordSelectedIPStream(HWND hDlg, BOOL fStartRecording, int nSaveMode)
 		if (v->pLastClickedIPEntry->hSaveFile == INVALID_HANDLE_VALUE)
 		{
 			v->pLastClickedIPEntry->hSaveFile = NULL;
-			wsprintf(szTemp, "Unable to create output file %s", szOutputName);
-			MessageBox(hDlg, szTemp, gszAppName, MB_ICONSTOP);
+			MessageBoxFormat(hDlg, MB_ICONSTOP, "Unable to create output file %s", szOutputName);
 		}
 		else
 			SetTreeViewIcon(v->pLastClickedIPEntry->hIPItem, 22);
@@ -15518,10 +15507,7 @@ void ShowEPGGrid(HWND hWnd)
 						   0);
 	if (v->hWndEPGGrid == NULL)
 	{
-		char szTemp[256];
-
-		wsprintf(szTemp, "CreateWindow for the EPG Grid failed with GetLastError() = %d", GetLastError());
-		MessageBox(hWnd, szTemp, gszAppName, MB_OK);
+		MessageBoxFormat(hWnd, MB_OK, "CreateWindow for the EPG Grid failed with GetLastError() = %d", GetLastError());
 	}
 	else
 	{
@@ -15582,14 +15568,7 @@ int CreateChartWindow(HWND hWnd, WNDPROC wndproc, int nParameters, WORD wMenuID)
 						   &nNewChartIndex);
 	if (v->hWndChart[nNewChartIndex] == NULL)
 	{
-		int nGLE = GetLastError();
-		char szTemp[256];
-
-		if (nGLE)
-		{
-			wsprintf(szTemp, "CreateWindow for the Chart failed with GetLastError() = %d", nGLE);
-			MessageBox(hWnd, szTemp, gszAppName, MB_OK);
-		}
+		MessageBoxFormat(hWnd, MB_OK, "CreateWindow for the Chart failed with GetLastError() = %d", GetLastError());
 	}
 	else
 	{
@@ -17219,11 +17198,7 @@ INT_PTR CALLBACK SIParserDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				if (!nMuxes)
 					MessageBox(hDlg, "No muxes were written - perhaps this network doesn't include satellite muxes?", gszAppName, MB_ICONINFORMATION);
 				else
-				{
-					char szTemp[128];
-					wsprintf(szTemp, "%d muxes written to INI files", nMuxes);
-					MessageBox(hDlg, szTemp, gszAppName, MB_ICONINFORMATION);
-				}
+					MessageBoxFormat(hDlg, MB_ICONINFORMATION, "%d muxes written to INI files", nMuxes);
 			}
 			break;
 		case ID_IDRNITPOPUP_RETUNETOTHISMUX_SDT:
@@ -18832,7 +18807,7 @@ void ProcessMain_WM_COMMAND(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	case ID_PLAYBACK_VLC_14:
 	case ID_PLAYBACK_VLC_15:
 	case ID_PLAYBACK_VLC_16:
-		v->nVLCPlaybackConfig = LOWORD(wParam) - ID_PLAYBACK_VLC_1;
+		v->nVLCPlaybackConfig = (LOWORD(wParam) - ID_PLAYBACK_VLC_1) & 0xf; /* MAX_VLC_CONFIGURATIONS change would affect this */
 		while (!lstrlen(v->szVLCExeLocation))
 		{
 			if (MessageBox(hWnd, "The VLC executable location is not set. Please set on the following dialog", gszAppName, MB_ICONWARNING | MB_OKCANCEL) == IDCANCEL)
@@ -20040,11 +20015,7 @@ char * ParseTSReaderCommandLine(char * szCmdLinePtr, BOOL * fResult)
 		switch(*(szCmdLinePtr + 1))
 		{
 		default:
-			{
-				char szTemp[128];
-				wsprintf(szTemp, "Invalid switch -%c", *(szCmdLinePtr + 1));
-				MessageBox(NULL, szTemp, gszAppName, MB_ICONSTOP);
-			}
+			MessageBoxFormat(NULL, MB_ICONSTOP, "Invalid switch -%c", *(szCmdLinePtr + 1));
 			return NULL;
 		case '1':		// force uniprocessor
 			szCmdLinePtr = SkipCommandLineSwitch(szCmdLinePtr);
