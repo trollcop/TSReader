@@ -87,6 +87,11 @@ typedef struct _tagSourceStruct
 #define ADV_MOD_DSS_QPSK 9						// DSS (DIRECTV) QPSK
 #define ADV_MOD_DVB_BPSK 10						// DVB-S BPSK
 
+// Satellite modulation options (bit values)
+#define ADV_MODB_DVB2_PILOT 0x00010000			// DVB-S2 pilot detection enabled
+#define ADV_MODB_DVB2_RO020 0x00020000			// DVB-S2 rolloff a=0.20
+#define ADV_MODB_DVB2_RO025 0x00040000			// DVB-S2 rolloff a=0.25
+
 // Source capabilities
 #define CAPABILITIES_DISEQC 0x1					// source can send DiSEqC commands
 #define CAPABILITIES_TONEBURST 0x2				// source can send toneburst switch commands
@@ -101,6 +106,13 @@ typedef struct _tagSourceStruct
 #define CAPABILITIES_CI_CAM 0x400				// source supports Common Interface CAMs
 #define CAPABILITIES_TUNE_BY_CHANNEL 0x800		// source tunes by the channel number
 #define CAPABILITIES_ACTIVE_ANTENNA 0x1000		// source has an active antenna controller
+#define CAPABILITIES_MULTICARD_DISPLAY	0x2000	// source supports display of multiple cards
+#define CAPABILITIES_SIGNALLED			0x4000	// if set, fLastFileTS becomes an event and buffer availability is signalled through the Win32 API
+#define CAPABILITIES_AUTOSCAN			0x8000	// source supports scanning
+#define CAPABILITIES_PLP				0x10000	// DVB-S2/T2/C2 PLP/ISI capable
+#define CAPABILITIES_CI_CAM_NEEDS_PMT	0x20000	// the CI CAM interface needs a PMT rather than a CI-PMT
+#define CAPABILITIES_WINE_OK			0x40000	// source module works in WINE
+#define CAPABILITIES_ALP_TS				0x80000	// ALP packets carried over MPEG-2 TS
 
 // Sources with CAPABILITIES_DISH_SWITCH support Dish Network legacy switches with the following values:
 //  7 - SW21 Dish 1
